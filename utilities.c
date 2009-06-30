@@ -2781,258 +2781,260 @@ int Sort_Edges_Depth(arbre *tree, edge **sorted_edges, int n_elem)
 }
 
 /*********************************************************/
-
+//JSJ: temporarily changed b_fcus->l to b_fcus->l[0]
+// double and tripple check that everything is correct
+// when we actually work on this section
 void NNI(arbre *tree, edge *b_fcus, int do_swap)
 {
-  int l_r, r_l, l_v1, l_v2, r_v3, r_v4;
-  node *v1,*v2,*v3,*v4;
-  phydbl lk0, lk1, lk2;
-  phydbl lk0_init, lk1_init, lk2_init;
-  phydbl bl_init;
-  phydbl l0,l1,l2;
-  phydbl l_infa, l_infb, l_max;
-/*   phydbl lk_infa, lk_infb, lk_max; */
-  phydbl lk_init;
+	int l_r, r_l, l_v1, l_v2, r_v3, r_v4;
+	node *v1,*v2,*v3,*v4;
+	phydbl lk0, lk1, lk2;
+	phydbl lk0_init, lk1_init, lk2_init;
+	phydbl bl_init;
+	phydbl l0,l1,l2;
+	phydbl l_infa, l_infb, l_max;
+	/*   phydbl lk_infa, lk_infb, lk_max; */
+	phydbl lk_init;
 
-  bl_init                = b_fcus->l;
-  lk_init                = tree->c_lnL;
+	bl_init                = b_fcus->l[0]; //JSJ: changed so compile
+	lk_init                = tree->c_lnL;
 
-  b_fcus->nni->init_l    = b_fcus->l;
-  b_fcus->nni->init_lk   = tree->c_lnL;;
+	b_fcus->nni->init_l    = b_fcus->l[0]; //JSJ: changed so compile
+	b_fcus->nni->init_lk   = tree->c_lnL;;
 
-  b_fcus->nni->best_conf = 0;
-  b_fcus->nni->score     = +1.0;
+	b_fcus->nni->best_conf = 0;
+	b_fcus->nni->score     = +1.0;
 
-  lk0 = lk1 = lk2        = UNLIKELY;
-  v1 = v2 = v3 = v4      = NULL;
+	lk0 = lk1 = lk2        = UNLIKELY;
+	v1 = v2 = v3 = v4      = NULL;
 
-  l_r = r_l = l_v1 = l_v2 = r_v3 = r_v4 = -1;
+	l_r = r_l = l_v1 = l_v2 = r_v3 = r_v4 = -1;
 
-  l_r                    = b_fcus->l_r;
-  r_l                    = b_fcus->r_l;
+	l_r                    = b_fcus->l_r;
+	r_l                    = b_fcus->r_l;
 
-  v1                     = b_fcus->left->v[b_fcus->l_v1];
-  v2                     = b_fcus->left->v[b_fcus->l_v2];
-  v3                     = b_fcus->rght->v[b_fcus->r_v1];
-  v4                     = b_fcus->rght->v[b_fcus->r_v2];
+	v1                     = b_fcus->left->v[b_fcus->l_v1];
+	v2                     = b_fcus->left->v[b_fcus->l_v2];
+	v3                     = b_fcus->rght->v[b_fcus->r_v1];
+	v4                     = b_fcus->rght->v[b_fcus->r_v2];
 
-  if(v1->num < v2->num)
-    {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
-  if(v3->num < v4->num)
-    {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+	if(v1->num < v2->num)
+	{
+		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+		Warn_And_Exit("");
+	}
+	if(v3->num < v4->num)
+	{
+		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+		Warn_And_Exit("");
+	}
 
-  l0 = l1 = l2 = -1.;
-
-
-  /***********/
-  Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
-  tree->both_sides = 1;
-
-  lk1_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-
-  l_infa = 10.*b_fcus->l;
-  l_max  = b_fcus->l;
-  l_infb = BL_MIN;
-
-  if(tree->mod->s_opt->fast_nni)
-    {
-      Fast_Br_Len(b_fcus,tree,1);
-      lk1 = Lk_At_Given_Edge(b_fcus,tree);
-    }
-  else
-    {
-      lk1 = Br_Len_Brent(l_infa,l_max,l_infb,
-			 tree->mod->s_opt->min_diff_lk_local,
-			 b_fcus,tree,
-			 tree->mod->s_opt->brent_it_max,
-			 tree->mod->s_opt->quickdirty);
-    }
-
-  if(lk1 < lk1_init - tree->mod->s_opt->min_diff_lk_local)
-    {
-      PhyML_Printf("%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
-      PhyML_Printf("%f -- %f \n",lk1_init,lk1);
-      PhyML_Printf("\n. Err. in NNI (1)\n");
-    }
-
-  l1  = b_fcus->l;
-  Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
-  /***********/
+	l0 = l1 = l2 = -1.;
 
 
-  /***********/
-  Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
-  b_fcus->l = bl_init;
-  tree->both_sides = 1;
+	/***********/
+	Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
+	tree->both_sides = 1;
 
-  lk2_init = Update_Lk_At_Given_Edge(b_fcus,tree);
+	lk1_init = Update_Lk_At_Given_Edge(b_fcus,tree);
 
-  l_infa = 10.*b_fcus->l;
-  l_max  = b_fcus->l;
-  l_infb = BL_MIN;
+	l_infa = 10.*b_fcus->l[0]; //JSJ: Changed so it compiles
+	l_max  = b_fcus->l[0]; //JSJ: Changed so it compiles
+	l_infb = BL_MIN;
 
-  if(tree->mod->s_opt->fast_nni)
-    {
-      Fast_Br_Len(b_fcus,tree,1);
-      lk2 = Lk_At_Given_Edge(b_fcus,tree);
-    }
-  else
-    {
-      lk2 = Br_Len_Brent(l_infa,l_max,l_infb,
-			 tree->mod->s_opt->min_diff_lk_local,
-			 b_fcus,tree,
-			 tree->mod->s_opt->brent_it_max,
-			 tree->mod->s_opt->quickdirty);
-    }
+	if(tree->mod->s_opt->fast_nni)
+	{
+		Fast_Br_Len(b_fcus,tree,1);
+		lk1 = Lk_At_Given_Edge(b_fcus,tree);
+	}
+	else
+	{
+		lk1 = Br_Len_Brent(l_infa,l_max,l_infb,
+				tree->mod->s_opt->min_diff_lk_local,
+				b_fcus,tree,
+				tree->mod->s_opt->brent_it_max,
+				tree->mod->s_opt->quickdirty);
+	}
 
-  if(lk2 < lk2_init - tree->mod->s_opt->min_diff_lk_local)
-    {
-      PhyML_Printf("%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
-      PhyML_Printf("%f -- %f \n",lk2_init,lk2);
-      PhyML_Printf("\n. Err. in NNI (2)\n");
-   }
+	if(lk1 < lk1_init - tree->mod->s_opt->min_diff_lk_local)
+	{
+		PhyML_Printf("%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
+		PhyML_Printf("%f -- %f \n",lk1_init,lk1);
+		PhyML_Printf("\n. Err. in NNI (1)\n");
+	}
 
-  l2  = b_fcus->l;
-  Swap(v4,b_fcus->left,b_fcus->rght,v2,tree);
-  /***********/
-
+	l1  = b_fcus->l[0];
+	Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
+	/***********/
 
 
-  /***********/
-   b_fcus->l = bl_init;
-   tree->both_sides = 1;
+	/***********/
+	Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
+	b_fcus->l[0] = bl_init;
+	tree->both_sides = 1;
 
-   lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
+	lk2_init = Update_Lk_At_Given_Edge(b_fcus,tree);
 
-   if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
-     {
-       PhyML_Printf("\n. lk_init = %f; lk = %f diff = %f\n",
-	      lk_init,
-	      lk0_init,
-	      lk_init-lk0_init);
-       PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
-       Warn_And_Exit("\n. Err. in NNI (3)\n");
-     }
+	l_infa = 10.*b_fcus->l[0];
+	l_max  = b_fcus->l[0];
+	l_infb = BL_MIN;
 
-   l_infa = 10.*b_fcus->l;
-   l_max  = b_fcus->l;
-   l_infb = BL_MIN;
+	if(tree->mod->s_opt->fast_nni)
+	{
+		Fast_Br_Len(b_fcus,tree,1);
+		lk2 = Lk_At_Given_Edge(b_fcus,tree);
+	}
+	else
+	{
+		lk2 = Br_Len_Brent(l_infa,l_max,l_infb,
+				tree->mod->s_opt->min_diff_lk_local,
+				b_fcus,tree,
+				tree->mod->s_opt->brent_it_max,
+				tree->mod->s_opt->quickdirty);
+	}
 
-   if(tree->mod->s_opt->fast_nni)
-     {
-       Fast_Br_Len(b_fcus,tree,1);
-       lk0 = Lk_At_Given_Edge(b_fcus,tree);
-     }
-   else
-     {
-       lk0 = Br_Len_Brent(l_infa,l_max,l_infb,
-			  tree->mod->s_opt->min_diff_lk_local,
-			  b_fcus,tree,
-			  tree->mod->s_opt->brent_it_max,
-			  tree->mod->s_opt->quickdirty);
-     }
+	if(lk2 < lk2_init - tree->mod->s_opt->min_diff_lk_local)
+	{
+		PhyML_Printf("%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
+		PhyML_Printf("%f -- %f \n",lk2_init,lk2);
+		PhyML_Printf("\n. Err. in NNI (2)\n");
+	}
 
-   if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
-     {
-       PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
-       PhyML_Printf("%f -- %f \n",lk0_init,lk0);
-       PhyML_Printf("\n. Err. in NNI (3)\n");
-       Warn_And_Exit("\n");
-     }
+	l2  = b_fcus->l[0];
+	Swap(v4,b_fcus->left,b_fcus->rght,v2,tree);
+	/***********/
 
-   l0  = b_fcus->l;
-   /***********/
 
-   b_fcus->nni->lk0 = lk0;
-   b_fcus->nni->lk1 = lk1;
-   b_fcus->nni->lk2 = lk2;
 
-   b_fcus->nni->l0  = l0;
-   b_fcus->nni->l1  = l1;
-   b_fcus->nni->l2  = l2;
+	/***********/
+	b_fcus->l[0] = bl_init;
+	tree->both_sides = 1;
 
-   b_fcus->nni->score = lk0 - MAX(lk1,lk2);
+	lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
 
-   if((b_fcus->nni->score <  tree->mod->s_opt->min_diff_lk_local) &&
-      (b_fcus->nni->score > -tree->mod->s_opt->min_diff_lk_local))
-     {
-       b_fcus->nni->score = .0;
-       b_fcus->nni->lk1 = b_fcus->nni->lk0;
-       b_fcus->nni->lk2 = b_fcus->nni->lk0;
-     }
+	if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
+	{
+		PhyML_Printf("\n. lk_init = %f; lk = %f diff = %f\n",
+				lk_init,
+				lk0_init,
+				lk_init-lk0_init);
+		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
+		Warn_And_Exit("\n. Err. in NNI (3)\n");
+	}
 
-   if(lk0 > MAX(lk1,lk2))
-     {
-       b_fcus->nni->best_conf    = 0;
-       b_fcus->nni->best_l       = l0;
-       b_fcus->nni->swap_node_v1 = NULL;
-       b_fcus->nni->swap_node_v2 = NULL;
-       b_fcus->nni->swap_node_v3 = NULL;
-       b_fcus->nni->swap_node_v4 = NULL;
-      }
-   else if(lk1 > MAX(lk0,lk2))
-     {
-       b_fcus->nni->best_conf    = 1;
-       b_fcus->nni->best_l       = l1;
-       b_fcus->nni->swap_node_v1 = v2;
-       b_fcus->nni->swap_node_v2 = b_fcus->left;
-       b_fcus->nni->swap_node_v3 = b_fcus->rght;
-       b_fcus->nni->swap_node_v4 = v3;
-     }
-   else if(lk2 > MAX(lk0,lk1))
-     {
-       b_fcus->nni->best_conf    = 2;
-       b_fcus->nni->best_l       = l2;
-       b_fcus->nni->swap_node_v1 = v2;
-       b_fcus->nni->swap_node_v2 = b_fcus->left;
-       b_fcus->nni->swap_node_v3 = b_fcus->rght;
-       b_fcus->nni->swap_node_v4 = v4;
-     }
-   else
-     {
-       b_fcus->nni->score        = +1.0;
-       b_fcus->nni->best_conf    = 0;
-       b_fcus->nni->best_l       = l0;
-       b_fcus->nni->swap_node_v1 = NULL;
-       b_fcus->nni->swap_node_v2 = NULL;
-       b_fcus->nni->swap_node_v3 = NULL;
-       b_fcus->nni->swap_node_v4 = NULL;
-     }
+	l_infa = 10.*b_fcus->l[0];
+	l_max  = b_fcus->l[0];
+	l_infb = BL_MIN;
 
-   if((do_swap) && ((lk1 > lk0) || (lk2 > lk0)))
-     {
-      tree->n_swap++;
-      PhyML_Printf("Swap edge %d -> %f\n",b_fcus->num,MAX(lk1,lk2));
+	if(tree->mod->s_opt->fast_nni)
+	{
+		Fast_Br_Len(b_fcus,tree,1);
+		lk0 = Lk_At_Given_Edge(b_fcus,tree);
+	}
+	else
+	{
+		lk0 = Br_Len_Brent(l_infa,l_max,l_infb,
+				tree->mod->s_opt->min_diff_lk_local,
+				b_fcus,tree,
+				tree->mod->s_opt->brent_it_max,
+				tree->mod->s_opt->quickdirty);
+	}
 
-      if(lk1 > lk2)
-	 {
-	   tree->best_lnL = lk1;
-	   Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
-	   b_fcus->l = l1;
-	   tree->both_sides = 1;
-	   Lk(tree);
-	 }
-       else
-	 {
-	   tree->best_lnL = lk2;
-	   Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
-	   b_fcus->l = l2;
-	   tree->both_sides = 1;
-	   Lk(tree);
-	 }
-     }
-   else
-     {
-       b_fcus->l = bl_init;
-       Update_PMat_At_Given_Edge(b_fcus,tree);
-       tree->c_lnL = lk_init;
-     }
+	if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
+	{
+		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
+		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
+		PhyML_Printf("\n. Err. in NNI (3)\n");
+		Warn_And_Exit("\n");
+	}
+
+	l0  = b_fcus->l[0];
+	/***********/
+
+	b_fcus->nni->lk0 = lk0;
+	b_fcus->nni->lk1 = lk1;
+	b_fcus->nni->lk2 = lk2;
+
+	b_fcus->nni->l0  = l0;
+	b_fcus->nni->l1  = l1;
+	b_fcus->nni->l2  = l2;
+
+	b_fcus->nni->score = lk0 - MAX(lk1,lk2);
+
+	if((b_fcus->nni->score <  tree->mod->s_opt->min_diff_lk_local) &&
+			(b_fcus->nni->score > -tree->mod->s_opt->min_diff_lk_local))
+	{
+		b_fcus->nni->score = .0;
+		b_fcus->nni->lk1 = b_fcus->nni->lk0;
+		b_fcus->nni->lk2 = b_fcus->nni->lk0;
+	}
+
+	if(lk0 > MAX(lk1,lk2))
+	{
+		b_fcus->nni->best_conf    = 0;
+		b_fcus->nni->best_l       = l0;
+		b_fcus->nni->swap_node_v1 = NULL;
+		b_fcus->nni->swap_node_v2 = NULL;
+		b_fcus->nni->swap_node_v3 = NULL;
+		b_fcus->nni->swap_node_v4 = NULL;
+	}
+	else if(lk1 > MAX(lk0,lk2))
+	{
+		b_fcus->nni->best_conf    = 1;
+		b_fcus->nni->best_l       = l1;
+		b_fcus->nni->swap_node_v1 = v2;
+		b_fcus->nni->swap_node_v2 = b_fcus->left;
+		b_fcus->nni->swap_node_v3 = b_fcus->rght;
+		b_fcus->nni->swap_node_v4 = v3;
+	}
+	else if(lk2 > MAX(lk0,lk1))
+	{
+		b_fcus->nni->best_conf    = 2;
+		b_fcus->nni->best_l       = l2;
+		b_fcus->nni->swap_node_v1 = v2;
+		b_fcus->nni->swap_node_v2 = b_fcus->left;
+		b_fcus->nni->swap_node_v3 = b_fcus->rght;
+		b_fcus->nni->swap_node_v4 = v4;
+	}
+	else
+	{
+		b_fcus->nni->score        = +1.0;
+		b_fcus->nni->best_conf    = 0;
+		b_fcus->nni->best_l       = l0;
+		b_fcus->nni->swap_node_v1 = NULL;
+		b_fcus->nni->swap_node_v2 = NULL;
+		b_fcus->nni->swap_node_v3 = NULL;
+		b_fcus->nni->swap_node_v4 = NULL;
+	}
+
+	if((do_swap) && ((lk1 > lk0) || (lk2 > lk0)))
+	{
+		tree->n_swap++;
+		PhyML_Printf("Swap edge %d -> %f\n",b_fcus->num,MAX(lk1,lk2));
+
+		if(lk1 > lk2)
+		{
+			tree->best_lnL = lk1;
+			Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
+			b_fcus->l[0] = l1;
+			tree->both_sides = 1;
+			Lk(tree);
+		}
+		else
+		{
+			tree->best_lnL = lk2;
+			Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
+			b_fcus->l[0] = l2;
+			tree->both_sides = 1;
+			Lk(tree);
+		}
+	}
+	else
+	{
+		b_fcus->l[0] = bl_init;
+		Update_PMat_At_Given_Edge(b_fcus,tree);
+		tree->c_lnL = lk_init;
+	}
 }
 
 /*********************************************************/
