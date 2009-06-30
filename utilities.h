@@ -8,6 +8,7 @@ Copyright (C) Stephane Guindon. Oct 2003 onward.
 All parts of the source except where indicated are distributed under
 the GNU public licence. See http://www.opensource.org for details.
 
+Modified by John St John
 */
 
 #ifndef UTILITIES_H
