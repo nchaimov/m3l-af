@@ -1,0 +1,31 @@
+Scavenger hunt:
+
+cl.c "case 'i':case 9:" starts talking about how to read in things.
+
+utilities.c Read_Seq_Sequential()
+	reads in sequences in sequential form. (Also included is an interleaved sequence reader.) This one works by iterating through taxa. It reads in each taxa's sequence one at a time and stores it in data which is of type seq **. If everything executes properly it returns data.
+	
+	Read_One_Line_Seq actually reads in one character and increments the len of the data. To read in a single line of characters you call while(data[i]->len < len) Read_One_Line_Seq(&data,i,in); which is nested in a loop that iterates through each n_otu. The read interleaved method does things slightly differently. 
+	
+	
+	data->state is the array of length len that stores the sequence. 
+	data->len is the current length of the sequence (initialized to 0 and incremented while filled)
+	io->mod->n_otu (where n_otu is stored)
+	
+	
+utilities.c	Read_Seq_Interleaved()
+	does the same as above but for interleaved sequences. The logic for how sequences are read in one line at a time is slightly different, but Read_One_Line_Seq() is still used.
+	
+	
+utilities.c Compact_Sequences
+	
+	
+utilities.h Defined datastructures like tree, allseq, etc...
+
+
+utilities.c void R_rtree appears to be doing a lot of the interesting stuff with tree input.
+	called by Read_Tree
+		called by Read_Tree_File
+		
+Command line args read in from cl.c
+
