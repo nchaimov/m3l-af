@@ -12,7 +12,7 @@
 
 . Tree topology search : 		NNIs
 
-. Initial tree: 			user tree (test/abc_mm.tre)
+. Initial tree: 			user tree (test/abc.tre)
 
 . Model of amino acids substitution: 	LG
 

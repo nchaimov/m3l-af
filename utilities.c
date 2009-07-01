@@ -295,9 +295,10 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 	char *sub_tp;
 //	char *p, *p2;
 	char *p;
+	char *brac;
 	edge *b;
 	int i,j;
-
+	brac = strstr(s_a,"[");
 	b = tree->t_edges[tree->num_curr_branch_available];
 	b->n_l = tree->n_l; //not sure, but just in case...
 
@@ -310,7 +311,11 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 	}
 
 	strcpy(sub_tp,s_d);
-	strcat(sub_tp,":[");
+	if(brac){
+		strcat(sub_tp,":[");
+	}else{
+		strcat(sub_tp,":");
+	}
 //	printf("JSJ:Made it here!\n");
 //	//p = strstr(s_a,sub_tp);
 	printf("JSJ:The string about to be strstr: %s\n",s_a);
@@ -319,21 +324,24 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 	printf("JSJ:Made it here!\n");
 	if(p)
 	{
-//		b->l = atof((char *)p2+(int)strlen(sub_tp));
-		//now we need to grab the string up until ',' and do it n_l times
-		int glob = strlen(sub_tp);
-		For(i,tree->n_l){
-			char tmp[100];
-			j = 0;
-			glob++;//JSJ: increment glob past '[' and ','
-			while ((p[glob] != ']') &&
-					(p[glob] != ',')){
-				tmp[j] = p[glob];
-				j++;
-				glob++;
+		if(!brac){
+			b->l[0] = atof((char *)p+(int)strlen(sub_tp));
+		}else{
+			//now we need to grab the string up until ',' and do it n_l times
+			int glob = strlen(sub_tp);
+			For(i,tree->n_l){
+				char tmp[100];
+				j = 0;
+				glob++;//JSJ: increment glob past '[' and ','
+				while ((p[glob] != ']') &&
+						(p[glob] != ',')){
+					tmp[j] = p[glob];
+					j++;
+					glob++;
+				}
+				tmp[j]='\0'; //JSJ: end the string
+				b->l[i] = atof(tmp);
 			}
-			tmp[j]='\0'; //JSJ: end the string
-			b->l[i] = atof(tmp);
 		}
 		//JSJ: Print all of the bls read in
 		For(i,b->n_l) printf("JSJ: Reading a branch from set %i of length %f\n",i,(double)b->l[i]);
