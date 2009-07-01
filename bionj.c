@@ -96,14 +96,14 @@ void Finish(matrix *mat)
   Connect_One_Edge_To_Two_Nodes(new,nz,mat->tree->t_edges[mat->tree->num_curr_branch_available],mat->tree);
   mat->tree->num_curr_branch_available++;
 
- 
-  nx->b[0]->l = .5*(dxy-dyz+dxz);
-  ny->b[0]->l = .5*(dyz-dxz+dxy);
-  nz->b[0]->l = .5*(dxz-dxy+dyz);
+ //JSJ: temporary fixes to l
+  nx->b[0]->l[0] = .5*(dxy-dyz+dxz);
+  ny->b[0]->l[0] = .5*(dyz-dxz+dxy);
+  nz->b[0]->l[0] = .5*(dxz-dxy+dyz);
    
-  new->b[0]->l = nx->b[0]->l;
-  new->b[1]->l = ny->b[0]->l;
-  new->b[2]->l = nz->b[0]->l;
+  new->b[0]->l[0] = nx->b[0]->l[0];
+  new->b[1]->l[0] = ny->b[0]->l[0];
+  new->b[2]->l[0] = nz->b[0]->l[0];
 }
 
 /*********************************************************/
@@ -154,19 +154,19 @@ void Update_Tree(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl score)
   mat->tree->num_curr_branch_available++;
   Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->t_edges[mat->tree->num_curr_branch_available],mat->tree);
   mat->tree->num_curr_branch_available++;
-
-  nx->b[0]->l   = lx;
-  ny->b[0]->l   = ly;
+  //JSJ: temporary fixes to l
+  nx->b[0]->l[0]   = lx;
+  ny->b[0]->l[0]   = ly;
   
-  new->b[1]->l  = lx;
-  new->b[2]->l  = ly;
+  new->b[1]->l[0]  = lx;
+  new->b[2]->l[0]  = ly;
   new->score[0] = score;
 
-  nx->l[0]      = lx;
-  ny->l[0]      = ly;
+  nx->l[0][0]      = lx;
+  ny->l[0][0]      = ly;
   
-  new->l[1]     = lx;
-  new->l[2]     = ly;
+  new->l[0][1]     = lx;
+  new->l[0][2]     = ly;
  
   mat->tip_node[x] = new;
   mat->on_off[y] = 0;
@@ -395,11 +395,11 @@ phydbl Q_Agglo(matrix *mat, int x, int y)
 void Bionj_Br_Length(matrix *mat)
 {
   int x;
-
+//JSJ: temporary fix to l
   x = Bionj_Br_Length_Post(mat->tree->noeud[0],
 			   mat->tree->noeud[0]->v[0],
 			   mat);
-  mat->tree->noeud[0]->b[0]->l = Dist(mat,0,x);
+  mat->tree->noeud[0]->b[0]->l[0] = Dist(mat,0,x);
 }
 
 /*********************************************************/
@@ -433,9 +433,9 @@ int Bionj_Br_Length_Post(node *a, node *d, matrix *mat)
       ly=Br_Length(mat,(y),(x));
       lamda=Lamda(mat,(x),(y),vxy); 
       Update_Mat(mat,(x),(y),lx,ly,vxy,lamda);
-
-      d->b[d_v1]->l = lx;
-      d->b[d_v2]->l = ly;
+      //JSJ: temporary fixes to l
+      d->b[d_v1]->l[0] = lx;
+      d->b[d_v2]->l[0] = ly;
       
       mat->on_off[y] = 0;
       mat->r--;
