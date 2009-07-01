@@ -707,7 +707,8 @@ typedef struct __Optimiz { /* parameters to be optimised (mostly used in 'optimi
 }optimiz;
 
 /*********************************************************/
-
+//JSJ: we will probably have to modify the __NNI and __SPR structs so that they take
+// arrays of l
 typedef struct __NNI{
 
   struct __Node         *left;

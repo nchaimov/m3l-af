@@ -283,11 +283,11 @@ void Update_Bl(arbre *tree, phydbl fact)
 {
   int i;
   edge *b;
-
+//JSJ: temporary fixes to l
   For(i,2*tree->n_otu-3)
     {
       b = tree->t_edges[i];
-      b->l = b->l_old + (b->nni->l0 - b->l_old)*fact;
+      b->l[0] = b->l_old[0] + (b->nni->l0 - b->l_old[0])*fact;
     }
 }
 
@@ -307,8 +307,8 @@ void Make_N_Swap(arbre *tree,edge **b, int beg, int end)
 	   b[i]->nni->swap_node_v3,
 	   b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 	   tree);
-
-      b[i]->l = b[i]->nni->best_l;
+//JSJ: temporary fix to l
+      b[i]->l[0] = b[i]->nni->best_l;
 
       tree->n_swap++;
     }
@@ -345,8 +345,8 @@ int Make_Best_Swap(arbre *tree)
 	   b->nni->swap_node_v3->v[tree->t_dir[b->nni->swap_node_v3->num][b->nni->swap_node_v4->num]],
 	   tree);
 
-
-      b->l = b->nni->best_l;
+//JSJ: temp fix to l
+      b->l[0] = b->nni->best_l;
 
 /*       (b->nni->best_conf == 1)? */
 /* 	(Swap(b->left->v[b->l_v2],b->left,b->rght,b->rght->v[b->r_v1],tree)): */
@@ -376,8 +376,8 @@ int Mov_Backward_Topo_Bl(arbre *tree, phydbl lk_old, edge **tested_b, int n_test
 
 
   l_init = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
-
-  For(i,2*tree->n_otu-3) l_init[i] = tree->t_edges[i]->l;
+//JSJ: temp fix to l
+  For(i,2*tree->n_otu-3) l_init[i] = tree->t_edges[i]->l[0];
   
   step = 2;
   tree->both_sides = 0;
@@ -385,8 +385,8 @@ int Mov_Backward_Topo_Bl(arbre *tree, phydbl lk_old, edge **tested_b, int n_test
     {
       For(i,2*tree->n_otu-3) 
 	{
-	  b = tree->t_edges[i];
-	  b->l = b->l_old + (1./step) * (l_init[i] - b->l_old);
+	  b = tree->t_edges[i]; //JSJ: temp fix to l and  l_old
+	  b->l[0] = b->l_old[0] + (1./step) * (l_init[i] - b->l_old[0]);
 	}
 
       beg = (int)floor((phydbl)n_tested/(step-1));
@@ -550,8 +550,8 @@ void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 	       b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 	       tree);
 
-
-	  b[i]->l = b[i]->nni->best_l;
+	  //JSJ: temp fix to l
+	  b[i]->l[0] = b[i]->nni->best_l;
 
 	}
     }
@@ -564,8 +564,8 @@ void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 	       b[i]->nni->swap_node_v3,
 	       b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 	       tree);
-
-	  b[i]->l = b[i]->nni->best_l;
+	  //JSJ: temp fix to l
+	  b[i]->l[0] = b[i]->nni->best_l;
 	}
     }
 }
