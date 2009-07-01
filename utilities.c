@@ -807,11 +807,12 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 
 void Init_Edge_Light(edge *b, int num)
 {
+	int i;
 	b->num                  = num;
 	b->bip_score            = 0;
 	b->dist_btw_edges       = .0;
 	b->topo_dist_btw_edges  = 0;
-	b->has_zero_br_len      = 0;
+	For(i,b->n_l) b->has_zero_br_len[i] = 0;
 	b->is_p_lk_l_u2d        = 0;
 	b->is_p_lk_r_u2d        = 0;
 	b->n_jumps              = 0;
@@ -905,13 +906,13 @@ void Make_Edge_Pars(edge *b, arbre *tree)
 
 void Make_Edge_Lk(edge *b, arbre *tree)
 {
-
+	int i;
 	b->l_old = b->l;
 
 	b->div_post_pred_left = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
 	b->div_post_pred_rght = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
-
-	b->Pij_rr   = (phydbl *)mCalloc(tree->mod->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
+	b->Pij_rr             = (phydbl **)mCalloc(tree->n_l,sizeof(phydbl *));
+	For(i,tree->n_l) b->Pij_rr[i] = (phydbl *)mCalloc(tree->mod->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
 
 	b->scale_left = b->scale_rght = 0;
 
