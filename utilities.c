@@ -4619,11 +4619,11 @@ void Br_Len_Involving_Invar(arbre *tree)
 }
 
 /*********************************************************/
-
+//JSJ: Another temp update
 void Br_Len_Not_Involving_Invar(arbre *tree)
 {
 	int i;
-	For(i,2*tree->n_otu-3) tree->t_edges[i]->l /= (1.0-tree->mod->pinvar);
+	For(i,2*tree->n_otu-3) tree->t_edges[i]->l[0] /= (1.0-tree->mod->pinvar);
 }
 
 /*********************************************************/
