@@ -171,9 +171,13 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 		{
 			if(!a->v[i])
 			{
-
+				printf("JSJ: Entered utilities.c line 174\n");
 				a->v[i]=d;
-				For(j,tree->n_l) d->l[j][0]=a->l[j][i]=tree->t_edges[tree->num_curr_branch_available]->l[j];
+				For(j,tree->n_l){
+					d->l[j][0]=tree->t_edges[tree->num_curr_branch_available]->l[j];
+					a->l[j][i]=tree->t_edges[tree->num_curr_branch_available]->l[j];
+					printf("JSJ: The branch length here is: %f\n",tree->t_edges[tree->num_curr_branch_available]->l[j]);
+				}
 				break;
 			}
 		}
@@ -192,7 +196,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 
 	else
 	{
-		int i;
+		int i,j;
 
 		d      = tree->noeud[*n_ext];
 		d->tax = 1;
@@ -206,8 +210,13 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 		{
 			if(!a->v[i])
 			{
-				a->v[i]=d;
-				d->l[0]=a->l[i]=tree->t_edges[tree->num_curr_branch_available]->l;
+				For(j,tree->n_l){
+					printf("JSJ: Entered utilities.c line 214\n");
+					a->v[i]=d;
+					d->l[j][0]=tree->t_edges[tree->num_curr_branch_available]->l[j];
+					a->l[j][i]=tree->t_edges[tree->num_curr_branch_available]->l[j];
+					printf("JSJ: The branch length here is: %f\n",tree->t_edges[tree->num_curr_branch_available]->l[j]);
+				}
 				break;
 			}
 		}
@@ -306,7 +315,7 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 //	//p = strstr(s_a,sub_tp);
 	printf("JSJ:The string about to be strstr: %s\n",s_a);
 //	//p2 = strstr((char *)p+(int)strlen(sub_tp),'[');
-	p = strstr(s_a,sub_tp); //crashes here!
+	p = strstr(s_a,sub_tp);
 	printf("JSJ:Made it here!\n");
 	if(p)
 	{
@@ -330,7 +339,7 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 		For(i,b->n_l) printf("JSJ: Reading a branch from set %i of length %f\n",i,(double)b->l[i]);
 		tree->has_branch_lengths = 1;
 	}
-//	Free(sub_tp);
+	Free(sub_tp);
 }
 
 /*********************************************************/
@@ -606,8 +615,8 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			strcat(s_tree,fils->name);
 		else
 			sprintf(s_tree+(int)strlen(s_tree),"%d",fils->num+1);
-
-		if((fils->b) && (fils->b[0]) && (fils->b[0]->l != -1))
+//JSJ: temporary change of l
+		if((fils->b) && (fils->b[0]) && (fils->b[0]->l[0] != -1))
 		{
 			if(tree->print_labels)
 			{
