@@ -6936,17 +6936,17 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 		For(i,tree->mod->ns) For(j,tree->mod->ns) For(k,tree->mod->n_catg)
 		F[dim3*k+dim2*i+j] += tree->data->wght[site] * prob[dim3*k+dim2*i+j];
 	}
-
-	old_l = b->l;
-	Opt_Dist_F(&(b->l),F,tree->mod);
-	new_l = b->l;
+	//JSJ: More temp fixes...
+	old_l = b->l[0];
+	Opt_Dist_F(&(b->l[0]),F,tree->mod);
+	new_l = b->l[0];
 	n_iter++;
 
-	if(b->l < BL_MIN)      b->l = BL_MIN;
-	else if(b->l > BL_MAX) b->l = BL_MAX;
+	if(b->l[0] < BL_MIN)      b->l[0] = BL_MIN;
+	else if(b->l[0] > BL_MAX) b->l[0] = BL_MAX;
 
 	if(!approx)
-		Br_Len_Brent(0.02*b->l,b->l,50.*b->l,
+		Br_Len_Brent(0.02*b->l[0],b->l[0],50.*b->l[0],
 				tree->mod->s_opt->min_diff_lk_local,
 				b,tree,
 				tree->mod->s_opt->brent_it_max,
