@@ -17,6 +17,8 @@
 ** _move_: Structure for holding the relevant information for candidate SPR moves.
 */
 
+//JSJ: will probably have to modify the move data structure if we want to use SPR in our analyses
+
 typedef struct
 {
   node   *v_prune, *u_prune, *v_n, *v_nx1, *u_n, **path;

@@ -734,7 +734,7 @@ typedef struct __NNI{
 }nni;
 
 /*********************************************************/
-
+//JSJ: should probably modify this as well..
 typedef struct __SPR{
   struct __Node         *n_link;
   struct __Node  *n_opp_to_link;

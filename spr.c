@@ -1367,8 +1367,8 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
       }
     }
     l_connect -= 0.5 * subtree_dist[u1->num][u2->num];
-  }
-  l_connect += (v_prune->b[d1]->l + v_prune->b[d2]->l);
+  } //JSJ: temp fixes to l
+  l_connect += (v_prune->b[d1]->l[0] + v_prune->b[d2]->l[0]);
   l_connect /= 2.0;
   if (l_connect < BL_MIN)
   {
@@ -1435,11 +1435,11 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
   /*
   ** Temporarily set the edge lengths and update transition prob's at the
   ** prune site.
-  */
-  v_prune->b[d1]->l_old = v_prune->b[d1]->l;
-  v_prune->b[d2]->l_old = v_prune->b[d2]->l;
-  v_prune->b[d1]->l = l_connect;
-  v_prune->b[d2]->l = l_connect;
+  */ //JSJ: temp fixes to l
+  v_prune->b[d1]->l_old[0] = v_prune->b[d1]->l[0];
+  v_prune->b[d2]->l_old[0] = v_prune->b[d2]->l[0];
+  v_prune->b[d1]->l[0] = l_connect;
+  v_prune->b[d2]->l[0] = l_connect;
   Update_PMat_At_Given_Edge (v_prune->b[d1], tree);
   Update_PMat_At_Given_Edge (v_prune->b[d2], tree);
 
@@ -1628,14 +1628,14 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
     }
     /*
     ** l_12
-    */
-    l_12 = e_regraft->l;
+    */ //JSJ: temp fixes to l
+    l_12 = e_regraft->l[0];
     /*
     ** Simple estimates.
     */
-    l_simple[0] = l_02 - (0.5*e_regraft->l);
-    l_simple[1] = 0.5 * e_regraft->l;
-    l_simple[2] = 0.5 * e_regraft->l;
+    l_simple[0] = l_02 - (0.5*e_regraft->l[0]);
+    l_simple[1] = 0.5 * e_regraft->l[0];
+    l_simple[2] = 0.5 * e_regraft->l[0];
     for (i = 0; i < 3; i++)
     {
       if (l_simple[i] < BL_MIN)
@@ -1667,22 +1667,22 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
     ** Set the edge lengths and update the relevant transition prob's and
     ** partial likelihoods in the temporary regraft structure.
     */
-
+    //JSJ: temp fixes to l
     for (i = 0; i < 3; i++)
     {
-      v_tmp->b[i]->l = l_est[i]; /* TO DO */
-      if (v_tmp->b[i]->l < BL_MIN)
+      v_tmp->b[i]->l[0] = l_est[i]; /* TO DO */
+      if (v_tmp->b[i]->l[0] < BL_MIN)
       {
-	v_tmp->b[i]->l = BL_MIN;
+	v_tmp->b[i]->l[0] = BL_MIN;
       }
       Update_PMat_At_Given_Edge (v_tmp->b[i], tree);
     }
 
     /* Beg SG 18 May 2007 */
     if(tree->mod->s_opt->wim_inside_opt)
-      {
+      { //JSJ: temp fixes to l
 	Triple_Dist(v_tmp,tree,0);
-	For(i,3) l_est[i] = v_tmp->b[i]->l;
+	For(i,3) l_est[i] = v_tmp->b[i]->l[0];
       }
     /* End SG 18 May 2007 */
 
@@ -1705,8 +1705,8 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
     rgrft_cand[cand]->globl_rank = -1;
     rgrft_cand[cand]->l_connect = l_connect;
     for (i = 0; i < 3; i++)
-    {
-      rgrft_cand[cand]->l_est[i] = v_tmp->b[i]->l;
+    {//JSJ: temp fix to l
+      rgrft_cand[cand]->l_est[i] = v_tmp->b[i]->l[0];
     }
     if (rgrft_cand[cand]->delta_lk > best_d_lk)
     {
@@ -1929,8 +1929,8 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
       }
     }
     l_connect -= 0.5 * subtree_dist[u1->num][u2->num];
-  }
-  l_connect += (v_prune->b[d1]->l + v_prune->b[d2]->l);
+  } //JSJ: temp fix to l
+  l_connect += (v_prune->b[d1]->l[0] + v_prune->b[d2]->l[0]);
   l_connect /= 2.0;
   if (l_connect < BL_MIN)
   {
@@ -1997,11 +1997,11 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
   /*
   ** Temporarily set the edge lengths and update transition prob's at the
   ** prune site.
-  */
-  v_prune->b[d1]->l_old = v_prune->b[d1]->l;
-  v_prune->b[d2]->l_old = v_prune->b[d2]->l;
-  v_prune->b[d1]->l = l_connect;
-  v_prune->b[d2]->l = l_connect;
+  */ //JSJ: temp fixes to l
+  v_prune->b[d1]->l_old[0] = v_prune->b[d1]->l[0];
+  v_prune->b[d2]->l_old[0] = v_prune->b[d2]->l[0];
+  v_prune->b[d1]->l[0] = l_connect;
+  v_prune->b[d2]->l[0] = l_connect;
   Update_PMat_At_Given_Edge (v_prune->b[d1], tree);
   Update_PMat_At_Given_Edge (v_prune->b[d2], tree);
 
@@ -2189,14 +2189,14 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
     }
     /*
     ** l_12
-    */
-    l_12 = e_regraft->l;
+    */ //JSJ: temp fixes to l
+    l_12 = e_regraft->l[0];
     /*
     ** Simple estimates.
     */
-    l_simple[0] = l_02 - (0.5*e_regraft->l);
-    l_simple[1] = 0.5 * e_regraft->l;
-    l_simple[2] = 0.5 * e_regraft->l;
+    l_simple[0] = l_02 - (0.5*e_regraft->l[0]);
+    l_simple[1] = 0.5 * e_regraft->l[0];
+    l_simple[2] = 0.5 * e_regraft->l[0];
     for (i = 0; i < 3; i++)
     {
       if (l_simple[i] < BL_MIN)
@@ -2229,11 +2229,11 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
     ** partial likelihoods in the temporary regraft structure.
     */
     for (i = 0; i < 3; i++)
-    {
-      v_tmp->b[i]->l = l_est[i];
-      if (v_tmp->b[i]->l < BL_MIN)
+    { //JSJ: temp fixes to l
+      v_tmp->b[i]->l[0] = l_est[i];
+      if (v_tmp->b[i]->l[0] < BL_MIN)
       {
-	v_tmp->b[i]->l = BL_MIN;
+	v_tmp->b[i]->l[0] = BL_MIN;
       }
       Update_PMat_At_Given_Edge (v_tmp->b[i], tree);
     }
@@ -2250,8 +2250,8 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
     rgrft_cand[cand]->globl_rank = -1;
     rgrft_cand[cand]->l_connect = l_connect;
     for (i = 0; i < 3; i++)
-    {
-      rgrft_cand[cand]->l_est[i] = v_tmp->b[i]->l;
+    {//JSJ: temp fixes to l
+      rgrft_cand[cand]->l_est[i] = v_tmp->b[i]->l[0];
     }
     if (rgrft_cand[cand]->delta_lk > best_d_lk)
     {
@@ -2392,21 +2392,21 @@ void Make_Move (_move_ *move, int type, arbre *tree)
   */
   Prune (e_prune, v_prune, &(e_connect), &(e_avail), tree);
   Regraft (e_regraft, v_prune, e_avail, tree);
-  e_connect->l = move->l_connect;
+  e_connect->l[0] = move->l_connect; //JSJ: temp fix to l
 
   for (i = 0; i < 3; i++)
     {
       if (v_prune->v[i] == u_prune)
-	{
-	  v_prune->b[i]->l = move->l_est[0];
+	{//JSJ: temp fixes to l
+	  v_prune->b[i]->l[0] = move->l_est[0];
 	}
       else if (v_prune->v[i] == v_n)
 	{
-	  v_prune->b[i]->l = move->l_est[1];
+	  v_prune->b[i]->l[0] = move->l_est[1];
 	}
       else
 	{
-	  v_prune->b[i]->l = move->l_est[2];
+	  v_prune->b[i]->l[0] = move->l_est[2];
 	}
     }
 
@@ -2480,27 +2480,27 @@ int Find_Optim_Local (arbre *tree)
 
 	  /*
 	  ** Perform the move and set edge lengths.
-	  */
+	  */ //JSJ: temp fixes of l
 	  Prune (e_prune, v_prune, &(e_connect), &(e_avail), tree);
 	  Regraft (e_regraft, v_prune, e_avail, tree);
-	  e_connect->l_old = e_connect->l;
-	  e_connect->l = move->l_connect;
+	  e_connect->l_old[0] = e_connect->l[0];
+	  e_connect->l[0] = move->l_connect;
 
 	  for (i = 0; i < 3; i++)
 	    {
-	      v_prune->b[i]->l_old = v_prune->b[i]->l;
+	      v_prune->b[i]->l_old[0] = v_prune->b[i]->l[0];
 
 	      if (v_prune->v[i] == u_prune)
 		{
-		  v_prune->b[i]->l = move->l_est[0];
+		  v_prune->b[i]->l[0] = move->l_est[0];//JSJ: havn't yet modified move
 		}
 	      else if (v_prune->v[i] == v_n)
 		{
-		  v_prune->b[i]->l = move->l_est[1];
+		  v_prune->b[i]->l[0] = move->l_est[1];
 		}
 	      else
 		{
-		  v_prune->b[i]->l = move->l_est[2];
+		  v_prune->b[i]->l[0] = move->l_est[2];
 		}
 	    }
 
@@ -2510,12 +2510,12 @@ int Find_Optim_Local (arbre *tree)
 	  /*
 	  ** Use Brent optimization on the relevant edges at the regraft position
 	  ** and calculate the new likelihood value.
-	  */
-	  Br_Len_Brent (10.*(v_prune->b[0]->l), v_prune->b[0]->l, BL_MIN, 1.e-10,
+	  */ //JSJ: temp fixes to l
+	  Br_Len_Brent (10.*(v_prune->b[0]->l[0]), v_prune->b[0]->l[0], BL_MIN, 1.e-10,
 			v_prune->b[0], tree, 250, 0);
-	  Br_Len_Brent (10.*(v_prune->b[1]->l), v_prune->b[1]->l, BL_MIN, 1.e-10,
+	  Br_Len_Brent (10.*(v_prune->b[1]->l[0]), v_prune->b[1]->l[0], BL_MIN, 1.e-10,
 			v_prune->b[1], tree, 250, 0);
-	  Br_Len_Brent (10.*(v_prune->b[2]->l), v_prune->b[2]->l, BL_MIN, 1.e-10,
+	  Br_Len_Brent (10.*(v_prune->b[2]->l[0]), v_prune->b[2]->l[0], BL_MIN, 1.e-10,
 			v_prune->b[2], tree, 250, 0);
 
 /* 	  Update_PMat_At_Given_Edge (v_prune->b[0], tree); */
@@ -2632,23 +2632,23 @@ int Find_Optim_Globl (arbre *tree)
       */
       Prune (e_prune, v_prune, &(e_connect), &(e_avail), tree);
       Regraft (e_regraft, v_prune, e_avail, tree);
-      e_connect->l_old = e_connect->l;
-      e_connect->l = move->l_connect;
+      e_connect->l_old[0] = e_connect->l[0]; //JSJ: temp fixes to l
+      e_connect->l[0] = move->l_connect;
 
       for (i = 0; i < 3; i++)
 	{
-	  v_prune->b[i]->l_old = v_prune->b[i]->l;
+	  v_prune->b[i]->l_old[0] = v_prune->b[i]->l[0];
 	  if (v_prune->v[i] == u_prune)
 	    {
-	      v_prune->b[i]->l = move->l_est[0];
+	      v_prune->b[i]->l[0] = move->l_est[0];
 	    }
 	  else if (v_prune->v[i] == v_n)
 	    {
-	      v_prune->b[i]->l = move->l_est[1];
+	      v_prune->b[i]->l[0] = move->l_est[1];
 	    }
 	  else
 	    {
-	      v_prune->b[i]->l = move->l_est[2];
+	      v_prune->b[i]->l[0] = move->l_est[2];
 	    }
 	}
 
@@ -2673,13 +2673,13 @@ int Find_Optim_Globl (arbre *tree)
 	  max_change = move->delta_lk;
 	  Record_Br_Len(NULL,tree);
 	}
-
+//JSJ: temp fixes to l
       Prune (e_prune, v_prune, &(e_regraft), &(e_avail), tree);
       Regraft (e_connect, v_prune, e_avail, tree);
-      e_regraft->l = e_regraft->l_old;
+      e_regraft->l[0] = e_regraft->l_old[0];
       for (i = 0; i < 3; i++)
-	{
-	  v_prune->b[i]->l = v_prune->b[i]->l_old;
+	{ //JSJ: temp fixes to l
+	  v_prune->b[i]->l[0] = v_prune->b[i]->l_old[0];
 	}
       tree->both_sides = 1;
       Restore_Br_Len(NULL,tree);
@@ -3308,8 +3308,8 @@ int Test_All_Spr_Targets(edge *b_pulled, node *n_link, arbre *tree)
   b_target = b_residual = NULL;
   n_opp_to_link  = (n_link == b_pulled->rght)?(b_pulled->left):(b_pulled->rght);
   approx = 1;
-
-  init_len_pulled = b_pulled->l;
+//JSJ: temp fix to l
+  init_len_pulled = b_pulled->l[0];
   dir1 = dir2 = -1;
   For(i,3)
     if(n_link->v[i] != n_opp_to_link)
@@ -3321,16 +3321,16 @@ int Test_All_Spr_Targets(edge *b_pulled, node *n_link, arbre *tree)
   if(n_link->v[dir1]->num < n_link->v[dir2]->num)
     {
       n_v1        = n_link->v[dir1];
-      n_v2        = n_link->v[dir2];
-      init_len_v1 = n_link->b[dir1]->l;
-      init_len_v2 = n_link->b[dir2]->l;
+      n_v2        = n_link->v[dir2]; //JSJ: temp fixes to l
+      init_len_v1 = n_link->b[dir1]->l[0];
+      init_len_v2 = n_link->b[dir2]->l[0];
     }
   else
     {
       n_v1        = n_link->v[dir2];
       n_v2        = n_link->v[dir1];
-      init_len_v1 = n_link->b[dir2]->l;
-      init_len_v2 = n_link->b[dir1]->l;
+      init_len_v1 = n_link->b[dir2]->l[0];
+      init_len_v2 = n_link->b[dir1]->l[0];
     }
 
   if(!(n_v1->tax && n_v2->tax)) /* Pruning is meaningless otherwise */
@@ -3360,10 +3360,10 @@ int Test_All_Spr_Targets(edge *b_pulled, node *n_link, arbre *tree)
 
       if((n_link->v[dir1] != n_v1) || (n_link->v[dir2] != n_v2))
 	PhyML_Printf("\n. Warning : -- SWITCH NEEDED -- ! \n");
-
-      n_link->b[dir1]->l = init_len_v1;
-      n_link->b[dir2]->l = init_len_v2;
-      b_pulled->l = init_len_pulled;
+      //JSJ: temp fixes to l
+      n_link->b[dir1]->l[0] = init_len_v1;
+      n_link->b[dir2]->l[0] = init_len_v2;
+      b_pulled->l[0] = init_len_pulled;
 
 
       Update_PMat_At_Given_Edge(n_link->b[dir1],tree);
@@ -3457,10 +3457,10 @@ phydbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_
   init_pars = tree->c_pars;
 
   Graft_Subtree(b_target,n_link,b_residual,tree);
-
-  init_target_len   = b_target->l;
-  init_arrow_len    = b_arrow->l;
-  init_residual_len = b_residual->l;
+//JSJ: temp fixes to l
+  init_target_len   = b_target->l[0];
+  init_arrow_len    = b_arrow->l[0];
+  init_residual_len = b_residual->l[0];
 
   if(tree->mod->s_opt->spr_lnL)
     {
@@ -3484,17 +3484,17 @@ phydbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_
       if(n_link->v[i]      == v1) dir_v1 = i;
       else if(n_link->v[i] == v2) dir_v2 = i;
       else                        dir_v0 = i;
-    }
-  l0 = n_link->b[dir_v0]->l;
+    } //JSJ: temp fixes to l
+  l0 = n_link->b[dir_v0]->l[0];
   if(n_link->v[dir_v1]->num > n_link->v[dir_v2]->num)
     {
-      l1 = n_link->b[dir_v2]->l;
-      l2 = n_link->b[dir_v1]->l;
+      l1 = n_link->b[dir_v2]->l[0];
+      l2 = n_link->b[dir_v1]->l[0];
     }
   else
     {
-      l1 = n_link->b[dir_v1]->l;
-      l2 = n_link->b[dir_v2]->l;
+      l1 = n_link->b[dir_v1]->l[0];
+      l2 = n_link->b[dir_v2]->l[0];
     }
 
 
@@ -3512,10 +3512,10 @@ phydbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_
   tree->spr_list[tree->size_spr_list]->dist          = b_target->topo_dist_btw_edges;
 
   Include_One_Spr_To_List_Of_Spr(tree->spr_list[tree->size_spr_list],tree);
-
-  b_target->l   = init_target_len;
-  b_arrow->l    = init_arrow_len;
-  b_residual->l = init_residual_len;
+//JSJ: temp fixes to l
+  b_target->l[0]   = init_target_len;
+  b_arrow->l[0]    = init_arrow_len;
+  b_residual->l[0] = init_residual_len;
 
   Prune_Subtree(n_link,
 		(n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left),
@@ -3767,13 +3767,13 @@ int Evaluate_List_Of_Regraft_Pos_Triple(spr **spr_list, int list_size, arbre *tr
 	       */
 	      Fast_Br_Len(init_target,tree,0);
 
-	      /* Record branch length at prune site */
-	      move->init_target_l = init_target->l;
-	      recorded_l          = init_target->l;
+	      /* Record branch length at prune site */ //JSJ: temp fixes to l
+	      move->init_target_l = init_target->l[0];
+	      recorded_l          = init_target->l[0];
 	    }
 	  else
 	    {
-	      init_target->l      = recorded_l;
+	      init_target->l[0]      = recorded_l;
 	      move->init_target_l = recorded_l;
 	    }
 
@@ -3795,18 +3795,18 @@ int Evaluate_List_Of_Regraft_Pos_Triple(spr **spr_list, int list_size, arbre *tr
 	      else if(dir_v1 < 0)                           dir_v1 = j;
 	      else                                          dir_v2 = j;
 	    }
-
-	  move->n_link->b[dir_v0]->l = move->l0;
+//JSJ: temp fixes to l
+	  move->n_link->b[dir_v0]->l[0] = move->l0;
 
 	  if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 	    {
-	      move->n_link->b[dir_v2]->l = move->l1;
-	      move->n_link->b[dir_v1]->l = move->l2;
+	      move->n_link->b[dir_v2]->l[0] = move->l1;
+	      move->n_link->b[dir_v1]->l[0] = move->l2;
 	    }
 	  else
 	    {
-	      move->n_link->b[dir_v1]->l = move->l1;
-	      move->n_link->b[dir_v2]->l = move->l2;
+	      move->n_link->b[dir_v1]->l[0] = move->l1;
+	      move->n_link->b[dir_v2]->l[0] = move->l2;
 	    }
 
 	  /* 	  if(!tree->mod->s_opt->spr_lnL) */
@@ -3828,19 +3828,19 @@ int Evaluate_List_Of_Regraft_Pos_Triple(spr **spr_list, int list_size, arbre *tr
 	      delta_lnL = Triple_Dist(move->n_link,tree,0) - move->lnL;
 	      move->lnL += delta_lnL;
 	    }
-
+	  //JSJ: temp fixes to l
 	  /* Record updated branch lengths for this move */
-	  move->l0 = move->n_link->b[dir_v0]->l;
+	  move->l0 = move->n_link->b[dir_v0]->l[0];
 
 	  if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 	    {
-	      move->l1 = move->n_link->b[dir_v2]->l;
-	      move->l2 = move->n_link->b[dir_v1]->l;
+	      move->l1 = move->n_link->b[dir_v2]->l[0];
+	      move->l2 = move->n_link->b[dir_v1]->l[0];
 	    }
 	  else
 	    {
-	      move->l1 = move->n_link->b[dir_v1]->l;
-	      move->l2 = move->n_link->b[dir_v2]->l;
+	      move->l1 = move->n_link->b[dir_v1]->l[0];
+	      move->l2 = move->n_link->b[dir_v2]->l[0];
 	    }
 
 	  if(move->lnL > best_lnL + tree->mod->s_opt->min_diff_lk_move)
@@ -3948,8 +3948,8 @@ int Try_One_Spr_Move_Triple(spr *move, arbre *tree)
 		&init_target,
 		&b_residual,
 		tree);
-
-  init_target->l = move->init_target_l;
+//JSJ: temp fix to l
+  init_target->l[0] = move->init_target_l;
 
   Graft_Subtree(move->b_target,move->n_link,b_residual,tree);
 
@@ -3960,18 +3960,18 @@ int Try_One_Spr_Move_Triple(spr *move, arbre *tree)
       else if(dir_v1 < 0)                           dir_v1 = j;
       else                                          dir_v2 = j;
     }
-
-  move->n_link->b[dir_v0]->l = move->l0;
+//JSJ temp fixes to l
+  move->n_link->b[dir_v0]->l[0] = move->l0;
 
   if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
     {
-      move->n_link->b[dir_v2]->l = move->l1;
-      move->n_link->b[dir_v1]->l = move->l2;
+      move->n_link->b[dir_v2]->l[0] = move->l1;
+      move->n_link->b[dir_v1]->l[0] = move->l2;
     }
   else
     {
-      move->n_link->b[dir_v1]->l = move->l1;
-      move->n_link->b[dir_v2]->l = move->l2;
+      move->n_link->b[dir_v1]->l[0] = move->l1;
+      move->n_link->b[dir_v2]->l[0] = move->l2;
     }
 
   if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) /* Apply the move */
