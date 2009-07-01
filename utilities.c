@@ -166,7 +166,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 
 		Read_Branch_Label(s_tree_d,s_tree_a,tree->t_edges[tree->num_curr_branch_available]);
 		Read_Branch_Lengths(s_tree_d,s_tree_a,tree);
-
+//JSJ: doesn't currently work properly
 		For(i,3)
 		{
 			if(!a->v[i])
@@ -230,7 +230,6 @@ void Read_Branch_Label(char *s_d, char *s_a, edge *b)
 	int i,pos;
 
 	sub_tp = (char *)mCalloc(T_MAX_LINE,sizeof(char));
-
 	strcpy(sub_tp,s_d);
 	strcat(sub_tp,"#");
 	p = strstr(s_a,sub_tp);
@@ -285,7 +284,8 @@ void Read_Branch_Label(char *s_d, char *s_a, edge *b)
 void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 {
 	char *sub_tp;
-	char *p, *p2;
+//	char *p, *p2;
+	char *p;
 	edge *b;
 	int i,j;
 
@@ -301,32 +301,36 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 	}
 
 	strcpy(sub_tp,s_d);
-	strcat(sub_tp,":");
-	p = strstr(s_a,sub_tp);
-	p2 = strstr((char *)p+(int)strlen(sub_tp),'[');
-	if(p2)
+	strcat(sub_tp,":[");
+//	printf("JSJ:Made it here!\n");
+//	//p = strstr(s_a,sub_tp);
+	printf("JSJ:The string about to be strstr: %s\n",s_a);
+//	//p2 = strstr((char *)p+(int)strlen(sub_tp),'[');
+	p = strstr(s_a,sub_tp); //crashes here!
+	printf("JSJ:Made it here!\n");
+	if(p)
 	{
 //		b->l = atof((char *)p2+(int)strlen(sub_tp));
 		//now we need to grab the string up until ',' and do it n_l times
-		int glob = 0;
+		int glob = strlen(sub_tp);
 		For(i,tree->n_l){
 			char tmp[100];
 			j = 0;
 			glob++;//JSJ: increment glob past '[' and ','
-			while ((p2[j] != ']') &&
-					(p2[j] != ',')){
-				tmp[j] = p2[glob];
+			while ((p[glob] != ']') &&
+					(p[glob] != ',')){
+				tmp[j] = p[glob];
 				j++;
 				glob++;
 			}
-			tmp[j+1]='\0'; //JSJ: end the string
+			tmp[j]='\0'; //JSJ: end the string
 			b->l[i] = atof(tmp);
 		}
 		//JSJ: Print all of the bls read in
 		For(i,b->n_l) printf("JSJ: Reading a branch from set %i of length %f\n",i,(double)b->l[i]);
 		tree->has_branch_lengths = 1;
 	}
-	Free(sub_tp);
+//	Free(sub_tp);
 }
 
 /*********************************************************/
@@ -756,6 +760,9 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 	int i;
 	b = (edge *)mCalloc(1,sizeof(edge));
 	b->l = (phydbl *)mCalloc(n_l,sizeof(phydbl));
+	b->l_old = (phydbl *)mCalloc(n_l,sizeof(phydbl));
+	b->best_l = (phydbl *)mCalloc(n_l,sizeof(phydbl));
+	b->has_zero_br_len = (int *)mCalloc(n_l, sizeof(int));
 	b->n_l = n_l;
 
 	Init_Edge_Light(b,num);
@@ -1933,7 +1940,7 @@ void Connect_One_Edge_To_Two_Nodes(node *a, node *d, edge *b, arbre *tree)
 				if(b->l[i] < BL_MIN)  b->l[i] = BL_MIN;
 				else if(b->l[i] > BL_MAX) b->l[i] = BL_MAX;
 				b->l_old[i]                = b->l[i];
-				printf("JSJ: Connecting node %s to node %s with an edge of length %f \n",a->name, d->name, b->l);
+				printf("JSJ: Connecting node %s to node %s with an edge of length %f \n",a->name, d->name, b->l[i]);
 			}
 }
 
