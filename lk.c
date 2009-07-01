@@ -423,9 +423,9 @@ phydbl Lk_Core(edge *b, arbre *tree)
 									{
 										sum = .0;
 										For(l,ns)
-										{
+										{ //JSJ: temp fix to Pij_rr
 											sum +=
-												b->Pij_rr[catg*dim3+state*dim2+l] *
+												b->Pij_rr[0][catg*dim3+state*dim2+l] *
 												(phydbl)b->p_lk_left[site*dim1+catg*dim2+l];
 										}
 										site_lk_cat += sum * tree->mod->pi[state];
@@ -438,9 +438,9 @@ phydbl Lk_Core(edge *b, arbre *tree)
 											if(b->p_lk_tip_r[site*dim2+k] > .0)
 											{
 												For(l,ns)
-												{
+												{//JSJ: temp fix to Pij_rr
 													sum +=
-														b->Pij_rr[catg*dim3+k*dim2+l] *
+														b->Pij_rr[0][catg*dim3+k*dim2+l] *
 														(phydbl)b->p_lk_left[site*dim1+catg*dim2+l];
 												}
 												site_lk_cat +=
@@ -459,9 +459,9 @@ phydbl Lk_Core(edge *b, arbre *tree)
 										if(b->p_lk_rght[site*dim1+catg*dim2+k] > .0)
 										{
 											For(l,ns)
-											{
+											{ //JSJ: temp fix to Pij_rr
 												sum +=
-													b->Pij_rr[catg*dim3+k*dim2+l] *
+													b->Pij_rr[0][catg*dim3+k*dim2+l] *
 													(phydbl)b->p_lk_left[site*dim1+catg*dim2+l];
 											}
 											site_lk_cat +=
@@ -887,9 +887,9 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		p_lk_v2 = d->b[dir2]->p_lk_left;
 		sum_scale_v2 = d->b[dir2]->sum_scale_f_left;
 	}
-
-	Pij1 = d->b[dir1]->Pij_rr;
-	Pij2 = d->b[dir2]->Pij_rr;
+	//JSJ: temp fix to Pij_rr
+	Pij1 = d->b[dir1]->Pij_rr[0];
+	Pij2 = d->b[dir2]->Pij_rr[0];
 
 	For(site,n_patterns)
 	{
@@ -1122,20 +1122,20 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 	phydbl len;
 
 	len = -1.0;
-
-	if(b_fcus->l < BL_MIN)      b_fcus->l = BL_MIN;
-	else if(b_fcus->l > BL_MAX) b_fcus->l = BL_MAX;
+	//JSJ: fixes to b_fcus_l, Pir_rr and has_zero_br_len
+	if(b_fcus->l[0] < BL_MIN)      b_fcus->l[0] = BL_MIN;
+	else if(b_fcus->l[0] > BL_MAX) b_fcus->l[0] = BL_MAX;
 
 	For(i,tree->mod->n_catg)
 	{
-		if(b_fcus->has_zero_br_len) len = -1.0;
+		if(b_fcus->has_zero_br_len[0]) len = -1.0;
 		else
 		{
-			len = b_fcus->l*tree->mod->gamma_rr[i];
+			len = b_fcus->l[0]*tree->mod->gamma_rr[i];
 			if(len < BL_MIN)      len = BL_MIN;
 			else if(len > BL_MAX) len = BL_MAX;
 		}
-		PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr);
+		PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr[0]);
 	}
 }
 
@@ -1322,10 +1322,10 @@ phydbl Lk_Triplet(node *a, node *d, arbre *tree)
 
 	/* Step (1) */
 	For(i,3)
-	{
+	{ //JSJ: temporarily fixed b[i]->l
 		if((d->v[i] != a) && (d->b[i] != tree->e_root))
 		{
-			d->b[i]->l =
+			d->b[i]->l[0] =
 				(tree->rates->nd_t[d->num] - tree->rates->nd_t[d->v[i]->num]) *
 				tree->rates->clock_r *
 				tree->rates->br_r[d->b[i]->num];
@@ -1334,13 +1334,13 @@ phydbl Lk_Triplet(node *a, node *d, arbre *tree)
 		{
 			if(a == tree->n_root)
 			{
-				d->b[i]->l =
+				d->b[i]->l[0] =
 					(tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[0]->num] +
 							tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[1]->num]) * tree->rates->clock_r;
 			}
 			else
 			{
-				d->b[i]->l = (tree->rates->nd_t[a->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[d->b[i]->num];
+				d->b[i]->l[0] = (tree->rates->nd_t[a->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[d->b[i]->num];
 			}
 		}
 	}
