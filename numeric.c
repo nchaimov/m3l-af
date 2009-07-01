@@ -796,8 +796,8 @@ phydbl *Covariance_Matrix(arbre *tree)
   		  
   tree->mod->s_opt->print = 0;
   For(replicate,sample_size)
-    {
-      For(i,2*tree->n_otu-3) tree->t_edges[i]->l = .1;
+    { //JSJ: temp fixes of l
+      For(i,2*tree->n_otu-3) tree->t_edges[i]->l[0] = .1;
 
       For(i,tree->data->crunch_len) tree->data->wght[i] = 0;
 
@@ -809,8 +809,8 @@ phydbl *Covariance_Matrix(arbre *tree)
 
       Round_Optimize(tree,tree->data,ROUND_MAX);
       
-      For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] += tree->t_edges[i]->l * tree->t_edges[j]->l;  
-      For(i,2*tree->n_otu-3) mean[i] += tree->t_edges[i]->l;
+      For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] += tree->t_edges[i]->l[0] * tree->t_edges[j]->l[0];
+      For(i,2*tree->n_otu-3) mean[i] += tree->t_edges[i]->l[0];
 
       printf("."); fflush(NULL);
 /*       printf("\n. %3d %12f %12f %12f [%12f %12f %12f] [%12f %12f %12f] [%12f %12f %12f]", */
@@ -886,8 +886,8 @@ phydbl *Hessian(arbre *tree)
 
   tree->both_sides = 1;
   Lk(tree);
-
-  For(i,dim) ori_bl[i] = tree->t_edges[i]->l;
+//JSJ: temp fixes of l
+  For(i,dim) ori_bl[i] = tree->t_edges[i]->l[0];
   
   /* zero zero */  
   zero_zero = tree->c_lnL;
@@ -895,21 +895,21 @@ phydbl *Hessian(arbre *tree)
   /* plus zero */  
   For(i,dim) 
     {
-      tree->t_edges[i]->l += eps * tree->t_edges[i]->l;
+      tree->t_edges[i]->l[0] += eps * tree->t_edges[i]->l[0];
       lk = Lk_At_Given_Edge(tree->t_edges[i],tree);
       plus_zero[i] = lk;
-      tree->t_edges[i]->l = ori_bl[i];
+      tree->t_edges[i]->l[0] = ori_bl[i];
     }
 
 
   /* minus zero */  
   For(i,dim) 
     {
-      tree->t_edges[i]->l -= eps * tree->t_edges[i]->l;
-      tree->t_edges[i]->l = fabs(tree->t_edges[i]->l);
+      tree->t_edges[i]->l[0] -= eps * tree->t_edges[i]->l[0];
+      tree->t_edges[i]->l[0] = fabs(tree->t_edges[i]->l[0]);
       lk = Lk_At_Given_Edge(tree->t_edges[i],tree);
       minus_zero[i] = lk;
-      tree->t_edges[i]->l = ori_bl[i];
+      tree->t_edges[i]->l[0] = ori_bl[i];
     }
 
   For(i,dim) Update_PMat_At_Given_Edge(tree->t_edges[i],tree);
@@ -917,7 +917,7 @@ phydbl *Hessian(arbre *tree)
   /* plus plus  */  
   For(i,dim)
     {
-      tree->t_edges[i]->l += eps * tree->t_edges[i]->l;
+      tree->t_edges[i]->l[0] += eps * tree->t_edges[i]->l[0];
       Update_PMat_At_Given_Edge(tree->t_edges[i],tree);
 
       For(j,3)
@@ -927,8 +927,8 @@ phydbl *Hessian(arbre *tree)
       For(j,3)
 	if((!tree->t_edges[i]->rght->tax) && (tree->t_edges[i]->rght->v[j] != tree->t_edges[i]->left))
 	  Recurr_Hessian(tree->t_edges[i]->rght,tree->t_edges[i]->rght->v[j],1,eps,plus_plus+i*dim,tree);
-
-      tree->t_edges[i]->l = ori_bl[i];
+      //JSJ: temp fixes of l
+      tree->t_edges[i]->l[0] = ori_bl[i];
       Lk(tree);
     }
 
@@ -936,7 +936,7 @@ phydbl *Hessian(arbre *tree)
   /* plus minus */  
   For(i,dim)
     {
-      tree->t_edges[i]->l += eps * tree->t_edges[i]->l;
+      tree->t_edges[i]->l[0] += eps * tree->t_edges[i]->l[0];
       Update_PMat_At_Given_Edge(tree->t_edges[i],tree);
 
       For(j,3)
@@ -947,7 +947,7 @@ phydbl *Hessian(arbre *tree)
 	if((!tree->t_edges[i]->rght->tax) && (tree->t_edges[i]->rght->v[j] != tree->t_edges[i]->left))
 	  Recurr_Hessian(tree->t_edges[i]->rght,tree->t_edges[i]->rght->v[j],-1,eps,plus_minus+i*dim,tree);
 
-      tree->t_edges[i]->l = ori_bl[i];
+      tree->t_edges[i]->l[0] = ori_bl[i];
       Lk(tree);
     }
 
@@ -955,9 +955,9 @@ phydbl *Hessian(arbre *tree)
 
   /* minus minus */  
   For(i,dim)
-    {
-      tree->t_edges[i]->l -= eps * tree->t_edges[i]->l;
-      tree->t_edges[i]->l = fabs(tree->t_edges[i]->l);
+    { //JSJ: temp fixes of l
+      tree->t_edges[i]->l[0] -= eps * tree->t_edges[i]->l[0];
+      tree->t_edges[i]->l[0] = fabs(tree->t_edges[i]->l[0]);
 
       Update_PMat_At_Given_Edge(tree->t_edges[i],tree);
 
@@ -969,20 +969,20 @@ phydbl *Hessian(arbre *tree)
 	if((!tree->t_edges[i]->rght->tax) && (tree->t_edges[i]->rght->v[j] != tree->t_edges[i]->left))
 	  Recurr_Hessian(tree->t_edges[i]->rght,tree->t_edges[i]->rght->v[j],-1,eps,minus_minus+i*dim,tree);
       
-      tree->t_edges[i]->l = ori_bl[i];
+      tree->t_edges[i]->l[0] = ori_bl[i];
       Lk(tree);
     }
 
   
   For(i,dim)
-    {
-      hessian[i*dim+i] = (plus_zero[i]-2*zero_zero+minus_zero[i])/(pow(eps*tree->t_edges[i]->l,2));
+    { //JSJ: temp fixes of l
+      hessian[i*dim+i] = (plus_zero[i]-2*zero_zero+minus_zero[i])/(pow(eps*tree->t_edges[i]->l[0],2));
 
       for(j=i+1;j<dim;j++)
 	{
 	  hessian[i*dim+j] = 
 	    (plus_plus[i*dim+j]-plus_minus[i*dim+j]-plus_minus[j*dim+i]+minus_minus[i*dim+j])/
-	    (4*eps*tree->t_edges[i]->l*eps*tree->t_edges[j]->l);
+	    (4*eps*tree->t_edges[i]->l[0]*eps*tree->t_edges[j]->l[0]);
 	  hessian[j*dim+i] = hessian[i*dim+j];
 	}
     }
@@ -1011,15 +1011,15 @@ void Recurr_Hessian(node *a, node *d, int plus_minus, phydbl eps, phydbl *res, a
     if(a->v[i] == d)
       {
 	Update_P_Lk(tree,a->b[i],a);
-
-	ori_l = a->b[i]->l;
-	if(plus_minus > 0) a->b[i]->l += eps * a->b[i]->l;
-	else               a->b[i]->l -= eps * a->b[i]->l;
-	a->b[i]->l = fabs(a->b[i]->l);
+//JSJ: Temp fixes of l
+	ori_l = a->b[i]->l[0];
+	if(plus_minus > 0) a->b[i]->l[0] += eps * a->b[i]->l[0];
+	else               a->b[i]->l[0] -= eps * a->b[i]->l[0];
+	a->b[i]->l[0] = fabs(a->b[i]->l[0]);
 	res[a->b[i]->num] = Lk_At_Given_Edge(a->b[i],tree);
 /* 	res[a->b[i]->num] = Return_Lk(tree); */
 /* 	printf("\n>> %f %f",res[a->b[i]->num],Return_Lk(tree)); */
-	a->b[i]->l = ori_l;
+	a->b[i]->l[0] = ori_l;
 	Update_PMat_At_Given_Edge(a->b[i],tree);
 	break;
       }
