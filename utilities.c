@@ -322,8 +322,8 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 			tmp[j+1]='\0'; //JSJ: end the string
 			b->l[i] = atof(tmp);
 		}
-
-		printf("JSJ: Reading a branch of length %f\n",(double)b->l);
+		//JSJ: Print all of the bls read in
+		For(i,b->n_l) printf("JSJ: Reading a branch from set %i of length %f\n",i,(double)b->l[i]);
 		tree->has_branch_lengths = 1;
 	}
 	Free(sub_tp);
@@ -7199,18 +7199,18 @@ void Fix_All(arbre *tree)
 }
 
 /*********************************************************/
-
+//JSJ: temporary fix for compilation
 void Record_Br_Len(phydbl *where, arbre *tree)
 {
 	int i;
 
 	if(!where)
 	{
-		For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old = tree->t_edges[i]->l;
+		For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[0] = tree->t_edges[i]->l[0];
 	}
 	else
 	{
-		For(i,2*tree->n_otu-3) where[i] = tree->t_edges[i]->l;
+		For(i,2*tree->n_otu-3) where[i] = tree->t_edges[i]->l[0];
 	}
 }
 
@@ -7245,9 +7245,9 @@ void Get_Dist_Btw_Edges(node *a, node *d, arbre *tree)
 	{
 		For(i,3)
 		if(d->v[i] != a)
-		{
+		{ //JSJ: Another temporary fix for compilation
 			d->b[i]->topo_dist_btw_edges = b_fcus->topo_dist_btw_edges + 1;
-			d->b[i]->dist_btw_edges      = b_fcus->dist_btw_edges + d->b[i]->l / 2.;
+			d->b[i]->dist_btw_edges      = b_fcus->dist_btw_edges + d->b[i]->l[0] / 2.;
 			Get_Dist_Btw_Edges(d,d->v[i],tree);
 		}
 	}
@@ -7256,15 +7256,15 @@ void Get_Dist_Btw_Edges(node *a, node *d, arbre *tree)
 }
 
 /*********************************************************/
-
+//JSJ: More temporary fixes
 void Detect_Polytomies(edge *b, phydbl l_thresh, arbre *tree)
 {
-	if((b->l < l_thresh) && (!b->left->tax) && (!b->rght->tax))
+	if((b->l[0] < l_thresh) && (!b->left->tax) && (!b->rght->tax))
 	{
-		b->l               = 0.0;
-		b->has_zero_br_len = 1;
+		b->l[0]               = 0.0;
+		b->has_zero_br_len[0] = 1;
 	}
-	else b->has_zero_br_len = 0;
+	else b->has_zero_br_len[0] = 0;
 }
 
 /*********************************************************/
@@ -8045,18 +8045,18 @@ void Randomize_Sequence_Order(allseq *data)
 }
 
 /*********************************************************/
-
+//JSJ: the first one was n_root->l[0] or n_root->[1] before I modified
 void Update_Root_Pos(arbre *tree)
 {
 	if(tree->n_root_pos > -1.0)
 	{
-		tree->n_root->l[0] = tree->e_root->l * tree->n_root_pos;
-		tree->n_root->l[1] = tree->e_root->l * (1.-tree->n_root_pos);
+		tree->n_root->l[0][0] = tree->e_root->l[0] * tree->n_root_pos;
+		tree->n_root->l[0][1] = tree->e_root->l[0] * (1.-tree->n_root_pos);
 	}
 	else
 	{
-		tree->n_root->l[0] = tree->e_root->l / 2.;
-		tree->n_root->l[1] = tree->e_root->l / 2.;
+		tree->n_root->l[0][0] = tree->e_root->l[0] / 2.;
+		tree->n_root->l[0][1] = tree->e_root->l[0] / 2.;
 	}
 }
 
@@ -8089,14 +8089,14 @@ void Add_Root(edge *target, arbre *tree)
 
 		/*       tree->n_root->l[0] = tree->e_root->l * (tree->n_root_pos/(1.+tree->n_root_pos)); */
 		/*       tree->n_root->l[1] = tree->e_root->l - tree->n_root->l[0]; */
-
-		tree->n_root->l[0] = tree->e_root->l * tree->n_root_pos;
-		tree->n_root->l[1] = tree->e_root->l * (1. - tree->n_root_pos);
+		//JSJ: simmilar compilation fix
+		tree->n_root->l[0][0] = tree->e_root->l[0] * tree->n_root_pos;
+		tree->n_root->l[0][1] = tree->e_root->l[0] * (1. - tree->n_root_pos);
 	}
 	else
 	{
-		tree->n_root->l[0] = tree->e_root->l / 2.;
-		tree->n_root->l[1] = tree->e_root->l / 2.;
+		tree->n_root->l[0][0] = tree->e_root->l[0] / 2.;
+		tree->n_root->l[0][1] = tree->e_root->l[0] / 2.;
 		tree->n_root_pos = 0.5;
 	}
 
@@ -8367,8 +8367,8 @@ void Random_Lineage_Rates(node *a, node *d, edge *b, phydbl stick_prob, phydbl *
 
 		For(i,3)
 		if(a->v[i] == d)
-		{
-			a->b[i]->l *= rates[new_rate];
+		{//JSJ: compilation fix
+			a->b[i]->l[0] *= rates[new_rate];
 			break;
 		}
 
@@ -9347,8 +9347,8 @@ phydbl Get_Tree_Size(arbre *tree)
 	phydbl tree_size;
 
 	tree_size = 0.0;
-
-	For(i,2*tree->n_otu-3) tree_size += tree->t_edges[i]->l;
+//JSJ: temporary compilation fix
+	For(i,2*tree->n_otu-3) tree_size += tree->t_edges[i]->l[0];
 
 	tree->size = tree_size;
 
@@ -9399,12 +9399,12 @@ int Find_Bipartition(char **target_bip, int bip_size, arbre *tree)
 
 /*********************************************************/
 
-
+//JSJ: compilation fix
 void Dist_To_Root_Pre(node *a, node *d, edge *b, arbre *tree)
 {
 	int i;
 
-	if(b) d->dist_to_root = a->dist_to_root + b->l;
+	if(b) d->dist_to_root = a->dist_to_root + b->l[0];
 
 	if(d->tax) return;
 	else
@@ -9416,11 +9416,11 @@ void Dist_To_Root_Pre(node *a, node *d, edge *b, arbre *tree)
 }
 
 /*********************************************************/
-
+//JSJ: more temp fixes
 void Dist_To_Root(node *n_root, arbre *tree)
 {
-	n_root->v[0]->dist_to_root = tree->n_root->l[0];
-	n_root->v[1]->dist_to_root = tree->n_root->l[1];
+	n_root->v[0]->dist_to_root = tree->n_root->l[0][0];
+	n_root->v[1]->dist_to_root = tree->n_root->l[0][1];
 	Dist_To_Root_Pre(n_root,n_root->v[0],NULL,tree);
 	Dist_To_Root_Pre(n_root,n_root->v[1],NULL,tree);
 }
