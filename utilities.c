@@ -5347,7 +5347,7 @@ phydbl Compare_Bip_On_Existing_Edges(phydbl thresh_len, arbre *tree1, arbre *tre
 	{
 		if((!tree1->t_edges[i]->left->tax) &&
 				(!tree1->t_edges[i]->rght->tax) &&
-				(tree1->t_edges[i]->l > thresh_len))
+				(tree1->t_edges[i]->l[0] > thresh_len))
 		{
 			n_edges1++;
 		}
@@ -5357,7 +5357,7 @@ phydbl Compare_Bip_On_Existing_Edges(phydbl thresh_len, arbre *tree1, arbre *tre
 	{
 		if((!tree2->t_edges[i]->left->tax) &&
 				(!tree2->t_edges[i]->rght->tax) &&
-				(tree2->t_edges[i]->l > thresh_len))
+				(tree2->t_edges[i]->l[0] > thresh_len))
 		{
 			n_edges2++;
 		}
@@ -5370,14 +5370,14 @@ phydbl Compare_Bip_On_Existing_Edges(phydbl thresh_len, arbre *tree1, arbre *tre
 		b1 = tree1->t_edges[i];
 		bip_size1 = MIN(b1->left->bip_size[b1->l_r],b1->rght->bip_size[b1->r_l]);
 
-		if((bip_size1 > 1) && (b1->l > thresh_len))
+		if((bip_size1 > 1) && (b1->l[0] > thresh_len))
 		{
 			For(j,2*tree2->n_otu-3)
 			{
 				b2 = tree2->t_edges[j];
 				bip_size2 = MIN(b2->left->bip_size[b2->l_r],b2->rght->bip_size[b2->r_l]);
 
-				if((bip_size2 > 1) && (b2->l > thresh_len))
+				if((bip_size2 > 1) && (b2->l[0] > thresh_len))
 				{
 					if(bip_size1 == bip_size2)
 					{
@@ -6405,7 +6405,7 @@ void Prune_Subtree(node *a, node *d, edge **target, edge **residual, arbre *tree
 	}
 #endif
 
-	b1->l += b2->l;
+	b1->l[0] += b2->l[0];
 
 	(v1 == b1->left)?
 			(Make_Edge_Dirs(b1,v1,v2)):
@@ -6537,8 +6537,8 @@ void Graft_Subtree(edge *target, node *link, edge *residual, arbre *tree)
 		break;
 	}
 
-	target->l /= 2.;
-	residual->l = target->l;
+	target->l[0] /= 2.;
+	residual->l[0] = target->l[0];
 
 	Make_Edge_Dirs(target,target->left,target->rght);
 	Make_Edge_Dirs(residual,residual->left,residual->rght);
@@ -6914,13 +6914,13 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 			For(j,tree->mod->ns)
 			{
 				For(k,tree->mod->n_catg)
-				{
+				{ //JSJ: temp fix of Pij_rr
 					v_rght = (b->rght->tax)?((phydbl)(b->p_lk_tip_r[site*dim2+j])):(b->p_lk_rght[site*dim1+k*dim2+j]);
 
 					prob[dim3*k+dim2*i+j]              =
 							tree->mod->gamma_r_proba[k]      *
 							tree->mod->pi[i]                 *
-							b->Pij_rr[k*dim3+i*dim2+j]       *
+							b->Pij_rr[0][k*dim3+i*dim2+j]       *
 							b->p_lk_left[site*dim1+k*dim2+i] *
 							v_rght;
 				}
