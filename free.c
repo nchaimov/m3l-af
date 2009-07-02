@@ -135,7 +135,14 @@ void Free_Edge_Labels(edge *b)
 
 void Free_Edge(edge *b)
 {
+	int i;
   Free_Edge_Labels(b);
+  if(b->l) Free(b->l);//JSJ: freeing up allocated memory
+//  if(b->l_old) Free(b->l_old);
+  if(b->best_l) Free(b->best_l);
+  if(b->n_l) {For(i,b->n_l) Free(b->Pij_rr[i]);}
+  if(b->Pij_rr)Free(b->Pij_rr);
+  if(b->has_zero_br_len) Free(b->has_zero_br_len);
   Free(b);
 }
 
@@ -147,6 +154,7 @@ void Free_Node(node *n)
 
   Free(n->b);
   Free(n->v);
+  For(i,n->n_l) Free(n->l[i]); //JSJ: free the list of likelihood lists
   Free(n->l);
   Free(n->score);
   Free(n->name);

@@ -12,7 +12,7 @@
 
 . Tree topology search : 		NNIs
 
-. Initial tree: 			user tree (test/abc.tre)
+. Initial tree: 			user tree (test/abc_mm.tre)
 
 . Model of amino acids substitution: 	LG
 
@@ -30,10 +30,10 @@
   - Number of categories: 		4
   - Gamma shape parameter: 		0.597
 
-. Time used 0h0m3s
+. Time used 0h0m2s
 
 
-. 3 seconds
+. 2 seconds
 
  oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
  Suggested citation:

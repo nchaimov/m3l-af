@@ -296,7 +296,7 @@ void Lk(arbre *tree)
 	tree->curr_site =  0;
 	For(site,n_patterns)
 	{
-		printf("JSJ: Iterating over state pattern %i in Lk\n",site);
+		//printf("JSJ: Iterating over state pattern %i in Lk\n",site);
 		tree->c_lnL_sorted[site] = .0;
 		tree->site_lk[site]      = .0;
 		tree->curr_site          = site;
@@ -358,7 +358,7 @@ phydbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 	tree->c_lnL = .0;
 	For(tree->curr_site,n_patterns)
 	{
-		printf("JSJ: Iterating over state pattern %i in Lk_At_Given_Edge\n",tree->curr_site);
+		//printf("JSJ: Iterating over state pattern %i in Lk_At_Given_Edge\n",tree->curr_site);
 		if(tree->data->wght[tree->curr_site] > MDBL_MIN) Lk_Core(b_fcus,tree);
 		else tree->c_lnL_sorted[tree->curr_site] = 1.; /* WARNING : change cautiously */
 	}
@@ -377,7 +377,7 @@ phydbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 phydbl Lk_Core(edge *b, arbre *tree)
 {
-	printf("JSJ: Calling Lk_Core \n");
+	//printf("JSJ: Calling Lk_Core \n");
 	phydbl log_site_lk, site_lk, site_lk_cat;
 	plkflt scale_left, scale_rght;
 	phydbl sum;
@@ -803,7 +803,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
        	 /   \
        	/     \
 	 */
-	printf("\nJSJ: Calling Update_P_Lk\n");
+	//printf("\nJSJ: Calling Update_P_Lk\n");
 	node *n_v1, *n_v2;
 	phydbl p1_lk1,p2_lk2;
 	plkflt *p_lk,*p_lk_v1,*p_lk_v2;
@@ -893,7 +893,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 
 	For(site,n_patterns)
 	{
-		printf("JSJ: In Update_P_Lk iterating over state pattern %i\n",site);
+		//printf("JSJ: In Update_P_Lk iterating over state pattern %i\n",site);
 		scale_v1 = (sum_scale_v1)?(sum_scale_v1[site]):(0.0);
 		scale_v2 = (sum_scale_v2)?(sum_scale_v2[site]):(0.0);
 		sum_scale[site] = scale_v1 + scale_v2;
@@ -1217,7 +1217,7 @@ void Update_P_Lk_Along_A_Path(node **path, int path_length, arbre *tree)
 
 phydbl Lk_Dist(phydbl *F, phydbl dist, model *mod)
 {
-	printf("JSJ: Calling Lk_Dist\n"); //distance based likelihood
+	//printf("JSJ: Calling Lk_Dist\n"); //distance based likelihood
 	int i,j,k;
 	phydbl lnL,len;
 	int dim1,dim2;
