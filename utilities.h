@@ -751,7 +751,7 @@ typedef struct __SPR{
 }spr;
 
 /*********************************************************/
-
+//JSJ: this may require some examination
 typedef struct __Triplet{
   int    size;
   phydbl *F_bc;

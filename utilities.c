@@ -915,7 +915,9 @@ void Make_Edge_Pars(edge *b, arbre *tree)
 void Make_Edge_Lk(edge *b, arbre *tree)
 {
 	int i;
-	b->l_old = b->l;
+	For(i,tree->n_l){
+		b->l_old[i] = b->l[i];
+	}
 
 	b->div_post_pred_left = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
 	b->div_post_pred_rght = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
@@ -6187,7 +6189,7 @@ void Hide_Ambiguities(allseq *data)
 void Copy_Tree(arbre *ori, arbre *cpy)
 {
 	int i,j,m;
-
+	cpy->n_l = ori->n_l;
 
 	For(i,2*ori->n_otu-2)
 	{
@@ -6197,7 +6199,9 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 			{
 				cpy->noeud[i]->v[j] = cpy->noeud[ori->noeud[i]->v[j]->num];
 				For(m,ori->n_l) cpy->noeud[i]->l[m][j] = ori->noeud[i]->l[m][j];//JSJ: deep copy
+				cpy->noeud[i]->n_l = ori->n_l;
 				cpy->noeud[i]->b[j] = cpy->t_edges[ori->noeud[i]->b[j]->num];
+
 			}
 			else
 			{
@@ -6209,7 +6213,12 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 
 	For(i,2*ori->n_otu-3)
 	{
-		For(j,ori->n_l) cpy->t_edges[i]->l[j]    = ori->t_edges[i]->l[j];
+		For(j,ori->n_l){
+			cpy->t_edges[i]->l[j]    = ori->t_edges[i]->l[j];//JSJ: deep copy
+			cpy->t_edges[i]->best_l[j] = ori->t_edges[i]->best_l[j];
+			cpy->t_edges[i]->l_old[j] = ori->t_edges[i]->l_old[j];
+			cpy->t_edges[i]->has_zero_br_len[j] = ori->t_edges[i]->has_zero_br_len[j];
+		}
 		cpy->t_edges[i]->left = cpy->noeud[ori->t_edges[i]->left->num];
 		cpy->t_edges[i]->rght = cpy->noeud[ori->t_edges[i]->rght->num];
 		cpy->t_edges[i]->l_v1 = ori->t_edges[i]->l_v1;
@@ -6429,8 +6438,10 @@ void Prune_Subtree(node *a, node *d, edge **target, edge **residual, arbre *tree
 		Warn_And_Exit("");
 	}
 #endif
-
-	b1->l[0] += b2->l[0];
+	//JSJ: do for array of bls
+	For(i,tree->n_l){
+		b1->l[i] += b2->l[i];
+	}
 
 	(v1 == b1->left)?
 			(Make_Edge_Dirs(b1,v1,v2)):
@@ -6561,9 +6572,11 @@ void Graft_Subtree(edge *target, node *link, edge *residual, arbre *tree)
 		v1->v[i] = link;
 		break;
 	}
-
-	target->l[0] /= 2.;
-	residual->l[0] = target->l[0];
+	//JSJ: operate on array of edge lengths
+	For(i,tree->n_l){
+		target->l[i] /= 2.;
+		residual->l[i] = target->l[i];
+	}
 
 	Make_Edge_Dirs(target,target->left,target->rght);
 	Make_Edge_Dirs(residual,residual->left,residual->rght);
@@ -7285,19 +7298,22 @@ void Get_Dist_Btw_Edges(node *a, node *d, arbre *tree)
 }
 
 /*********************************************************/
-//JSJ: More temporary fixes
+//JSJ: fixed to detects Polytomies on an array of bls
 void Detect_Polytomies(edge *b, phydbl l_thresh, arbre *tree)
 {
-	if((b->l[0] < l_thresh) && (!b->left->tax) && (!b->rght->tax))
-	{
-		b->l[0]               = 0.0;
-		b->has_zero_br_len[0] = 1;
+	int i;
+	For(i,tree->n_l){
+		if((b->l[i] < l_thresh) && (!b->left->tax) && (!b->rght->tax))
+		{
+			b->l[i]               = 0.0;
+			b->has_zero_br_len[i] = 1;
+		}
+		else b->has_zero_br_len[i] = 0;
 	}
-	else b->has_zero_br_len[0] = 0;
 }
 
 /*********************************************************/
-
+//JSJ: temporary fix for list of nodes in Polytomy
 void Get_List_Of_Nodes_In_Polytomy(node *a, node *d, node ***list, int *size_list)
 {
 	if(d->tax) return;
@@ -7309,13 +7325,13 @@ void Get_List_Of_Nodes_In_Polytomy(node *a, node *d, node ***list, int *size_lis
 		{
 			if(d->v[i] != a)
 			{
-				if(!d->b[i]->has_zero_br_len)
+				if(!d->b[i]->has_zero_br_len[0])
 				{
 					(*list)[*size_list] = d->v[i];
 					(*size_list)++;
 				}
 
-				if(d->b[i]->has_zero_br_len)
+				if(d->b[i]->has_zero_br_len[0])
 					Get_List_Of_Nodes_In_Polytomy(d,d->v[i],list,size_list);
 			}
 		}
@@ -7837,8 +7853,8 @@ void Check_Memory_Amount(arbre *tree)
 	nbytes = 0;
 
 
-	/* Pmat */
-	nbytes += (2*mod->n_otu-3) * mod->n_catg * mod->ns * mod->ns * sizeof(phydbl);
+	/* Pmat JSJ: an array of them...*/
+	nbytes += (2*mod->n_otu-3) * tree->n_l * mod->n_catg * mod->ns * mod->ns * sizeof(phydbl);
 
 	/* Partial Lk */
 	nbytes += ((2*mod->n_otu-3) * 2 - tree->n_otu) * tree->n_pattern * mod->n_catg * mod->ns * sizeof(phydbl);
@@ -8077,15 +8093,18 @@ void Randomize_Sequence_Order(allseq *data)
 //JSJ: the first one was n_root->l[0] or n_root->[1] before I modified
 void Update_Root_Pos(arbre *tree)
 {
-	if(tree->n_root_pos > -1.0)
-	{
-		tree->n_root->l[0][0] = tree->e_root->l[0] * tree->n_root_pos;
-		tree->n_root->l[0][1] = tree->e_root->l[0] * (1.-tree->n_root_pos);
-	}
-	else
-	{
-		tree->n_root->l[0][0] = tree->e_root->l[0] / 2.;
-		tree->n_root->l[0][1] = tree->e_root->l[0] / 2.;
+	int i;
+	For(i, tree->n_l){
+		if(tree->n_root_pos > -1.0)
+		{
+			tree->n_root->l[i][0] = tree->e_root->l[i] * tree->n_root_pos;
+			tree->n_root->l[i][1] = tree->e_root->l[i] * (1.-tree->n_root_pos);
+		}
+		else
+		{
+			tree->n_root->l[i][0] = tree->e_root->l[i] / 2.;
+			tree->n_root->l[i][1] = tree->e_root->l[i] / 2.;
+		}
 	}
 }
 
@@ -8093,6 +8112,7 @@ void Update_Root_Pos(arbre *tree)
 
 void Add_Root(edge *target, arbre *tree)
 {
+	int i;
 	PhyML_Printf("\n. Add root on edge %d left = %d right = %d",target->num,target->left->num,target->rght->num); fflush(NULL);
 	tree->e_root = target;
 
@@ -8110,23 +8130,24 @@ void Add_Root(edge *target, arbre *tree)
 
 	tree->n_root->b[0] = tree->e_root;
 	tree->n_root->b[1] = tree->e_root;
+	For(i,tree->n_l){ //JSJ: iterate over set and do below for each member of set
+		if(tree->n_root_pos > -1.0)
+		{
+			if(tree->n_root_pos < 1.E-6 &&  tree->n_root_pos > -1.E-6)
+				printf("\n. WARNING: you put the root at a weird position...");
 
-	if(tree->n_root_pos > -1.0)
-	{
-		if(tree->n_root_pos < 1.E-6 &&  tree->n_root_pos > -1.E-6)
-			printf("\n. WARNING: you put the root at a weird position...");
-
-		/*       tree->n_root->l[0] = tree->e_root->l * (tree->n_root_pos/(1.+tree->n_root_pos)); */
-		/*       tree->n_root->l[1] = tree->e_root->l - tree->n_root->l[0]; */
-		//JSJ: simmilar compilation fix
-		tree->n_root->l[0][0] = tree->e_root->l[0] * tree->n_root_pos;
-		tree->n_root->l[0][1] = tree->e_root->l[0] * (1. - tree->n_root_pos);
-	}
-	else
-	{
-		tree->n_root->l[0][0] = tree->e_root->l[0] / 2.;
-		tree->n_root->l[0][1] = tree->e_root->l[0] / 2.;
-		tree->n_root_pos = 0.5;
+			/*       tree->n_root->l[0] = tree->e_root->l * (tree->n_root_pos/(1.+tree->n_root_pos)); */
+			/*       tree->n_root->l[1] = tree->e_root->l - tree->n_root->l[0]; */
+			//JSJ: simmilar compilation fix
+			tree->n_root->l[i][0] = tree->e_root->l[i] * tree->n_root_pos;
+			tree->n_root->l[i][1] = tree->e_root->l[i] * (1. - tree->n_root_pos);
+		}
+		else
+		{
+			tree->n_root->l[i][0] = tree->e_root->l[i] / 2.;
+			tree->n_root->l[i][1] = tree->e_root->l[i] / 2.;
+			tree->n_root_pos = 0.5;
+		}
 	}
 
 	Update_Ancestors(tree->n_root,tree->n_root->v[0],tree);

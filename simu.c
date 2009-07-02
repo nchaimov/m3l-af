@@ -56,7 +56,7 @@ void Simu_Loop(arbre *tree)
 int Simu(arbre *tree, int n_step_max)
 {
   phydbl old_loglk,n_iter,lambda;
-  int i,n_neg,n_tested,n_without_swap,n_tot_swap,step,it_lim_without_swap;
+  int i,n_neg,n_tested,n_without_swap,n_tot_swap,step,it_lim_without_swap, j;
   edge **sorted_b,**tested_b;
   int opt_free_param;
   int recurr;
@@ -100,8 +100,9 @@ int Simu(arbre *tree, int n_step_max)
 	  if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested))
 	    Exit("\n. Err: mov_back failed\n");
 	  if(!tree->n_swap) n_neg = 0;
-	  
-	  For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old = tree->t_edges[i]->l;	    
+	  For(j,tree->n_l){
+		  For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
+	  }
 	  tree->both_sides = 1;
 	  Lk(tree);
 	}
@@ -281,14 +282,16 @@ void Select_Edges_To_Swap(arbre *tree, edge **sorted_b, int *n_neg)
 
 void Update_Bl(arbre *tree, phydbl fact)
 {
-  int i;
+  int i,j;
   edge *b;
 //JSJ: temporary fixes to l
-  For(i,2*tree->n_otu-3)
-    {
-      b = tree->t_edges[i];
-      b->l[0] = b->l_old[0] + (b->nni->l0 - b->l_old[0])*fact;
-    }
+  For(j,tree->n_l){
+	  For(i,2*tree->n_otu-3)
+	  {
+		  b = tree->t_edges[i];
+		  b->l[j] = b->l_old[j] + (b->nni->l0 - b->l_old[j])*fact;
+	  }
+  }
 }
 
 /*********************************************************/

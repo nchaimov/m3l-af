@@ -3163,7 +3163,7 @@ void Randomize_Spr_List(arbre *tree)
 }
 
 /*********************************************************/
-
+//JSJ: currently a bug somewhere in this function
 int Spr(phydbl init_lnL, arbre *tree)
 {
   int br;
@@ -3177,7 +3177,7 @@ int Spr(phydbl init_lnL, arbre *tree)
   old_pars         = -1;
 
   Reset_Spr_List(tree);
-
+ //JSJ: OK to here... The bug is in the following for loop!!!
   For(br,2*tree->n_otu-3)
     {
       b = tree->t_edges[br];
@@ -3185,14 +3185,14 @@ int Spr(phydbl init_lnL, arbre *tree)
       old_pars = tree->c_pars;
       Spr_Subtree(b,b->left,tree);
       new_pars = tree->c_pars;
-
+      //JSJ: gets weird after second time through above...
       pars_diff =  new_pars - old_pars;
       if(pars_diff > max_pars_diff) max_pars_diff = pars_diff;
 
       old_pars = tree->c_pars;
       Spr_Subtree(b,b->rght,tree);
       new_pars = tree->c_pars;
-
+      //JSJ: not altered further by this point at second itteration...
       pars_diff = new_pars - old_pars;
       if(pars_diff > max_pars_diff) max_pars_diff = pars_diff;
     }
@@ -3633,6 +3633,7 @@ void Speed_Spr(arbre *tree, int max_cycles)
   old_pars                        = tree->c_pars;
   step                            = 0;
 
+  //JSJ: there is a bug somewhere between here...
   do
     {
       ++step;
@@ -3643,7 +3644,7 @@ void Speed_Spr(arbre *tree, int max_cycles)
       tree->n_improvements         = 0;
       tree->perform_spr_right_away = 1;
       Spr(UNLIKELY,tree);
-
+      //JSJ: And here..... so it is probably in SPR...
       if(!tree->mod->s_opt->spr_pars)
 	{
 
