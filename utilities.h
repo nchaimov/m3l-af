@@ -1003,7 +1003,7 @@ void Insert(arbre *tree);
 void Connect_Two_Nodes(node *a, node *d);
 void Get_List_Of_Target_Edges(node *a, node *d, edge **list, int *list_size, arbre *tree);
 void Fix_All(arbre *tree);
-void Record_Br_Len(phydbl *where, arbre *tree);
+void Record_Br_Len(phydbl **where, arbre *tree);
 void Restore_Br_Len(phydbl **from, arbre *tree);
 void Get_Dist_Btw_Edges(node *a, node *d, arbre *tree);
 void Detect_Polytomies(edge *b, phydbl l_thresh, arbre *tree);

@@ -6196,7 +6196,7 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 			if(ori->noeud[i]->v[j])
 			{
 				cpy->noeud[i]->v[j] = cpy->noeud[ori->noeud[i]->v[j]->num];
-				For(m,ori->n_l) cpy->noeud[i]->l[m][j] = ori->noeud[i]->l[m][j];
+				For(m,ori->n_l) cpy->noeud[i]->l[m][j] = ori->noeud[i]->l[m][j];//JSJ: deep copy
 				cpy->noeud[i]->b[j] = cpy->t_edges[ori->noeud[i]->b[j]->num];
 			}
 			else
@@ -7224,18 +7224,22 @@ void Fix_All(arbre *tree)
 }
 
 /*********************************************************/
-//JSJ: temporary fix for compilation
-void Record_Br_Len(phydbl *where, arbre *tree)
+//JSJ: fixed to record array of bls
+void Record_Br_Len(phydbl **where, arbre *tree)
 {
-	int i;
+	int i,j;
 
 	if(!where)
 	{
-		For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[0] = tree->t_edges[i]->l[0];
+		For(j,tree->n_l){
+			For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
+		}
 	}
 	else
 	{
-		For(i,2*tree->n_otu-3) where[i] = tree->t_edges[i]->l[0];
+		For(j,tree->n_l){
+			For(i,2*tree->n_otu-3) where[j][i] = tree->t_edges[i]->l[j];
+		}
 	}
 }
 
@@ -7251,7 +7255,7 @@ void Restore_Br_Len(phydbl **from, arbre *tree)
 	}
 	else
 	{
-		For(i,2*tree->n_otu-3){ For(j,tree->n_l) tree->t_edges[i]->l[j] = from[i][j]; }
+		For(i,2*tree->n_otu-3){ For(j,tree->n_l) tree->t_edges[i]->l[j] = from[j][i]; }
 	}
 }
 
@@ -8525,8 +8529,8 @@ void Evolve_Recur(node *a, node *d, edge *b, int a_state, int r_class, int site_
 
 	dim1 = tree->mod->ns * tree->mod->ns;
 	dim2 = tree->mod->ns;
-
-	d_state = Pick_State(mod->ns,b->Pij_rr+r_class*dim1+a_state*dim2);
+	//JSJ: temp fix of Pij_rr
+	d_state = Pick_State(mod->ns,b->Pij_rr[0]+r_class*dim1+a_state*dim2);
 
 	/*   PhyML_Printf("\n>> %c (%d,%d)",Reciproc_Assign_State(d_state,mod->datatype),d_state,(int)d_state/mod->m4mod->n_o); */
 
@@ -8908,16 +8912,20 @@ phydbl Mean(phydbl *x, int n)
 
 void Best_Of_NNI_And_SPR(arbre *tree)
 {
+	int i;
 	if(tree->mod->s_opt->random_input_tree) Speed_Spr_Loop(tree); /* Don't do simultaneous NNIs if starting tree is random */
 	else
 	{
 		arbre *ori_tree,*best_tree;
 		model *ori_mod,*best_mod;
-		phydbl *ori_bl,*best_bl;
+		phydbl **ori_bl,**best_bl;
 		phydbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
-
-		ori_bl = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
-		best_bl = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
+		ori_bl = (phydbl **)mCalloc(tree->n_l,sizeof(phydbl *));
+		best_bl = (phydbl **)mCalloc(tree->n_l,sizeof(phydbl *));
+		For(i,tree->n_l){
+			ori_bl[i] = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
+			best_bl[i] = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
+		}
 
 		ori_mod   = Copy_Model(tree->mod);
 		best_mod  = Copy_Model(tree->mod);
@@ -8989,7 +8997,10 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 			PhyML_Printf("\n\n. Log likelihood obtained after NNI moves : %f",nni_lnL);
 			PhyML_Printf("\n. Log likelihood obtained after SPR moves : %f",spr_lnL);
 		}
-
+		For(i,tree->n_l){
+			Free(ori_bl[i]);
+			Free(best_bl[i]);
+		}
 		Free(ori_bl);
 		Free(best_bl);
 

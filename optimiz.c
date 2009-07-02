@@ -1163,8 +1163,8 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 	       tree->mod->s_opt->quickdirty);
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
-    {
-      PhyML_Printf("\n. %f %f %f %f",l_infa,l_max,l_infb,b_fcus->l);
+    {//JSJ: We hit this error when running SPR...
+      PhyML_Printf("\n. %f %f %f %f",l_infa,l_max,l_infb,b_fcus->l[0]);
       PhyML_Printf("\n. %f -- %f",lk_init,tree->c_lnL);
       Warn_And_Exit("\n. Err. in Optimize_Br_Len_Serie\n");
     }
