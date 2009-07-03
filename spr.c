@@ -1812,8 +1812,8 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
   /*
   ** Reset the relevant edge lengths and transition prob's at the prune site.
   */
-  v_prune->b[d1]->l = v_prune->b[d1]->l_old;
-  v_prune->b[d2]->l = v_prune->b[d2]->l_old;
+  v_prune->b[d1]->l[0] = v_prune->b[d1]->l_old[0];
+  v_prune->b[d2]->l[0] = v_prune->b[d2]->l_old[0];
   Update_PMat_At_Given_Edge (v_prune->b[d1], tree);
   Update_PMat_At_Given_Edge (v_prune->b[d2], tree);
 
@@ -2350,8 +2350,8 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
   /*
   ** Reset the relevant edge lengths and transition prob's at the prune site.
   */
-  v_prune->b[d1]->l = v_prune->b[d1]->l_old;
-  v_prune->b[d2]->l = v_prune->b[d2]->l_old;
+  v_prune->b[d1]->l[0] = v_prune->b[d1]->l_old[0];
+  v_prune->b[d2]->l[0] = v_prune->b[d2]->l_old[0];
   Update_PMat_At_Given_Edge (v_prune->b[d1], tree);
   Update_PMat_At_Given_Edge (v_prune->b[d2], tree);
 
@@ -2554,10 +2554,10 @@ int Find_Optim_Local (arbre *tree)
 	  */
 	  Prune (e_prune, v_prune, &(e_regraft), &(e_avail), tree);
 	  Regraft (e_connect, v_prune, e_avail, tree);
-	  e_regraft->l = e_regraft->l_old;
+	  e_regraft->l[0] = e_regraft->l_old[0];
 	  for (i = 0; i < 3; i++)
 	    {
-	      v_prune->b[i]->l = v_prune->b[i]->l_old;
+	      v_prune->b[i]->l[0] = v_prune->b[i]->l_old[0];
 	    }
 	  tree->both_sides = 1;
 	  Lk(tree);

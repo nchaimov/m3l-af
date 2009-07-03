@@ -416,7 +416,7 @@ int Mov_Backward_Topo_Bl(arbre *tree, phydbl lk_old, edge **tested_b, int n_test
       For(i,2*tree->n_otu-3) 
 	{
 	  b = tree->t_edges[i];
-	  b->l = b->l_old;
+	  b->l[0] = b->l_old[0]; //JSJ: Temporary fix
 	}
       
       tree->both_sides = 0;
@@ -518,8 +518,8 @@ void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 /* 	  (b[i]->nni->best_conf == 1)? */
 /* 	    (Swap(b[i]->left->v[b[i]->l_v2],b[i]->left,b[i]->rght,b[i]->rght->v[b[i]->r_v1],tree)): */
 /* 	    (Swap(b[i]->left->v[b[i]->l_v2],b[i]->left,b[i]->rght,b[i]->rght->v[b[i]->r_v2],tree)); */
-
-	  b[i]->l = b[i]->l_old;
+	  //JSJ: Temporary fix
+	  b[i]->l[0] = b[i]->l_old[0];
 	}
     }
   else
@@ -531,8 +531,8 @@ void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 	       b[i]->nni->swap_node_v3,
 	       b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 	       tree);
-
-	  b[i]->l = b[i]->l_old;
+	  //JSJ: Temporary Fix
+	  b[i]->l[0] = b[i]->l_old[0];
 	}
     }
 }

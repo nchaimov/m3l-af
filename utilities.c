@@ -676,7 +676,7 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 		}
 
 		s_tree[(int)strlen(s_tree)-1]=')';
-		if((fils->b) && (fils->b[0]->l != -1))
+		if((fils->b) && (fils->b[0]->l[0] != -1))
 		{
 			if(tree->print_boot_val)
 				sprintf(s_tree+(int)strlen(s_tree),"%d",fils->b[p]->bip_score);
@@ -8952,12 +8952,12 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		best_mod  = Copy_Model(tree->mod);
 
 		ori_tree = Make_Tree(tree->n_otu, tree->n_l);
-		Init_Tree(ori_tree,ori_tree->n_otu, ori_tree->n_l);
+		Init_Tree(ori_tree,tree->n_otu, tree->n_l);
 		Make_All_Tree_Nodes(ori_tree);
 		Make_All_Tree_Edges(ori_tree);
 
 		best_tree = Make_Tree(tree->n_otu, tree->n_l);
-		Init_Tree(best_tree,best_tree->n_otu, best_tree->n_l);
+		Init_Tree(best_tree,tree->n_otu, tree->n_l);
 		Make_All_Tree_Nodes(best_tree);
 		Make_All_Tree_Edges(best_tree);
 
