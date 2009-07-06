@@ -67,7 +67,7 @@ the GNU public licence. See http://www.opensource.org for details.
 **   - nr_glb:        Total number of global branch length optimizations done.
 */
 
-phydbl   cur_lk, **subtree_dist, *sum_scale_tmp, *p_lk_tmp;
+m3ldbl   cur_lk, **subtree_dist, *sum_scale_tmp, *p_lk_tmp;
 matrix  *seq_dist;
 _move_ **optim_cand, **rgrft_cand;
 node    *v_tmp=NULL, **path;
@@ -219,26 +219,26 @@ void Init_SPR (arbre *tree)
   ** Allocate memory for temporarily storing partial likelihoods and
   ** scaling factors.
   */
-  p_lk_tmp = (phydbl *)mCalloc (tree->n_pattern*tree->mod->n_catg*tree->mod->ns, sizeof (phydbl));
-/*   p_lk_tmp = (phydbl ***)mCalloc (tree->n_pattern, sizeof (phydbl **)); */
+  p_lk_tmp = (m3ldbl *)mCalloc (tree->n_pattern*tree->mod->n_catg*tree->mod->ns, sizeof (m3ldbl));
+/*   p_lk_tmp = (m3ldbl ***)mCalloc (tree->n_pattern, sizeof (m3ldbl **)); */
 /*   for (i = 0; i < tree->n_pattern; i++) */
 /*   { */
-/*     p_lk_tmp[i] = (phydbl **)mCalloc (tree->mod->n_catg, sizeof (phydbl *)); */
+/*     p_lk_tmp[i] = (m3ldbl **)mCalloc (tree->mod->n_catg, sizeof (m3ldbl *)); */
 /*     for (j = 0; j < tree->mod->n_catg; j++) */
 /*     { */
-/*       p_lk_tmp[i][j] = (phydbl *)mCalloc (tree->mod->ns, sizeof (phydbl)); */
+/*       p_lk_tmp[i][j] = (m3ldbl *)mCalloc (tree->mod->ns, sizeof (m3ldbl)); */
 /*     } */
 /*   } */
-  sum_scale_tmp = (phydbl *)mCalloc (tree->n_pattern, sizeof (phydbl));
+  sum_scale_tmp = (m3ldbl *)mCalloc (tree->n_pattern, sizeof (m3ldbl));
 
   /*
   ** Allocate memory for storing the average subtree distances.
   */
   nr_nodes = 2*tree->n_otu-2;
-  subtree_dist = (phydbl **)malloc (nr_nodes * sizeof (phydbl *));
+  subtree_dist = (m3ldbl **)malloc (nr_nodes * sizeof (m3ldbl *));
   for (i = 0; i < nr_nodes; i++)
     {
-      subtree_dist[i] = (phydbl *)malloc (nr_nodes * sizeof (phydbl));
+      subtree_dist[i] = (m3ldbl *)malloc (nr_nodes * sizeof (m3ldbl));
     }
 
   /*
@@ -994,7 +994,7 @@ int Perform_One_SPR(arbre *tree, int max_size)
 void Calc_Tree_Length (edge *e_prune, node *v_prune, arbre *tree)
 {
   int     i, d0, d1, d2;
-  phydbl  d_uu;
+  m3ldbl  d_uu;
   node   *u_prune, *u1, *u2;
 
   /*
@@ -1116,11 +1116,11 @@ void Calc_Tree_Length (edge *e_prune, node *v_prune, arbre *tree)
 */
 
 void Tree_Length (node *v_prune, node *u_prune, node *v_n, node *v_n_1, node *v_nx1,
-		  node *v_0, node *u_n, phydbl d_up_v_1, phydbl d_L_1, phydbl d_uu,
+		  node *v_0, node *u_n, m3ldbl d_up_v_1, m3ldbl d_L_1, m3ldbl d_uu,
 		  int n, arbre *tree)
 {
   int     i, j;
-  phydbl  d_un_v, d_up_v, d_L;
+  m3ldbl  d_un_v, d_up_v, d_L;
   node   *u1, *u2;
   edge   *e_prune, *e_regraft;
   _move_ *tmp_cand;
@@ -1277,7 +1277,7 @@ void Tree_Length (node *v_prune, node *u_prune, node *v_n, node *v_n_1, node *v_
 int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 {
   int     i, j, cand, best_cand, d0, d1, d2, n, pat, cat, ste;
-  phydbl  d_uu, best_d_lk, l_connect, l_01, l_02, l_12, l_est[3], new_lk,
+  m3ldbl  d_uu, best_d_lk, l_connect, l_01, l_02, l_12, l_est[3], new_lk,
           l_simple[3], l_dist[3];
   plkflt *p_lk1_tmp, *p_lk2_tmp, *p_lk, *p_sum;
   node   *u_prune, *v_n, *v_nx1, *u_n, *u1, *u2;
@@ -1840,7 +1840,7 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 {
   int     i, j, cand, best_cand, d0, d1, d2, n, pat, cat, ste;
-  phydbl  d_uu, best_d_lk, l_connect, l_01, l_02, l_12, l_est[3], new_lk,
+  m3ldbl  d_uu, best_d_lk, l_connect, l_01, l_02, l_12, l_est[3], new_lk,
     l_simple[3], l_dist[3];
   plkflt *p_lk1_tmp, *p_lk2_tmp, *p_lk, *p_sum;
   node   *u_prune, *v_n, *v_nx1, *u_n, *u1, *u2;
@@ -2376,7 +2376,7 @@ void Make_Move (_move_ *move, int type, arbre *tree)
   int     i;
   node   *v_prune, *u_prune, *v_n, *root;
   edge   *e_prune, *e_regraft, *e_connect, *e_avail;
-  phydbl  new_lk;
+  m3ldbl  new_lk;
 
   /*
   ** Get the relevant nodes and edges.
@@ -2456,7 +2456,7 @@ int Find_Optim_Local (arbre *tree)
   int     best_cand, cand, i;
   node   *v_prune, *u_prune, *v_n;
   edge   *e_prune, *e_regraft, *e_connect, *e_avail;
-  phydbl  max_change, new_lk;
+  m3ldbl  max_change, new_lk;
   _move_ *move, *tmp_cand;
 
   /*
@@ -2603,7 +2603,7 @@ int Find_Optim_Globl (arbre *tree)
   int     best_cand, cand, i;
   node   *v_prune, *u_prune, *v_n, *root;
   edge   *e_prune, *e_regraft, *e_connect, *e_avail;
-  phydbl  max_change, new_lk;
+  m3ldbl  max_change, new_lk;
   _move_ *move;
 
   /*
@@ -3164,7 +3164,7 @@ void Randomize_Spr_List(arbre *tree)
 
 /*********************************************************/
 //JSJ: currently a bug somewhere in this function
-int Spr(phydbl init_lnL, arbre *tree)
+int Spr(m3ldbl init_lnL, arbre *tree)
 {
   int br;
   int pars_diff, max_pars_diff, new_pars, old_pars;
@@ -3298,9 +3298,9 @@ int Test_All_Spr_Targets(edge *b_pulled, node *n_link, arbre *tree)
   node *n_opp_to_link,*n_v1,*n_v2,*n_up;
   edge *b_target,*b_residual;
   int i,dir1,dir2;
-  phydbl init_len_v1, init_len_v2, init_len_pulled;
+  m3ldbl init_len_v1, init_len_v2, init_len_pulled;
   int best_found,approx;
-  phydbl init_lnL;
+  m3ldbl init_lnL;
 
 
   init_lnL = tree->c_lnL;
@@ -3409,7 +3409,7 @@ void Test_One_Spr_Target_Recur(node *a, node *d, edge *pulled, node *link, edge 
   if(d->tax) return;
   else
     {
-      phydbl move_lnL;
+      m3ldbl move_lnL;
 
       For(i,3)
 	{
@@ -3439,13 +3439,13 @@ void Test_One_Spr_Target_Recur(node *a, node *d, edge *pulled, node *link, edge 
 
 /*********************************************************/
 
-phydbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_residual, arbre *tree)
+m3ldbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_residual, arbre *tree)
 {
-  phydbl init_target_len, init_arrow_len, init_residual_len;
+  m3ldbl init_target_len, init_arrow_len, init_residual_len;
   int i,dir_v0,dir_v1,dir_v2;
-  phydbl l0,l1,l2;
+  m3ldbl l0,l1,l2;
   node *v1, *v2;
-  phydbl init_lnL, move_lnL;
+  m3ldbl init_lnL, move_lnL;
   int init_pars,move_pars;
   int approx;
 
@@ -3535,7 +3535,7 @@ phydbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_
 
 void Speed_Spr_Loop(arbre *tree)
 {
-  phydbl lk_old;
+  m3ldbl lk_old;
   int init_thresh;
 
   init_thresh                      = tree->mod->s_opt->pars_thresh;
@@ -3611,7 +3611,7 @@ void Speed_Spr_Loop(arbre *tree)
 void Speed_Spr(arbre *tree, int max_cycles)
 {
   int step,old_pars;
-  phydbl old_lnL;
+  m3ldbl old_lnL;
 
   if(tree->lock_topo)
     {
@@ -3719,9 +3719,9 @@ int Evaluate_List_Of_Regraft_Pos_Triple(spr **spr_list, int list_size, arbre *tr
   edge *init_target, *b_residual;
   int i,j,best_move;
   int dir_v0, dir_v1, dir_v2;
-  phydbl recorded_l;
-  phydbl best_lnL,init_lnL,delta_lnL;
-  phydbl max_improv;
+  m3ldbl recorded_l;
+  m3ldbl best_lnL,init_lnL,delta_lnL;
+  m3ldbl max_improv;
 
   best_lnL = UNLIKELY;
   delta_lnL = 0.0;
@@ -4137,10 +4137,10 @@ void Random_Spr(int n_moves, arbre *tree)
   target = residual = NULL;
   For(i,n_moves)
     {
-      br_pulled = (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-1));
+      br_pulled = (int)((m3ldbl)rand()/RAND_MAX * (2*tree->n_otu-3-1));
       do
 	{
-	  br_target = (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-1));
+	  br_target = (int)((m3ldbl)rand()/RAND_MAX * (2*tree->n_otu-3-1));
 	}while(br_target == br_pulled);
 
       spr_struct->n_link        = tree->t_edges[br_pulled]->left;

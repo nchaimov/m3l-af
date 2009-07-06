@@ -20,20 +20,20 @@ the GNU public licence. See http://www.opensource.org for details.
 void   Bionj(matrix *mat);
 void   Finish(matrix *mat);
 void   Compute_Sx(matrix *mat);
-phydbl Sum_S(matrix *mat, int i);
-phydbl Dist(matrix *mat, int x, int y);
-phydbl Q_Agglo(matrix *mat, int x, int y);
-phydbl Variance(matrix *mat, int x, int y);
-phydbl Br_Length(matrix *mat, int x, int y);
+m3ldbl Sum_S(matrix *mat, int i);
+m3ldbl Dist(matrix *mat, int x, int y);
+m3ldbl Q_Agglo(matrix *mat, int x, int y);
+m3ldbl Variance(matrix *mat, int x, int y);
+m3ldbl Br_Length(matrix *mat, int x, int y);
 void   Update_Dist(matrix *mat, int x, int y);
-phydbl Lamda(matrix *mat, int x, int y, phydbl vxy);
-void   Best_Pair(matrix *mat, int *x, int *y, phydbl *score);
-phydbl Var_Red(matrix *mat, int x, int y, int i, phydbl lamda, phydbl vxy);
-void   Update_Tree(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl score);
+m3ldbl Lamda(matrix *mat, int x, int y, m3ldbl vxy);
+void   Best_Pair(matrix *mat, int *x, int *y, m3ldbl *score);
+m3ldbl Var_Red(matrix *mat, int x, int y, int i, m3ldbl lamda, m3ldbl vxy);
+void   Update_Tree(matrix *mat, int x, int y, m3ldbl lx, m3ldbl ly, m3ldbl score);
 void   Update_Mat(matrix *mat, int x, int y, 
-		  phydbl lx, phydbl ly, phydbl vxy, phydbl lamda);
-phydbl Dist_Red(matrix *mat, int x, phydbl lx, int y, 
-		phydbl ly, int i, phydbl lamda);
+		  m3ldbl lx, m3ldbl ly, m3ldbl vxy, m3ldbl lamda);
+m3ldbl Dist_Red(matrix *mat, int x, m3ldbl lx, int y, 
+		m3ldbl ly, int i, m3ldbl lamda);
 int    Bionj_Br_Length_Post(node *a, node *d, matrix *mat);
 void   Bionj_Br_Length(matrix *mat);
 

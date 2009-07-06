@@ -22,8 +22,8 @@ the GNU public licence. See http://www.opensource.org for details.
 #endif
 
 /* int  T_MAX_FILE; */
-/* phydbl MDBL_MIN; */
-/* phydbl UNLIKELY; */
+/* m3ldbl MDBL_MIN; */
+/* m3ldbl UNLIKELY; */
 
 /*********************************************************/
 

@@ -25,7 +25,7 @@ on a simple model of sequence data." (1997) O. Gascuel. Mol Biol Evol.
 void Bionj(matrix *mat)
 {
   int x,y,i;
-  phydbl vxy,lx,ly,lamda,score;
+  m3ldbl vxy,lx,ly,lamda,score;
 
   Clean_Tree_Connections(mat->tree);  
   For(i,mat->tree->n_otu) mat->tip_node[i] = mat->tree->noeud[i];
@@ -52,7 +52,7 @@ void Bionj(matrix *mat)
 
 void Finish(matrix *mat)
 {
-  phydbl dxy,dxz,dyz;
+  m3ldbl dxy,dxz,dyz;
   int x,y,z;
   node *nx,*ny,*nz,*new;
   int i;
@@ -108,7 +108,7 @@ void Finish(matrix *mat)
 
 /*********************************************************/
 
-void Update_Mat(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl vxy, phydbl lamda)
+void Update_Mat(matrix *mat, int x, int y, m3ldbl lx, m3ldbl ly, m3ldbl vxy, m3ldbl lamda)
 {
   int i;
   int a,b;
@@ -136,7 +136,7 @@ void Update_Mat(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl vxy, phy
 
 /*********************************************************/
 // JSJ: Definitely needs to be modified to reflect a mixed branch length model
-void Update_Tree(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl score)
+void Update_Tree(matrix *mat, int x, int y, m3ldbl lx, m3ldbl ly, m3ldbl score)
 {
   node *new, *nx, *ny;
 
@@ -176,14 +176,14 @@ void Update_Tree(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl score)
 
 /*********************************************************/
 
-void Best_Pair(matrix *mat, int *x, int *y,phydbl *score)
+void Best_Pair(matrix *mat, int *x, int *y,m3ldbl *score)
 {
   int i,j/* ,n_ties */;
-  phydbl Qmin,Qmin2;
-  phydbl *t_Qij;
+  m3ldbl Qmin,Qmin2;
+  m3ldbl *t_Qij;
 /*   int *ties; */
 
-  t_Qij = (phydbl *)mCalloc(mat->n_otu * mat->n_otu,sizeof(phydbl ));
+  t_Qij = (m3ldbl *)mCalloc(mat->n_otu * mat->n_otu,sizeof(m3ldbl ));
 /*   ties  = (int *)mCalloc(mat->n_otu * mat->n_otu,sizeof(int )); */
 
   Qmin = 1.e+10;
@@ -240,7 +240,7 @@ void Best_Pair(matrix *mat, int *x, int *y,phydbl *score)
 /*     { */
 /*       int cand; */
 /*       *x = *y = -1; */
-/*       cand = (int)rint(rand()/(phydbl)(RAND_MAX) * (n_ties-1)); */
+/*       cand = (int)rint(rand()/(m3ldbl)(RAND_MAX) * (n_ties-1)); */
 /*       *x = (int)(ties[cand] / mat->n_otu); */
 /*       *y = (int)(ties[cand] % mat->n_otu); */
 /*     } */
@@ -289,14 +289,14 @@ void Compute_Sx(matrix *mat)
 	      
 /*********************************************************/
 
-phydbl Sum_S(matrix *mat, int i)
+m3ldbl Sum_S(matrix *mat, int i)
 {
   return mat->dist[i][i];
 }
 
 /*********************************************************/
 
-phydbl Dist(matrix *mat, int x, int y)
+m3ldbl Dist(matrix *mat, int x, int y)
 {
     if(x > y)
       return(mat->dist[x][y]);
@@ -306,7 +306,7 @@ phydbl Dist(matrix *mat, int x, int y)
 
 /*********************************************************/
 
-phydbl Variance(matrix *mat, int x, int y)
+m3ldbl Variance(matrix *mat, int x, int y)
 {
     if(x > y)
       {
@@ -320,17 +320,17 @@ phydbl Variance(matrix *mat, int x, int y)
 
 /*********************************************************/
 
-phydbl Br_Length(matrix *mat, int x, int y)
+m3ldbl Br_Length(matrix *mat, int x, int y)
 {
     return .5*(Dist(mat,x,y)+
-	      (Sum_S(mat,x)-Sum_S(mat,y))/(phydbl)(mat->r-2.)); 
+	      (Sum_S(mat,x)-Sum_S(mat,y))/(m3ldbl)(mat->r-2.)); 
 }
 
 /*********************************************************/
 
-phydbl Dist_Red(matrix *mat, int x, phydbl lx, int y, phydbl ly, int i, phydbl lamda)
+m3ldbl Dist_Red(matrix *mat, int x, m3ldbl lx, int y, m3ldbl ly, int i, m3ldbl lamda)
 {
-  phydbl Dui;
+  m3ldbl Dui;
   Dui=lamda*(Dist(mat,x,i)-lx)
      +(1.-lamda)*(Dist(mat,y,i)-ly);
   return(Dui);
@@ -338,9 +338,9 @@ phydbl Dist_Red(matrix *mat, int x, phydbl lx, int y, phydbl ly, int i, phydbl l
 
 /*********************************************************/
 
-phydbl Var_Red(matrix *mat, int x, int y, int i, phydbl lamda, phydbl vxy)
+m3ldbl Var_Red(matrix *mat, int x, int y, int i, m3ldbl lamda, m3ldbl vxy)
 {
-  phydbl Vui;
+  m3ldbl Vui;
   Vui=lamda*(Variance(mat,x,i))
      +(1.-lamda)*(Variance(mat,y,i))
     -lamda*(1.-lamda)*vxy;
@@ -349,9 +349,9 @@ phydbl Var_Red(matrix *mat, int x, int y, int i, phydbl lamda, phydbl vxy)
 
 /*********************************************************/
 
-phydbl Lamda(matrix *mat, int x, int y, phydbl vxy)
+m3ldbl Lamda(matrix *mat, int x, int y, m3ldbl vxy)
 {
-    phydbl lamda=0.0;
+    m3ldbl lamda=0.0;
     int i;
     
     if(mat->method == 0) /* NJ (Saitou & Nei, 1987) */
@@ -381,9 +381,9 @@ phydbl Lamda(matrix *mat, int x, int y, phydbl vxy)
 
 /*********************************************************/
 
-phydbl Q_Agglo(matrix *mat, int x, int y)
+m3ldbl Q_Agglo(matrix *mat, int x, int y)
 {
-  phydbl Qxy;
+  m3ldbl Qxy;
 
   Qxy = .0;
   Qxy=(mat->r-2.)*Dist(mat,x,y)-Sum_S(mat,x)-Sum_S(mat,y); 
@@ -415,7 +415,7 @@ int Bionj_Br_Length_Post(node *a, node *d, matrix *mat)
   else
     {
       int d_v1, d_v2;
-      phydbl lx, ly, vxy,lamda;
+      m3ldbl lx, ly, vxy,lamda;
       int x,y;
 
       d_v1 = d_v2 = -1;

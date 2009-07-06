@@ -60,7 +60,7 @@ void Free_Mat(matrix *mat)
 
 /*********************************************************/
 
-void Free_Partial_Lk(phydbl *p_lk, int len, int n_catg)
+void Free_Partial_Lk(m3ldbl *p_lk, int len, int n_catg)
 {
   Free(p_lk);
 

@@ -16,7 +16,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 void Free_All_Nodes_Light(arbre *tree);
 void Free_All_Edges_Light(arbre *tree);
 void Free_Mat(matrix *mat);
-void Free_Partial_Lk(phydbl *p_lk, int len, int n_catg);
+void Free_Partial_Lk(m3ldbl *p_lk, int len, int n_catg);
 void Free_Tree(arbre *tree);
 void Free_Edge(edge *b);
 void Free_Node(node *n);

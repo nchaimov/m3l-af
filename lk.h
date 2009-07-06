@@ -22,11 +22,11 @@ void Post_Order_Lk(node *pere, node *fils, arbre *tree);
 void Pre_Order_Lk(node *pere, node *fils, arbre *tree);
 void Lk(arbre *tree);
 void Site_Lk(arbre *tree);
-phydbl Lk_At_Given_Edge(edge *b_fcus,arbre *tree);
-phydbl Return_Lk(arbre *tree);
-phydbl Return_Abs_Lk(arbre *tree);
+m3ldbl Lk_At_Given_Edge(edge *b_fcus,arbre *tree);
+m3ldbl Return_Lk(arbre *tree);
+m3ldbl Return_Abs_Lk(arbre *tree);
 matrix *ML_Dist(allseq *data,model *mod);
-phydbl Lk_Given_Two_Seq(allseq *data,int numseq1,int numseq2,phydbl dist,model *mod,phydbl *loglk);
+m3ldbl Lk_Given_Two_Seq(allseq *data,int numseq1,int numseq2,m3ldbl dist,model *mod,m3ldbl *loglk);
 void Unconstraint_Lk(arbre *tree);
 void Update_P_Lk(arbre *tree,edge *b_fcus,node *n);
 void Make_Tree_4_Lk(arbre *tree,allseq *alldata,int n_site);
@@ -40,15 +40,15 @@ void Get_Partial_Lk(arbre *tree, edge *b_fcus, node *a, node *d);
 void Init_Tips_At_One_Site_Nucleotides_Int(char state, int pos, short int *p_pars);
 void Init_Tips_At_One_Site_AA_Int(char aa, int pos, short int *p_pars);
 void Update_P_Lk_Along_A_Path(node **path, int path_length, arbre *tree);
-phydbl Lk_Dist(phydbl *F, phydbl dist, model *mod);
-phydbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree);
+m3ldbl Lk_Dist(m3ldbl *F, m3ldbl dist, model *mod);
+m3ldbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree);
 void Update_P_Lk_Greedy(arbre *tree, edge *b_fcus, node *n);
 void Get_All_Partial_Lk_Scale_Greedy(arbre *tree, edge *b_fcus, node *a, node *d);
-phydbl Lk_Core(edge *b, arbre *tree);
-phydbl Lk_Triplet(node *a, node *d, arbre *tree);
+m3ldbl Lk_Core(edge *b, arbre *tree);
+m3ldbl Lk_Triplet(node *a, node *d, arbre *tree);
 void Print_Lk_Given_Edge_Recurr(node *a, node *d, edge *b, arbre *tree);
-phydbl *Post_Prob_Rates_At_Given_Edge(edge *b, phydbl *post_prob, arbre *tree);
-phydbl Lk_With_MAP_Branch_Rates(arbre *tree);
+m3ldbl *Post_Prob_Rates_At_Given_Edge(edge *b, m3ldbl *post_prob, arbre *tree);
+m3ldbl Lk_With_MAP_Branch_Rates(arbre *tree);
 
 
 

@@ -13,41 +13,41 @@ the GNU public licence. See http://www.opensource.org for details.
 #ifndef NUMERIC_H
 #define NUMERIC_H
 
-phydbl *Covariance_Matrix(arbre *tree);
-phydbl *Hessian(arbre *tree);
-void Recurr_Hessian(node *a, node *b, int plus_minus, phydbl eps, phydbl *res, arbre *tree);
+m3ldbl *Covariance_Matrix(arbre *tree);
+m3ldbl *Hessian(arbre *tree);
+void Recurr_Hessian(node *a, node *b, int plus_minus, m3ldbl eps, m3ldbl *res, arbre *tree);
 double stdnormal_inv(double p);
 double Uni();
 int    Rand_Int(int min, int max);
 double Ahrensdietergamma(double alpha);
 double Rgamma(double shape, double scale);
 double Rexp(double lambda);
-phydbl Bico(int n, int k);
-phydbl Factln(int n);
-phydbl Gammln(phydbl xx);
-phydbl Pbinom(int N, int ni, phydbl p);
-phydbl LnGamma (phydbl alpha);
-phydbl IncompleteGamma(phydbl x, phydbl alpha, phydbl ln_gamma_alpha);
-phydbl PointChi2 (phydbl prob, phydbl v);
-phydbl Bivariate_Normal_Density(phydbl x, phydbl y, phydbl mux, phydbl muy, phydbl sdx, phydbl sdy, phydbl rho);
-phydbl PointNormal (phydbl prob);
-int    DiscreteGamma (phydbl freqK[], phydbl rK[],phydbl alfa, phydbl beta, int K, int median);
-phydbl CDF_Normal(phydbl x, phydbl mean, phydbl var);
-phydbl Dnorm_Moments(phydbl x, phydbl mean, phydbl var);
-phydbl Dnorm(phydbl x, phydbl mean, phydbl sd);
-phydbl CDF_Gamma(phydbl x, phydbl shape, phydbl scale);
-phydbl Dgamma_Moments(phydbl x, phydbl mean, phydbl var);
-phydbl Dgamma(phydbl x, phydbl shape, phydbl scale);
-phydbl LnFact(int n);
+m3ldbl Bico(int n, int k);
+m3ldbl Factln(int n);
+m3ldbl Gammln(m3ldbl xx);
+m3ldbl Pbinom(int N, int ni, m3ldbl p);
+m3ldbl LnGamma (m3ldbl alpha);
+m3ldbl IncompleteGamma(m3ldbl x, m3ldbl alpha, m3ldbl ln_gamma_alpha);
+m3ldbl PointChi2 (m3ldbl prob, m3ldbl v);
+m3ldbl Bivariate_Normal_Density(m3ldbl x, m3ldbl y, m3ldbl mux, m3ldbl muy, m3ldbl sdx, m3ldbl sdy, m3ldbl rho);
+m3ldbl PointNormal (m3ldbl prob);
+int    DiscreteGamma (m3ldbl freqK[], m3ldbl rK[],m3ldbl alfa, m3ldbl beta, int K, int median);
+m3ldbl CDF_Normal(m3ldbl x, m3ldbl mean, m3ldbl var);
+m3ldbl Dnorm_Moments(m3ldbl x, m3ldbl mean, m3ldbl var);
+m3ldbl Dnorm(m3ldbl x, m3ldbl mean, m3ldbl sd);
+m3ldbl CDF_Gamma(m3ldbl x, m3ldbl shape, m3ldbl scale);
+m3ldbl Dgamma_Moments(m3ldbl x, m3ldbl mean, m3ldbl var);
+m3ldbl Dgamma(m3ldbl x, m3ldbl shape, m3ldbl scale);
+m3ldbl LnFact(int n);
 int    Choose(int n, int k);
-phydbl CDF_Pois(phydbl x, phydbl param);
-phydbl Dexp(phydbl x, phydbl param);
-phydbl Dpois(phydbl x, phydbl param);
-phydbl Rand_Normal_Deviate(phydbl mean, phydbl sd);
-phydbl Rnorm(phydbl mean, phydbl sd);
-phydbl *Rnorm_Multid(phydbl *mu, phydbl *cov, int dim);
-phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max);
-phydbl *Rnorm_Multid_Trunc(phydbl *mean, phydbl *cov, phydbl *min, phydbl *max, int dim);
+m3ldbl CDF_Pois(m3ldbl x, m3ldbl param);
+m3ldbl Dexp(m3ldbl x, m3ldbl param);
+m3ldbl Dpois(m3ldbl x, m3ldbl param);
+m3ldbl Rand_Normal_Deviate(m3ldbl mean, m3ldbl sd);
+m3ldbl Rnorm(m3ldbl mean, m3ldbl sd);
+m3ldbl *Rnorm_Multid(m3ldbl *mu, m3ldbl *cov, int dim);
+m3ldbl Rnorm_Trunc(m3ldbl mean, m3ldbl sd, m3ldbl min, m3ldbl max);
+m3ldbl *Rnorm_Multid_Trunc(m3ldbl *mean, m3ldbl *cov, m3ldbl *min, m3ldbl *max, int dim);
 
 
 #endif NUMERIC_H

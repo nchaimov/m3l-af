@@ -38,12 +38,12 @@ Authors : Jean-Francois Dufayard & Stephane Guindon.
 int Check_NNI_Five_Branches(arbre *tree)
 {
   int best_edge;
-  phydbl best_gain;
+  m3ldbl best_gain;
   int best_config;
   int i;
   int better_found; /* = 1 if a phylogeny with greater likelihood than current one was found */
   int result;
-  phydbl init_lnL;
+  m3ldbl init_lnL;
 
   init_lnL     = UNLIKELY;
   better_found = 1;
@@ -237,8 +237,8 @@ int Compute_Likelihood_Ratio_Test(edge *tested_edge, arbre *tree)
 	  
 	  else if(tree->io->ratio_test == 3)
 	    {
-	      phydbl sh_support;
-	      phydbl param_support;
+	      m3ldbl sh_support;
+	      m3ldbl param_support;
 	      
 	      sh_support    = Statistics_To_SH(tree);
 	      param_support = Statistics_To_Probabilities(tested_edge->alrt_statistic);
@@ -292,12 +292,12 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
   int l_r, r_l, l_v1, l_v2, r_v3, r_v4, site;
   node *v1,*v2,*v3,*v4;
   edge *e1,*e2,*e3,*e4;
-  phydbl len_e1,len_e2,len_e3,len_e4;
-  phydbl lk0, lk1, lk2;
-  phydbl bl_init;
-  phydbl l1,l2,l3;
-  phydbl l_infa, l_infb, l_max;
-  phydbl lk_init, lk_temp;
+  m3ldbl len_e1,len_e2,len_e3,len_e4;
+  m3ldbl lk0, lk1, lk2;
+  m3ldbl bl_init;
+  m3ldbl l1,l2,l3;
+  m3ldbl l_infa, l_infb, l_max;
+  m3ldbl lk_init, lk_temp;
   int i;
   int result,counter,wei;
 
@@ -727,10 +727,10 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
   int l_r, r_l, l_v1, l_v2, r_v3, r_v4;
   node *v1,*v2,*v3,*v4;
   edge *e1,*e2,*e3,*e4;
-  phydbl lktodo;
-  phydbl bl_init;
-  phydbl l_infa, l_infb, l_max;
-  phydbl lk_init, lk_temp;
+  m3ldbl lktodo;
+  m3ldbl bl_init;
+  m3ldbl l_infa, l_infb, l_max;
+  m3ldbl lk_init, lk_temp;
   int i;
 
   if(swaptodo < 0)
@@ -885,13 +885,13 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 * param in: the statistic
 */
 
-phydbl Statistics_To_Probabilities(phydbl in)
+m3ldbl Statistics_To_Probabilities(m3ldbl in)
 {
-  phydbl rough_value=0.0;
-  phydbl a=0.0;
-  phydbl b=0.0;
-  phydbl fa=0.0;
-  phydbl fb=0.0;
+  m3ldbl rough_value=0.0;
+  m3ldbl a=0.0;
+  m3ldbl b=0.0;
+  m3ldbl fa=0.0;
+  m3ldbl fb=0.0;
 
   if(in>=0.000000393 && in<0.00000157)
     {
@@ -1056,17 +1056,17 @@ phydbl Statistics_To_Probabilities(phydbl in)
 * Compute a RELL support, using the latest tested branch
 * param tree: the tested tree
 */
-phydbl Statistics_to_RELL(arbre *tree)
+m3ldbl Statistics_to_RELL(arbre *tree)
 {
   int i;
   int occurence=1000;
-  phydbl nb=0.0;
-  phydbl res;
+  m3ldbl nb=0.0;
+  m3ldbl res;
   int site;
-  phydbl lk0=0.0;
-  phydbl lk1=0.0;
-  phydbl lk2=0.0;
-  phydbl buff = -1.;
+  m3ldbl lk0=0.0;
+  m3ldbl lk1=0.0;
+  m3ldbl lk2=0.0;
+  m3ldbl buff = -1.;
   int position = -1;
 
   //1000 times
@@ -1091,7 +1091,7 @@ phydbl Statistics_to_RELL(arbre *tree)
       if (lk0>=lk1 && lk0>=lk2) nb++;
     }
 
-  res= nb/(phydbl)occurence;
+  res= nb/(m3ldbl)occurence;
 
   return res;
 }
@@ -1101,22 +1101,22 @@ phydbl Statistics_to_RELL(arbre *tree)
 * Compute a SH-like support, using the latest tested branch
 * param tree: the tested tree
 */
-phydbl Statistics_To_SH(arbre *tree)
+m3ldbl Statistics_To_SH(arbre *tree)
 {
   int i;
   int occurence=1000;
-  phydbl nb=0.0;
-  phydbl res;
+  m3ldbl nb=0.0;
+  m3ldbl res;
   int site;
-  phydbl lk0=0.0;
-  phydbl lk1=0.0;
-  phydbl lk2=0.0;
-  phydbl c0=0.0;
-  phydbl c1=0.0;
-  phydbl c2=0.0;
-  phydbl buff=-1.;
+  m3ldbl lk0=0.0;
+  m3ldbl lk1=0.0;
+  m3ldbl lk2=0.0;
+  m3ldbl c0=0.0;
+  m3ldbl c1=0.0;
+  m3ldbl c2=0.0;
+  m3ldbl buff=-1.;
   int position=-1;
-  phydbl delta_local=-1.;
+  m3ldbl delta_local=-1.;
 
 
   //Compute the total log-lk of each NNI position
@@ -1126,7 +1126,7 @@ phydbl Statistics_To_SH(arbre *tree)
       c1+=tree->log_lks_aLRT[1][site];
       c2+=tree->log_lks_aLRT[2][site];
     }
-      phydbl delta=0.0;
+      m3ldbl delta=0.0;
       if (c0>=c1 && c0>=c2)
 	{
 	  if (c1>=c2)
@@ -1241,7 +1241,7 @@ phydbl Statistics_To_SH(arbre *tree)
 * param tree : b_fcus tree
 * param exclude :  side to exclude for computation
 */
-phydbl Update_Lk_At_Given_Edge_Excluding(edge *b_fcus, arbre *tree, node *exclude)
+m3ldbl Update_Lk_At_Given_Edge_Excluding(edge *b_fcus, arbre *tree, node *exclude)
 {
   if((!b_fcus->left->tax) && (exclude == NULL || exclude != b_fcus->left))
     Update_P_Lk(tree,b_fcus,b_fcus->left);

@@ -23,7 +23,7 @@ typedef struct
 {
   node   *v_prune, *u_prune, *v_n, *v_nx1, *u_n, **path;
   edge   *e_prune, *e_regraft;
-  phydbl  l_connect, l_est[3], delta_lk, d_L, d_up_v, d_un_v;
+  m3ldbl  l_connect, l_est[3], delta_lk, d_L, d_up_v, d_un_v;
   int     dist, rgrft_rank, optim_rank, globl_rank;
 } _move_;
 
@@ -38,8 +38,8 @@ int  Perform_One_SPR   (arbre *tree, int max_size);
 
 void Calc_Tree_Length (edge *e_prune, node *v_prune, arbre *tree);
 void Tree_Length      (node *v_prune, node *u_prune, node *v_n, node *v_n_1,
-		       node *v_nx1, node *v_0, node *u_n, phydbl d_up_v_1,
-		       phydbl d_uu, phydbl d_L_1, int n, arbre *tree);
+		       node *v_nx1, node *v_0, node *u_n, m3ldbl d_up_v_1,
+		       m3ldbl d_uu, m3ldbl d_L_1, int n, arbre *tree);
 int  Est_Lk_Change    (edge *e_prune, node *v_prune, arbre *tree);
 int  Best_Lk_Change   (edge *e_prune, node *v_prune, arbre *tree);
 void Make_Move        (_move_ *move, int type, arbre *tree);
@@ -60,12 +60,12 @@ void Speed_Spr_Loop(arbre *tree);
 void Make_Spr_List(arbre *tree);
 void Init_One_Spr(spr *a_spr);
 spr *Make_One_Spr(arbre *tree);
-int Spr(phydbl init_lnL, arbre *tree);
+int Spr(m3ldbl init_lnL, arbre *tree);
 int Spr_Recur(node *a, node *d, arbre *tree);
 int Test_All_Spr_Targets(edge *pulled, node *link, arbre *tree);
 void Randomize_Spr_List(arbre *tree);
 void Test_One_Spr_Target_Recur(node *a, node *d, edge *pulled, node *link, edge *residual, int *best_found, arbre *tree);
-phydbl Test_One_Spr_Target(edge *target, edge *arrow, node *link, edge *residual, arbre *tree);
+m3ldbl Test_One_Spr_Target(edge *target, edge *arrow, node *link, edge *residual, arbre *tree);
 void Apply_Spr_Moves_One_By_One(arbre *tree);
 int Try_One_Spr_Move_Triple(spr *move, arbre *tree);
 int Try_One_Spr_Move_Full(spr *move, arbre *tree);

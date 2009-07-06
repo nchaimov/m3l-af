@@ -216,7 +216,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		}
 	      else
 		{
-		  io->mod->m4mod->alpha = (phydbl)atof(optarg);
+		  io->mod->m4mod->alpha = (m3ldbl)atof(optarg);
 
 		  if(io->mod->m4mod->alpha < 1.E-5)
 		    {
@@ -245,7 +245,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		}
 	      else
 		{
-		  io->mod->m4mod->delta = (phydbl)atof(optarg);
+		  io->mod->m4mod->delta = (m3ldbl)atof(optarg);
 
 		  if(atof(optarg) < 1.E-10)
 		    {
@@ -639,7 +639,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		}
 	      else
 		{
-		  io->mod->alpha = (phydbl)atof(optarg);
+		  io->mod->alpha = (m3ldbl)atof(optarg);
 		  io->mod->s_opt->opt_alpha  = 0;
 		}
 	      break;
@@ -725,7 +725,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 	      }
 	    else if(!isalpha(optarg[0]))
 	      {
-		phydbl sum;
+		m3ldbl sum;
 
 		io->mod->s_opt->opt_state_freq  = 0;
 		io->mod->s_opt->user_state_freq = 1;
@@ -839,7 +839,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			}
 		      else
 			{
-			  io->mod->kappa = (phydbl)atof(optarg);
+			  io->mod->kappa = (m3ldbl)atof(optarg);
 			  io->mod->s_opt->opt_kappa  = 0;
 			  io->mod->s_opt->opt_lambda = 0;
 			}
@@ -921,7 +921,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		}
 	      else
 		{
-		  io->mod->pinvar = (phydbl)atof(optarg);
+		  io->mod->pinvar = (m3ldbl)atof(optarg);
 		  if (io->mod->pinvar > 0.0+MDBL_MIN)
 		    io->mod->invar = 1;
 		  else

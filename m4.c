@@ -47,7 +47,7 @@ int M4_main(int argc, char **argv)
   m4 *m4mod;
   time_t t_beg,t_end;
   div_t hour,min;
-  phydbl best_lnL;
+  m3ldbl best_lnL;
   int bootstrap_this_tree;
   int r_seed;
 
@@ -356,8 +356,8 @@ m4 *M4_Make_Light(int n_o)
 
   m4mod = (m4 *)mCalloc(1,sizeof(m4));
   m4mod->n_o = n_o;
-  m4mod->o_rr = (phydbl *)mCalloc(n_o*n_o,sizeof(phydbl));
-  m4mod->o_fq = (phydbl *)mCalloc(n_o,sizeof(phydbl));
+  m4mod->o_rr = (m3ldbl *)mCalloc(n_o*n_o,sizeof(m3ldbl));
+  m4mod->o_fq = (m3ldbl *)mCalloc(n_o,sizeof(m3ldbl));
   M4_Set_M4mod_Default(m4mod);
   return m4mod;
 }
@@ -378,14 +378,14 @@ void M4_Make_Complete(int n_h, int n_o, m4 *m4mod)
 
   m4mod->n_h = n_h;
   m4mod->n_o = n_o;
-  m4mod->o_mats = (phydbl **)mCalloc(n_h,sizeof(phydbl *));
-  For(i,n_h) m4mod->o_mats[i] = (phydbl *)mCalloc(n_o*n_o,sizeof(phydbl));
-  m4mod->h_mat = (phydbl *)mCalloc(n_h*n_h,sizeof(phydbl));
-  m4mod->h_rr = (phydbl *)mCalloc(n_h*n_h,sizeof(phydbl));
-  m4mod->h_fq = (phydbl *)mCalloc(n_h,sizeof(phydbl));
-  m4mod->multipl = (phydbl *)mCalloc(n_h,sizeof(phydbl));
-  m4mod->multipl_unscaled = (phydbl *)mCalloc(n_h,sizeof(phydbl));
-  m4mod->h_fq_unscaled = (phydbl *)mCalloc(n_h,sizeof(phydbl));
+  m4mod->o_mats = (m3ldbl **)mCalloc(n_h,sizeof(m3ldbl *));
+  For(i,n_h) m4mod->o_mats[i] = (m3ldbl *)mCalloc(n_o*n_o,sizeof(m3ldbl));
+  m4mod->h_mat = (m3ldbl *)mCalloc(n_h*n_h,sizeof(m3ldbl));
+  m4mod->h_rr = (m3ldbl *)mCalloc(n_h*n_h,sizeof(m3ldbl));
+  m4mod->h_fq = (m3ldbl *)mCalloc(n_h,sizeof(m3ldbl));
+  m4mod->multipl = (m3ldbl *)mCalloc(n_h,sizeof(m3ldbl));
+  m4mod->multipl_unscaled = (m3ldbl *)mCalloc(n_h,sizeof(m3ldbl));
+  m4mod->h_fq_unscaled = (m3ldbl *)mCalloc(n_h,sizeof(m3ldbl));
 }
 
 /*********************************************************/
@@ -413,7 +413,7 @@ void M4_Free_M4_Model(m4 *m4mod)
 void M4_Init_Model(m4 *m4mod, allseq *data, model *mod)
 {
   int i;
-  phydbl fq;
+  m3ldbl fq;
 
   
   m4mod->n_o = (mod->datatype == NT)?(4):(20);
@@ -422,7 +422,7 @@ void M4_Init_Model(m4 *m4mod, allseq *data, model *mod)
   For(i,(int)(m4mod->n_h)) m4mod->multipl[i] = 1.;
   For(i,(int)(m4mod->n_o*(m4mod->n_o-1)/2)) m4mod->o_rr[i] = 1.;
   For(i,(int)(m4mod->n_h*(m4mod->n_h-1)/2)) m4mod->h_rr[i] = 1.;
-  fq = (phydbl)(1./m4mod->n_h);
+  fq = (m3ldbl)(1./m4mod->n_h);
 
   if(mod->s_opt->opt_cov_delta) m4mod->delta = 1.0;
   if(mod->s_opt->opt_cov_alpha) m4mod->alpha = 1.0;
@@ -442,7 +442,7 @@ void M4_Update_Qmat(m4 *m4mod, model *mod)
 {
   int i,j;
   int n_s, n_o, n_h;
-  phydbl mr, sum;
+  m3ldbl mr, sum;
 
   /* The number of states in M4 models is the product 
      of the number of hidden states (or classes) by the
@@ -650,38 +650,38 @@ void M4_Init_P_Lk_Tips_Int(arbre *tree)
 
 /*********************************************************/
 
-phydbl ****M4_Integral_Term_On_One_Edge(edge *b, arbre *tree)
+m3ldbl ****M4_Integral_Term_On_One_Edge(edge *b, arbre *tree)
 {
-  phydbl ****integral,***P1,***P2;  
+  m3ldbl ****integral,***P1,***P2;  
   int ns;
   int g,i,j,k,l;
   int step;
 
   ns = tree->mod->ns;
 
-  P1 = (phydbl ***)mCalloc(tree->mod->n_catg,sizeof(phydbl **));
+  P1 = (m3ldbl ***)mCalloc(tree->mod->n_catg,sizeof(m3ldbl **));
   For(g,tree->mod->n_catg) 
     {
-      P1[g] = (phydbl **)mCalloc(ns,sizeof(phydbl *));
-      For(j,ns) P1[g][j] = (phydbl *)mCalloc(ns,sizeof(phydbl));
+      P1[g] = (m3ldbl **)mCalloc(ns,sizeof(m3ldbl *));
+      For(j,ns) P1[g][j] = (m3ldbl *)mCalloc(ns,sizeof(m3ldbl));
     }
 
-  P2 = (phydbl ***)mCalloc(tree->mod->n_catg,sizeof(phydbl **));
+  P2 = (m3ldbl ***)mCalloc(tree->mod->n_catg,sizeof(m3ldbl **));
   For(g,tree->mod->n_catg) 
     {
-      P2[g] = (phydbl **)mCalloc(ns,sizeof(phydbl *));
-      For(j,ns) P2[g][j] = (phydbl *)mCalloc(ns,sizeof(phydbl));
+      P2[g] = (m3ldbl **)mCalloc(ns,sizeof(m3ldbl *));
+      For(j,ns) P2[g][j] = (m3ldbl *)mCalloc(ns,sizeof(m3ldbl));
     }
 
 
-  integral = (phydbl ****)mCalloc(tree->mod->n_catg,sizeof(phydbl ***));
+  integral = (m3ldbl ****)mCalloc(tree->mod->n_catg,sizeof(m3ldbl ***));
   For(g,tree->mod->n_catg)
     {
-      integral[g] = (phydbl ***)mCalloc(ns,sizeof(phydbl **));
+      integral[g] = (m3ldbl ***)mCalloc(ns,sizeof(m3ldbl **));
       For(j,ns)
 	{
-	  integral[g][j] = (phydbl **)mCalloc(ns,sizeof(phydbl *));
-	  For(k,ns) integral[g][j][k] = (phydbl *)mCalloc(ns,sizeof(phydbl));
+	  integral[g][j] = (m3ldbl **)mCalloc(ns,sizeof(m3ldbl *));
+	  For(k,ns) integral[g][j][k] = (m3ldbl *)mCalloc(ns,sizeof(m3ldbl));
 	}
     }
 
@@ -693,8 +693,8 @@ phydbl ****M4_Integral_Term_On_One_Edge(edge *b, arbre *tree)
     {
       For(g,tree->mod->n_catg)
 	{
-	  PMat(((phydbl)(i+0.5)/step)*b->l*tree->mod->gamma_rr[g],tree->mod,P1+g);
-	  PMat(((phydbl)(step-i-0.5)/step)*b->l*tree->mod->gamma_rr[g],tree->mod,P2+g);
+	  PMat(((m3ldbl)(i+0.5)/step)*b->l*tree->mod->gamma_rr[g],tree->mod,P1+g);
+	  PMat(((m3ldbl)(step-i-0.5)/step)*b->l*tree->mod->gamma_rr[g],tree->mod,P2+g);
 
 	  For(j,ns)
 	    {
@@ -702,7 +702,7 @@ phydbl ****M4_Integral_Term_On_One_Edge(edge *b, arbre *tree)
 		{
 		  For(l,ns)
 		    {
-		      integral[g][j][k][l] += P1[g][j][k] * P2[g][j][l]  / ((phydbl)(step));
+		      integral[g][j][k][l] += P1[g][j][k] * P2[g][j][l]  / ((m3ldbl)(step));
 		    }
 		}
 	    }      
@@ -730,20 +730,20 @@ phydbl ****M4_Integral_Term_On_One_Edge(edge *b, arbre *tree)
 
 /*********************************************************/
 
-void M4_Post_Prob_H_Class_Edge_Site(edge *b, phydbl ****integral, phydbl *postprob, arbre *tree)
+void M4_Post_Prob_H_Class_Edge_Site(edge *b, m3ldbl ****integral, m3ldbl *postprob, arbre *tree)
 {
   /* Calculation of the expected frequencies of each hidden
      class at a given site. */
 
-  phydbl site_lk;
+  m3ldbl site_lk;
   int g,i,j,k,l;
   int ns,n_h;
-  phydbl sum;
+  m3ldbl sum;
 
   ns = tree->mod->ns;
   n_h = tree->mod->m4mod->n_h; /* number of classes, i.e., number of hidden states */
 
-  site_lk = (phydbl)exp(tree->site_lk[tree->curr_site]);
+  site_lk = (m3ldbl)exp(tree->site_lk[tree->curr_site]);
 
   if(b->rght->tax)
     {
@@ -830,21 +830,21 @@ void M4_Post_Prob_H_Class_Edge_Site(edge *b, phydbl ****integral, phydbl *postpr
 
 /*********************************************************/
 
-phydbl ***M4_Compute_Proba_Hidden_States_On_Edges(arbre *tree)
+m3ldbl ***M4_Compute_Proba_Hidden_States_On_Edges(arbre *tree)
 {
   int i;
-  phydbl ***post_probs, *dwell;
-  phydbl ****integral;
+  m3ldbl ***post_probs, *dwell;
+  m3ldbl ****integral;
 
 
-  dwell = (phydbl *)mCalloc(tree->mod->m4mod->n_h,sizeof(phydbl));
-  post_probs = (phydbl ***)mCalloc(2*tree->n_otu-3,sizeof(phydbl **));
+  dwell = (m3ldbl *)mCalloc(tree->mod->m4mod->n_h,sizeof(m3ldbl));
+  post_probs = (m3ldbl ***)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl **));
 
   For(i,2*tree->n_otu-3)
     {
-      post_probs[i] = (phydbl **)mCalloc(tree->n_pattern,sizeof(phydbl *));
+      post_probs[i] = (m3ldbl **)mCalloc(tree->n_pattern,sizeof(m3ldbl *));
       For(tree->curr_site,tree->n_pattern) 
-	post_probs[i][tree->curr_site] = (phydbl *)mCalloc(tree->mod->m4mod->n_h,sizeof(phydbl));
+	post_probs[i][tree->curr_site] = (m3ldbl *)mCalloc(tree->mod->m4mod->n_h,sizeof(m3ldbl));
     }
 
 
@@ -876,22 +876,22 @@ phydbl ***M4_Compute_Proba_Hidden_States_On_Edges(arbre *tree)
    is the tree with posterior mean rates averaged over the sites. The following trees
    have posterior mean rates computed for each site.
 */
-void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, arbre *tree)
+void M4_Compute_Posterior_Mean_Rates(m3ldbl ***post_probs, arbre *tree)
 {
   char *s;
   int i;
-  phydbl **mean_post_probs;
-  phydbl *mrr;
-  phydbl sum;
+  m3ldbl **mean_post_probs;
+  m3ldbl *mrr;
+  m3ldbl sum;
   int patt,br,rcat;
-  phydbl *mean_br_len;
+  m3ldbl *mean_br_len;
   int best_r,len_var;
-  phydbl max_prob;
+  m3ldbl max_prob;
 
-  mean_br_len = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
-  mean_post_probs = (phydbl **)mCalloc(2*tree->n_otu-3,sizeof(phydbl *));
-  For(i,2*tree->n_otu-3) mean_post_probs[i] = (phydbl *)mCalloc(tree->mod->m4mod->n_h,sizeof(phydbl ));
-  mrr = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
+  mean_br_len = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
+  mean_post_probs = (m3ldbl **)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl *));
+  For(i,2*tree->n_otu-3) mean_post_probs[i] = (m3ldbl *)mCalloc(tree->mod->m4mod->n_h,sizeof(m3ldbl ));
+  mrr = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 
   Record_Br_Len(NULL,tree);
   M4_Scale_Br_Len(tree);
@@ -933,7 +933,7 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, arbre *tree)
     {
       For(rcat,tree->mod->m4mod->n_h)
 	{
-	  mean_post_probs[br][rcat] /= (phydbl)len_var;
+	  mean_post_probs[br][rcat] /= (m3ldbl)len_var;
 	}
     }
 
@@ -1073,7 +1073,7 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, arbre *tree)
   /* Mean branch lengths */
   For(br,2*tree->n_otu-3)
     {
-      mean_br_len[br] /= (phydbl)tree->data->init_len;
+      mean_br_len[br] /= (m3ldbl)tree->data->init_len;
       tree->t_edges[br]->l = mean_br_len[br];
     }
   PhyML_Fprintf(tree->io->fp_out_tree,"Mean branch lengths=");
@@ -1102,14 +1102,14 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, arbre *tree)
 /*********************************************************/
 
 /* Classifiy each branch, at each site, among one of the rate classes */
-phydbl **M4_Site_Branch_Classification(phydbl ***post_probs, arbre *tree)
+m3ldbl **M4_Site_Branch_Classification(m3ldbl ***post_probs, arbre *tree)
 {
   int patt, br, rcat, i;
-  phydbl **best_probs;
-  phydbl post_prob_fast, post_prob_slow;
+  m3ldbl **best_probs;
+  m3ldbl post_prob_fast, post_prob_slow;
 
-  best_probs = (phydbl **)mCalloc(tree->n_pattern,sizeof(phydbl *));
-  For(i,tree->n_pattern) best_probs[i] = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
+  best_probs = (m3ldbl **)mCalloc(tree->n_pattern,sizeof(m3ldbl *));
+  For(i,tree->n_pattern) best_probs[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 
   tree->print_labels = 1;
 
@@ -1156,9 +1156,9 @@ void M4_Site_Branch_Classification_Experiment(arbre *tree)
 {
   allseq *ori_data,*cpy_data;
   short int **true_rclass, **est_rclass;
-  phydbl **best_probs;
+  m3ldbl **best_probs;
   int i,j;
-  phydbl correct_class, mis_class, unknown;
+  m3ldbl correct_class, mis_class, unknown;
 
 
   true_rclass = (short int **)mCalloc(tree->data->init_len, sizeof(short int *));
@@ -1315,7 +1315,7 @@ void M4_Site_Branch_Classification_Experiment(arbre *tree)
 
 void M4_Scale_Br_Len(arbre *tree)
 {
-  phydbl scale_fact,mrs;
+  m3ldbl scale_fact,mrs;
   int i,j;
 
   /* (1) Work out the relative mean rate of switches */
@@ -1338,7 +1338,7 @@ void M4_Scale_Br_Len(arbre *tree)
 
 /*********************************************************/
 
-void M4_Free_Integral_Term_On_One_Edge(phydbl ****integral, arbre *tree)
+void M4_Free_Integral_Term_On_One_Edge(m3ldbl ****integral, arbre *tree)
 {
   int g,i,j;
 
@@ -1364,13 +1364,13 @@ void M4_Detect_Site_Switches_Experiment(arbre *tree)
   model *nocov_mod,*cov_mod,*ori_mod;
   allseq *ori_data,*cpy_data;
   int i,n_iter;
-  phydbl *nocov_bl,*cov_bl;
-  phydbl *site_lnl_nocov, *site_lnl_cov;
+  m3ldbl *nocov_bl,*cov_bl;
+  m3ldbl *site_lnl_nocov, *site_lnl_cov;
 
-  nocov_bl       = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
-  cov_bl         = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
-  site_lnl_nocov = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
-  site_lnl_cov   = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
+  nocov_bl       = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
+  cov_bl         = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
+  site_lnl_nocov = (m3ldbl *)mCalloc(tree->data->init_len,sizeof(m3ldbl));
+  site_lnl_cov   = (m3ldbl *)mCalloc(tree->data->init_len,sizeof(m3ldbl));
 
   ori_data = tree->data;
   ori_mod  = tree->mod;

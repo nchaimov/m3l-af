@@ -373,20 +373,20 @@ void Mg_Make_Superarbre_Full(superarbre *st, option *io, allseq **data)
   st->match_gt_edge_in_st = (edge ***)mCalloc(st->n_gt,sizeof(edge **));
   For(i,st->n_gt) st->match_gt_edge_in_st[i] = (edge **)mCalloc(2*st->tree->n_otu-3,sizeof(edge *));
 
-  st->bl = (phydbl **)mCalloc(st->n_gt,sizeof(phydbl *));
-  For(i,st->n_gt) st->bl[i] = (phydbl *)mCalloc(2*st->tree->n_otu-3,sizeof(phydbl));
+  st->bl = (m3ldbl **)mCalloc(st->n_gt,sizeof(m3ldbl *));
+  For(i,st->n_gt) st->bl[i] = (m3ldbl *)mCalloc(2*st->tree->n_otu-3,sizeof(m3ldbl));
 
-  st->bl_cpy = (phydbl **)mCalloc(st->n_gt,sizeof(phydbl *));
-  For(i,st->n_gt) st->bl_cpy[i] = (phydbl *)mCalloc(2*st->tree->n_otu-3,sizeof(phydbl));
+  st->bl_cpy = (m3ldbl **)mCalloc(st->n_gt,sizeof(m3ldbl *));
+  For(i,st->n_gt) st->bl_cpy[i] = (m3ldbl *)mCalloc(2*st->tree->n_otu-3,sizeof(m3ldbl));
 
-  st->bl0 = (phydbl **)mCalloc(st->n_gt,sizeof(phydbl *));
-  For(i,st->n_gt) st->bl0[i] = (phydbl *)mCalloc(2*st->tree->n_otu-3,sizeof(phydbl));
+  st->bl0 = (m3ldbl **)mCalloc(st->n_gt,sizeof(m3ldbl *));
+  For(i,st->n_gt) st->bl0[i] = (m3ldbl *)mCalloc(2*st->tree->n_otu-3,sizeof(m3ldbl));
 
-  st->bl1 = (phydbl **)mCalloc(st->n_gt,sizeof(phydbl *));
-  For(i,st->n_gt) st->bl1[i] = (phydbl *)mCalloc(2*st->tree->n_otu-3,sizeof(phydbl));
+  st->bl1 = (m3ldbl **)mCalloc(st->n_gt,sizeof(m3ldbl *));
+  For(i,st->n_gt) st->bl1[i] = (m3ldbl *)mCalloc(2*st->tree->n_otu-3,sizeof(m3ldbl));
 
-  st->bl2 = (phydbl **)mCalloc(st->n_gt,sizeof(phydbl *));
-  For(i,st->n_gt) st->bl2[i] = (phydbl *)mCalloc(2*st->tree->n_otu-3,sizeof(phydbl));
+  st->bl2 = (m3ldbl **)mCalloc(st->n_gt,sizeof(m3ldbl *));
+  For(i,st->n_gt) st->bl2[i] = (m3ldbl *)mCalloc(2*st->tree->n_otu-3,sizeof(m3ldbl));
 
   st->s_mod = (model **)mCalloc(st->n_gt,sizeof(model *));
 
@@ -747,7 +747,7 @@ void Mg_Simu(superarbre *st)
   int i,j,step,n_without_swap,it_lim_without_swap;
   edge **sorted_b,*st_b,**tested_b;
   int n_neg,n_tested,each;
-  phydbl lambda,old_loglk;
+  m3ldbl lambda,old_loglk;
 
   sorted_b = (edge **)mCalloc(st->tree->n_otu-3,sizeof(edge *));
   tested_b = (edge **)mCalloc(st->tree->n_otu-3,sizeof(edge *));
@@ -845,7 +845,7 @@ void Mg_Simu(superarbre *st)
 	  Sort_Edges_NNI_Score(st->tree,sorted_b,n_neg);	  
 
 	  n_tested = 0;
-	  For(i,(int)ceil((phydbl)n_neg*(lambda)))
+	  For(i,(int)ceil((m3ldbl)n_neg*(lambda)))
 	    tested_b[n_tested++] = sorted_b[i];
 
 	  if(n_tested > 0) n_without_swap = 0;
@@ -881,14 +881,14 @@ void Mg_Simu(superarbre *st)
 
 /*********************************************************/
 
-int Mg_Mov_Backward_Topo_Bl(superarbre *st, phydbl lk_old, edge **tested_b, int n_tested)
+int Mg_Mov_Backward_Topo_Bl(superarbre *st, m3ldbl lk_old, edge **tested_b, int n_tested)
 {
   int i,j,step,beg,end;
   edge *st_b;
-  phydbl **l_init;
+  m3ldbl **l_init;
 
-  l_init = (phydbl **)mCalloc(st->n_gt,sizeof(phydbl *));
-  For(i,st->n_gt) l_init[i] = (phydbl *)mCalloc(2*st->tree->n_otu-3,sizeof(phydbl ));
+  l_init = (m3ldbl **)mCalloc(st->n_gt,sizeof(m3ldbl *));
+  For(i,st->n_gt) l_init[i] = (m3ldbl *)mCalloc(2*st->tree->n_otu-3,sizeof(m3ldbl ));
 
   For(i,2*st->tree->n_otu-3) For(j,st->n_gt) l_init[st->bl_partition[j]][i] = st->bl[st->bl_partition[j]][i];
 
@@ -905,7 +905,7 @@ int Mg_Mov_Backward_Topo_Bl(superarbre *st, phydbl lk_old, edge **tested_b, int 
 	    }
 	}
       
-      beg = (int)floor((phydbl)n_tested/(step-1));
+      beg = (int)floor((m3ldbl)n_tested/(step-1));
       end = 0;
       st_b = NULL;
 
@@ -930,7 +930,7 @@ int Mg_Mov_Backward_Topo_Bl(superarbre *st, phydbl lk_old, edge **tested_b, int 
 	}
 
       beg = 0;
-      end = (int)floor((phydbl)n_tested/step);
+      end = (int)floor((m3ldbl)n_tested/step);
       st_b = NULL;
 
       for(i=beg;i<end;i++)
@@ -1322,7 +1322,7 @@ int Mg_Pars(superarbre *st)
 
 /*********************************************************/
 
-int Mg_Spr(phydbl init_lnL, superarbre *st)
+int Mg_Spr(m3ldbl init_lnL, superarbre *st)
 {
   int gt;
   int i;
@@ -1424,7 +1424,7 @@ void Mg_Speed_Spr(superarbre *st)
 {
   int step;
   int gt;
-  phydbl old_lnL;
+  m3ldbl old_lnL;
 
   Make_Spr_List(st->tree);
   For(gt,st->n_gt) Make_Spr_List(st->treelist->tree[gt]);
@@ -1638,7 +1638,7 @@ int Mg_Test_List_Of_Regraft_Pos(spr **st_spr_list, int list_size, superarbre *st
   int i,j,best_move;
   spr *move;
   edge *init_target, *b_residual;
-  phydbl best_lnL, init_lnL;
+  m3ldbl best_lnL, init_lnL;
   int dir_v0, dir_v1, dir_v2;
   int gt;
   int move_num;
@@ -2034,9 +2034,9 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 void Mg_NNI(edge *st_b, superarbre *st)
 {  
   node *v1, *v2, *v3, *v4;
-  phydbl lk_init;
-  phydbl lk0_init, lk1_init, lk2_init;
-  phydbl lk0_opt, lk1_opt, lk2_opt;
+  m3ldbl lk_init;
+  m3ldbl lk0_init, lk1_init, lk2_init;
+  m3ldbl lk0_opt, lk1_opt, lk2_opt;
   int i,j;
   double *init_bl;
   edge **map_edge_bef_swap, **map_edge_aft_swap;
@@ -2405,7 +2405,7 @@ void Mg_Restore_Br_Len(superarbre *st)
 
 /*********************************************************/
 
-phydbl Mg_Lk(superarbre *st)
+m3ldbl Mg_Lk(superarbre *st)
 {
   int i;
 
@@ -2425,11 +2425,11 @@ phydbl Mg_Lk(superarbre *st)
 
 /*********************************************************/
 
-phydbl Mg_Lk_At_Given_Edge(edge *st_b, superarbre *st)
+m3ldbl Mg_Lk_At_Given_Edge(edge *st_b, superarbre *st)
 {
   int i;
   edge *gt_b;
-  phydbl lnL;
+  m3ldbl lnL;
 
   Mg_Set_Bl(st->bl,st);
 
@@ -2448,7 +2448,7 @@ phydbl Mg_Lk_At_Given_Edge(edge *st_b, superarbre *st)
 
 /*********************************************************/
 
-phydbl Mg_Update_Lk_At_Given_Edge(edge *st_b, superarbre *st)
+m3ldbl Mg_Update_Lk_At_Given_Edge(edge *st_b, superarbre *st)
 {
   int i;
   edge *gt_b;
@@ -2548,15 +2548,15 @@ void Mg_Fill_Model_Partitions_Table(superarbre *st)
 
 /*********************************************************/
 
-phydbl Mg_Br_Len_Brent(edge *st_b, superarbre *st)
+m3ldbl Mg_Br_Len_Brent(edge *st_b, superarbre *st)
 {
   int iter, n_iter_max;
-  phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-  phydbl e=0.0;
-  phydbl old_lnL, init_lnL;
-  phydbl ax, bx, cx;
+  m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+  m3ldbl e=0.0;
+  m3ldbl old_lnL, init_lnL;
+  m3ldbl ax, bx, cx;
   int bl_part;
-  phydbl *param;
+  m3ldbl *param;
   double tol;
 
   tol = st->tree->mod->s_opt->min_diff_lk_local;
@@ -2674,7 +2674,7 @@ void Mg_Initialise_Bl_Partition(superarbre *st)
 
 void Mg_Optimize_Br_Len_Serie(node *st_a, node *st_d, edge *st_b, superarbre *st)
 {
-  phydbl lk_init;
+  m3ldbl lk_init;
   int i;
 
   lk_init = st->tree->c_lnL;
@@ -2761,7 +2761,7 @@ void Mg_Make_N_Swap(edge **st_b, int beg, int end, superarbre *st)
 
 /*********************************************************/
 
-void Mg_Update_Bl(phydbl fact, superarbre *st)
+void Mg_Update_Bl(m3ldbl fact, superarbre *st)
 {
   int i,j;
   

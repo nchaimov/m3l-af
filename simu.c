@@ -25,7 +25,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 void Simu_Loop(arbre *tree)
 {
-  phydbl lk_old;
+  m3ldbl lk_old;
 
   tree->both_sides = 0;
   Lk(tree);
@@ -55,7 +55,7 @@ void Simu_Loop(arbre *tree)
 
 int Simu(arbre *tree, int n_step_max)
 {
-  phydbl old_loglk,n_iter,lambda;
+  m3ldbl old_loglk,n_iter,lambda;
   int i,n_neg,n_tested,n_without_swap,n_tot_swap,step,it_lim_without_swap, j;
   edge **sorted_b,**tested_b;
   int opt_free_param;
@@ -137,7 +137,7 @@ int Simu(arbre *tree, int n_step_max)
       Update_Bl(tree,lambda);
 	  	        
       n_tested = 0;
-      For(i,(int)ceil((phydbl)n_neg*(lambda)))
+      For(i,(int)ceil((m3ldbl)n_neg*(lambda)))
 	tested_b[n_tested++] = sorted_b[i];
       
       Make_N_Swap(tree,tested_b,0,n_tested);
@@ -163,7 +163,7 @@ int Simu(arbre *tree, int n_step_max)
 
 void Simu_Pars(arbre *tree, int n_step_max)
 {
-  phydbl old_pars,n_iter,lambda;
+  m3ldbl old_pars,n_iter,lambda;
   int i,n_neg,n_tested,n_without_swap,n_tot_swap,step;
   edge **sorted_b,**tested_b;
   int each;
@@ -232,7 +232,7 @@ void Simu_Pars(arbre *tree, int n_step_max)
 	  Sort_Edges_NNI_Score(tree,sorted_b,n_neg);	    
 	  
 	  n_tested = 0;
-	  For(i,(int)ceil((phydbl)n_neg*(lambda)))
+	  For(i,(int)ceil((m3ldbl)n_neg*(lambda)))
 	    tested_b[n_tested++] = sorted_b[i];
 	  
 	  Make_N_Swap(tree,tested_b,0,n_tested);
@@ -257,7 +257,7 @@ void Select_Edges_To_Swap(arbre *tree, edge **sorted_b, int *n_neg)
   int i;
   edge *b;
   int min;
-  phydbl best_score;
+  m3ldbl best_score;
 
   *n_neg = 0;
   min = 0;
@@ -280,7 +280,7 @@ void Select_Edges_To_Swap(arbre *tree, edge **sorted_b, int *n_neg)
 
 /*********************************************************/
 
-void Update_Bl(arbre *tree, phydbl fact)
+void Update_Bl(arbre *tree, m3ldbl fact)
 {
   int i,j;
   edge *b;
@@ -371,14 +371,14 @@ int Make_Best_Swap(arbre *tree)
 
 /*********************************************************/
 
-int Mov_Backward_Topo_Bl(arbre *tree, phydbl lk_old, edge **tested_b, int n_tested)
+int Mov_Backward_Topo_Bl(arbre *tree, m3ldbl lk_old, edge **tested_b, int n_tested)
 {
-  phydbl *l_init;
+  m3ldbl *l_init;
   int i,step,beg,end;
   edge *b;
 
 
-  l_init = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
+  l_init = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 //JSJ: temp fix to l
   For(i,2*tree->n_otu-3) l_init[i] = tree->t_edges[i]->l[0];
   
@@ -392,11 +392,11 @@ int Mov_Backward_Topo_Bl(arbre *tree, phydbl lk_old, edge **tested_b, int n_test
 	  b->l[0] = b->l_old[0] + (1./step) * (l_init[i] - b->l_old[0]);
 	}
 
-      beg = (int)floor((phydbl)n_tested/(step-1));
+      beg = (int)floor((m3ldbl)n_tested/(step-1));
       end = 0;
       Unswap_N_Branch(tree,tested_b,beg,end);
       beg = 0;
-      end = (int)floor((phydbl)n_tested/step);
+      end = (int)floor((m3ldbl)n_tested/step);
       Swap_N_Branch(tree,tested_b,beg,end);
       
       if(!end) tree->n_swap = 0;
@@ -449,11 +449,11 @@ int Mov_Backward_Topo_Pars(arbre *tree, int pars_old, edge **tested_b, int n_tes
   tree->both_sides = 0;
   do
     {
-      beg = (int)floor((phydbl)n_tested/(step-1));
+      beg = (int)floor((m3ldbl)n_tested/(step-1));
       end = 0;
       Unswap_N_Branch(tree,tested_b,beg,end);
       beg = 0;
-      end = (int)floor((phydbl)n_tested/step);
+      end = (int)floor((m3ldbl)n_tested/step);
       Swap_N_Branch(tree,tested_b,beg,end);
       
       if(!end) tree->n_swap = 0;
@@ -575,7 +575,7 @@ void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 
 /*********************************************************/
 
-void Check_NNI_Scores_Around(node *a, node *d, edge *b, phydbl *best_score)
+void Check_NNI_Scores_Around(node *a, node *d, edge *b, m3ldbl *best_score)
 {
 
   int i;

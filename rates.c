@@ -40,7 +40,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 /*********************************************************/
 
-phydbl RATES_Lk_Rates(arbre *tree)
+m3ldbl RATES_Lk_Rates(arbre *tree)
 {
   
   RATES_Set_Node_Times(tree);
@@ -60,7 +60,7 @@ phydbl RATES_Lk_Rates(arbre *tree)
 void RATES_Lk_Rates_Pre(node *a, node *d, edge *b, arbre *tree)
 {
   int i,n1,n2;
-  phydbl dens,mu1,mu2,dt1,dt2;
+  m3ldbl dens,mu1,mu2,dt1,dt2;
       
 
   if(d->anc != a)
@@ -110,7 +110,7 @@ void RATES_Lk_Rates_Pre(node *a, node *d, edge *b, arbre *tree)
 
 /*********************************************************/
 
-phydbl RATES_Lk_Change_One_Rate(node *d, phydbl new_rate, arbre *tree)
+m3ldbl RATES_Lk_Change_One_Rate(node *d, m3ldbl new_rate, arbre *tree)
 {
   tree->rates->nd_r[d->num] = new_rate;
   RATES_Update_Triplet(d,tree);
@@ -120,7 +120,7 @@ phydbl RATES_Lk_Change_One_Rate(node *d, phydbl new_rate, arbre *tree)
 
 /*********************************************************/
 
-phydbl RATES_Lk_Change_One_Time(node *n, phydbl new_t, arbre *tree)
+m3ldbl RATES_Lk_Change_One_Time(node *n, m3ldbl new_t, arbre *tree)
 {  
   if(n == tree->n_root)
     {
@@ -149,10 +149,10 @@ phydbl RATES_Lk_Change_One_Time(node *n, phydbl new_t, arbre *tree)
 
 void RATES_Update_Triplet(node *n, arbre *tree)
 {
-  phydbl curr_triplet,new_triplet;
-  phydbl dt0,dt1,dt2;
-  phydbl mu1_mu0,mu2_mu0;
-  phydbl mu0,mu1,mu2;
+  m3ldbl curr_triplet,new_triplet;
+  m3ldbl dt0,dt1,dt2;
+  m3ldbl mu1_mu0,mu2_mu0;
+  m3ldbl mu0,mu1,mu2;
   int n0,n1,n2;
   int i;
   node *v1,*v2;
@@ -165,7 +165,7 @@ void RATES_Update_Triplet(node *n, arbre *tree)
 
   if(n == tree->n_root)
     {
-      phydbl dens;
+      m3ldbl dens;
       
       dens = 0.0;
 
@@ -236,10 +236,10 @@ void RATES_Update_Triplet(node *n, arbre *tree)
 
 /*********************************************************/
 /* Returns f(mu2;mu1) */
-phydbl RATES_Lk_Rates_Core(phydbl mu1, phydbl mu2, int n1, int n2, phydbl dt1, phydbl dt2, arbre *tree)
+m3ldbl RATES_Lk_Rates_Core(m3ldbl mu1, m3ldbl mu2, int n1, int n2, m3ldbl dt1, m3ldbl dt2, arbre *tree)
 {
-  phydbl dens;
-  phydbl alpha, beta, lexp;
+  m3ldbl dens;
+  m3ldbl alpha, beta, lexp;
 
   lexp = tree->rates->lexp;
   alpha = tree->rates->alpha;
@@ -292,7 +292,7 @@ phydbl RATES_Lk_Rates_Core(phydbl mu1, phydbl mu2, int n1, int n2, phydbl dt1, p
 
 /*********************************************************/
 
-phydbl RATES_Compound_Core(phydbl mu1, phydbl mu2, int n1, int n2, phydbl dt1, phydbl dt2, phydbl alpha, phydbl beta, phydbl lexp, phydbl eps, int approx)
+m3ldbl RATES_Compound_Core(m3ldbl mu1, m3ldbl mu2, int n1, int n2, m3ldbl dt1, m3ldbl dt2, m3ldbl alpha, m3ldbl beta, m3ldbl lexp, m3ldbl eps, int approx)
 {
   if((n1 > -1) && (n2 > -1))
     {
@@ -306,12 +306,12 @@ phydbl RATES_Compound_Core(phydbl mu1, phydbl mu2, int n1, int n2, phydbl dt1, p
 
 /*********************************************************/
 
-phydbl RATES_Compound_Core_Marginal(phydbl mu1, phydbl mu2, phydbl dt1, phydbl dt2, phydbl alpha, phydbl beta, phydbl lexp, phydbl eps, int approx)
+m3ldbl RATES_Compound_Core_Marginal(m3ldbl mu1, m3ldbl mu2, m3ldbl dt1, m3ldbl dt2, m3ldbl alpha, m3ldbl beta, m3ldbl lexp, m3ldbl eps, int approx)
 {
-  phydbl p0,p1,v0,v1,v2;
-  phydbl dmu1;
+  m3ldbl p0,p1,v0,v1,v2;
+  m3ldbl dmu1;
   int    equ;
-  phydbl dens;
+  m3ldbl dens;
   
   v0 = v1 = v2 = 0.0;
   
@@ -384,11 +384,11 @@ phydbl RATES_Compound_Core_Marginal(phydbl mu1, phydbl mu2, phydbl dt1, phydbl d
 
 /**********************************************************/
 
-phydbl RATES_Compound_Core_Joint(phydbl mu1, phydbl mu2, int n1, int n2, phydbl dt1, phydbl dt2, 
-				 phydbl alpha, phydbl beta, phydbl lexp, phydbl eps, int approx)
+m3ldbl RATES_Compound_Core_Joint(m3ldbl mu1, m3ldbl mu2, int n1, int n2, m3ldbl dt1, m3ldbl dt2, 
+				 m3ldbl alpha, m3ldbl beta, m3ldbl lexp, m3ldbl eps, int approx)
 {
-  phydbl density;
-  phydbl dmu1;
+  m3ldbl density;
+  m3ldbl dmu1;
   
 
   if(n1 < 0 || n2 < 0)
@@ -485,14 +485,14 @@ void RATES_Print_Rates_Pre(node *a, node *d, edge *b, arbre *tree)
 
 /*********************************************************/
 
-phydbl RATES_Check_Mean_Rates(arbre *tree)
+m3ldbl RATES_Check_Mean_Rates(arbre *tree)
 {
-  phydbl sum;
+  m3ldbl sum;
   int i;
   
   sum = 0.0;
   For(i,2*tree->n_otu-2) sum += tree->rates->nd_r[i];
-  return(sum/(phydbl)(2*tree->n_otu-2));
+  return(sum/(m3ldbl)(2*tree->n_otu-2));
 }
 
 /*********************************************************/
@@ -503,20 +503,20 @@ trate *RATES_Make_Rate_Struct(int n_otu)
   trate *rates;
   
   rates               = (trate *)mCalloc(1,sizeof(trate));
-  rates->br_r         = (phydbl *)mCalloc(2*n_otu-3,sizeof(phydbl));
-  rates->old_r        = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
-  rates->nd_r         = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
-  rates->old_t        = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
-  rates->nd_t         = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
-  rates->true_t       = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
-  rates->dens         = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
-  rates->triplet      = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
+  rates->br_r         = (m3ldbl *)mCalloc(2*n_otu-3,sizeof(m3ldbl));
+  rates->old_r        = (m3ldbl *)mCalloc(2*n_otu-2,sizeof(m3ldbl));
+  rates->nd_r         = (m3ldbl *)mCalloc(2*n_otu-2,sizeof(m3ldbl));
+  rates->old_t        = (m3ldbl *)mCalloc(2*n_otu-1,sizeof(m3ldbl));
+  rates->nd_t         = (m3ldbl *)mCalloc(2*n_otu-1,sizeof(m3ldbl));
+  rates->true_t       = (m3ldbl *)mCalloc(2*n_otu-1,sizeof(m3ldbl));
+  rates->dens         = (m3ldbl *)mCalloc(2*n_otu-2,sizeof(m3ldbl));
+  rates->triplet      = (m3ldbl *)mCalloc(2*n_otu-1,sizeof(m3ldbl));
   rates->n_jps        = (int *)mCalloc(2*n_otu-2,sizeof(int));
   rates->t_jps        = (int *)mCalloc(2*n_otu-2,sizeof(int));
-  rates->prior_r_mean = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
-  rates->prior_r_cov  = (phydbl *)mCalloc((2*n_otu-2)*(2*n_otu-2),sizeof(phydbl));
-  rates->post_r_mean  = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
-  rates->post_r_cov   = (phydbl *)mCalloc((2*n_otu-2)*(2*n_otu-2),sizeof(phydbl));
+  rates->prior_r_mean = (m3ldbl *)mCalloc(2*n_otu-2,sizeof(m3ldbl));
+  rates->prior_r_cov  = (m3ldbl *)mCalloc((2*n_otu-2)*(2*n_otu-2),sizeof(m3ldbl));
+  rates->post_r_mean  = (m3ldbl *)mCalloc(2*n_otu-2,sizeof(m3ldbl));
+  rates->post_r_cov   = (m3ldbl *)mCalloc((2*n_otu-2)*(2*n_otu-2),sizeof(m3ldbl));
 
   return rates;
 }
@@ -561,9 +561,9 @@ void RATES_Init_Rate_Struct(trate *rates, int n_otu)
 
 /*********************************************************/
 
-void RATES_Bracket_N_Jumps(int *up, int *down, phydbl param)
+void RATES_Bracket_N_Jumps(int *up, int *down, m3ldbl param)
 {
-  phydbl cdf,eps,a,b,c;
+  m3ldbl cdf,eps,a,b,c;
   int step;
 
   step = 10;
@@ -613,11 +613,11 @@ void RATES_Bracket_N_Jumps(int *up, int *down, phydbl param)
 */ 
 /* compute f(mu;dt,a,b,lexp), the probability density of mu. We need to integrate over the
    possible number of jumps (n) during the time interval dt */
-phydbl RATES_Dmu(phydbl mu, int n_jumps, phydbl dt, phydbl a, phydbl b, phydbl lexp, int min_n, int jps_dens)
+m3ldbl RATES_Dmu(m3ldbl mu, int n_jumps, m3ldbl dt, m3ldbl a, m3ldbl b, m3ldbl lexp, int min_n, int jps_dens)
 {
   if(n_jumps < 0) /* Marginal, i.e., the number of jumps is not fixed */
     {
-      phydbl var,cumpoissprob,dens,mean,poissprob,ab2,gammadens,lexpdt,*suminv,b2;
+      m3ldbl var,cumpoissprob,dens,mean,poissprob,ab2,gammadens,lexpdt,*suminv,b2;
       int n,up,down;
       
       var          = 0.0;
@@ -649,7 +649,7 @@ phydbl RATES_Dmu(phydbl mu, int n_jumps, phydbl dt, phydbl a, phydbl b, phydbl l
     }
   else /* Joint, i.e., return P(mu | dt, n_jumps) */
     {
-      phydbl mean, var, density;
+      m3ldbl mean, var, density;
 
 
       mean = 1.0;
@@ -668,9 +668,9 @@ phydbl RATES_Dmu(phydbl mu, int n_jumps, phydbl dt, phydbl a, phydbl b, phydbl l
   
 /*********************************************************/
   
-phydbl RATES_Dmu_One(phydbl mu, phydbl dt, phydbl a, phydbl b, phydbl lexp)
+m3ldbl RATES_Dmu_One(m3ldbl mu, m3ldbl dt, m3ldbl a, m3ldbl b, m3ldbl lexp)
 {
-  phydbl var,cumpoissprob,dens,mean,poissprob,ab2,gammadens,lexpdt,*suminv,b2;
+  m3ldbl var,cumpoissprob,dens,mean,poissprob,ab2,gammadens,lexpdt,*suminv,b2;
   int n,up,down;
   
   var          = 0.0;
@@ -728,9 +728,9 @@ phydbl RATES_Dmu_One(phydbl mu, phydbl dt, phydbl a, phydbl b, phydbl lexp)
    instantaneous rate at node a, this function works out an expected number of (amino-acids or 
    nucleotide) substitutions per site.
 */
-void RATES_Expect_Number_Subst(phydbl t_beg, phydbl t_end, phydbl *r_beg, phydbl alpha, phydbl lexp, int *n_jumps, phydbl *mean_r)
+void RATES_Expect_Number_Subst(m3ldbl t_beg, m3ldbl t_end, m3ldbl *r_beg, m3ldbl alpha, m3ldbl lexp, int *n_jumps, m3ldbl *mean_r)
 {
-  phydbl curr_r, curr_t, next_t;
+  m3ldbl curr_r, curr_t, next_t;
 
   curr_r = *r_beg;
   *mean_r = *r_beg;
@@ -766,11 +766,11 @@ void RATES_Expect_Number_Subst(phydbl t_beg, phydbl t_end, phydbl *r_beg, phydbl
 /*********************************************************/
 
 
-void RATES_Get_Mean_Rates_Pre(node *a, node *d, edge *b, phydbl *r_a, phydbl alpha, phydbl lexp, arbre *tree)
+void RATES_Get_Mean_Rates_Pre(node *a, node *d, edge *b, m3ldbl *r_a, m3ldbl alpha, m3ldbl lexp, arbre *tree)
 {
-  phydbl a_t,d_t;
-  phydbl r_d;
-  phydbl mean_r;
+  m3ldbl a_t,d_t;
+  m3ldbl r_d;
+  m3ldbl mean_r;
   int n_jumps;
 
   a_t = tree->rates->nd_t[a->num];
@@ -814,7 +814,7 @@ void RATES_Get_Mean_Rates_Pre(node *a, node *d, edge *b, phydbl *r_a, phydbl alp
 
 void RATES_Random_Branch_Lengths(arbre *tree)
 {
-  phydbl r0,r_root,alpha,lexp;
+  m3ldbl r0,r_root,alpha,lexp;
    
   alpha = tree->rates->alpha;
   lexp  = tree->rates->lexp;
@@ -865,7 +865,7 @@ void RATES_Set_Node_Times_Pre(node *a, node *d, arbre *tree)
   else
     {
       node *v1, *v2; /* the two sons of d */
-      phydbl t_sup, t_inf;
+      m3ldbl t_sup, t_inf;
       int i;
 
       v1 = v2 = NULL;
@@ -906,7 +906,7 @@ void RATES_Randomize_Node_Times_Pre(node *a, node *d, arbre *tree)
   else
     {
       node *v1, *v2; /* the two sons of d */
-      phydbl t_sup, t_inf, u;
+      m3ldbl t_sup, t_inf, u;
       int i;
 
       v1 = v2 = NULL;
@@ -943,9 +943,9 @@ void RATES_Randomize_Node_Times_Pre(node *a, node *d, arbre *tree)
 
 /*********************************************************/
 
-phydbl RATES_Dmu1_And_Mu2_One_Jump_Two_Intervals(phydbl mu1, phydbl mu2, phydbl dt1, phydbl dt2, phydbl alpha, phydbl beta)
+m3ldbl RATES_Dmu1_And_Mu2_One_Jump_Two_Intervals(m3ldbl mu1, m3ldbl mu2, m3ldbl dt1, m3ldbl dt2, m3ldbl alpha, m3ldbl beta)
 {
-  phydbl dens;
+  m3ldbl dens;
 
   if(mu2 < 1.E-10)
     {
@@ -970,13 +970,13 @@ phydbl RATES_Dmu1_And_Mu2_One_Jump_Two_Intervals(phydbl mu1, phydbl mu2, phydbl 
 
 /*********************************************************/
 
-phydbl RATES_Dmu1_Given_V_And_N(phydbl mu1, phydbl v, int n, phydbl dt1, phydbl a, phydbl b)
+m3ldbl RATES_Dmu1_Given_V_And_N(m3ldbl mu1, m3ldbl v, int n, m3ldbl dt1, m3ldbl a, m3ldbl b)
 {
-  phydbl lbda,dens,h,u;
-  phydbl mean,var;
+  m3ldbl lbda,dens,h,u;
+  m3ldbl mean,var;
   int n_points,i;
-  phydbl ndb;
-  phydbl end, beg;
+  m3ldbl ndb;
+  m3ldbl end, beg;
 
   n_points = 20;
 
@@ -989,9 +989,9 @@ phydbl RATES_Dmu1_Given_V_And_N(phydbl mu1, phydbl v, int n, phydbl dt1, phydbl 
     {
       mean = a*b;
       var = a*b*b*2./(n+1.);
-      ndb = (phydbl)n/dt1;
+      ndb = (m3ldbl)n/dt1;
       
-      h = (end - beg) / (phydbl)n_points;
+      h = (end - beg) / (m3ldbl)n_points;
       
       lbda = beg;
       For(i,n_points-1) 
@@ -1042,9 +1042,9 @@ phydbl RATES_Dmu1_Given_V_And_N(phydbl mu1, phydbl v, int n, phydbl dt1, phydbl 
 /*********************************************************/
 /* Joint density of mu1 and a minimum number of jumps occuring in the interval dt1+dt2 given mu1. 
    1 jump occurs at the junction of the two intervals, which makes mu1 and mu2 independant */
-phydbl RATES_Dmu2_And_Mu1_Given_Min_N(phydbl mu1, phydbl mu2, phydbl dt1, phydbl dt2, int n_min, phydbl a, phydbl b, phydbl lexp)
+m3ldbl RATES_Dmu2_And_Mu1_Given_Min_N(m3ldbl mu1, m3ldbl mu2, m3ldbl dt1, m3ldbl dt2, int n_min, m3ldbl a, m3ldbl b, m3ldbl lexp)
 {
-  phydbl density, lexpdt,cumpoiss,poiss;
+  m3ldbl density, lexpdt,cumpoiss,poiss;
   int i;
   int up,down;
 
@@ -1089,9 +1089,9 @@ phydbl RATES_Dmu2_And_Mu1_Given_Min_N(phydbl mu1, phydbl mu2, phydbl dt1, phydbl
    weights corresponding to the probability of each partitition.
  */
 
-phydbl RATES_Dmu2_And_Mu1_Given_N(phydbl mu1, phydbl mu2, phydbl dt1, phydbl dt2, int n, phydbl a, phydbl b, phydbl lexp)
+m3ldbl RATES_Dmu2_And_Mu1_Given_N(m3ldbl mu1, m3ldbl mu2, m3ldbl dt1, m3ldbl dt2, int n, m3ldbl a, m3ldbl b, m3ldbl lexp)
   {
-    phydbl density,lexpdt1,lexpdt2,texpn,cumpoiss,poiss,abb,ab,lognf,logdt1,logdt2,nlogdt;
+    m3ldbl density,lexpdt1,lexpdt2,texpn,cumpoiss,poiss,abb,ab,lognf,logdt1,logdt2,nlogdt;
     int i;
 
     density  = 0.0;
@@ -1138,9 +1138,9 @@ phydbl RATES_Dmu2_And_Mu1_Given_N(phydbl mu1, phydbl mu2, phydbl dt1, phydbl dt2
 /*********************************************************/
 
 /* Logarithm of Formula (9) in Rannala and Yang (1996) */
-phydbl RATES_Yule(arbre *tree)
+m3ldbl RATES_Yule(arbre *tree)
 {
-  phydbl sumti,density,lambda;
+  m3ldbl sumti,density,lambda;
   int n,i;
 
   sumti = 0.0;
@@ -1170,11 +1170,11 @@ phydbl RATES_Yule(arbre *tree)
 void RATES_Adjust_Clock_Rate(arbre *tree)
 {
   int i;
-  phydbl mean;
+  m3ldbl mean;
 
   mean = 0.0;
   For(i,2*tree->n_otu-2) mean += tree->rates->nd_r[i];
-  mean /= (phydbl)(2*tree->n_otu-2);
+  mean /= (m3ldbl)(2*tree->n_otu-2);
   For(i,2*tree->n_otu-2) tree->rates->nd_r[i] /= mean;
   tree->rates->clock_r *= mean;
 }
@@ -1215,7 +1215,7 @@ void RATES_Reset_Times(arbre *tree)
 
 void RATES_Get_Br_Len(arbre *tree)
 {
-  phydbl dt,rr,cr;
+  m3ldbl dt,rr,cr;
   node *left, *rght;
   int i;
 
@@ -1252,7 +1252,7 @@ void RATES_Get_Br_Len(arbre *tree)
 
 void RATES_Get_Rates_From_Bl(arbre *tree)
 {
-  phydbl dt,cr;
+  m3ldbl dt,cr;
   node *left, *rght;
   int i;
 
@@ -1286,10 +1286,10 @@ void RATES_Get_Rates_From_Bl(arbre *tree)
 
 /*********************************************************/
 
-phydbl RATES_Lk_Jumps(arbre *tree)
+m3ldbl RATES_Lk_Jumps(arbre *tree)
 {
   int i,n_jps;
-  phydbl dens,dt,lexp;
+  m3ldbl dens,dt,lexp;
   node *n;
 
   n = NULL;
@@ -1364,14 +1364,14 @@ phydbl RATES_Lk_Jumps(arbre *tree)
 /* { */
 /*   int i,j; */
 /*   int dim; */
-/*   phydbl *inv_prior_cov, *inv_like_cov; */
-/*   phydbl *post_mean, *post_cov; */
-/*   phydbl *A, *B, *buff; */
+/*   m3ldbl *inv_prior_cov, *inv_like_cov; */
+/*   m3ldbl *post_mean, *post_cov; */
+/*   m3ldbl *A, *B, *buff; */
 
 /*   dim = 2*tree->n_otu-3; */
 
-/*   inv_prior_cov = (phydbl *)mCalloc(dim*dim,sizeof(phydbl)); */
-/*   buff          = (phydbl *)mCalloc(dim*dim,sizeof(phydbl)); */
+/*   inv_prior_cov = (m3ldbl *)mCalloc(dim*dim,sizeof(m3ldbl)); */
+/*   buff          = (m3ldbl *)mCalloc(dim*dim,sizeof(m3ldbl)); */
 
 /*   inv_like_cov  = tree->hessian; */
 /*   post_cov      = tree->rates->post_cov_bl; */

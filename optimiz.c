@@ -20,10 +20,10 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 /*********************************************************/
 
-void Optimize_Single_Param_Generic(arbre *tree, phydbl *param, phydbl lim_inf, phydbl lim_sup, phydbl tol, int n_max_iter, int quickdirty)
+void Optimize_Single_Param_Generic(arbre *tree, m3ldbl *param, m3ldbl lim_inf, m3ldbl lim_sup, m3ldbl tol, int n_max_iter, int quickdirty)
 {
-	phydbl ax,bx,cx;
-	phydbl lk_init;
+	m3ldbl ax,bx,cx;
+	m3ldbl lk_init;
 
 	lk_init = tree->c_lnL;
 
@@ -45,13 +45,13 @@ void Optimize_Single_Param_Generic(arbre *tree, phydbl *param, phydbl lim_inf, p
 
 /*********************************************************/
 
-int Generic_Brak(phydbl *param,
-		phydbl *ax, phydbl *bx, phydbl *cx,
-		phydbl *fa, phydbl *fb, phydbl *fc,
-		phydbl lim_inf, phydbl lim_sup,
+int Generic_Brak(m3ldbl *param,
+		m3ldbl *ax, m3ldbl *bx, m3ldbl *cx,
+		m3ldbl *fa, m3ldbl *fb, m3ldbl *fc,
+		m3ldbl lim_inf, m3ldbl lim_sup,
 		arbre *tree)
 {
-	phydbl ulim,u,r,q,fu,dum;
+	m3ldbl ulim,u,r,q,fu,dum;
 
 	u = 0.0;
 	*param = *ax;
@@ -164,14 +164,14 @@ int Generic_Brak(phydbl *param,
 
 /*********************************************************/
 
-phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
-		phydbl *xmin, arbre *tree, int n_iter_max,
+m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
+		m3ldbl *xmin, arbre *tree, int n_iter_max,
 		int quickdirty)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	phydbl e=0.0;
-	phydbl old_lnL,init_lnL;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl old_lnL,init_lnL;
 
 
 	d=0.0;
@@ -275,10 +275,10 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 
 /*********************************************************/
 
-phydbl RRparam_GTR_Golden(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
-		phydbl *xmin, arbre *tree, allseq *alldata, phydbl *param, int n_iter_max)
+m3ldbl RRparam_GTR_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
+		m3ldbl *xmin, arbre *tree, allseq *alldata, m3ldbl *param, int n_iter_max)
 {
-	phydbl f1,f2,x0,x1,x2,x3;
+	m3ldbl f1,f2,x0,x1,x2,x3;
 	int n_iter;
 
 
@@ -340,10 +340,10 @@ phydbl RRparam_GTR_Golden(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 
 /*********************************************************/
 
-phydbl Br_Len_Golden(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
-		phydbl *xmin, edge *b_fcus, arbre *tree)
+m3ldbl Br_Len_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
+		m3ldbl *xmin, edge *b_fcus, arbre *tree)
 {
-	phydbl f1,f2,x0,x1,x2,x3;
+	m3ldbl f1,f2,x0,x1,x2,x3;
 
 	x0=ax;
 	x3=cx;
@@ -391,11 +391,11 @@ phydbl Br_Len_Golden(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 
 /*********************************************************/
 //JSJ: a lot of fixes to l in this function
-int Br_Len_Brak(phydbl *ax, phydbl *bx, phydbl *cx, 
-		phydbl *fa, phydbl *fb, phydbl *fc, 
+int Br_Len_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, 
+		m3ldbl *fa, m3ldbl *fb, m3ldbl *fc, 
 		edge *b_fcus, arbre *tree)
 {
-	phydbl ulim,u,r,q,fu,dum;
+	m3ldbl ulim,u,r,q,fu,dum;
 	//JSJ: temporary fixes to l
 	b_fcus->l[0] = *ax;
 	*fa=-Lk_At_Given_Edge(b_fcus,tree);
@@ -479,20 +479,20 @@ int Br_Len_Brak(phydbl *ax, phydbl *bx, phydbl *cx,
 
 /*********************************************************/
 //JSJ: temp fix of arguments
-phydbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
+m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 {
 	return Br_Len_Brent(10.*b_fcus->l[0],b_fcus->l[0],.10*b_fcus->l[0],tree->mod->s_opt->min_diff_lk_local,b_fcus,tree,1000,0);
 }
 
 /*********************************************************/
 //JSJ: lots of temp fixes in below function to l
-phydbl Br_Len_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
+m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	phydbl e=0.0;
-	phydbl old_lnL, init_lnL;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl old_lnL, init_lnL;
 
 	d=0.0;
 	a=((ax < cx) ? ax : cx);
@@ -590,13 +590,13 @@ phydbl Br_Len_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 
 /*********************************************************/
 
-phydbl Node_Time_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
+m3ldbl Node_Time_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		node *anc, node *des, arbre *tree, int n_iter_max)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	phydbl e=0.0;
-	phydbl old_lnL, init_lnL;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl old_lnL, init_lnL;
 
 	d=0.0;
 	a=((ax < cx) ? ax : cx);
@@ -684,13 +684,13 @@ phydbl Node_Time_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 
 /*********************************************************/
 #ifdef MC
-phydbl Time_Stamps_Mult_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
+m3ldbl Time_Stamps_Mult_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		arbre *tree, int n_iter_max)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	phydbl e=0.0;
-	phydbl old_lnL, init_lnL;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl old_lnL, init_lnL;
 
 	d=0.0;
 	a=((ax < cx) ? ax : cx);
@@ -790,14 +790,14 @@ phydbl Time_Stamps_Mult_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 
 /*********************************************************/
 
-phydbl Branch_Rate_Shape_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
-		phydbl *xmin, arbre *tree, int n_iter_max)
+m3ldbl Branch_Rate_Shape_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
+		m3ldbl *xmin, arbre *tree, int n_iter_max)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	phydbl e=0.0;
-	phydbl old_fu,init_fu;
-	phydbl best_fu, best_x;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl old_fu,init_fu;
+	m3ldbl best_fu, best_x;
 
 
 	d=0.0;
@@ -901,14 +901,14 @@ phydbl Branch_Rate_Shape_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 
 /*********************************************************/
 
-int Dist_Seq_Brak(phydbl *ax, phydbl *bx, phydbl *cx, 
-		phydbl *fa, phydbl *fb, phydbl *fc,
+int Dist_Seq_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, 
+		m3ldbl *fa, m3ldbl *fb, m3ldbl *fc,
 		allseq *data, int numseq1, int numseq2,
 		model *mod)
 {
-	phydbl ulim,u,r,q,fu,dum;
-	phydbl dist;
-	phydbl lk;
+	m3ldbl ulim,u,r,q,fu,dum;
+	m3ldbl dist;
+	m3ldbl lk;
 
 	dist = *ax;
 	*fa=-Lk_Given_Two_Seq(data,numseq1,numseq2,dist,mod,&lk);
@@ -982,15 +982,15 @@ int Dist_Seq_Brak(phydbl *ax, phydbl *bx, phydbl *cx,
 
 /*********************************************************/
 
-phydbl Dist_Seq_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
-		phydbl *xmin, allseq *data,
+m3ldbl Dist_Seq_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
+		m3ldbl *xmin, allseq *data,
 		int numseq1, int numseq2, model *mod)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	phydbl e=0.0;
-	phydbl dist;
-	phydbl lk;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl dist;
+	m3ldbl lk;
 
 	d=0.0;
 	a=((ax < cx) ? ax : cx);
@@ -1062,10 +1062,10 @@ phydbl Dist_Seq_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 
 /*********************************************************/
 
-phydbl Optimize_Dist(model *mod, phydbl init, allseq *twoseqs)
+m3ldbl Optimize_Dist(model *mod, m3ldbl init, allseq *twoseqs)
 {
-	phydbl d_infa,d_max,d_infb;
-	phydbl lk_infa, lk_max, lk_infb, lk;
+	m3ldbl d_infa,d_max,d_infb;
+	m3ldbl lk_infa, lk_max, lk_infb, lk;
 
 	d_infa = 100.*BL_MIN;
 	d_max  = init;
@@ -1077,7 +1077,7 @@ phydbl Optimize_Dist(model *mod, phydbl init, allseq *twoseqs)
 			&lk_infa,&lk_max,&lk_infb,
 			twoseqs,0,1,mod);
 
-	lk = (phydbl) Dist_Seq_Brent(d_infa,d_max,d_infb,
+	lk = (m3ldbl) Dist_Seq_Brent(d_infa,d_max,d_infb,
 			1.e-5,&d_max,twoseqs,0,1,mod);
 	if(lk > .0) return -1.0;
 	else        return d_max;
@@ -1089,7 +1089,7 @@ phydbl Optimize_Dist(model *mod, phydbl init, allseq *twoseqs)
 void Round_Optimize(arbre *tree, allseq *data, int n_round_max)
 {
 	int n_round,each;
-	phydbl lk_old, lk_new, tol;
+	m3ldbl lk_old, lk_new, tol;
 	node *root;
 
 	lk_new = tree->c_lnL;
@@ -1139,8 +1139,8 @@ void Round_Optimize(arbre *tree, allseq *data, int n_round_max)
 void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *alldata)
 {
 	int i;
-	phydbl l_infa,l_max,l_infb;
-	phydbl lk_init;
+	m3ldbl l_infa,l_max,l_infb;
+	m3ldbl lk_init;
 
 
 	lk_init = tree->c_lnL;
@@ -1184,8 +1184,8 @@ void Optimiz_Ext_Br(arbre *tree)
 {
 	int i;
 	edge *b;
-	phydbl l_infa,l_max,l_infb;
-	phydbl lk, lk_init,l_init;
+	m3ldbl l_infa,l_max,l_infb;
+	m3ldbl lk, lk_init,l_init;
 
 	lk_init = tree->c_lnL;
 
@@ -1467,21 +1467,21 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 static double sqrarg;
 #define SQR(a) ((sqrarg=(a)) == 0.0 ? 0.0 : sqrarg*sqrarg)
 
-void BFGS(arbre *tree, phydbl *p, int n, phydbl gtol, phydbl step_size,
-		phydbl(*func)(), void (*dfunc)(), void (*lnsrch)(),int *failed)
+void BFGS(arbre *tree, m3ldbl *p, int n, m3ldbl gtol, m3ldbl step_size,
+		m3ldbl(*func)(), void (*dfunc)(), void (*lnsrch)(),int *failed)
 {
 
 	int check,i,its,j;
-	phydbl den,fac,fad,fae,fp,stpmax,sum=0.0,sumdg,sumxi,temp,test,fret;
-	phydbl *dg,*g,*hdg,**hessin,*pnew,*xi;
+	m3ldbl den,fac,fad,fae,fp,stpmax,sum=0.0,sumdg,sumxi,temp,test,fret;
+	m3ldbl *dg,*g,*hdg,**hessin,*pnew,*xi;
 
-	hessin = (phydbl **)mCalloc(n,sizeof(phydbl *));
-	For(i,n) hessin[i] = (phydbl *)mCalloc(n,sizeof(phydbl));
-	dg   = (phydbl *)mCalloc(n,sizeof(phydbl ));
-	g    = (phydbl *)mCalloc(n,sizeof(phydbl ));
-	pnew = (phydbl *)mCalloc(n,sizeof(phydbl ));
-	hdg  = (phydbl *)mCalloc(n,sizeof(phydbl ));
-	xi   = (phydbl *)mCalloc(n,sizeof(phydbl ));
+	hessin = (m3ldbl **)mCalloc(n,sizeof(m3ldbl *));
+	For(i,n) hessin[i] = (m3ldbl *)mCalloc(n,sizeof(m3ldbl));
+	dg   = (m3ldbl *)mCalloc(n,sizeof(m3ldbl ));
+	g    = (m3ldbl *)mCalloc(n,sizeof(m3ldbl ));
+	pnew = (m3ldbl *)mCalloc(n,sizeof(m3ldbl ));
+	hdg  = (m3ldbl *)mCalloc(n,sizeof(m3ldbl ));
+	xi   = (m3ldbl *)mCalloc(n,sizeof(m3ldbl ));
 
 
 	fp=(*func)(tree);
@@ -1495,7 +1495,7 @@ void BFGS(arbre *tree, phydbl *p, int n, phydbl gtol, phydbl step_size,
 		sum += p[i]*p[i];
 	}
 
-	stpmax=STPMX*MAX(sqrt(sum),(phydbl)n);
+	stpmax=STPMX*MAX(sqrt(sum),(m3ldbl)n);
 
 	for(its=1;its<=ITMAX;its++)
 	{
@@ -1619,17 +1619,17 @@ void BFGS(arbre *tree, phydbl *p, int n, phydbl gtol, phydbl step_size,
 #define ALF 1.0e-4
 #define TOLX 1.0e-7
 
-void Lnsrch_RR_Param(arbre *tree, int n, phydbl *xold, phydbl fold, 
-		phydbl *g, phydbl *p, phydbl *x,
-		phydbl *f, phydbl stpmax, int *check)
+void Lnsrch_RR_Param(arbre *tree, int n, m3ldbl *xold, m3ldbl fold, 
+		m3ldbl *g, m3ldbl *p, m3ldbl *x,
+		m3ldbl *f, m3ldbl stpmax, int *check)
 {
 	int i;
-	phydbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
-	phydbl *local_xold;
+	m3ldbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
+	m3ldbl *local_xold;
 
 	alam = alam2 = f2 = fold2 = tmplam = .0;
 
-	local_xold = (phydbl *)mCalloc(n,sizeof(phydbl));
+	local_xold = (m3ldbl *)mCalloc(n,sizeof(m3ldbl));
 	For(i,n) local_xold[i] = xold[i];
 
 
@@ -1730,17 +1730,17 @@ void Lnsrch_RR_Param(arbre *tree, int n, phydbl *xold, phydbl fold,
 #define ALF 1.0e-4
 #define TOLX 1.0e-7
 
-void Lnsrch_RR_Cov_Param(arbre *tree, int n, phydbl *xold, phydbl fold, 
-		phydbl *g, phydbl *p, phydbl *x,
-		phydbl *f, phydbl stpmax, int *check)
+void Lnsrch_RR_Cov_Param(arbre *tree, int n, m3ldbl *xold, m3ldbl fold, 
+		m3ldbl *g, m3ldbl *p, m3ldbl *x,
+		m3ldbl *f, m3ldbl stpmax, int *check)
 {
 	int i;
-	phydbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
-	phydbl *local_xold;
+	m3ldbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
+	m3ldbl *local_xold;
 
 	alam = alam2 = f2 = fold2 = tmplam = .0;
 
-	local_xold = (phydbl *)mCalloc(n,sizeof(phydbl));
+	local_xold = (m3ldbl *)mCalloc(n,sizeof(m3ldbl));
 	For(i,n) local_xold[i] = xold[i];
 
 
@@ -1841,16 +1841,16 @@ void Lnsrch_RR_Cov_Param(arbre *tree, int n, phydbl *xold, phydbl fold,
 #define ALF 1.0e-4
 #define TOLX 1.0e-7
 
-void Lnsrch_Nucleotide_Frequencies(arbre *tree, int n, phydbl *xold, phydbl fold, phydbl *g, phydbl *p, phydbl *x,
-		phydbl *f, phydbl stpmax, int *check)
+void Lnsrch_Nucleotide_Frequencies(arbre *tree, int n, m3ldbl *xold, m3ldbl fold, m3ldbl *g, m3ldbl *p, m3ldbl *x,
+		m3ldbl *f, m3ldbl stpmax, int *check)
 {
 	int i;
-	phydbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
-	phydbl *local_xold;
+	m3ldbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
+	m3ldbl *local_xold;
 
 	alam = alam2 = f2 = fold2 = tmplam = .0;
 
-	local_xold = (phydbl *)mCalloc(n,sizeof(phydbl));
+	local_xold = (m3ldbl *)mCalloc(n,sizeof(m3ldbl));
 	For(i,n) local_xold[i] = xold[i];
 
 
@@ -1953,10 +1953,10 @@ void Lnsrch_Nucleotide_Frequencies(arbre *tree, int n, phydbl *xold, phydbl fold
 
 /*********************************************************/
 
-int Dist_F_Brak(phydbl *ax, phydbl *bx, phydbl *cx, phydbl *F, phydbl *param, model *mod)
+int Dist_F_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl *F, m3ldbl *param, model *mod)
 {
-	phydbl ulim,u,r,q,dum;
-	phydbl fa, fb, fc, fu;
+	m3ldbl ulim,u,r,q,dum;
+	m3ldbl fa, fb, fc, fu;
 
 	fa = -Lk_Dist(F,fabs(*ax),mod);
 	fb = -Lk_Dist(F,fabs(*bx),mod);
@@ -2026,13 +2026,13 @@ int Dist_F_Brak(phydbl *ax, phydbl *bx, phydbl *cx, phydbl *F, phydbl *param, mo
 
 /*********************************************************/
 
-phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max, 
-		phydbl *param, phydbl *F, model *mod)
+m3ldbl Dist_F_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max, 
+		m3ldbl *param, m3ldbl *F, model *mod)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	phydbl e=0.0;
-	phydbl old_lnL,init_lnL, curr_lnL;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl old_lnL,init_lnL, curr_lnL;
 
 	d=0.0;
 	a=((ax < cx) ? ax : cx);
@@ -2127,9 +2127,9 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
 
 /*********************************************************/
 
-void Opt_Dist_F(phydbl *dist, phydbl *F, model *mod)
+void Opt_Dist_F(m3ldbl *dist, m3ldbl *F, model *mod)
 {
-	phydbl ax,bx,cx;
+	m3ldbl ax,bx,cx;
 
 	if(*dist < BL_MIN) *dist = BL_MIN;
 
@@ -2143,10 +2143,10 @@ void Opt_Dist_F(phydbl *dist, phydbl *F, model *mod)
 
 /*********************************************************/
 
-int Missing_Dist_Brak(phydbl *ax, phydbl *bx, phydbl *cx, int x, int y, matrix *mat)
+int Missing_Dist_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, int x, int y, matrix *mat)
 {
-	phydbl ulim,u,r,q,dum;
-	phydbl fa, fb, fc, fu;
+	m3ldbl ulim,u,r,q,dum;
+	m3ldbl fa, fb, fc, fu;
 
 	fa = Least_Square_Missing_Dist_XY(x,y,fabs(*ax),mat);
 	fb = Least_Square_Missing_Dist_XY(x,y,fabs(*bx),mat);
@@ -2216,14 +2216,14 @@ int Missing_Dist_Brak(phydbl *ax, phydbl *bx, phydbl *cx, int x, int y, matrix *
 
 /*********************************************************/
 
-phydbl Missing_Dist_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max, 
+m3ldbl Missing_Dist_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max, 
 		int x, int y, matrix *mat)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,xx,xm;
-	phydbl e=0.0;
-	phydbl init_loglk, max_loglk;
-	phydbl bestx;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,xx,xm;
+	m3ldbl e=0.0;
+	m3ldbl init_loglk, max_loglk;
+	m3ldbl bestx;
 
 	d=0.0;
 	a=((ax < cx) ? ax : cx);
@@ -2314,7 +2314,7 @@ phydbl Missing_Dist_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_ite
 
 void Opt_Missing_Dist(int x, int y, matrix *mat)
 {
-	phydbl ax,bx,cx;
+	m3ldbl ax,bx,cx;
 
 	ax = DIST_MAX;
 	bx = DIST_MAX/4.;
@@ -2330,17 +2330,17 @@ int Optimiz_Alpha_And_Pinv(arbre *tree)
 {
 
 	int    iter;
-	phydbl best_alpha, best_pinv;
-	phydbl slope, intercept;
-	phydbl lk_b, lk_a;
-	phydbl lk_init, lk_final;
-	phydbl f0,f1,f2,f3,x0,x1,x2,x3;
-	phydbl pinv0, pinv1;
-	phydbl a, b, c;
-	phydbl fa, fb, fc;
-	phydbl K;
-	phydbl alpha0, alpha1;
-	phydbl best_lnL;
+	m3ldbl best_alpha, best_pinv;
+	m3ldbl slope, intercept;
+	m3ldbl lk_b, lk_a;
+	m3ldbl lk_init, lk_final;
+	m3ldbl f0,f1,f2,f3,x0,x1,x2,x3;
+	m3ldbl pinv0, pinv1;
+	m3ldbl a, b, c;
+	m3ldbl fa, fb, fc;
+	m3ldbl K;
+	m3ldbl alpha0, alpha1;
+	m3ldbl best_lnL;
 
 
 	lk_final   = UNLIKELY;
@@ -2620,13 +2620,13 @@ int Optimiz_Alpha_And_Pinv(arbre *tree)
 
 /*********************************************************/
 #if defined(MC) || defined(RWRAPPER)
-phydbl Node_Time_Brent_Fixed_Br_Len(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
+m3ldbl Node_Time_Brent_Fixed_Br_Len(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		node *n, arbre *tree, int n_iter_max)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	phydbl e=0.0;
-	phydbl old_lnL, init_lnL, new_t;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl old_lnL, init_lnL, new_t;
 
 	tree->rates->adjust_rates = 1;
 
@@ -2726,12 +2726,12 @@ phydbl Node_Time_Brent_Fixed_Br_Len(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 #endif
 /*********************************************************/
 #if defined(MC) || defined(RWRAPPER)
-phydbl Rates_Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, phydbl *param, arbre *tree, int n_iter_max)
+m3ldbl Rates_Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, m3ldbl *param, arbre *tree, int n_iter_max)
 {
 	int iter;
-	phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	phydbl e=0.0;
-	phydbl old_lnL, init_lnL;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl old_lnL, init_lnL;
 
 
 	d=0.0;

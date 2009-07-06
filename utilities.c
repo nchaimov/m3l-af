@@ -776,9 +776,9 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 	edge *b;
 	int i;
 	b = (edge *)mCalloc(1,sizeof(edge));
-	b->l = (phydbl *)mCalloc(n_l,sizeof(phydbl));
-	b->l_old = (phydbl *)mCalloc(n_l,sizeof(phydbl));
-	b->best_l = (phydbl *)mCalloc(n_l,sizeof(phydbl));
+	b->l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	b->l_old = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	b->best_l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
 	b->has_zero_br_len = (int *)mCalloc(n_l, sizeof(int));
 	b->n_l = n_l;
 
@@ -921,8 +921,8 @@ void Make_Edge_Lk(edge *b, arbre *tree)
 
 	b->div_post_pred_left = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
 	b->div_post_pred_rght = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
-	b->Pij_rr             = (phydbl **)mCalloc(tree->n_l,sizeof(phydbl *));
-	For(i,tree->n_l) b->Pij_rr[i] = (phydbl *)mCalloc(tree->mod->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
+	b->Pij_rr             = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
+	For(i,tree->n_l) b->Pij_rr[i] = (m3ldbl *)mCalloc(tree->mod->n_catg*tree->mod->ns*tree->mod->ns,sizeof(m3ldbl));
 
 	b->scale_left = b->scale_rght = 0;
 
@@ -1010,11 +1010,11 @@ void Init_NNI(nni *a_nni)
 //  node *n;
 //  n        = (node *)mCalloc(1,sizeof(node));
 //  n->v     = (node **)mCalloc(3,sizeof(node *));
-//  n->l     = (phydbl **)mCalloc(1,sizeof(phydbl*)); //JSJ: initialize into a single branch length set
-//  n->l[0]  = (phydbl *)mCalloc(3,sizeof(phydbl)); //JSJ: if multiple, be sure to deallocate and reallocate
+//  n->l     = (m3ldbl **)mCalloc(1,sizeof(m3ldbl*)); //JSJ: initialize into a single branch length set
+//  n->l[0]  = (m3ldbl *)mCalloc(3,sizeof(m3ldbl)); //JSJ: if multiple, be sure to deallocate and reallocate
 //  n->b     = (edge **)mCalloc(3,sizeof(edge *));
 //  n->name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-//  n->score = (phydbl *)mCalloc(3,sizeof(phydbl));
+//  n->score = (m3ldbl *)mCalloc(3,sizeof(m3ldbl));
 //  Init_Node_Light(n,num);
 //  return n;
 //}
@@ -1027,11 +1027,11 @@ node *Make_Node_Light(int num, int num_bl_set)
 	node *n;
 	n        = (node *)mCalloc(1,sizeof(node));
 	n->v     = (node **)mCalloc(3,sizeof(node *));
-	n->l     = (phydbl **)mCalloc(num_bl_set,sizeof(phydbl*)); //JSJ: initialize branch length set in nodes
-	For(i,num_bl_set) n->l[i]  = (phydbl *)mCalloc(3,sizeof(phydbl));
+	n->l     = (m3ldbl **)mCalloc(num_bl_set,sizeof(m3ldbl*)); //JSJ: initialize branch length set in nodes
+	For(i,num_bl_set) n->l[i]  = (m3ldbl *)mCalloc(3,sizeof(m3ldbl));
 	n->b     = (edge **)mCalloc(3,sizeof(edge *));
 	n->name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-	n->score = (phydbl *)mCalloc(3,sizeof(phydbl));
+	n->score = (m3ldbl *)mCalloc(3,sizeof(m3ldbl));
 	n->n_l = num_bl_set;
 	Init_Node_Light(n,num);
 	return n;
@@ -1529,9 +1529,9 @@ allseq *Compact_Seq(seq **data, option *io)
 	n_invar=0;
 	For(i,alldata_tmp->crunch_len) if(alldata_tmp->invar[i] > -1.) n_invar+=(int)alldata_tmp->wght[i];
 
-	if(!io->quiet) PhyML_Printf("\n. %d sites without polymorphism (%.2f%c).\n",n_invar,100.*(phydbl)n_invar/data[0]->len,'%');
+	if(!io->quiet) PhyML_Printf("\n. %d sites without polymorphism (%.2f%c).\n",n_invar,100.*(m3ldbl)n_invar/data[0]->len,'%');
 
-	alldata_tmp->obs_pinvar = (phydbl)n_invar/data[0]->len;
+	alldata_tmp->obs_pinvar = (m3ldbl)n_invar/data[0]->len;
 
 	n_sites = 0;
 	For(i,alldata_tmp->crunch_len) n_sites += alldata_tmp->wght[i];
@@ -1571,7 +1571,7 @@ allseq *Compact_CSeq(allseq *data, model *mod)
 	alldata->n_otu  = n_otu;
 	alldata->c_seq  = (seq **)mCalloc(n_otu,sizeof(seq *));
 	alldata->wght   = (int *)mCalloc(data->crunch_len,sizeof(int));
-	alldata->b_frq  = (phydbl *)mCalloc(mod->ns,sizeof(phydbl));
+	alldata->b_frq  = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl));
 	alldata->ambigu = (short int *)mCalloc(data->crunch_len,sizeof(short int));
 	alldata->invar  = (short int *)mCalloc(data->crunch_len,sizeof(short int));
 
@@ -1715,8 +1715,8 @@ pnode *Create_Pnode(int size)
 void Get_Base_Freqs(allseq *data)
 {
 	int i,j,k;
-	phydbl A,C,G,T;
-	phydbl fA,fC,fG,fT;
+	m3ldbl A,C,G,T;
+	m3ldbl fA,fC,fG,fT;
 	int w;
 
 	fA = fC = fG = fT = .25;
@@ -1787,10 +1787,10 @@ void Get_Base_Freqs(allseq *data)
 void Get_AA_Freqs(allseq *data)
 {
 	int i,j,k;
-	phydbl A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y;
-	phydbl fA,fC,fD,fE,fF,fG,fH,fI,fK,fL,fM,fN,fP,fQ,fR,fS,fT,fV,fW,fY;
+	m3ldbl A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y;
+	m3ldbl fA,fC,fD,fE,fF,fG,fH,fI,fK,fL,fM,fN,fP,fQ,fR,fS,fT,fV,fW,fY;
 	int w;
-	phydbl sum;
+	m3ldbl sum;
 
 	fA = fC = fD = fE = fF = fG = fH = fI = fK = fL =
 			fM = fN = fP = fQ = fR = fS = fT = fV = fW = fY = 1./20.;
@@ -2056,18 +2056,18 @@ void *mRealloc(void *p,int nb, size_t size)
 
 int Sort_Phydbl_Decrease(const void *a, const void *b)
 {
-	if((*(phydbl *)(a)) >= (*(phydbl *)(b))) return -1;
+	if((*(m3ldbl *)(a)) >= (*(m3ldbl *)(b))) return -1;
 	else return 1;
 }
 
 /*********************************************************/
 /* Sort in ascending order. Elements in B (if provided) are also re-ordered according to the ordering of A  */
-void Qksort(phydbl *A, phydbl *B, int ilo, int ihi)
+void Qksort(m3ldbl *A, m3ldbl *B, int ilo, int ihi)
 {
-	phydbl pivot;	// pivot value for partitioning array
+	m3ldbl pivot;	// pivot value for partitioning array
 	int ulo, uhi;	// indices at ends of unpartitioned region
 	int ieq;		// least index of array entry with value equal to pivot
-	phydbl tempEntry;	// temporary entry used for swapping
+	m3ldbl tempEntry;	// temporary entry used for swapping
 
 	if (ilo >= ihi) {
 		return;
@@ -2138,12 +2138,12 @@ void Qksort(phydbl *A, phydbl *B, int ilo, int ihi)
 
 /********************************************************/
 
-void Qksort_Matrix(phydbl **A, int col, int ilo, int ihi)
+void Qksort_Matrix(m3ldbl **A, int col, int ilo, int ihi)
 {
-	phydbl pivot;	// pivot value for partitioning array
+	m3ldbl pivot;	// pivot value for partitioning array
 	int ulo, uhi;	// indices at ends of unpartitioned region
 	int ieq;		// least index of array entry with value equal to pivot
-	phydbl *tempEntry;	// temporary entry used for swapping
+	m3ldbl *tempEntry;	// temporary entry used for swapping
 
 	tempEntry = NULL;
 
@@ -2216,7 +2216,7 @@ void Print_Site_Lk(arbre *tree, FILE *fp)
 	int site;
 	int catg;
 	char *s;
-	phydbl postmean;
+	m3ldbl postmean;
 
 	if(!tree->io->print_site_lnl)
 	{
@@ -2262,11 +2262,11 @@ void Print_Site_Lk(arbre *tree, FILE *fp)
 		For(site,tree->data->init_len)
 		{
 			PhyML_Fprintf(fp,"%-7d",site+1);
-			PhyML_Fprintf(fp,"%-16g",(phydbl)exp(tree->site_lk[tree->data->sitepatt[site]]));
+			PhyML_Fprintf(fp,"%-16g",(m3ldbl)exp(tree->site_lk[tree->data->sitepatt[site]]));
 			if(tree->mod->n_catg > 1)
 			{
 				For(catg,tree->mod->n_catg)
-				fprintf(fp,"%-22g",(phydbl)exp(tree->log_site_lk_cat[catg][tree->data->sitepatt[site]]));
+				fprintf(fp,"%-22g",(m3ldbl)exp(tree->log_site_lk_cat[catg][tree->data->sitepatt[site]]));
 
 				postmean = .0;
 				For(catg,tree->mod->n_catg)
@@ -2280,7 +2280,7 @@ void Print_Site_Lk(arbre *tree, FILE *fp)
 			}
 			if(tree->mod->invar)
 			{
-				if((phydbl)tree->data->invar[tree->data->sitepatt[site]] > -0.5)
+				if((m3ldbl)tree->data->invar[tree->data->sitepatt[site]] > -0.5)
 					fprintf(fp,"%-16g",tree->mod->pi[tree->data->invar[tree->data->sitepatt[site]]]);
 				else
 					fprintf(fp,"%-16g",0.0);
@@ -2427,9 +2427,9 @@ matrix *Make_Mat(int n_otu)
 
 	mat->n_otu = n_otu;
 
-	mat->P        = (phydbl **)mCalloc(n_otu,sizeof(phydbl *));
-	mat->Q        = (phydbl **)mCalloc(n_otu,sizeof(phydbl *));
-	mat->dist     = (phydbl **)mCalloc(n_otu,sizeof(phydbl *));
+	mat->P        = (m3ldbl **)mCalloc(n_otu,sizeof(m3ldbl *));
+	mat->Q        = (m3ldbl **)mCalloc(n_otu,sizeof(m3ldbl *));
+	mat->dist     = (m3ldbl **)mCalloc(n_otu,sizeof(m3ldbl *));
 	mat->on_off   = (int *)mCalloc(n_otu,sizeof(int));
 	mat->name     = (char **)mCalloc(n_otu,sizeof(char *));
 	mat->tip_node = (node **)mCalloc(n_otu,sizeof(node *));
@@ -2437,9 +2437,9 @@ matrix *Make_Mat(int n_otu)
 
 	For(i,n_otu)
 	{
-		mat->P[i]    = (phydbl *)mCalloc(n_otu,sizeof(phydbl));
-		mat->Q[i]    = (phydbl *)mCalloc(n_otu,sizeof(phydbl));
-		mat->dist[i] = (phydbl *)mCalloc(n_otu,sizeof(phydbl));
+		mat->P[i]    = (m3ldbl *)mCalloc(n_otu,sizeof(m3ldbl));
+		mat->Q[i]    = (m3ldbl *)mCalloc(n_otu,sizeof(m3ldbl));
+		mat->dist[i] = (m3ldbl *)mCalloc(n_otu,sizeof(m3ldbl));
 		mat->name[i] = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 	}
 
@@ -2775,9 +2775,9 @@ int Sort_Edges_Depth(arbre *tree, edge **sorted_edges, int n_elem)
 {
 	int i,j;
 	edge *buff;
-	phydbl *depth,buff_depth;
+	m3ldbl *depth,buff_depth;
 
-	depth = (phydbl *)mCalloc(n_elem,sizeof(phydbl));
+	depth = (m3ldbl *)mCalloc(n_elem,sizeof(m3ldbl));
 
 	For(i,n_elem)
 	depth[i] =
@@ -2815,13 +2815,13 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 {
 	int l_r, r_l, l_v1, l_v2, r_v3, r_v4;
 	node *v1,*v2,*v3,*v4;
-	phydbl lk0, lk1, lk2;
-	phydbl lk0_init, lk1_init, lk2_init;
-	phydbl bl_init;
-	phydbl l0,l1,l2;
-	phydbl l_infa, l_infb, l_max;
-	/*   phydbl lk_infa, lk_infb, lk_max; */
-	phydbl lk_init;
+	m3ldbl lk0, lk1, lk2;
+	m3ldbl lk0_init, lk1_init, lk2_init;
+	m3ldbl bl_init;
+	m3ldbl l0,l1,l2;
+	m3ldbl l_infa, l_infb, l_max;
+	/*   m3ldbl lk_infa, lk_infb, lk_max; */
+	m3ldbl lk_init;
 
 	bl_init                = b_fcus->l[0]; //JSJ: changed so compile
 	lk_init                = tree->c_lnL;
@@ -3319,7 +3319,7 @@ allseq *Make_Cseq(int n_otu, int crunch_len, int init_len, char **sp_names)
 	alldata                        = (allseq *)mCalloc(1,sizeof(allseq));
 	alldata->n_otu                 = n_otu;
 	alldata->c_seq                 = (seq **)mCalloc(n_otu,sizeof(seq *));
-	alldata->b_frq                 = (phydbl *)mCalloc(T_MAX_ALPHABET,sizeof(phydbl));
+	alldata->b_frq                 = (m3ldbl *)mCalloc(T_MAX_ALPHABET,sizeof(m3ldbl));
 	alldata->wght                  = (int *)mCalloc(crunch_len,sizeof(int));
 	alldata->ambigu                = (short int *)mCalloc(crunch_len,sizeof(short int));
 	alldata->invar                 = (short int *)mCalloc(crunch_len,sizeof(short int));
@@ -3848,17 +3848,17 @@ void Print_Fp_Out_Lines(FILE *fp_out, time_t t_beg, time_t t_end, arbre *tree, o
 
 /*********************************************************/
 
-matrix *K80_dist(allseq *data, phydbl g_shape)
+matrix *K80_dist(allseq *data, m3ldbl g_shape)
 {
 	int i,j,k;
 	int diff;
-	phydbl unc_len;
+	m3ldbl unc_len;
 	matrix *mat;
-	phydbl **len;
+	m3ldbl **len;
 
-	len = (phydbl **)mCalloc(data->n_otu,sizeof(phydbl *));
+	len = (m3ldbl **)mCalloc(data->n_otu,sizeof(m3ldbl *));
 	For(i,data->n_otu)
-	len[i] = (phydbl *)mCalloc(data->n_otu,sizeof(phydbl));
+	len[i] = (m3ldbl *)mCalloc(data->n_otu,sizeof(m3ldbl));
 
 	unc_len = .0;
 
@@ -3958,14 +3958,14 @@ matrix *K80_dist(allseq *data, phydbl g_shape)
 matrix *JC69_Dist(allseq *data, model *mod)
 {
 	int site,i,j,k;
-	phydbl unc_len;
+	m3ldbl unc_len;
 	matrix *mat;
-	phydbl **len;
+	m3ldbl **len;
 
 
-	len = (phydbl **)mCalloc(data->n_otu,sizeof(phydbl *));
+	len = (m3ldbl **)mCalloc(data->n_otu,sizeof(m3ldbl *));
 	For(i,data->n_otu)
-	len[i] = (phydbl *)mCalloc(data->n_otu,sizeof(phydbl));
+	len[i] = (m3ldbl *)mCalloc(data->n_otu,sizeof(m3ldbl));
 
 	unc_len = .0;
 
@@ -4010,7 +4010,7 @@ matrix *JC69_Dist(allseq *data, model *mod)
 			mat->dist[i][j] = DIST_MAX;
 		}
 		else
-			mat->dist[i][j] = -(mod->ns-1.)/(mod->ns)*(phydbl)log(1.-(mod->ns)/(mod->ns-1.)*mat->P[i][j]);
+			mat->dist[i][j] = -(mod->ns-1.)/(mod->ns)*(m3ldbl)log(1.-(mod->ns)/(mod->ns-1.)*mat->P[i][j]);
 
 
 		/* 	PhyML_Printf("\n. Incorrect JC distances"); */
@@ -4036,14 +4036,14 @@ matrix *JC69_Dist(allseq *data, model *mod)
 matrix *Hamming_Dist(allseq *data, model *mod)
 {
 	int i,j,k;
-	phydbl unc_len;
+	m3ldbl unc_len;
 	matrix *mat;
-	phydbl **len;
+	m3ldbl **len;
 
 
-	len = (phydbl **)mCalloc(data->n_otu,sizeof(phydbl *));
+	len = (m3ldbl **)mCalloc(data->n_otu,sizeof(m3ldbl *));
 	For(i,data->n_otu)
-	len[i] = (phydbl *)mCalloc(data->n_otu,sizeof(phydbl));
+	len[i] = (m3ldbl *)mCalloc(data->n_otu,sizeof(m3ldbl));
 
 	unc_len = .0;
 
@@ -4471,7 +4471,7 @@ void Bootstrap(arbre *tree)
 	model *boot_mod;
 	matrix *boot_mat;
 	char *s;
-	/*   phydbl rf; */
+	/*   m3ldbl rf; */
 
 	tree->print_boot_val = 1;
 	tree->print_alrt_val = 0;
@@ -4722,15 +4722,15 @@ void Print_Freq(arbre *tree)
 
 /*********************************************************/
 
-phydbl Num_Derivatives_One_Param(phydbl (*func)(arbre *tree), arbre *tree,
-		phydbl f0, phydbl *param, phydbl stepsize,
-		phydbl *err, int precise)
+m3ldbl Num_Derivatives_One_Param(m3ldbl (*func)(arbre *tree), arbre *tree,
+		m3ldbl f0, m3ldbl *param, m3ldbl stepsize,
+		m3ldbl *err, int precise)
 {
 	int i,j;
-	phydbl errt,fac,hh,**a,ans;
+	m3ldbl errt,fac,hh,**a,ans;
 	int n_iter;
-	a = (phydbl **)mCalloc(11,sizeof(phydbl *));
-	For(i,11) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
+	a = (m3ldbl **)mCalloc(11,sizeof(m3ldbl *));
+	For(i,11) a[i] = (m3ldbl *)mCalloc(11,sizeof(m3ldbl));
 
 
 	n_iter = 10; /* */
@@ -4815,11 +4815,11 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(arbre *tree), arbre *tree,
 
 /*********************************************************/
 
-void Num_Derivative_Several_Param(arbre *tree, phydbl *param, int n_param, phydbl stepsize,
-		phydbl (*func)(arbre *tree), phydbl *derivatives)
+void Num_Derivative_Several_Param(arbre *tree, m3ldbl *param, int n_param, m3ldbl stepsize,
+		m3ldbl (*func)(arbre *tree), m3ldbl *derivatives)
 {
 	int i;
-	phydbl err,f0;
+	m3ldbl err,f0;
 
 	f0 = (*func)(tree);
 
@@ -4867,10 +4867,10 @@ model *Make_Model_Basic()
 
 	mod->modelname          = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 	mod->custom_mod_string  = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
-	mod->user_b_freq        = (phydbl *)mCalloc(T_MAX_OPTION,sizeof(phydbl));
+	mod->user_b_freq        = (m3ldbl *)mCalloc(T_MAX_OPTION,sizeof(m3ldbl));
 
-	mod->rr                 = (phydbl *)mCalloc(6,sizeof(phydbl));
-	mod->rr_val             = (phydbl *)mCalloc(6,sizeof(phydbl));
+	mod->rr                 = (m3ldbl *)mCalloc(6,sizeof(m3ldbl));
+	mod->rr_val             = (m3ldbl *)mCalloc(6,sizeof(m3ldbl));
 	mod->rr_num             = (int *)mCalloc(6,sizeof(int *));
 	mod->n_rr_per_cat       = (int *)mCalloc(6,sizeof(int));
 	mod->s_opt              = (optimiz *)Alloc_Optimiz();
@@ -4883,10 +4883,10 @@ model *Make_Model_Basic()
 void Make_Model_Complete(model *mod)
 {
 
-	mod->pi             = (phydbl *)mCalloc(mod->ns,sizeof(phydbl));
-	mod->gamma_r_proba  = (phydbl *)mCalloc(mod->n_catg,sizeof(phydbl));
-	mod->gamma_rr       = (phydbl *)mCalloc(mod->n_catg,sizeof(phydbl));
-	mod->pi_unscaled    = (phydbl *)mCalloc(mod->ns,sizeof(phydbl));
+	mod->pi             = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl));
+	mod->gamma_r_proba  = (m3ldbl *)mCalloc(mod->n_catg,sizeof(m3ldbl));
+	mod->gamma_rr       = (m3ldbl *)mCalloc(mod->n_catg,sizeof(m3ldbl));
+	mod->pi_unscaled    = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl));
 
 	mod->Pij_rr   = (double *)mCalloc(mod->n_catg*mod->ns*mod->ns,sizeof(double));
 
@@ -4896,14 +4896,14 @@ void Make_Model_Complete(model *mod)
 
 	if(mod->n_rr_branch)
 	{
-		mod->rr_branch   = (phydbl *)mCalloc(mod->n_rr_branch,sizeof(phydbl));
-		mod->p_rr_branch = (phydbl *)mCalloc(mod->n_rr_branch,sizeof(phydbl));
+		mod->rr_branch   = (m3ldbl *)mCalloc(mod->n_rr_branch,sizeof(m3ldbl));
+		mod->p_rr_branch = (m3ldbl *)mCalloc(mod->n_rr_branch,sizeof(m3ldbl));
 	}
 }
 
 /*********************************************************/
 
-void Copy_Dist(phydbl **cpy, phydbl **orig, int n)
+void Copy_Dist(m3ldbl **cpy, m3ldbl **orig, int n)
 {
 	int i,j;
 	For(i,n) For(j,n) cpy[i][j] = orig[i][j];
@@ -5347,7 +5347,7 @@ void Alloc_Bip(arbre *tree)
 
 int Sort_Phydbl_Increase(const void *a, const void *b)
 {
-	if((*(phydbl *)(a)) <= (*(phydbl *)(b))) return -1;
+	if((*(m3ldbl *)(a)) <= (*(m3ldbl *)(b))) return -1;
 	else return 1;
 }
 
@@ -5360,13 +5360,13 @@ int Sort_String(const void *a, const void *b)
 
 /*********************************************************/
 
-phydbl Compare_Bip_On_Existing_Edges(phydbl thresh_len, arbre *tree1, arbre *tree2)
+m3ldbl Compare_Bip_On_Existing_Edges(m3ldbl thresh_len, arbre *tree1, arbre *tree2)
 {
 	int i,j,k;
 	edge *b1,*b2;
 	char **bip1,**bip2;
 	int bip_size,n_edges1,n_edges2;
-	phydbl rf;
+	m3ldbl rf;
 	int bip_size1, bip_size2;
 
 	n_edges1 = 0;
@@ -6922,12 +6922,12 @@ int Get_Subtree_Size(node *a, node *d)
 
 void Fast_Br_Len(edge *b, arbre *tree, int approx)
 {
-	phydbl sum;
-	phydbl *prob, *F;
+	m3ldbl sum;
+	m3ldbl *prob, *F;
 	int i, j, k, site;
-	phydbl v_rght;
+	m3ldbl v_rght;
 	int dim1,dim2,dim3;
-	phydbl eps_bl,old_l,new_l;
+	m3ldbl eps_bl,old_l,new_l;
 	int n_iter;
 
 	n_iter = 0;
@@ -6953,7 +6953,7 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 			{
 				For(k,tree->mod->n_catg)
 				{ //JSJ: temp fix of Pij_rr
-					v_rght = (b->rght->tax)?((phydbl)(b->p_lk_tip_r[site*dim2+j])):(b->p_lk_rght[site*dim1+k*dim2+j]);
+					v_rght = (b->rght->tax)?((m3ldbl)(b->p_lk_tip_r[site*dim2+j])):(b->p_lk_rght[site*dim1+k*dim2+j]);
 
 					prob[dim3*k+dim2*i+j]              =
 							tree->mod->gamma_r_proba[k]      *
@@ -7024,41 +7024,41 @@ triplet *Make_Triplet_Struct(model *mod)
 
 	triplet_struct                  = (triplet *)mCalloc(1,sizeof(triplet));
 	triplet_struct->size            = mod->ns;
-	triplet_struct->pi_bc           = (phydbl *)mCalloc(mod->ns,sizeof(phydbl ));
-	triplet_struct->pi_cd           = (phydbl *)mCalloc(mod->ns,sizeof(phydbl ));
-	triplet_struct->pi_bd           = (phydbl *)mCalloc(mod->ns,sizeof(phydbl ));
-	triplet_struct->F_bc            = (phydbl *)mCalloc(mod->ns*mod->ns*mod->n_catg,sizeof(phydbl));
-	triplet_struct->F_cd            = (phydbl *)mCalloc(mod->ns*mod->ns*mod->n_catg,sizeof(phydbl));
-	triplet_struct->F_bd            = (phydbl *)mCalloc(mod->ns*mod->ns,sizeof(phydbl));
-	triplet_struct->core            = (phydbl ****)mCalloc(mod->n_catg,sizeof(phydbl ***));
-	triplet_struct->p_one_site      = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
-	triplet_struct->sum_p_one_site  = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
+	triplet_struct->pi_bc           = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl ));
+	triplet_struct->pi_cd           = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl ));
+	triplet_struct->pi_bd           = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl ));
+	triplet_struct->F_bc            = (m3ldbl *)mCalloc(mod->ns*mod->ns*mod->n_catg,sizeof(m3ldbl));
+	triplet_struct->F_cd            = (m3ldbl *)mCalloc(mod->ns*mod->ns*mod->n_catg,sizeof(m3ldbl));
+	triplet_struct->F_bd            = (m3ldbl *)mCalloc(mod->ns*mod->ns,sizeof(m3ldbl));
+	triplet_struct->core            = (m3ldbl ****)mCalloc(mod->n_catg,sizeof(m3ldbl ***));
+	triplet_struct->p_one_site      = (m3ldbl ***)mCalloc(mod->ns,sizeof(m3ldbl **));
+	triplet_struct->sum_p_one_site  = (m3ldbl ***)mCalloc(mod->ns,sizeof(m3ldbl **));
 	triplet_struct->eigen_struct    = (eigen *)Make_Eigen_Struct(mod);
 	triplet_struct->mod             = mod;
 
 	For(k,mod->n_catg)
 	{
-		triplet_struct->core[k]                = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
+		triplet_struct->core[k]                = (m3ldbl ***)mCalloc(mod->ns,sizeof(m3ldbl **));
 		For(i,mod->ns)
 		{
-			triplet_struct->core[k][i]         = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
+			triplet_struct->core[k][i]         = (m3ldbl **)mCalloc(mod->ns,sizeof(m3ldbl *));
 			For(j,mod->ns)
-			triplet_struct->core[k][i][j]    = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
+			triplet_struct->core[k][i][j]    = (m3ldbl  *)mCalloc(mod->ns,sizeof(m3ldbl ));
 		}
 	}
 
 	For(i,mod->ns)
 	{
-		triplet_struct->p_one_site[i]          = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
+		triplet_struct->p_one_site[i]          = (m3ldbl **)mCalloc(mod->ns,sizeof(m3ldbl *));
 		For(j,mod->ns)
-		triplet_struct->p_one_site[i][j]     = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
+		triplet_struct->p_one_site[i][j]     = (m3ldbl  *)mCalloc(mod->ns,sizeof(m3ldbl ));
 	}
 
 	For(i,mod->ns)
 	{
-		triplet_struct->sum_p_one_site[i]      = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
+		triplet_struct->sum_p_one_site[i]      = (m3ldbl **)mCalloc(mod->ns,sizeof(m3ldbl *));
 		For(j,mod->ns)
-		triplet_struct->sum_p_one_site[i][j] = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
+		triplet_struct->sum_p_one_site[i][j] = (m3ldbl  *)mCalloc(mod->ns,sizeof(m3ldbl ));
 	}
 	return triplet_struct;
 
@@ -7066,7 +7066,7 @@ triplet *Make_Triplet_Struct(model *mod)
 
 /*********************************************************/
 
-phydbl Triple_Dist(node *a, arbre *tree, int approx)
+m3ldbl Triple_Dist(node *a, arbre *tree, int approx)
 {
 	if(a->tax) return UNLIKELY;
 	else
@@ -7099,7 +7099,7 @@ phydbl Triple_Dist(node *a, arbre *tree, int approx)
 
 /*********************************************************/
 
-void Make_Symmetric(phydbl **F, int size)
+void Make_Symmetric(m3ldbl **F, int size)
 {
 	int i,j;
 
@@ -7115,7 +7115,7 @@ void Make_Symmetric(phydbl **F, int size)
 
 /*********************************************************/
 
-void Round_Down_Freq_Patt(phydbl **F, arbre *tree)
+void Round_Down_Freq_Patt(m3ldbl **F, arbre *tree)
 {
 	int i,j;
 
@@ -7130,10 +7130,10 @@ void Round_Down_Freq_Patt(phydbl **F, arbre *tree)
 
 /*********************************************************/
 
-phydbl Get_Sum_Of_Cells(phydbl *F, arbre *tree)
+m3ldbl Get_Sum_Of_Cells(m3ldbl *F, arbre *tree)
 {
 	int i,j;
-	phydbl sum = .0;
+	m3ldbl sum = .0;
 
 	For(i,tree->mod->ns)
 	For(j,tree->mod->ns)
@@ -7145,7 +7145,7 @@ phydbl Get_Sum_Of_Cells(phydbl *F, arbre *tree)
 
 /*********************************************************/
 
-void Divide_Cells(phydbl **F, phydbl div, arbre *tree)
+void Divide_Cells(m3ldbl **F, m3ldbl div, arbre *tree)
 {
 	int i,j;
 
@@ -7156,7 +7156,7 @@ void Divide_Cells(phydbl **F, phydbl div, arbre *tree)
 
 /*********************************************************/
 
-void Divide_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
+void Divide_Mat_By_Vect(m3ldbl **F, m3ldbl *vect, int size)
 {
 	int i,j;
 	For(i,size)
@@ -7166,7 +7166,7 @@ void Divide_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
 
 /*********************************************************/
 
-void Multiply_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
+void Multiply_Mat_By_Vect(m3ldbl **F, m3ldbl *vect, int size)
 {
 	int i,j;
 	For(i,size)
@@ -7238,7 +7238,7 @@ void Fix_All(arbre *tree)
 
 /*********************************************************/
 //JSJ: fixed to record array of bls
-void Record_Br_Len(phydbl **where, arbre *tree)
+void Record_Br_Len(m3ldbl **where, arbre *tree)
 {
 	int i,j;
 
@@ -7258,7 +7258,7 @@ void Record_Br_Len(phydbl **where, arbre *tree)
 
 /*********************************************************/
 //JSJ: changed so that an array of lengths are coppied
-void Restore_Br_Len(phydbl **from, arbre *tree)
+void Restore_Br_Len(m3ldbl **from, arbre *tree)
 {
 	int i,j;
 
@@ -7299,7 +7299,7 @@ void Get_Dist_Btw_Edges(node *a, node *d, arbre *tree)
 
 /*********************************************************/
 //JSJ: fixed to detects Polytomies on an array of bls
-void Detect_Polytomies(edge *b, phydbl l_thresh, arbre *tree)
+void Detect_Polytomies(edge *b, m3ldbl l_thresh, arbre *tree)
 {
 	int i;
 	For(i,tree->n_l){
@@ -7419,13 +7419,13 @@ node *Common_Nodes_Btw_Two_Edges(edge *a, edge *b)
 
 /*********************************************************/
 
-int KH_Test(phydbl *site_lk_M1, phydbl *site_lk_M2, arbre *tree)
+int KH_Test(m3ldbl *site_lk_M1, m3ldbl *site_lk_M2, arbre *tree)
 {
-	phydbl *delta,mean,sd,obs_stat,threshold;
+	m3ldbl *delta,mean,sd,obs_stat,threshold;
 	int i;
 
 
-	delta = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
+	delta = (m3ldbl *)mCalloc(tree->data->init_len,sizeof(m3ldbl));
 
 	threshold = .0;
 	mean = .0;
@@ -7444,7 +7444,7 @@ int KH_Test(phydbl *site_lk_M1, phydbl *site_lk_M2, arbre *tree)
 
 	sd = .0;
 	For(i,tree->data->init_len) sd += pow(delta[i],2);
-	sd /= (phydbl)(tree->data->init_len-1.);
+	sd /= (m3ldbl)(tree->data->init_len-1.);
 
 	/*   threshold = tree->dnorm_thresh*sqrt(sd*tree->data->init_len); */
 
@@ -7476,7 +7476,7 @@ void Random_Tree(arbre *tree)
 	step = 0;
 	do
 	{
-		/*       node_num = (int)rint(rand()/(phydbl)(RAND_MAX+1.0)*(tree->n_otu-1-step)); */
+		/*       node_num = (int)rint(rand()/(m3ldbl)(RAND_MAX+1.0)*(tree->n_otu-1-step)); */
 		node_num = Rand_Int(0,tree->n_otu-1-step);
 		node_num = list_of_nodes[node_num];
 		is_available[node_num] = 0;
@@ -7487,7 +7487,7 @@ void Random_Tree(arbre *tree)
 		tree->noeud[node_num]->v[0] = tree->noeud[tree->n_otu+step];
 		tree->noeud[tree->n_otu+step]->v[1] = tree->noeud[node_num];
 
-		/*       node_num = (int)rint(rand()/(phydbl)(RAND_MAX+1.0)*(tree->n_otu-2-step)); */
+		/*       node_num = (int)rint(rand()/(m3ldbl)(RAND_MAX+1.0)*(tree->n_otu-2-step)); */
 		node_num = Rand_Int(0,tree->n_otu-2-step);
 		node_num = list_of_nodes[node_num];
 		is_available[node_num] = 0;
@@ -7533,7 +7533,7 @@ void Random_NNI(int n_moves, arbre *tree)
 	b = NULL;
 	For(i,n_moves)
 	{
-		n_target  = tree->noeud[tree->n_otu + (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-tree->n_otu))];
+		n_target  = tree->noeud[tree->n_otu + (int)((m3ldbl)rand()/RAND_MAX * (2*tree->n_otu-3-tree->n_otu))];
 		For(j,3) if(!n_target->v[j]->tax) {b = n_target->b[j]; break;}
 
 
@@ -7701,14 +7701,14 @@ void Fill_Missing_Dist_XY(int x, int y, matrix *mat)
 {
 
 	int i,j;
-	phydbl *local_mins,**S1S2;
+	m3ldbl *local_mins,**S1S2;
 	int cpt;
 	int pos_best_estimate;
-	phydbl min_crit, curr_crit;
+	m3ldbl min_crit, curr_crit;
 
-	local_mins = (phydbl *)mCalloc(mat->n_otu*mat->n_otu,sizeof(phydbl ));
-	S1S2       = (phydbl **)mCalloc(mat->n_otu*mat->n_otu,sizeof(phydbl *));
-	For(i,mat->n_otu*mat->n_otu) S1S2[i] = (phydbl *)mCalloc(2,sizeof(phydbl));
+	local_mins = (m3ldbl *)mCalloc(mat->n_otu*mat->n_otu,sizeof(m3ldbl ));
+	S1S2       = (m3ldbl **)mCalloc(mat->n_otu*mat->n_otu,sizeof(m3ldbl *));
+	For(i,mat->n_otu*mat->n_otu) S1S2[i] = (m3ldbl *)mCalloc(2,sizeof(m3ldbl));
 
 	cpt = 0;
 	For(i,mat->n_otu)
@@ -7733,7 +7733,7 @@ void Fill_Missing_Dist_XY(int x, int y, matrix *mat)
 	Qksort_Matrix(S1S2,0,0,cpt-1);
 
 	local_mins[0] = S1S2[0][1];
-	for(i=1;i<cpt;i++) local_mins[i] = (i*local_mins[i-1] + S1S2[i][1])/(phydbl)(i+1);
+	for(i=1;i<cpt;i++) local_mins[i] = (i*local_mins[i-1] + S1S2[i][1])/(m3ldbl)(i+1);
 
 	pos_best_estimate = 0;
 	min_crit = curr_crit = MDBL_MAX;
@@ -7761,10 +7761,10 @@ void Fill_Missing_Dist_XY(int x, int y, matrix *mat)
 
 /*********************************************************/
 
-phydbl Least_Square_Missing_Dist_XY(int x, int y, phydbl dxy, matrix *mat)
+m3ldbl Least_Square_Missing_Dist_XY(int x, int y, m3ldbl dxy, matrix *mat)
 {
 	int i,j;
-	phydbl fit;
+	m3ldbl fit;
 
 	fit = .0;
 	For(i,mat->n_otu)
@@ -7854,13 +7854,13 @@ void Check_Memory_Amount(arbre *tree)
 
 
 	/* Pmat JSJ: an array of them...*/
-	nbytes += (2*mod->n_otu-3) * tree->n_l * mod->n_catg * mod->ns * mod->ns * sizeof(phydbl);
+	nbytes += (2*mod->n_otu-3) * tree->n_l * mod->n_catg * mod->ns * mod->ns * sizeof(m3ldbl);
 
 	/* Partial Lk */
-	nbytes += ((2*mod->n_otu-3) * 2 - tree->n_otu) * tree->n_pattern * mod->n_catg * mod->ns * sizeof(phydbl);
+	nbytes += ((2*mod->n_otu-3) * 2 - tree->n_otu) * tree->n_pattern * mod->n_catg * mod->ns * sizeof(m3ldbl);
 
 	/* Scaling factors */
-	nbytes += ((2*mod->n_otu-3) * 2 - tree->n_otu) * tree->n_pattern * sizeof(phydbl);
+	nbytes += ((2*mod->n_otu-3) * 2 - tree->n_otu) * tree->n_pattern * sizeof(m3ldbl);
 
 	/* Partial Pars */
 	nbytes += (2*mod->n_otu-3) * 2 * tree->n_pattern * mod->ns * sizeof(short int);
@@ -7868,10 +7868,10 @@ void Check_Memory_Amount(arbre *tree)
 	nbytes += (2*mod->n_otu-3) * 2 * tree->n_pattern * sizeof(int);
 	nbytes += (2*mod->n_otu-3) * 2 * tree->n_pattern * sizeof(int);
 
-	if(((phydbl)nbytes/(1.E+06)) > 256.)
+	if(((m3ldbl)nbytes/(1.E+06)) > 256.)
 	{
 		char answer;
-		PhyML_Printf("\n. WARNING: this analysis requires at least %.0fMo of memory space.\n",(phydbl)nbytes/(1.E+06));
+		PhyML_Printf("\n. WARNING: this analysis requires at least %.0fMo of memory space.\n",(m3ldbl)nbytes/(1.E+06));
 #ifndef BATCH
 		if (! tree->io->quiet) {
 			PhyML_Printf("\n. Do you really want to continue ? [Y/n] ");
@@ -7888,19 +7888,19 @@ void Check_Memory_Amount(arbre *tree)
 		}
 #endif
 	}
-	else if(((phydbl)nbytes/(1.E+06)) > 100.)
+	else if(((m3ldbl)nbytes/(1.E+06)) > 100.)
 	{
-		if(!tree->io->quiet) PhyML_Printf("\n. WARNING: this analysis will use at least %.0fMo of memory space...\n",(phydbl)nbytes/(1.E+06));
+		if(!tree->io->quiet) PhyML_Printf("\n. WARNING: this analysis will use at least %.0fMo of memory space...\n",(m3ldbl)nbytes/(1.E+06));
 	}
 	else
 	{
-		if(!tree->io->quiet) PhyML_Printf("\n. This analysis requires at least %.0fMo of memory space.\n",(phydbl)nbytes/(1.E+06));
+		if(!tree->io->quiet) PhyML_Printf("\n. This analysis requires at least %.0fMo of memory space.\n",(m3ldbl)nbytes/(1.E+06));
 	}
 }
 
 /*********************************************************/
 
-int Get_State_From_P_Lk(phydbl *p_lk, int pos, arbre *tree)
+int Get_State_From_P_Lk(m3ldbl *p_lk, int pos, arbre *tree)
 {
 	int i;
 	For(i,tree->mod->ns) if(p_lk[pos+i] > .0) return i;
@@ -8008,10 +8008,10 @@ void Warn_And_Exit(char *s)
 
 /*********************************************************/
 
-void Read_Qmat(double *daa, phydbl *pi, FILE *fp)
+void Read_Qmat(double *daa, m3ldbl *pi, FILE *fp)
 {
 	int i,j;
-	phydbl sum;
+	m3ldbl sum;
 
 	for(i=1;i<20;i++)
 	{
@@ -8035,7 +8035,7 @@ void Read_Qmat(double *daa, phydbl *pi, FILE *fp)
 
 /*********************************************************/
 
-void Print_Qmat_AA(double *daa, phydbl *pi)
+void Print_Qmat_AA(double *daa, m3ldbl *pi)
 {
 	int i,j,cpt;
 
@@ -8063,7 +8063,7 @@ void Print_Qmat_AA(double *daa, phydbl *pi)
 void Randomize_Sequence_Order(allseq *data)
 {
 	int i,exchange_with;
-	phydbl buff_dbl;
+	m3ldbl buff_dbl;
 	char *buff_name,*buff_seq;
 	short int *buff_ambigu;
 
@@ -8179,7 +8179,7 @@ arbre *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 	int *connected,*nonconnected,*available_nodes;
 	int i,n_connected,n_nonconnected,n1,n2,new_n,n_internal,n_external,n_available;
 	node *root,*curr_n,**internal_nodes, **external_nodes;
-	phydbl *t,*tmp;
+	m3ldbl *t,*tmp;
 
 	tree = (arbre *)Make_Tree(n_otu);
 	Init_Tree(tree,tree->n_otu);
@@ -8203,8 +8203,8 @@ arbre *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 	available_nodes = (int *)mCalloc(2*tree->n_otu-2,sizeof(int));
 	internal_nodes  = (node **)mCalloc(tree->n_otu-2,sizeof(node *));
 	external_nodes  = (node **)mCalloc(tree->n_otu,  sizeof(node *));
-	t               = (phydbl *)mCalloc(tree->n_otu-1,sizeof(phydbl ));
-	tmp             = (phydbl *)mCalloc(2*tree->n_otu-2,sizeof(phydbl ));
+	t               = (m3ldbl *)mCalloc(tree->n_otu-1,sizeof(m3ldbl ));
+	tmp             = (m3ldbl *)mCalloc(2*tree->n_otu-2,sizeof(m3ldbl ));
 
 	n_nonconnected = 2*n_otu-2;
 
@@ -8216,12 +8216,12 @@ arbre *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 
 	/* Node times are generated according to a Birth-death process.
      Formulae are as described by Yang and Rannala (1997) */
-	phydbl    phi;
-	phydbl    rho; /* sampling intensity */
-	phydbl     mu; /* birth rate */
-	phydbl lambda; /* death rate */
-	phydbl      u; /* random U[0,1] */
-	phydbl expval;
+	m3ldbl    phi;
+	m3ldbl    rho; /* sampling intensity */
+	m3ldbl     mu; /* birth rate */
+	m3ldbl lambda; /* death rate */
+	m3ldbl      u; /* random U[0,1] */
+	m3ldbl expval;
 
 	/* rho = 1.0 and mu = 0.0 correspond to the Yule process */
 
@@ -8390,9 +8390,9 @@ arbre *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 #endif
 /*********************************************************/
 
-void Random_Lineage_Rates(node *a, node *d, edge *b, phydbl stick_prob, phydbl *rates, int curr_rate, int n_rates, arbre *tree)
+void Random_Lineage_Rates(node *a, node *d, edge *b, m3ldbl stick_prob, m3ldbl *rates, int curr_rate, int n_rates, arbre *tree)
 {
-	phydbl uni;
+	m3ldbl uni;
 	int new_rate;
 	int i;
 
@@ -8406,7 +8406,7 @@ void Random_Lineage_Rates(node *a, node *d, edge *b, phydbl stick_prob, phydbl *
 		{
 			uni  = rand();
 			uni /= RAND_MAX;
-			uni = (phydbl)(uni * (n_rates-1));
+			uni = (m3ldbl)(uni * (n_rates-1));
 			if(uni-(int)(uni) > 0.5-MDBL_MAX) new_rate = (int)(uni)+1;
 			else new_rate = (int)(uni);
 		}
@@ -8462,7 +8462,7 @@ edge *Find_Edge_With_Label(char *label, arbre *tree)
 
 /*********************************************************/
 
-void Print_Square_Matrix_Generic(int n, phydbl *mat)
+void Print_Square_Matrix_Generic(int n, m3ldbl *mat)
 {
 	int i,j;
 
@@ -8523,17 +8523,17 @@ void Evolve(allseq *data, model *mod, arbre *tree)
 
 /*********************************************************/
 
-int Pick_State(int n, phydbl *prob)
+int Pick_State(int n, m3ldbl *prob)
 {
 	int pos;
-	phydbl uni;
+	m3ldbl uni;
 
 	do
 	{
 		pos  = rand();
 		pos  = (pos % n);
-		uni  = (phydbl)rand();
-		uni /= (phydbl)RAND_MAX;
+		uni  = (m3ldbl)rand();
+		uni /= (m3ldbl)RAND_MAX;
 		if(uni < prob[pos]) break;
 	}
 	while(1);
@@ -8557,7 +8557,7 @@ void Evolve_Recur(node *a, node *d, edge *b, int a_state, int r_class, int site_
 
 	if(mod->use_m4mod)
 	{
-		phydbl rrate; /* relative rate of substitutions */
+		m3ldbl rrate; /* relative rate of substitutions */
 
 		rrate = mod->m4mod->multipl[(int)d_state/mod->m4mod->n_o];
 		if(!(b->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(b);
@@ -8778,8 +8778,8 @@ void Print_Diversity(FILE *fp, arbre *tree)
 	/*       mean_div_rght = .0; */
 	/*       For(k,ns) mean_div_rght += (k+1) * tree->t_edges[j]->div_post_pred_rght[k]; */
 
-	/*       mean_div_left /= (phydbl)tree->data->init_len; */
-	/*       mean_div_rght /= (phydbl)tree->data->init_len; */
+	/*       mean_div_left /= (m3ldbl)tree->data->init_len; */
+	/*       mean_div_rght /= (m3ldbl)tree->data->init_len; */
 
 	/*       PhyML_Fprintf(fp,"%4d 0 %f\n",j,mean_div_left); */
 	/*       PhyML_Fprintf(fp,"%4d 1 %f\n",j,mean_div_rght); */
@@ -8828,10 +8828,10 @@ void Print_Diversity_Pre(node *a, node *d, edge *b, FILE *fp, arbre *tree)
 - x : data vector,
 - sample_size :  number of data points in x
  */
-phydbl Univariate_Kernel_Density_Estimate(phydbl where, phydbl *x, int sample_size)
+m3ldbl Univariate_Kernel_Density_Estimate(m3ldbl where, m3ldbl *x, int sample_size)
 {
-	phydbl sd,h;
-	phydbl density,sqrt2pi,cons;
+	m3ldbl sd,h;
+	m3ldbl density,sqrt2pi,cons;
 	int i;
 
 	sqrt2pi = 2.506628;
@@ -8859,13 +8859,13 @@ phydbl Univariate_Kernel_Density_Estimate(phydbl where, phydbl *x, int sample_si
 
 See "Multivariate Density Estimation" by David Scott. pp 150.
  */
-phydbl Multivariate_Kernel_Density_Estimate(phydbl *where, phydbl **x, int sample_size, int vect_size)
+m3ldbl Multivariate_Kernel_Density_Estimate(m3ldbl *where, m3ldbl **x, int sample_size, int vect_size)
 {
-	phydbl sd,*h,cons,density,tmp;
-	phydbl _2pi;
+	m3ldbl sd,*h,cons,density,tmp;
+	m3ldbl _2pi;
 	int i,j;
 
-	h = (phydbl *)mCalloc(vect_size,sizeof(phydbl));
+	h = (m3ldbl *)mCalloc(vect_size,sizeof(m3ldbl));
 
 	_2pi = 6.283185;
 
@@ -8902,9 +8902,9 @@ phydbl Multivariate_Kernel_Density_Estimate(phydbl *where, phydbl **x, int sampl
 
 /*********************************************************/
 
-phydbl Var(phydbl *x, int n)
+m3ldbl Var(m3ldbl *x, int n)
 {
-	phydbl mean, sum2;
+	m3ldbl mean, sum2;
 	int i;
 
 	mean = Mean(x,n);
@@ -8917,10 +8917,10 @@ phydbl Var(phydbl *x, int n)
 
 /*********************************************************/
 
-phydbl Mean(phydbl *x, int n)
+m3ldbl Mean(m3ldbl *x, int n)
 {
 	int i;
-	phydbl sum;
+	m3ldbl sum;
 
 	sum = .0;
 
@@ -8939,13 +8939,13 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 	{
 		arbre *ori_tree,*best_tree;
 		model *ori_mod,*best_mod;
-		phydbl **ori_bl,**best_bl;
-		phydbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
-		ori_bl = (phydbl **)mCalloc(tree->n_l,sizeof(phydbl *));
-		best_bl = (phydbl **)mCalloc(tree->n_l,sizeof(phydbl *));
+		m3ldbl **ori_bl,**best_bl;
+		m3ldbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
+		ori_bl = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
+		best_bl = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
 		For(i,tree->n_l){
-			ori_bl[i] = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
-			best_bl[i] = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
+			ori_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
+			best_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 		}
 
 		ori_mod   = Copy_Model(tree->mod);
@@ -9038,16 +9038,16 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 /* Polynomial interpolation. Adapted from "Numerical Recipes in C".
 Press, Flannery, Teukolsky, Vetterling, 1988.
  */
-int Polint(phydbl *xa, phydbl *ya, int n, phydbl x, phydbl *y, phydbl *dy)
+int Polint(m3ldbl *xa, m3ldbl *ya, int n, m3ldbl x, m3ldbl *y, m3ldbl *dy)
 {
 	int i,m,ns=1;
-	phydbl den,dif,dift,ho,hp,w;
-	phydbl *c,*d;
+	m3ldbl den,dif,dift,ho,hp,w;
+	m3ldbl *c,*d;
 
 	dif=fabs(x-xa[1]);
 
-	c = (phydbl *)mCalloc(n,sizeof(phydbl));
-	d = (phydbl *)mCalloc(n,sizeof(phydbl));
+	c = (m3ldbl *)mCalloc(n,sizeof(m3ldbl));
+	d = (m3ldbl *)mCalloc(n,sizeof(m3ldbl));
 
 	for(i=1;i<=n;i++)
 	{
@@ -9092,7 +9092,7 @@ int Polint(phydbl *xa, phydbl *ya, int n, phydbl x, phydbl *y, phydbl *dy)
 void JF(arbre *tree)
 {
 	//printing loglk for each site, to compute SH-like tests */
-	phydbl sum=0.0;
+	m3ldbl sum=0.0;
 	PhyML_Printf("\n\nSITES LKS:\n");
 	int n_patterns = (int)floor(tree->n_pattern*tree->prop_of_sites_to_consider);
 	int site=0;
@@ -9117,7 +9117,7 @@ void JF(arbre *tree)
 
 
 	/*   //printing loglk for each site, to compute SH-like tests */
-	/*   phydbl sum=0.0; */
+	/*   m3ldbl sum=0.0; */
 	/*   PhyML_Printf("\n\nSITES LKS:\n"); */
 	/*   int n_patterns = (int)floor(tree->n_pattern*tree->prop_of_sites_to_consider); */
 	/*   int site=0; */
@@ -9398,10 +9398,10 @@ void Find_Common_Tips(arbre *tree1, arbre *tree2)
 
 /*********************************************************/
 
-phydbl Get_Tree_Size(arbre *tree)
+m3ldbl Get_Tree_Size(arbre *tree)
 {
 	int i;
-	phydbl tree_size;
+	m3ldbl tree_size;
 
 	tree_size = 0.0;
 //JSJ: temporary compilation fix
@@ -9505,12 +9505,12 @@ char *Basename(char *path)
 
 /*********************************************************/
 
-phydbl *Matrix_Mult(phydbl *A, phydbl *B, int nra, int nca, int nrb, int ncb)
+m3ldbl *Matrix_Mult(m3ldbl *A, m3ldbl *B, int nra, int nca, int nrb, int ncb)
 {
 	int i,j,k;
-	phydbl *C;
+	m3ldbl *C;
 
-	C = (phydbl *)mCalloc(nra*ncb,sizeof(phydbl));
+	C = (m3ldbl *)mCalloc(nra*ncb,sizeof(m3ldbl));
 
 	if(nca != nrb)
 	{
@@ -9529,12 +9529,12 @@ phydbl *Matrix_Mult(phydbl *A, phydbl *B, int nra, int nca, int nrb, int ncb)
 
 /*********************************************************/
 
-phydbl *Matrix_Transpose(phydbl *A, int dim)
+m3ldbl *Matrix_Transpose(m3ldbl *A, int dim)
 {
-	phydbl *tA,buff;
+	m3ldbl *tA,buff;
 	int i,j;
 
-	tA = (phydbl *)mCalloc(dim*dim,sizeof(phydbl));
+	tA = (m3ldbl *)mCalloc(dim*dim,sizeof(m3ldbl));
 
 	For(i,dim*dim) tA[i]=A[i];
 

@@ -815,7 +815,7 @@ void Launch_Interface_Model(option *io)
 			PhyML_Printf("\n. Enter a new value > ");
 			Getstring_Stdin(rr);
 		      }
-		    io->mod->rr_val[i] = (phydbl)atof(rr);
+		    io->mod->rr_val[i] = (m3ldbl)atof(rr);
 		  }
 	      }
 
@@ -839,7 +839,7 @@ void Launch_Interface_Model(option *io)
 		  {
 		    char **bases;
 		    char *bs;
-		    phydbl sum;
+		    m3ldbl sum;
 		    int n_trial;
 		    
 		    bases = (char **)mCalloc(4,sizeof(char *));
@@ -867,7 +867,7 @@ void Launch_Interface_Model(option *io)
 			    PhyML_Printf("\n. Enter a new value > ");
 			    Getstring_Stdin(bs);
 			  }
-			io->mod->user_b_freq[i] = (phydbl)atof(bs);
+			io->mod->user_b_freq[i] = (m3ldbl)atof(bs);
 			sum += io->mod->user_b_freq[i];
 		      }
 		
@@ -958,7 +958,7 @@ void Launch_Interface_Model(option *io)
 		  PhyML_Printf("\n. Enter a new value > ");
 		  Getstring_Stdin(a);
 		}
-	      io->mod->alpha = (phydbl)atof(a);
+	      io->mod->alpha = (m3ldbl)atof(a);
 	      Free(a);
 	      io->mod->s_opt->opt_alpha  = 0;
 	      break;
@@ -1056,7 +1056,7 @@ void Launch_Interface_Model(option *io)
 		  PhyML_Printf("\n. Enter a new value > ");
 		  Getstring_Stdin(p);
 		}
-	      io->mod->pinvar = (phydbl)atof(p);
+	      io->mod->pinvar = (m3ldbl)atof(p);
 
 	      if(io->mod->pinvar > 0.0+MDBL_MIN) io->mod->invar = 1;
 	      else                             io->mod->invar = 0;
@@ -1145,7 +1145,7 @@ void Launch_Interface_Model(option *io)
 		  PhyML_Printf("\n. Enter a new value > ");
 		  Getstring_Stdin(t);
 		}
-	      io->mod->kappa = (phydbl)atof(t);
+	      io->mod->kappa = (m3ldbl)atof(t);
 	      io->mod->s_opt->opt_kappa  = 0;
 	      io->mod->s_opt->opt_lambda = 0;
 	      Free(t);

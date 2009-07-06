@@ -23,9 +23,9 @@ the GNU public licence. See http://www.opensource.org for details.
 #endif
 
 /* int    LIM_SCALE; */
-/* phydbl LIM_SCALE_VAL; */
-/* phydbl MDBL_MAX; */
-/* phydbl MDBL_MIN; */
+/* m3ldbl LIM_SCALE_VAL; */
+/* m3ldbl MDBL_MAX; */
+/* m3ldbl MDBL_MIN; */
 
 /*********************************************************/
 
@@ -334,7 +334,7 @@ void Site_Lk(arbre *tree)
 /*********************************************************/
 // This one gets called pretty frequently
 
-phydbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
+m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 {
 	int n_patterns;
 
@@ -375,12 +375,12 @@ phydbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 /*********************************************************/
 
-phydbl Lk_Core(edge *b, arbre *tree)
+m3ldbl Lk_Core(edge *b, arbre *tree)
 {
 	//printf("JSJ: Calling Lk_Core \n");
-	phydbl log_site_lk, site_lk, site_lk_cat;
+	m3ldbl log_site_lk, site_lk, site_lk_cat;
 	plkflt scale_left, scale_rght;
-	phydbl sum;
+	m3ldbl sum;
 	int ambiguity_check,state;
 	int catg,ns,k,l,site;
 	int dim1,dim2,dim3;
@@ -426,7 +426,7 @@ phydbl Lk_Core(edge *b, arbre *tree)
 										{ //JSJ: temp fix to Pij_rr
 											sum +=
 												b->Pij_rr[0][catg*dim3+state*dim2+l] *
-												(phydbl)b->p_lk_left[site*dim1+catg*dim2+l];
+												(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 										}
 										site_lk_cat += sum * tree->mod->pi[state];
 									}
@@ -441,12 +441,12 @@ phydbl Lk_Core(edge *b, arbre *tree)
 												{//JSJ: temp fix to Pij_rr
 													sum +=
 														b->Pij_rr[0][catg*dim3+k*dim2+l] *
-														(phydbl)b->p_lk_left[site*dim1+catg*dim2+l];
+														(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 												}
 												site_lk_cat +=
 													sum *
 													tree->mod->pi[k] *
-													(phydbl)b->p_lk_tip_r[site*dim2+k];
+													(m3ldbl)b->p_lk_tip_r[site*dim2+k];
 											}
 										}
 									}
@@ -462,12 +462,12 @@ phydbl Lk_Core(edge *b, arbre *tree)
 											{ //JSJ: temp fix to Pij_rr
 												sum +=
 													b->Pij_rr[0][catg*dim3+k*dim2+l] *
-													(phydbl)b->p_lk_left[site*dim1+catg*dim2+l];
+													(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 											}
 											site_lk_cat +=
 												sum *
 												tree->mod->pi[k] *
-												(phydbl)b->p_lk_rght[site*dim1+catg*dim2+k];
+												(m3ldbl)b->p_lk_rght[site*dim1+catg*dim2+k];
 										}
 									}
 								}
@@ -482,20 +482,20 @@ phydbl Lk_Core(edge *b, arbre *tree)
 
 							if(!tree->mod->invar)
 							{
-								log_site_lk = (phydbl)log(site_lk) + (phydbl)scale_left + (phydbl)scale_rght;
+								log_site_lk = (m3ldbl)log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
 							}
 							else
 							{
-								if((phydbl)tree->data->invar[site] > -0.5)
+								if((m3ldbl)tree->data->invar[site] > -0.5)
 								{
 									if((scale_left + scale_rght > 0.0) || (scale_left + scale_rght < 0.0))
-										site_lk *= (phydbl)exp(scale_left + scale_rght);
+										site_lk *= (m3ldbl)exp(scale_left + scale_rght);
 
-									log_site_lk = (phydbl)log(site_lk*(1.0-tree->mod->pinvar) + tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]]);
+									log_site_lk = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar) + tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]]);
 								}
 								else
 								{
-									log_site_lk = (phydbl)log(site_lk*(1.0-tree->mod->pinvar)) + (phydbl)scale_left + (phydbl)scale_rght;
+									log_site_lk = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar)) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
 								}
 							}
 
@@ -503,9 +503,9 @@ phydbl Lk_Core(edge *b, arbre *tree)
 
 							For(catg,tree->mod->n_catg)
 							tree->log_site_lk_cat[catg][site] =
-								(phydbl)log(tree->log_site_lk_cat[catg][site]) +
-								(phydbl)scale_left +
-								(phydbl)scale_rght;
+								(m3ldbl)log(tree->log_site_lk_cat[catg][site]) +
+								(m3ldbl)scale_left +
+								(m3ldbl)scale_rght;
 
 							tree->site_lk[site]      = log_site_lk;
 							tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
@@ -514,7 +514,7 @@ phydbl Lk_Core(edge *b, arbre *tree)
 
 /*********************************************************/
 
-phydbl Return_Lk(arbre *tree)
+m3ldbl Return_Lk(arbre *tree)
 {
 	Lk(tree);
 	return tree->c_lnL;
@@ -522,7 +522,7 @@ phydbl Return_Lk(arbre *tree)
 
 /*********************************************************/
 
-phydbl Return_Abs_Lk(arbre *tree)
+m3ldbl Return_Abs_Lk(arbre *tree)
 {
 	Lk(tree);
 	return fabs(tree->c_lnL);
@@ -533,20 +533,20 @@ phydbl Return_Abs_Lk(arbre *tree)
 matrix *ML_Dist(allseq *data, model *mod)
 {
 	int i,j,k,l;
-	phydbl init;
+	m3ldbl init;
 	int n_catg;
-	phydbl d_max,sum;
+	m3ldbl d_max,sum;
 	matrix *mat;
 	allseq *twodata,*tmpdata;
 	int state0, state1,len;
-	phydbl *F;
+	m3ldbl *F;
 	eigen *eigen_struct;
 
 	tmpdata             = (allseq *)mCalloc(1,sizeof(allseq));
 	tmpdata->c_seq      = (seq **)mCalloc(2,sizeof(seq *));
-	tmpdata->b_frq      = (phydbl *)mCalloc(mod->ns,sizeof(phydbl));
+	tmpdata->b_frq      = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl));
 	tmpdata->ambigu     = (short int *)mCalloc(data->crunch_len,sizeof(short int));
-	F                   = (phydbl *)mCalloc(mod->ns*mod->ns,sizeof(phydbl ));
+	F                   = (m3ldbl *)mCalloc(mod->ns*mod->ns,sizeof(m3ldbl ));
 	eigen_struct        = (eigen *)Make_Eigen_Struct(mod);
 
 	tmpdata->n_otu      = 2;
@@ -605,7 +605,7 @@ matrix *ML_Dist(allseq *data, model *mod)
 								len += (int)twodata->wght[l];
 							}
 						}
-						if(len > .0) {For(i,mod->ns*mod->ns) F[i] /= (phydbl)len;}
+						if(len > .0) {For(i,mod->ns*mod->ns) F[i] /= (m3ldbl)len;}
 
 						sum = 0.;
 						For(i,mod->ns*mod->ns) sum += F[i];
@@ -658,14 +658,14 @@ matrix *ML_Dist(allseq *data, model *mod)
 
 /*********************************************************/
 
-phydbl Lk_Given_Two_Seq(allseq *data, int numseq1, int numseq2, phydbl dist, model *mod, phydbl *loglk)
+m3ldbl Lk_Given_Two_Seq(allseq *data, int numseq1, int numseq2, m3ldbl dist, model *mod, m3ldbl *loglk)
 {
 	seq *seq1,*seq2;
-	phydbl site_lk,log_site_lk;
+	m3ldbl site_lk,log_site_lk;
 	int i,j,k,l;
 	/*   plkflt **p_lk_l,**p_lk_r; */
 	plkflt *p_lk_l,*p_lk_r;
-	phydbl len;
+	m3ldbl len;
 	int dim1,dim2;
 
 	dim1 = mod->ns;
@@ -757,7 +757,7 @@ phydbl Lk_Given_Two_Seq(allseq *data, int numseq1, int numseq2, phydbl dist, mod
 				Exit("\n. Err: site lk <= 0\n");
 			}
 
-			log_site_lk += (phydbl)log(site_lk);
+			log_site_lk += (m3ldbl)log(site_lk);
 
 			*loglk += data->wght[i] * log_site_lk;/* sort sum terms ? No global effect*/
 		}
@@ -784,10 +784,10 @@ void Unconstraint_Lk(arbre *tree)
 	For(i,tree->data->crunch_len)
 	{
 		tree->unconstraint_lk +=
-			tree->data->wght[i]*(phydbl)log(tree->data->wght[i]);
+			tree->data->wght[i]*(m3ldbl)log(tree->data->wght[i]);
 	}
 	tree->unconstraint_lk -=
-		tree->data->init_len*(phydbl)log(tree->data->init_len);
+		tree->data->init_len*(m3ldbl)log(tree->data->init_len);
 }
 
 /*********************************************************/
@@ -805,7 +805,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	 */
 	//printf("\nJSJ: Calling Update_P_Lk\n");
 	node *n_v1, *n_v2;
-	phydbl p1_lk1,p2_lk2;
+	m3ldbl p1_lk1,p2_lk2;
 	plkflt *p_lk,*p_lk_v1,*p_lk_v2;
 	double *Pij1,*Pij2;
 	plkflt max_p_lk;
@@ -939,7 +939,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					{
 						For(j,tree->mod->ns)
 						{
-							p1_lk1 += Pij1[catg*dim3+i*dim2+j] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+j];
+							p1_lk1 += Pij1[catg*dim3+i*dim2+j] * (m3ldbl)n_v1->b[0]->p_lk_tip_r[site*dim2+j];
 						}
 					}
 				}
@@ -947,7 +947,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 				{
 					For(j,tree->mod->ns)
 					{
-						p1_lk1 += Pij1[catg*dim3+i*dim2+j] * (phydbl)p_lk_v1[site*dim1+catg*dim2+j];
+						p1_lk1 += Pij1[catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v1[site*dim1+catg*dim2+j];
 					}
 				}
 
@@ -963,7 +963,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					{
 						For(j,tree->mod->ns)
 						{
-							p2_lk2 += Pij2[catg*dim3+i*dim2+j] * (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+j];
+							p2_lk2 += Pij2[catg*dim3+i*dim2+j] * (m3ldbl)n_v2->b[0]->p_lk_tip_r[site*dim2+j];
 						}
 					}
 				}
@@ -971,7 +971,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 				{
 					For(j,tree->mod->ns)
 					{
-						p2_lk2 += Pij2[catg*dim3+i*dim2+j] * (phydbl)p_lk_v2[site*dim1+catg*dim2+j];
+						p2_lk2 += Pij2[catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v2[site*dim1+catg*dim2+j];
 					}
 				}
 
@@ -1021,15 +1021,15 @@ void Make_Tree_4_Lk(arbre *tree, allseq *alldata, int n_site)
 {
 	int i;
 
-	tree->c_lnL_sorted = (phydbl *)mCalloc(tree->n_pattern, sizeof(phydbl));
-	tree->site_lk      = (phydbl *)mCalloc(alldata->crunch_len,sizeof(phydbl));
+	tree->c_lnL_sorted = (m3ldbl *)mCalloc(tree->n_pattern, sizeof(m3ldbl));
+	tree->site_lk      = (m3ldbl *)mCalloc(alldata->crunch_len,sizeof(m3ldbl));
 
-	tree->log_site_lk_cat      = (phydbl **)mCalloc(tree->mod->n_catg,sizeof(phydbl *));
+	tree->log_site_lk_cat      = (m3ldbl **)mCalloc(tree->mod->n_catg,sizeof(m3ldbl *));
 	For(i,tree->mod->n_catg)
-	tree->log_site_lk_cat[i] = (phydbl *)mCalloc(alldata->crunch_len,sizeof(phydbl));
+	tree->log_site_lk_cat[i] = (m3ldbl *)mCalloc(alldata->crunch_len,sizeof(m3ldbl));
 
-	tree->log_lks_aLRT = (phydbl **)mCalloc(3,sizeof(phydbl *));
-	For(i,3) tree->log_lks_aLRT[i] = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
+	tree->log_lks_aLRT = (m3ldbl **)mCalloc(3,sizeof(m3ldbl *));
+	For(i,3) tree->log_lks_aLRT[i] = (m3ldbl *)mCalloc(tree->data->init_len,sizeof(m3ldbl));
 
 	For(i,2*tree->n_otu-3)
 	{
@@ -1119,7 +1119,7 @@ if(tree->mod->m4mod) M4_Init_P_Lk_Tips_Int(tree);
 void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 {
 	int i;
-	phydbl len;
+	m3ldbl len;
 
 	len = -1.0;
 	//JSJ: fixes to b_fcus_l, Pir_rr and has_zero_br_len
@@ -1215,11 +1215,11 @@ void Update_P_Lk_Along_A_Path(node **path, int path_length, arbre *tree)
 
 /*********************************************************/
 
-phydbl Lk_Dist(phydbl *F, phydbl dist, model *mod)
+m3ldbl Lk_Dist(m3ldbl *F, m3ldbl dist, model *mod)
 {
 	//printf("JSJ: Calling Lk_Dist\n"); //distance based likelihood
 	int i,j,k;
-	phydbl lnL,len;
+	m3ldbl lnL,len;
 	int dim1,dim2;
 
 	For(k,mod->n_catg)
@@ -1249,7 +1249,7 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, model *mod)
 
 /*********************************************************/
 
-phydbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
+m3ldbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 {
 	if(!b_fcus->left->tax) Update_P_Lk(tree,b_fcus,b_fcus->left);
 	if(!b_fcus->rght->tax) Update_P_Lk(tree,b_fcus,b_fcus->rght);
@@ -1276,11 +1276,11 @@ phydbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
        (2) update the change proba matrices along these branches
        (3) update the likelihood of subtree (w,x) (WARNING: (a,x) and (a,w) are not updated)
  */
-phydbl Lk_Triplet(node *a, node *d, arbre *tree)
+m3ldbl Lk_Triplet(node *a, node *d, arbre *tree)
 {
 	int i;
-	phydbl max_height;
-	phydbl up_bound, low_bound;
+	m3ldbl max_height;
+	m3ldbl up_bound, low_bound;
 
 	if(d->tax)
 	{
@@ -1384,11 +1384,11 @@ void Print_Lk_Given_Edge_Recurr(node *a, node *d, edge *b, arbre *tree)
 /* Returns a vector containing the posterior probabilities of
    the different branch rate classes
  */
-phydbl *Post_Prob_Rates_At_Given_Edge(edge *b, phydbl *post_prob, arbre *tree)
+m3ldbl *Post_Prob_Rates_At_Given_Edge(edge *b, m3ldbl *post_prob, arbre *tree)
 {
-	phydbl norm_factor;
+	m3ldbl norm_factor;
 	int rcat, scale_int;
-	phydbl sum,log2,lnL,worst_lnL,best_lnL,mid_lnL;
+	m3ldbl sum,log2,lnL,worst_lnL,best_lnL,mid_lnL;
 
 
 	For(rcat,tree->mod->n_rr_branch) post_prob[rcat] = .0;
@@ -1455,15 +1455,15 @@ phydbl *Post_Prob_Rates_At_Given_Edge(edge *b, phydbl *post_prob, arbre *tree)
 
 /*********************************************************/
 
-phydbl Lk_With_MAP_Branch_Rates(arbre *tree)
+m3ldbl Lk_With_MAP_Branch_Rates(arbre *tree)
 {
 	int br,rcat,best_post_prob_cat;
-	phydbl *post_prob;
-	phydbl best_post_prob;
+	m3ldbl *post_prob;
+	m3ldbl best_post_prob;
 	edge *b;
 
 
-	post_prob = (phydbl *)mCalloc(tree->mod->n_rr_branch,sizeof(phydbl));
+	post_prob = (m3ldbl *)mCalloc(tree->mod->n_rr_branch,sizeof(m3ldbl));
 
 	Lk(tree);
 	Record_Br_Len(NULL,tree);
@@ -1473,7 +1473,7 @@ phydbl Lk_With_MAP_Branch_Rates(arbre *tree)
 		b = tree->t_edges[br];
 
 		/* Compute the posterior probability of each rate class on edge b */
-		post_prob = (phydbl *)Post_Prob_Rates_At_Given_Edge(b,post_prob,tree);
+		post_prob = (m3ldbl *)Post_Prob_Rates_At_Given_Edge(b,post_prob,tree);
 
 		/* Find the most probable class */
 		best_post_prob = UNLIKELY;

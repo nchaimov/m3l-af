@@ -13,7 +13,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #ifndef MC_H
 #define MC_H
 
-void MC_Least_Square_Node_Times_Pre(node *a, node *d, phydbl *A, phydbl *b, int n, arbre *tree);
+void MC_Least_Square_Node_Times_Pre(node *a, node *d, m3ldbl *A, m3ldbl *b, int n, arbre *tree);
 int  MC_main(int argc, char **argv);
 void MC_Bl_From_T_Post(node *a, node *d, edge *b, arbre *tree);
 void MC_Bl_From_T(arbre *tree);
@@ -31,7 +31,7 @@ void MC_Optimize_Root_Height(arbre *tree);
 void MC_Estimate_Branch_Rates(arbre *tree);
 edge *MC_Find_Best_Root_Position_Approx(arbre *tree);
 void MC_Estimate_Branch_Rate_Parameter(arbre *tree);
-phydbl MC_Classify_Branch_In_Rate_Class(arbre *tree);
+m3ldbl MC_Classify_Branch_In_Rate_Class(arbre *tree);
 void MC_Compute_Rates_And_Times_Least_Square_Adjustments(arbre *tree);
 void MC_Compute_Rates_And_Times_Least_Square_Adjustments_Post(node *a, node *d, edge *b, arbre *tree);
 void MC_Classify_Branch_Rates(arbre *tree);

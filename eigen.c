@@ -934,10 +934,10 @@ void det_1D(double *a, int n, double *d)
 double *Cholesky_Decomp(double *A,  int dim)
 {
   int i,j,k;
-  phydbl sum;
-  phydbl *L;
+  m3ldbl sum;
+  m3ldbl *L;
 
-  L   = (phydbl *)mCalloc(dim*dim,sizeof(phydbl));
+  L   = (m3ldbl *)mCalloc(dim*dim,sizeof(m3ldbl));
 
   For(i,dim)
     {

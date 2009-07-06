@@ -42,7 +42,7 @@ int main(int argc, char **argv)
   matrix *mat;
   model *mod;
   time_t t_beg,t_end;
-  phydbl best_lnL,most_likely_size,tree_size;
+  m3ldbl best_lnL,most_likely_size,tree_size;
   int r_seed;
   char *most_likely_tree;
 
@@ -337,13 +337,13 @@ int main(int argc, char **argv)
 /*   arbre *tree1, *tree2; */
 /*   FILE *fp_tree1, *fp_tree2; */
 /*   int i,j,rf,n_edges,n_common,bip_size; */
-/*   phydbl thresh; */
+/*   m3ldbl thresh; */
 /*   edge *b; */
 
 
 /*   fp_tree1 = (FILE *)fopen(argv[1],"r"); */
 /*   fp_tree2 = (FILE *)fopen(argv[2],"r"); */
-/*   thresh = (phydbl)atof(argv[3]); */
+/*   thresh = (m3ldbl)atof(argv[3]); */
 
 /*   tree1 = Read_Tree_File(fp_tree1); */
 /*   tree2 = Read_Tree_File(fp_tree2); */

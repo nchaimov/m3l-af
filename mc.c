@@ -46,7 +46,7 @@ int MC_main(int argc, char **argv)
   matrix *mat;
   model *mod;
   time_t t_beg,t_end;
-  phydbl best_lnL,most_likely_size,tree_size;
+  m3ldbl best_lnL,most_likely_size,tree_size;
   int r_seed;
   char *most_likely_tree;
 
@@ -143,18 +143,18 @@ int MC_main(int argc, char **argv)
 
 		  /* IMPORTANCE SAMPLING STUFF */
 
-/* 		  phydbl *cov; */
+/* 		  m3ldbl *cov; */
 		  int i,j;
 
-		  phydbl *mean, *cov, *min, *max, *x;
+		  m3ldbl *mean, *cov, *min, *max, *x;
 		  int dim;
 
 		  dim = 2;
 		  
-		  mean = (phydbl *)mCalloc(dim,    sizeof(phydbl));
-		  cov  = (phydbl *)mCalloc(dim*dim,sizeof(phydbl));
-		  min  = (phydbl *)mCalloc(dim,    sizeof(phydbl));
-		  max  = (phydbl *)mCalloc(dim,    sizeof(phydbl));
+		  mean = (m3ldbl *)mCalloc(dim,    sizeof(m3ldbl));
+		  cov  = (m3ldbl *)mCalloc(dim*dim,sizeof(m3ldbl));
+		  min  = (m3ldbl *)mCalloc(dim,    sizeof(m3ldbl));
+		  max  = (m3ldbl *)mCalloc(dim,    sizeof(m3ldbl));
 		  
 		  mean[0] = 0.; mean[1] = 10.;
 		  
@@ -429,7 +429,7 @@ void MC_Least_Square_Node_Times(edge *e_root, arbre *tree)
 
    */
 
-  phydbl *A, *b, *x;
+  m3ldbl *A, *b, *x;
   int n;
   int i,j;
   node *root;
@@ -439,9 +439,9 @@ void MC_Least_Square_Node_Times(edge *e_root, arbre *tree)
   
   n = 2*tree->n_otu-1;
   
-  A = (phydbl *)mCalloc(n*n,sizeof(phydbl));
-  b = (phydbl *)mCalloc(n,  sizeof(phydbl));
-  x = (phydbl *)mCalloc(n,  sizeof(phydbl));
+  A = (m3ldbl *)mCalloc(n*n,sizeof(m3ldbl));
+  b = (m3ldbl *)mCalloc(n,  sizeof(m3ldbl));
+  x = (m3ldbl *)mCalloc(n,  sizeof(m3ldbl));
   
   (e_root)?(Add_Root(e_root,tree)):(Add_Root(tree->t_edges[0],tree));
   
@@ -472,7 +472,7 @@ void MC_Least_Square_Node_Times(edge *e_root, arbre *tree)
      is fixed to the actual tree length divided by the tree
      length measured in term of differences of node times */
 
-  phydbl scale_f,time_tree_length,tree_length;
+  m3ldbl scale_f,time_tree_length,tree_length;
 
   scale_f = -100./tree->rates->nd_t[root->num];
   For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale_f;
@@ -499,7 +499,7 @@ void MC_Least_Square_Node_Times(edge *e_root, arbre *tree)
 
 /*********************************************************/
 
-void MC_Least_Square_Node_Times_Pre(node *a, node *d, phydbl *A, phydbl *b, int n, arbre *tree)
+void MC_Least_Square_Node_Times_Pre(node *a, node *d, m3ldbl *A, m3ldbl *b, int n, arbre *tree)
 {
   if(d->tax)
     {
@@ -556,7 +556,7 @@ void MC_Adjust_Node_Times_Pre(node *a, node *d, arbre *tree)
   else
     {
       int i;
-      phydbl min_height;
+      m3ldbl min_height;
 
       For(i,3)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root))
@@ -612,7 +612,7 @@ void MC_Div_Time_Stamps(arbre *tree)
 
 void MC_Bl_From_T(arbre *tree)
 {
-  phydbl mean_rate, branch_rate;
+  m3ldbl mean_rate, branch_rate;
 
   /* Branch lengths are deduced from time stamps */
   MC_Bl_From_T_Post(tree->n_root,tree->n_root->v[0],NULL,tree);
@@ -645,7 +645,7 @@ void MC_Bl_From_T_Post(node *a, node *d, edge *b, arbre *tree)
 
   if(b)
     {
-      phydbl mean_rate, branch_rate;
+      m3ldbl mean_rate, branch_rate;
 
       mean_rate   = tree->rates->clock_r;
       branch_rate = tree->rates->br_r[b->num];
@@ -681,7 +681,7 @@ void MC_Bl_From_T_Post(node *a, node *d, edge *b, arbre *tree)
 void MC_Round_Optimize(arbre *tree)
 {
   int n_round,each;
-  phydbl lk_old, lk_new, tol;
+  m3ldbl lk_old, lk_new, tol;
 
   lk_new = UNLIKELY;
   lk_old = UNLIKELY;
@@ -744,8 +744,8 @@ void MC_Optimize_Node_Times_Serie(node *a, node *d, arbre *tree)
   else
     {
       node *v1, *v2; /* the two sons of d */
-      phydbl t_sup, t_inf;
-      phydbl lk_init;
+      m3ldbl t_sup, t_inf;
+      m3ldbl lk_init;
       
       lk_init = tree->c_lnL;
       
@@ -832,7 +832,7 @@ edge *MC_Find_Best_Root_Position(arbre *tree)
 {
   int i;
   edge *best_edge;
-  phydbl best_lnL,best_pos;
+  m3ldbl best_lnL,best_pos;
 
   Record_Br_Len(NULL,tree);
   best_pos = -1.;
@@ -865,7 +865,7 @@ edge *MC_Find_Best_Root_Position_Approx(arbre *tree)
 {
   int i;
   edge *best_edge;
-  phydbl best_lnL,best_pos;
+  m3ldbl best_lnL,best_pos;
 
   Record_Br_Len(NULL,tree);
   best_pos  = -1.;
@@ -924,8 +924,8 @@ l_1 / mu  |
 
   */
   
-  phydbl l_1, l_2;
-  phydbl mean_rate, branch_rate;
+  m3ldbl l_1, l_2;
+  m3ldbl mean_rate, branch_rate;
 
   mean_rate   = tree->rates->clock_r;
   branch_rate = tree->rates->br_r[tree->e_root->num];
@@ -1014,9 +1014,9 @@ void MC_Compute_Rates_And_Times_Least_Square_Adjustments_Post(node *a, node *d, 
 
   if(b)
     {
-      phydbl t0, t1, t2, t3;
-      phydbl mu1, mu2, mu3;
-      phydbl K;
+      m3ldbl t0, t1, t2, t3;
+      m3ldbl mu1, mu2, mu3;
+      m3ldbl K;
 
       t0 = tree->rates->nd_t[a->num];
       t1 = tree->rates->nd_t[d->num];
@@ -1084,7 +1084,7 @@ void MC_Compute_Rates_And_Times_Least_Square_Adjustments_Post(node *a, node *d, 
 int MC_Check_MC(arbre *tree)
 {
   int i;
-  phydbl dist,eps;
+  m3ldbl dist,eps;
 
   eps = 1.E-06;
 

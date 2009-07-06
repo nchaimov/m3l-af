@@ -19,9 +19,9 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 /*********************************************************/
 
-void PMat_K80(phydbl l, phydbl kappa, int pos, double *Pij)
+void PMat_K80(m3ldbl l, m3ldbl kappa, int pos, double *Pij)
 {
-  phydbl Ts,Tv,e1,e2,aux;
+  m3ldbl Ts,Tv,e1,e2,aux;
 
   /*0 => A*/
   /*1 => C*/
@@ -32,10 +32,10 @@ void PMat_K80(phydbl l, phydbl kappa, int pos, double *Pij)
   /* Tv -> transversion*/
 
   aux = -2*l/(kappa+2);
-  e1 = (phydbl)exp(aux *2);
+  e1 = (m3ldbl)exp(aux *2);
   if (1.0!=kappa)
     {
-      e2 = (phydbl)exp(aux *(kappa+1));
+      e2 = (m3ldbl)exp(aux *(kappa+1));
       Tv = .25*(1-e1);
       Ts = .25*(1+e1-2*e2);
     }
@@ -74,13 +74,13 @@ void PMat_K80(phydbl l, phydbl kappa, int pos, double *Pij)
 /*********************************************************/
 
 
-void PMat_TN93(phydbl l, model *mod, int pos, double *Pij)
+void PMat_TN93(m3ldbl l, model *mod, int pos, double *Pij)
 {
   int i,j;
-  phydbl e1,e2,e3;
-  phydbl a1t,a2t,bt;
-  phydbl A,C,G,T,R,Y;
-  phydbl kappa1,kappa2;
+  m3ldbl e1,e2,e3;
+  m3ldbl a1t,a2t,bt;
+  m3ldbl A,C,G,T,R,Y;
+  m3ldbl kappa1,kappa2;
   int kappa_has_changed;
 
   A = mod->pi[0]; C = mod->pi[1]; G = mod->pi[2]; T = mod->pi[3];
@@ -122,9 +122,9 @@ void PMat_TN93(phydbl l, model *mod, int pos, double *Pij)
   a2t = kappa2;
   a1t*=bt; a2t*=bt;
 
-  e1 = (phydbl)exp(-a1t*R-bt*Y);
-  e2 = (phydbl)exp(-a2t*Y-bt*R);
-  e3 = (phydbl)exp(-bt);
+  e1 = (m3ldbl)exp(-a1t*R-bt*Y);
+  e2 = (m3ldbl)exp(-a2t*Y-bt*R);
+  e3 = (m3ldbl)exp(-bt);
 
 
   /*A->A*/Pij[pos + 4*0+0] = A+Y*A/R*e3+G/R*e1; 
@@ -247,7 +247,7 @@ int Matinv(double *x, int n, int m, double *space)
 }
 
 /********************************************************************/
-/* void PMat_Empirical(phydbl l, model *mod, phydbl ***Pij)         */
+/* void PMat_Empirical(m3ldbl l, model *mod, m3ldbl ***Pij)         */
 /*                                                                  */
 /* Computes the substitution probability matrix                     */
 /* from the initial substitution rate matrix and frequency vector   */
@@ -290,7 +290,7 @@ int Matinv(double *x, int n, int m, double *space)
 /*   8000 = 20x20x20 times the operation +                          */
 /********************************************************************/
 
-void PMat_Empirical(phydbl l, model *mod, int pos, double *Pij)
+void PMat_Empirical(m3ldbl l, model *mod, int pos, double *Pij)
 {
   int n = mod->ns;
   int i, j, k;
@@ -324,7 +324,7 @@ void PMat_Empirical(phydbl l, model *mod, int pos, double *Pij)
 	}
 
 #ifndef PHYML
-      phydbl sum;
+      m3ldbl sum;
       sum = .0;
       For (j,n) sum += Pij[pos+mod->ns*i+j];
       if((sum > 1.+.0001) || (sum < 1.-.0001))
@@ -364,7 +364,7 @@ void PMat_Empirical(phydbl l, model *mod, int pos, double *Pij)
 
 /*********************************************************/
 
-void PMat_Gamma(phydbl l, model *mod, int pos, double *Pij)
+void PMat_Gamma(m3ldbl l, model *mod, int pos, double *Pij)
 {
   int n;
   int i, j, k;
@@ -414,7 +414,7 @@ void PMat_Gamma(phydbl l, model *mod, int pos, double *Pij)
 	}
 
 #ifdef DEBUG
-      phydbl sum;
+      m3ldbl sum;
       sum = .0;
       For (j,n) sum += Pij[pos+mod->ns*i+j];
       if((sum > 1.+.0001) || (sum < 1.-.0001))
@@ -466,7 +466,7 @@ void PMat_Zero_Br_Len(model  *mod, int pos, double *Pij)
 
 /*********************************************************/
 
-void PMat(phydbl l, model *mod, int pos, double *Pij)
+void PMat(m3ldbl l, model *mod, int pos, double *Pij)
 {
   if(l < BL_MIN)
     {
@@ -518,15 +518,15 @@ void PMat(phydbl l, model *mod, int pos, double *Pij)
 
 /*********************************************************/
 
-int GetDaa (phydbl *daa, phydbl *pi, char *file_name)
+int GetDaa (m3ldbl *daa, m3ldbl *pi, char *file_name)
 {
 /* Get the amino acid distance (or substitution rate) matrix 
    (grantham, dayhoff, jones, etc).
 */
    FILE * fdaa;
    int i,j, naa;
-   phydbl dmax,dmin;
-   phydbl sum;  
+   m3ldbl dmax,dmin;
+   m3ldbl sum;  
 
    naa = 20;
    dmax = .0;
@@ -560,7 +560,7 @@ int GetDaa (phydbl *daa, phydbl *pi, char *file_name)
 
 /*********************************************************/
 
-int Init_Qmat_Dayhoff(double *daa, phydbl *pi)
+int Init_Qmat_Dayhoff(double *daa, m3ldbl *pi)
 {
   /* Dayhoff's model data
    * Dayhoff, M.O., Schwartz, R.M., Orcutt, B.C. (1978)
@@ -856,7 +856,7 @@ int Init_Qmat_Dayhoff(double *daa, phydbl *pi)
 
 /*********************************************************/
 
-int Init_Qmat_DCMut(double *daa, phydbl *pi)
+int Init_Qmat_DCMut(double *daa, m3ldbl *pi)
 {
   /* 
      DCMut : new implementation based on Dayhoff et al.'s raw data and amino acid mutabilities
@@ -1285,7 +1285,7 @@ int Init_Qmat_HIVw(double *daa, double *pi)
 
 /*********************************************************/
 
-int Init_Qmat_JTT(double *daa, phydbl *pi)
+int Init_Qmat_JTT(double *daa, m3ldbl *pi)
 {
   int i,j,naa;
 
@@ -1576,7 +1576,7 @@ int Init_Qmat_JTT(double *daa, phydbl *pi)
 
 /*********************************************************/
 
-int Init_Qmat_MtREV(double *daa, phydbl *pi)
+int Init_Qmat_MtREV(double *daa, m3ldbl *pi)
 {
   /* J. Adachi and M. Hasegawa, ``Model of amino acid substitution in proteins
      encoded by mitochondrial DNA'' J. Mol. Evol. 42, 459 (1996) */
@@ -1649,7 +1649,7 @@ int Init_Qmat_MtREV(double *daa, phydbl *pi)
 
 /*********************************************************/
 
-int Init_Qmat_LG(double *daa, phydbl *pi)
+int Init_Qmat_LG(double *daa, m3ldbl *pi)
 {
   int i,j,naa;
 
@@ -1722,7 +1722,7 @@ int Init_Qmat_LG(double *daa, phydbl *pi)
 
 /*********************************************************/
 
-int Init_Qmat_WAG(double *daa, phydbl *pi)
+int Init_Qmat_WAG(double *daa, m3ldbl *pi)
 {
   int i,j,naa;
 
@@ -1814,7 +1814,7 @@ int Init_Qmat_WAG(double *daa, phydbl *pi)
 
 /*********************************************************/
 
-int Init_Qmat_RtREV(double *daa, phydbl *pi)
+int Init_Qmat_RtREV(double *daa, m3ldbl *pi)
 {
     /* 
        This model has been 'translated' from John Huelsenbeck and Fredrik Ronquist
@@ -1892,7 +1892,7 @@ int Init_Qmat_RtREV(double *daa, phydbl *pi)
 
 /*********************************************************/
 
-int Init_Qmat_CpREV(double *daa, phydbl *pi)
+int Init_Qmat_CpREV(double *daa, m3ldbl *pi)
 {
     /* 
        This model has been 'translated' from John Huelsenbeck and Fredrik Ronquist
@@ -1970,7 +1970,7 @@ int Init_Qmat_CpREV(double *daa, phydbl *pi)
 
 /*********************************************************/
 
-int Init_Qmat_VT(double *daa, phydbl *pi)
+int Init_Qmat_VT(double *daa, m3ldbl *pi)
 {
     /* 
        This model has been 'translated' from John Huelsenbeck and Fredrik Ronquist
@@ -2046,7 +2046,7 @@ int Init_Qmat_VT(double *daa, phydbl *pi)
 
 /*********************************************************/
 
-int Init_Qmat_Blosum62(double *daa, phydbl *pi)
+int Init_Qmat_Blosum62(double *daa, m3ldbl *pi)
 {
 
     /* 
@@ -2125,7 +2125,7 @@ int Init_Qmat_Blosum62(double *daa, phydbl *pi)
 
 /*********************************************************/
 
-int Init_Qmat_MtMam(double *daa, phydbl *pi)
+int Init_Qmat_MtMam(double *daa, m3ldbl *pi)
 {
     /* 
        This model has been 'translated' from Ziheng Yang's PAML program 
@@ -2208,7 +2208,7 @@ void Init_Model(allseq *data, model *mod)
 {
   int i,j;
   int ns;
-  phydbl sum,aux;
+  m3ldbl sum,aux;
   int result;
   double *dr, *di, *space;
 
@@ -2507,7 +2507,7 @@ void Init_Model(allseq *data, model *mod)
 void Update_Qmat_Generic(double *rr, double *pi, int ns, double *qmat)
 {
   int i,j;
-  phydbl sum,mr;
+  m3ldbl sum,mr;
 
   For(i,ns*ns) qmat[i] = .0;
   
@@ -2564,10 +2564,10 @@ void Update_Qmat_Generic(double *rr, double *pi, int ns, double *qmat)
 
 /*********************************************************/
 
-void Update_Qmat_GTR(double *rr, phydbl *rr_val, int *rr_num, double *pi, double *qmat)
+void Update_Qmat_GTR(double *rr, m3ldbl *rr_val, int *rr_num, double *pi, double *qmat)
 {
   int i;
-  phydbl mr;
+  m3ldbl mr;
   
   For(i,6) rr[i] = rr_val[rr_num[i]];
   For(i,6) if(rr[i] < 0.001) rr[i] = 0.001;
@@ -2605,7 +2605,7 @@ void Update_Qmat_GTR(double *rr, phydbl *rr_val, int *rr_num, double *pi, double
 void Update_Qmat_HKY(double kappa, double *pi, double *qmat)
 {
   int i;
-  phydbl mr;
+  m3ldbl mr;
  
   /* A -> C */ qmat[0*4+1] = (double)(pi[1]);
   /* A -> G */ qmat[0*4+2] = (double)(kappa*pi[2]);
@@ -2676,10 +2676,10 @@ void Translate_Custom_Mod_String(model *mod)
 
 void Set_Model_Parameters(model *mod)
 {
-  phydbl sum;
+  m3ldbl sum;
   int i;
   int result, n_iter;
-  phydbl scalar;
+  m3ldbl scalar;
 
   DiscreteGamma(mod->gamma_r_proba, mod->gamma_rr, mod->alpha, mod->alpha, mod->n_catg, mod->gamma_median);
 
@@ -2807,21 +2807,21 @@ void Switch_From_Mod_To_M4mod(model *mod)
 
 /*********************************************************/
 
-phydbl General_Dist(phydbl *F, model *mod, eigen *eigen_struct)
+m3ldbl General_Dist(m3ldbl *F, model *mod, eigen *eigen_struct)
 {
-  phydbl *pi,*mod_pi;
+  m3ldbl *pi,*mod_pi;
   int i,j,k;
-  phydbl dist;
-  phydbl sum;
-  phydbl sum_ev;
+  m3ldbl dist;
+  m3ldbl sum;
+  m3ldbl sum_ev;
   double *F_double;
 
 
   /* TO DO : call eigen decomposition function for all nt models */
 
   F_double = (double *)mCalloc(eigen_struct->size*eigen_struct->size,sizeof(double));
-  pi       = (phydbl *)mCalloc(eigen_struct->size,sizeof(phydbl));
-  mod_pi   = (phydbl *)mCalloc(eigen_struct->size,sizeof(phydbl));
+  pi       = (m3ldbl *)mCalloc(eigen_struct->size,sizeof(m3ldbl));
+  mod_pi   = (m3ldbl *)mCalloc(eigen_struct->size,sizeof(m3ldbl));
 
   For(i,mod->ns) mod_pi[i] = mod->pi[i];
 
@@ -2867,7 +2867,7 @@ phydbl General_Dist(phydbl *F, model *mod, eigen *eigen_struct)
   For(i,eigen_struct->size) 
     {
 /*       if(eigen_struct->e_val[i] < 0.0) eigen_struct->e_val[i] = 0.0001; */
-      eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
+      eigen_struct->e_val[i] = (m3ldbl)log(eigen_struct->e_val[i]);
      }
   
   /* Matrix multiplications log(pi^{-1} x F) */
@@ -2903,15 +2903,15 @@ phydbl General_Dist(phydbl *F, model *mod, eigen *eigen_struct)
 
 /*********************************************************/
 
-phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
+m3ldbl GTR_Dist(m3ldbl *F, m3ldbl alpha, eigen *eigen_struct)
 {
-  phydbl *pi;
+  m3ldbl *pi;
   int i,j,k;
-  phydbl dist;
-  phydbl sum;
+  m3ldbl dist;
+  m3ldbl sum;
   double *F_double;
 
-  pi       = (phydbl *)mCalloc(eigen_struct->size,sizeof(phydbl));
+  pi       = (m3ldbl *)mCalloc(eigen_struct->size,sizeof(m3ldbl));
   F_double = (double *)mCalloc(eigen_struct->size*eigen_struct->size,sizeof(double));
 
 /*   /\* Waddell and Steel's example *\/ */
@@ -2936,7 +2936,7 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
 /*   sum = 1.-sum; */
 /*   For(i,eigen_struct->size*eigen_struct->size) F[i] = sum/12.; */
 /*   For(i,eigen_struct->size) F[eigen_struct->size*i+i] = (1.-sum)/4.; */
-/*   For(i,eigen_struct->size) pi[i] = 1./(phydbl)eigen_struct->size; */
+/*   For(i,eigen_struct->size) pi[i] = 1./(m3ldbl)eigen_struct->size; */
 
 
   Make_Symmetric(&F,eigen_struct->size);
@@ -2965,7 +2965,7 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
 	  eigen_struct->e_val[i] = 0.0001;
 	}
       if(alpha < .0)
-	eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
+	eigen_struct->e_val[i] = (m3ldbl)log(eigen_struct->e_val[i]);
       else
 	eigen_struct->e_val[i] = alpha * (1. - (double)pow(eigen_struct->e_val[i],-1./alpha));
      }

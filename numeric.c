@@ -34,8 +34,8 @@ double Uni()
 
 int Rand_Int(int min, int max)
 {
-/*   phydbl u;   */
-/*   u = (phydbl)rand(); */
+/*   m3ldbl u;   */
+/*   u = (m3ldbl)rand(); */
 /*   u /=  (RAND_MAX); */
 /*   u *= (max - min + 1); */
 /*   u += min; */
@@ -124,13 +124,13 @@ double Rexp(double lambda)
 
 /*********************************************************/
 
-phydbl Rnorm(phydbl mean, phydbl sd)
+m3ldbl Rnorm(m3ldbl mean, m3ldbl sd)
 {
   /* Box-Muller transformation */
-  phydbl u1, u2;
+  m3ldbl u1, u2;
 
-  u1=(phydbl)rand()/(RAND_MAX);
-  u2=(phydbl)rand()/(RAND_MAX);
+  u1=(m3ldbl)rand()/(RAND_MAX);
+  u2=(m3ldbl)rand()/(RAND_MAX);
  
   u1 = sqrt(-2*log(u1))*cos(2*PI*u2);
 
@@ -139,16 +139,16 @@ phydbl Rnorm(phydbl mean, phydbl sd)
 
 /*********************************************************/
 
-phydbl *Rnorm_Multid(phydbl *mu, phydbl *cov, int dim)
+m3ldbl *Rnorm_Multid(m3ldbl *mu, m3ldbl *cov, int dim)
 {
-  phydbl *L,*x,*y;
+  m3ldbl *L,*x,*y;
   int i,j;
   
-  x = (phydbl *)mCalloc(dim,sizeof(phydbl));
-  y = (phydbl *)mCalloc(dim,sizeof(phydbl));
+  x = (m3ldbl *)mCalloc(dim,sizeof(m3ldbl));
+  y = (m3ldbl *)mCalloc(dim,sizeof(m3ldbl));
 
 
-  L = (phydbl *)Cholesky_Decomp(cov,dim);
+  L = (m3ldbl *)Cholesky_Decomp(cov,dim);
 
 
   For(i,dim) x[i]=Rnorm(0.0,1.0);
@@ -163,9 +163,9 @@ phydbl *Rnorm_Multid(phydbl *mu, phydbl *cov, int dim)
 
 /*********************************************************/
 
-phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max)
+m3ldbl Rnorm_Trunc(m3ldbl mean, m3ldbl sd, m3ldbl min, m3ldbl max)
 {
-  phydbl cdf_min, cdf_max, u;
+  m3ldbl cdf_min, cdf_max, u;
   cdf_min = CDF_Normal(min,mean,sd);
   cdf_max = CDF_Normal(max,mean,sd);  
   u = cdf_min + (cdf_max-cdf_min) * Uni();
@@ -174,14 +174,14 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max)
 
 /*********************************************************/
 
-phydbl *Rnorm_Multid_Trunc(phydbl *mean, phydbl *cov, phydbl *min, phydbl *max, int dim)
+m3ldbl *Rnorm_Multid_Trunc(m3ldbl *mean, m3ldbl *cov, m3ldbl *min, m3ldbl *max, int dim)
 {
   int i,j;
-  phydbl *L,*x, *u;
-  phydbl up, low, rec;
+  m3ldbl *L,*x, *u;
+  m3ldbl up, low, rec;
   
-  u = (phydbl *)mCalloc(dim,sizeof(dim)); 
-  x = (phydbl *)mCalloc(dim,sizeof(dim));
+  u = (m3ldbl *)mCalloc(dim,sizeof(dim)); 
+  x = (m3ldbl *)mCalloc(dim,sizeof(dim));
  
   L = Cholesky_Decomp(cov,dim);
   
@@ -240,9 +240,9 @@ phydbl *Rnorm_Multid_Trunc(phydbl *mean, phydbl *cov, phydbl *min, phydbl *max, 
 /* DENSITIES / PROBA */
 /*********************************************************/
 
-phydbl Dnorm_Moments(phydbl x, phydbl mean, phydbl var)
+m3ldbl Dnorm_Moments(m3ldbl x, m3ldbl mean, m3ldbl var)
 {
-  phydbl dens,sd,pi;
+  m3ldbl dens,sd,pi;
 
   pi = 3.141593;
   sd = sqrt(var);
@@ -254,9 +254,9 @@ phydbl Dnorm_Moments(phydbl x, phydbl mean, phydbl var)
 
 /*********************************************************/
 
-phydbl Dnorm(phydbl x, phydbl mean, phydbl sd)
+m3ldbl Dnorm(m3ldbl x, m3ldbl mean, m3ldbl sd)
 {
-  phydbl dens,pi;
+  m3ldbl dens,pi;
 
   pi = 3.141593;
 
@@ -267,19 +267,19 @@ phydbl Dnorm(phydbl x, phydbl mean, phydbl sd)
 
 /*********************************************************/
 
-phydbl Pbinom(int N, int ni, phydbl p)
+m3ldbl Pbinom(int N, int ni, m3ldbl p)
 {
   return Bico(N,ni)*pow(p,ni)*pow(1-p,N-ni);
 }
 
 /*********************************************************/
 
-phydbl Bivariate_Normal_Density(phydbl x, phydbl y, phydbl mux, phydbl muy, phydbl sdx, phydbl sdy, phydbl rho)
+m3ldbl Bivariate_Normal_Density(m3ldbl x, m3ldbl y, m3ldbl mux, m3ldbl muy, m3ldbl sdx, m3ldbl sdy, m3ldbl rho)
 {
-  phydbl cx, cy;
-  phydbl pi;
-  phydbl dens;
-  phydbl rho2;
+  m3ldbl cx, cy;
+  m3ldbl pi;
+  m3ldbl dens;
+  m3ldbl rho2;
 
   pi = 3.141593;
 
@@ -296,9 +296,9 @@ phydbl Bivariate_Normal_Density(phydbl x, phydbl y, phydbl mux, phydbl muy, phyd
 
 /*********************************************************/
 
-phydbl Dgamma_Moments(phydbl x, phydbl mean, phydbl var)
+m3ldbl Dgamma_Moments(m3ldbl x, m3ldbl mean, m3ldbl var)
 {
-  phydbl shape, scale;
+  m3ldbl shape, scale;
 
   if(var  < 1.E-20) 
     {
@@ -326,9 +326,9 @@ phydbl Dgamma_Moments(phydbl x, phydbl mean, phydbl var)
 
 /*********************************************************/
 
-phydbl Dgamma(phydbl x, phydbl shape, phydbl scale)
+m3ldbl Dgamma(m3ldbl x, m3ldbl shape, m3ldbl scale)
 {
-  phydbl v;
+  m3ldbl v;
 
   if(x == INFINITY) 
     {
@@ -374,15 +374,15 @@ phydbl Dgamma(phydbl x, phydbl shape, phydbl scale)
 
 /*********************************************************/
 
-phydbl Dexp(phydbl x, phydbl param)
+m3ldbl Dexp(m3ldbl x, m3ldbl param)
 {
   return param * exp(-param * x);
 }
 
 /*********************************************************/
-phydbl Dpois(phydbl x, phydbl param)
+m3ldbl Dpois(m3ldbl x, m3ldbl param)
 {
-  phydbl v;
+  m3ldbl v;
 
   if(x < 0) 
     {
@@ -419,7 +419,7 @@ phydbl Dpois(phydbl x, phydbl param)
 /* CDFs */
 /*********************************************************/
 
-phydbl CDF_Normal(phydbl x, phydbl mean, phydbl sd)
+m3ldbl CDF_Normal(m3ldbl x, m3ldbl mean, m3ldbl sd)
 {
   const double b1 =  0.319381530;
   const double b2 = -0.356563782;
@@ -448,14 +448,14 @@ phydbl CDF_Normal(phydbl x, phydbl mean, phydbl sd)
 /*********************************************************/
 
 
-phydbl CDF_Gamma(phydbl x, phydbl shape, phydbl scale)
+m3ldbl CDF_Gamma(m3ldbl x, m3ldbl shape, m3ldbl scale)
 {
   return IncompleteGamma(x/scale,shape,LnGamma(shape));
 }
 
 /*********************************************************/
 
-phydbl CDF_Pois(phydbl x, phydbl param)
+m3ldbl CDF_Pois(m3ldbl x, m3ldbl param)
 {
   /* Press et al. (1990) approximation of the CDF for the Poisson distribution */
   if(param < MDBL_MIN || x < 0.0) 
@@ -473,7 +473,7 @@ phydbl CDF_Pois(phydbl x, phydbl param)
 /* Inverse CDFs */
 /*********************************************************/
 
-phydbl PointChi2 (phydbl prob, phydbl v)
+m3ldbl PointChi2 (m3ldbl prob, m3ldbl v)
 {
 /* returns z so that Prob{x<z}=prob where x is Chi2 distributed with df=v
    returns -1 if in error.   0.000002<prob<0.999998
@@ -482,32 +482,32 @@ phydbl PointChi2 (phydbl prob, phydbl v)
        Chi2 distribution.  Applied Statistics 24: 385-388.  (AS91)
    Converted into C by Ziheng Yang, Oct. 1993.
 */
-   phydbl e=.5e-6, aa=.6931471805, p=prob, g;
-   phydbl xx, c, ch, a=0,q=0,p1=0,p2=0,t=0,x=0,b=0,s1,s2,s3,s4,s5,s6;
+   m3ldbl e=.5e-6, aa=.6931471805, p=prob, g;
+   m3ldbl xx, c, ch, a=0,q=0,p1=0,p2=0,t=0,x=0,b=0,s1,s2,s3,s4,s5,s6;
 
    if (p<.000002 || p>.999998 || v<=0) return (-1);
 
    g = LnGamma (v/2);
    xx=v/2;   c=xx-1;
-   if (v >= -1.24*(phydbl)log(p)) goto l1;
+   if (v >= -1.24*(m3ldbl)log(p)) goto l1;
 
-   ch=pow((p*xx*(phydbl)exp(g+xx*aa)), 1/xx);
+   ch=pow((p*xx*(m3ldbl)exp(g+xx*aa)), 1/xx);
    if (ch-e<0) return (ch);
    goto l4;
 l1:
    if (v>.32) goto l3;
-   ch=0.4;   a=(phydbl)log(1-p);
+   ch=0.4;   a=(m3ldbl)log(1-p);
 l2:
    q=ch;  p1=1+ch*(4.67+ch);  p2=ch*(6.73+ch*(6.66+ch));
    t=-0.5+(4.67+2*ch)/p1 - (6.73+ch*(13.32+3*ch))/p2;
-   ch-=(1-(phydbl)exp(a+g+.5*ch+c*aa)*p2/p1)/t;
+   ch-=(1-(m3ldbl)exp(a+g+.5*ch+c*aa)*p2/p1)/t;
    if (fabs(q/ch-1)-.01 <= 0) goto l4;
    else                       goto l2;
 
 l3:
    x=PointNormal (p);
    p1=0.222222/v;   ch=v*pow((x*sqrt(p1)+1-p1), 3.0);
-   if (ch>2.2*v+6)  ch=-2*((phydbl)log(1-p)-c*(phydbl)log(.5*ch)+g);
+   if (ch>2.2*v+6)  ch=-2*((m3ldbl)log(1-p)-c*(m3ldbl)log(.5*ch)+g);
 l4:
    q=ch;   p1=.5*ch;
    if ((t=IncompleteGamma (p1, xx, g))<0) {
@@ -515,7 +515,7 @@ l4:
       return (-1);
    }
    p2=p-t;
-   t=p2*(phydbl)exp(xx*aa+g+p1-c*(phydbl)log(ch));
+   t=p2*(m3ldbl)exp(xx*aa+g+p1-c*(m3ldbl)log(ch));
    b=t/ch;  a=0.5*t-b*c;
 
    s1=(210+a*(140+a*(105+a*(84+a*(70+60*a))))) / 420;
@@ -532,7 +532,7 @@ l4:
 
 /*********************************************************/
 
-phydbl PointNormal (phydbl prob)
+m3ldbl PointNormal (m3ldbl prob)
 {
 /* returns z so that Prob{x<z}=prob where x ~ N(0,1) and (1e-12)<prob<1-(1e-12)
    returns (-9999) if in error
@@ -546,15 +546,15 @@ phydbl PointNormal (phydbl prob)
        points of the normal distribution.  26: 118-121.
 
 */
-   phydbl a0=-.322232431088, a1=-1, a2=-.342242088547, a3=-.0204231210245;
-   phydbl a4=-.453642210148e-4, b0=.0993484626060, b1=.588581570495;
-   phydbl b2=.531103462366, b3=.103537752850, b4=.0038560700634;
-   phydbl y, z=0, p=prob, p1;
+   m3ldbl a0=-.322232431088, a1=-1, a2=-.342242088547, a3=-.0204231210245;
+   m3ldbl a4=-.453642210148e-4, b0=.0993484626060, b1=.588581570495;
+   m3ldbl b2=.531103462366, b3=.103537752850, b4=.0038560700634;
+   m3ldbl y, z=0, p=prob, p1;
 
    p1 = (p<0.5 ? p : 1-p);
    if (p1<1e-20) return (-INFINITY);
 
-   y = sqrt ((phydbl)log(1/(p1*p1)));
+   y = sqrt ((m3ldbl)log(1/(p1*p1)));
    z = y + ((((y*a4+a3)*y+a2)*y+a1)*y+a0) / ((((y*b4+b3)*y+b2)*y+b1)*y+b0);
    return (p<0.5 ? -z : z);
 }
@@ -565,7 +565,7 @@ phydbl PointNormal (phydbl prob)
 
 /*********************************************************/
 
-phydbl Bico(int n, int k)
+m3ldbl Bico(int n, int k)
 {
   return floor(0.5+exp(Factln(n)-Factln(k)-Factln(n-k)));
 }
@@ -573,9 +573,9 @@ phydbl Bico(int n, int k)
 
 /*********************************************************/
 
-phydbl Factln(int n)
+m3ldbl Factln(int n)
 {
-  static phydbl a[101];
+  static m3ldbl a[101];
   
   if (n < 0)    { Warn_And_Exit("\n. Err: negative factorial in routine FACTLN"); }
   if (n <= 1)     return 0.0;
@@ -585,58 +585,58 @@ phydbl Factln(int n)
 
 /*********************************************************/
 
-phydbl Gammln(phydbl xx)
+m3ldbl Gammln(m3ldbl xx)
 {
-  phydbl x,tmp,ser;
-  static phydbl cof[6]={76.18009173,-86.50532033,24.01409822,
+  m3ldbl x,tmp,ser;
+  static m3ldbl cof[6]={76.18009173,-86.50532033,24.01409822,
 			-1.231739516,0.120858003e-2,-0.536382e-5};
   int j;
   
   x=xx-1.0;
   tmp=x+5.5;
-  tmp -= (x+0.5)*(phydbl)log(tmp);
+  tmp -= (x+0.5)*(m3ldbl)log(tmp);
   ser=1.0;
   for (j=0;j<=5;j++) 
     {
       x += 1.0;
       ser += cof[j]/x;
     }
-  return -tmp+(phydbl)log(2.50662827465*ser);
+  return -tmp+(m3ldbl)log(2.50662827465*ser);
 }
 
 /*********************************************************/
 
-/* void Plim_Binom(phydbl pH0, int N, phydbl *pinf, phydbl *psup) */
+/* void Plim_Binom(m3ldbl pH0, int N, m3ldbl *pinf, m3ldbl *psup) */
 /* { */
-/*   *pinf = pH0 - 1.64*sqrt(pH0*(1-pH0)/(phydbl)N); */
+/*   *pinf = pH0 - 1.64*sqrt(pH0*(1-pH0)/(m3ldbl)N); */
 /*   if(*pinf < 0) *pinf = .0; */
-/*   *psup = pH0 + 1.64*sqrt(pH0*(1-pH0)/(phydbl)N); */
+/*   *psup = pH0 + 1.64*sqrt(pH0*(1-pH0)/(m3ldbl)N); */
 /* } */
 
 /*********************************************************/
 
-phydbl LnGamma (phydbl alpha)
+m3ldbl LnGamma (m3ldbl alpha)
 {
 /* returns ln(gamma(alpha)) for alpha>0, accurate to 10 decimal places.
    Stirling's formula is used for the central polynomial part of the procedure.
    Pike MC & Hill ID (1966) Algorithm 291: Logarithm of the gamma function.
    Communications of the Association for Computing Machinery, 9:684
 */
-   phydbl x=alpha, f=0, z;
+   m3ldbl x=alpha, f=0, z;
    if (x<7) {
       f=1;  z=x-1;
       while (++z<7)  f*=z;
-      x=z;   f=-(phydbl)log(f);
+      x=z;   f=-(m3ldbl)log(f);
    }
    z = 1/(x*x);
-   return  f + (x-0.5)*(phydbl)log(x) - x + .918938533204673
+   return  f + (x-0.5)*(m3ldbl)log(x) - x + .918938533204673
 	  + (((-.000595238095238*z+.000793650793651)*z-.002777777777778)*z
 	       +.083333333333333)/x;
 }
 
 /*********************************************************/
 
-phydbl IncompleteGamma(phydbl x, phydbl alpha, phydbl ln_gamma_alpha)
+m3ldbl IncompleteGamma(m3ldbl x, m3ldbl alpha, m3ldbl ln_gamma_alpha)
 {
 /* returns the incomplete gamma ratio I(x,alpha) where x is the upper
 	   limit of the integration and alpha is the shape parameter.
@@ -649,14 +649,14 @@ phydbl IncompleteGamma(phydbl x, phydbl alpha, phydbl ln_gamma_alpha)
    19: 285-287 (AS32)
 */
    int i;
-   phydbl p=alpha, g=ln_gamma_alpha;
-   phydbl accurate=1e-8, overflow=1e30;
-   phydbl factor, gin=0, rn=0, a=0,b=0,an=0,dif=0, term=0, pn[6];
+   m3ldbl p=alpha, g=ln_gamma_alpha;
+   m3ldbl accurate=1e-8, overflow=1e30;
+   m3ldbl factor, gin=0, rn=0, a=0,b=0,an=0,dif=0, term=0, pn[6];
 
    if (x==0) return (0);
    if (x<0 || p<=0) return (-1);
 
-   factor=(phydbl)exp(p*(phydbl)log(x)-x-g);
+   factor=(m3ldbl)exp(p*(m3ldbl)log(x)-x-g);
    if (x>1 && x>=p) goto l30;
    /* (1) series expansion */
    gin=1;  term=1;  rn=p;
@@ -696,15 +696,15 @@ phydbl IncompleteGamma(phydbl x, phydbl alpha, phydbl ln_gamma_alpha)
 
 /*********************************************************/
 
-int DiscreteGamma (phydbl freqK[], phydbl rK[],
-		   phydbl alfa, phydbl beta, int K, int median)
+int DiscreteGamma (m3ldbl freqK[], m3ldbl rK[],
+		   m3ldbl alfa, m3ldbl beta, int K, int median)
 {
   /* discretization of gamma distribution with equal proportions in each
      category
   */
    
   int i;
-  phydbl gap05=1.0/(2.0*K), t, factor=alfa/beta*K, lnga1;
+  m3ldbl gap05=1.0/(2.0*K), t, factor=alfa/beta*K, lnga1;
 
   if(K==1)
     {
@@ -737,10 +737,10 @@ int DiscreteGamma (phydbl freqK[], phydbl rK[],
 
 /* Return log(n!) */
 
-phydbl LnFact(int n)
+m3ldbl LnFact(int n)
 {
   int i;
-  phydbl res;
+  m3ldbl res;
 
   res = 0;
   for(i=2;i<=n;i++) res += log(i);
@@ -752,7 +752,7 @@ phydbl LnFact(int n)
 
 int Choose(int n, int k)
 {
-  phydbl accum;
+  m3ldbl accum;
   int i;
 
   if (k > n) return(0);
@@ -768,17 +768,17 @@ int Choose(int n, int k)
 /*********************************************************/
 
 
-phydbl *Covariance_Matrix(arbre *tree)
+m3ldbl *Covariance_Matrix(arbre *tree)
 {
-  phydbl *cov, *mean,var_min;
+  m3ldbl *cov, *mean,var_min;
   int *ori_wght,*site_num;
   int dim,i,j,replicate,n_site,position,sample_size;
 
   sample_size = 1000;
   dim = 2*tree->n_otu-3;
 
-  cov      = (phydbl *)mCalloc(dim*dim,sizeof(phydbl));
-  mean     = (phydbl *)mCalloc(    dim,sizeof(phydbl));
+  cov      = (m3ldbl *)mCalloc(dim*dim,sizeof(m3ldbl));
+  mean     = (m3ldbl *)mCalloc(    dim,sizeof(m3ldbl));
   ori_wght = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   site_num = (int *)mCalloc(tree->data->init_len,sizeof(int));
   
@@ -829,9 +829,9 @@ phydbl *Covariance_Matrix(arbre *tree)
 /* 	     cov[2]/(replicate+1)); */
    }
 
-  For(i,2*tree->n_otu-3) mean[i] /= (phydbl)sample_size;
+  For(i,2*tree->n_otu-3) mean[i] /= (m3ldbl)sample_size;
   
-  For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] /= (phydbl)sample_size;
+  For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] /= (m3ldbl)sample_size;
   For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] -= mean[i]*mean[j];
   For(i,2*tree->n_otu-3) if(cov[i*dim+i] < var_min) cov[i*dim+i] = var_min;
   
@@ -861,28 +861,28 @@ phydbl *Covariance_Matrix(arbre *tree)
 /*********************************************************/
 /* Work out the (inverse of the) Hessian for the likelihood
    function. Only branch lengths are considered as variable */
-phydbl *Hessian(arbre *tree)
+m3ldbl *Hessian(arbre *tree)
 {
-  phydbl *hessian;
-  phydbl *plus_plus, *minus_minus, *plus_zero, *minus_zero, *plus_minus, zero_zero;
-  phydbl *ori_bl;
+  m3ldbl *hessian;
+  m3ldbl *plus_plus, *minus_minus, *plus_zero, *minus_zero, *plus_minus, zero_zero;
+  m3ldbl *ori_bl;
   int dim;
   int i,j;
-  phydbl eps;
-  phydbl lk;
+  m3ldbl eps;
+  m3ldbl lk;
 
   dim = 2*tree->n_otu-3;
   eps = 0.001;
 
-  hessian     = (phydbl *)mCalloc((int)dim*dim,sizeof(phydbl));
+  hessian     = (m3ldbl *)mCalloc((int)dim*dim,sizeof(m3ldbl));
 
-  ori_bl      = (phydbl *)mCalloc((int)dim,sizeof(phydbl));
+  ori_bl      = (m3ldbl *)mCalloc((int)dim,sizeof(m3ldbl));
 
-  plus_plus   = (phydbl *)mCalloc((int)dim*dim,sizeof(phydbl));
-  minus_minus = (phydbl *)mCalloc((int)dim*dim,sizeof(phydbl));
-  plus_minus  = (phydbl *)mCalloc((int)dim*dim,sizeof(phydbl));
-  plus_zero   = (phydbl *)mCalloc((int)dim    ,sizeof(phydbl));
-  minus_zero  = (phydbl *)mCalloc((int)dim    ,sizeof(phydbl));
+  plus_plus   = (m3ldbl *)mCalloc((int)dim*dim,sizeof(m3ldbl));
+  minus_minus = (m3ldbl *)mCalloc((int)dim*dim,sizeof(m3ldbl));
+  plus_minus  = (m3ldbl *)mCalloc((int)dim*dim,sizeof(m3ldbl));
+  plus_zero   = (m3ldbl *)mCalloc((int)dim    ,sizeof(m3ldbl));
+  minus_zero  = (m3ldbl *)mCalloc((int)dim    ,sizeof(m3ldbl));
 
   tree->both_sides = 1;
   Lk(tree);
@@ -1002,10 +1002,10 @@ phydbl *Hessian(arbre *tree)
 
 /*********************************************************/
 
-void Recurr_Hessian(node *a, node *d, int plus_minus, phydbl eps, phydbl *res, arbre *tree)
+void Recurr_Hessian(node *a, node *d, int plus_minus, m3ldbl eps, m3ldbl *res, arbre *tree)
 {
   int i;
-  phydbl ori_l;
+  m3ldbl ori_l;
 
   For(i,3)
     if(a->v[i] == d)
