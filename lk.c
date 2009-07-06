@@ -395,122 +395,115 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 	site = tree->curr_site;
 	ns = tree->mod->ns;
 
-	scale_left =
-		(b->sum_scale_f_left)?
-				(b->sum_scale_f_left[site]):
-					(0.0);
+	scale_left = (b->sum_scale_f_left)? (b->sum_scale_f_left[site]): (0.0);
 
-				scale_rght =
-					(b->sum_scale_f_rght)?
-							(b->sum_scale_f_rght[site]):
-								(0.0);
+	scale_rght = (b->sum_scale_f_rght)? (b->sum_scale_f_rght[site]): (0.0);
 
-							if((b->rght->tax) && (!tree->mod->s_opt->greedy))
-							{
-								ambiguity_check = tree->data->c_seq[b->rght->num]->is_ambigu[site];
-								if(!ambiguity_check) state = Get_State_From_P_Pars(b->p_lk_tip_r,site*dim2,tree);
-							}
+	if((b->rght->tax) && (!tree->mod->s_opt->greedy))
+	{
+		ambiguity_check = tree->data->c_seq[b->rght->num]->is_ambigu[site];
+		if(!ambiguity_check) state = Get_State_From_P_Pars(b->p_lk_tip_r,site*dim2,tree);
+	}
 
-							if(tree->mod->use_m4mod) ambiguity_check = 1;
+	if(tree->mod->use_m4mod) ambiguity_check = 1;
 
-							For(catg,tree->mod->n_catg)
-							{
-								site_lk_cat = .0;
+	For(catg,tree->mod->n_catg)
+	{
+		site_lk_cat = .0;
 
-								if((b->rght->tax) && (!tree->mod->s_opt->greedy))
-								{
-									if(!ambiguity_check)
-									{
-										sum = .0;
-										For(l,ns)
-										{ //JSJ: integrate over branch length sets
-											for
-											sum +=
-												b->Pij_rr[0][catg*dim3+state*dim2+l] *
-												(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
-										}
-										site_lk_cat += sum * tree->mod->pi[state];
-									}
-									else
-									{
-										For(k,ns)
-										{
-											sum = .0;
-											if(b->p_lk_tip_r[site*dim2+k] > .0)
-											{
-												For(l,ns)
-												{//JSJ: temp fix to Pij_rr
-													sum +=
-														b->Pij_rr[0][catg*dim3+k*dim2+l] *
-														(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
-												}
-												site_lk_cat +=
-													sum *
-													tree->mod->pi[k] *
-													(m3ldbl)b->p_lk_tip_r[site*dim2+k];
-											}
-										}
-									}
-								}
-								else
-								{
-									For(k,ns)
-									{
-										sum = .0;
-										if(b->p_lk_rght[site*dim1+catg*dim2+k] > .0)
-										{
-											For(l,ns)
-											{ //JSJ: temp fix to Pij_rr
-												sum +=
-													b->Pij_rr[0][catg*dim3+k*dim2+l] *
-													(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
-											}
-											site_lk_cat +=
-												sum *
-												tree->mod->pi[k] *
-												(m3ldbl)b->p_lk_rght[site*dim1+catg*dim2+k];
-										}
-									}
-								}
+		if((b->rght->tax) && (!tree->mod->s_opt->greedy))
+		{
+			if(!ambiguity_check)
+			{
+				sum = .0;
+				For(l,ns)
+				{ //JSJ: integrate over branch length sets
+					sum +=
+							b->Pij_rr[0][catg*dim3+state*dim2+l] *
+							(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
+				}
+				site_lk_cat += sum * tree->mod->pi[state];
+			}
+			else
+			{
+				For(k,ns)
+				{
+					sum = .0;
+					if(b->p_lk_tip_r[site*dim2+k] > .0)
+					{
+						For(l,ns)
+						{//JSJ: temp fix to Pij_rr
+							sum +=
+									b->Pij_rr[0][catg*dim3+k*dim2+l] *
+									(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
+						}
+						site_lk_cat +=
+								sum *
+								tree->mod->pi[k] *
+								(m3ldbl)b->p_lk_tip_r[site*dim2+k];
+					}
+				}
+			}
+		}
+		else
+		{
+			For(k,ns)
+			{
+				sum = .0;
+				if(b->p_lk_rght[site*dim1+catg*dim2+k] > .0)
+				{
+					For(l,ns)
+					{ //JSJ: temp fix to Pij_rr
+						sum +=
+								b->Pij_rr[0][catg*dim3+k*dim2+l] *
+								(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
+					}
+					site_lk_cat +=
+							sum *
+							tree->mod->pi[k] *
+							(m3ldbl)b->p_lk_rght[site*dim1+catg*dim2+k];
+				}
+			}
+		}
 
-								tree->log_site_lk_cat[catg][site] = site_lk_cat;
-								site_lk += site_lk_cat * tree->mod->gamma_r_proba[catg];
+		tree->log_site_lk_cat[catg][site] = site_lk_cat;
+		site_lk += site_lk_cat * tree->mod->gamma_r_proba[catg];
 
-							}
+	}
 
-							/* site_lk may be too small ? */
-							if(site_lk < 1.E-300) site_lk = 1.E-300;
+	/* site_lk may be too small ? */
+	if(site_lk < 1.E-300) site_lk = 1.E-300;
 
-							if(!tree->mod->invar)
-							{
-								log_site_lk = (m3ldbl)log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
-							}
-							else
-							{
-								if((m3ldbl)tree->data->invar[site] > -0.5)
-								{
-									if((scale_left + scale_rght > 0.0) || (scale_left + scale_rght < 0.0))
-										site_lk *= (m3ldbl)exp(scale_left + scale_rght);
+	if(!tree->mod->invar)
+	{
+		log_site_lk = (m3ldbl)log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
+	}
+	else
+	{
+		if((m3ldbl)tree->data->invar[site] > -0.5)
+		{
+			if((scale_left + scale_rght > 0.0) || (scale_left + scale_rght < 0.0))
+				site_lk *= (m3ldbl)exp(scale_left + scale_rght);
 
-									log_site_lk = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar) + tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]]);
-								}
-								else
-								{
-									log_site_lk = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar)) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
-								}
-							}
+			log_site_lk = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar) + tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]]);
+		}
+		else
+		{
+			log_site_lk = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar)) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
+		}
+	}
 
-							if(log_site_lk < -MDBL_MAX) Warn_And_Exit("\nlog_site_lk < -MDBL_MAX\n");
+	if(log_site_lk < -MDBL_MAX) Warn_And_Exit("\nlog_site_lk < -MDBL_MAX\n");
 
-							For(catg,tree->mod->n_catg)
-							tree->log_site_lk_cat[catg][site] =
-								(m3ldbl)log(tree->log_site_lk_cat[catg][site]) +
-								(m3ldbl)scale_left +
-								(m3ldbl)scale_rght;
+	For(catg,tree->mod->n_catg)
+	tree->log_site_lk_cat[catg][site] =
+			(m3ldbl)log(tree->log_site_lk_cat[catg][site]) +
+			(m3ldbl)scale_left +
+			(m3ldbl)scale_rght;
 
-							tree->site_lk[site]      = log_site_lk;
-							tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
-							return log_site_lk;
+	tree->site_lk[site]      = log_site_lk;
+	tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
+	return log_site_lk;
 }
 
 /*********************************************************/
@@ -555,106 +548,103 @@ matrix *ML_Dist(allseq *data, model *mod)
 	tmpdata->crunch_len = data->crunch_len;
 	tmpdata->init_len   = data->init_len;
 
-	mat =
-		(mod->datatype == NT) ?
-				((mod->whichmodel < 10)?(K80_dist(data,2000)):(JC69_Dist(data,mod))):
-					(JC69_Dist(data,mod));
+	mat = (mod->datatype == NT) ? ((mod->whichmodel < 10)?(K80_dist(data,2000)):(JC69_Dist(data,mod))):(JC69_Dist(data,mod));
 
-				/*   Print_Mat(mat); */
-				/*   Exit("\n"); */
+	/*   Print_Mat(mat); */
+	/*   Exit("\n"); */
 
-				For(i,mod->n_catg) /* Don't use the discrete gamma distribution */
+	For(i,mod->n_catg) /* Don't use the discrete gamma distribution */
+	{
+		mod->gamma_rr[i]      = 1.0;
+		mod->gamma_r_proba[i] = 1.0;
+	}
+
+	n_catg = mod->n_catg;
+	mod->n_catg = 1;
+
+	For(j,data->n_otu-1)
+	{
+		tmpdata->c_seq[0]       = data->c_seq[j];
+		tmpdata->c_seq[0]->name = data->c_seq[j]->name;
+		tmpdata->wght           = data->wght;
+
+		for(k=j+1;k<data->n_otu;k++)
+		{
+			tmpdata->c_seq[1]       = data->c_seq[k];
+			tmpdata->c_seq[1]->name = data->c_seq[k]->name;
+
+			twodata = Compact_CSeq(tmpdata,mod);
+
+			For(l,mod->ns) twodata->b_frq[l] = data->b_frq[l];
+			Check_Ambiguities(twodata,mod->datatype,1);
+			Hide_Ambiguities(twodata);
+
+			init = mat->dist[j][k];
+			if((init == DIST_MAX) || (init < .0)) init = 0.1;
+
+			d_max = init;
+
+			For(i,mod->ns*mod->ns) F[i]=.0;
+			len = 0;
+			For(l,twodata->c_seq[0]->len)
+			{
+				state0 = Assign_State(twodata->c_seq[0]->state+l,mod->datatype,mod->stepsize);
+				state1 = Assign_State(twodata->c_seq[1]->state+l,mod->datatype,mod->stepsize);
+				if((state0 > -1) && (state1 > -1))
 				{
-					mod->gamma_rr[i]      = 1.0;
-					mod->gamma_r_proba[i] = 1.0;
+					F[mod->ns*state0+state1] += twodata->wght[l];
+					len += (int)twodata->wght[l];
 				}
+			}
+			if(len > .0) {For(i,mod->ns*mod->ns) F[i] /= (m3ldbl)len;}
 
-				n_catg = mod->n_catg;
-				mod->n_catg = 1;
+			sum = 0.;
+			For(i,mod->ns*mod->ns) sum += F[i];
 
-				For(j,data->n_otu-1)
-				{
-					tmpdata->c_seq[0]       = data->c_seq[j];
-					tmpdata->c_seq[0]->name = data->c_seq[j]->name;
-					tmpdata->wght           = data->wght;
-
-					for(k=j+1;k<data->n_otu;k++)
-					{
-						tmpdata->c_seq[1]       = data->c_seq[k];
-						tmpdata->c_seq[1]->name = data->c_seq[k]->name;
-
-						twodata = Compact_CSeq(tmpdata,mod);
-
-						For(l,mod->ns) twodata->b_frq[l] = data->b_frq[l];
-						Check_Ambiguities(twodata,mod->datatype,1);
-						Hide_Ambiguities(twodata);
-
-						init = mat->dist[j][k];
-						if((init == DIST_MAX) || (init < .0)) init = 0.1;
-
-						d_max = init;
-
-						For(i,mod->ns*mod->ns) F[i]=.0;
-						len = 0;
-						For(l,twodata->c_seq[0]->len)
-						{
-							state0 = Assign_State(twodata->c_seq[0]->state+l,mod->datatype,mod->stepsize);
-							state1 = Assign_State(twodata->c_seq[1]->state+l,mod->datatype,mod->stepsize);
-							if((state0 > -1) && (state1 > -1))
-							{
-								F[mod->ns*state0+state1] += twodata->wght[l];
-								len += (int)twodata->wght[l];
-							}
-						}
-						if(len > .0) {For(i,mod->ns*mod->ns) F[i] /= (m3ldbl)len;}
-
-						sum = 0.;
-						For(i,mod->ns*mod->ns) sum += F[i];
-
-						if(sum < .001) d_max = -1.;
-						else if((sum > 1. - .001) && (sum < 1. + .001)) Opt_Dist_F(&(d_max),F,mod);
-						else
-						{
-							PhyML_Printf("\n. sum = %f\n",sum);
-							PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-							Exit("");
-						}
+			if(sum < .001) d_max = -1.;
+			else if((sum > 1. - .001) && (sum < 1. + .001)) Opt_Dist_F(&(d_max),F,mod);
+			else
+			{
+				PhyML_Printf("\n. sum = %f\n",sum);
+				PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+				Exit("");
+			}
 
 
-						/* /\* 	  BRENT *\/ */
-						/* 	  d_max = Optimize_Dist(mod,init,twodata); */
+			/* /\* 	  BRENT *\/ */
+			/* 	  d_max = Optimize_Dist(mod,init,twodata); */
 
-						/* 	  PhyML_Printf("\n. Warning : not using the ML pairwise distances..."); */
-						/* 	  d_max = init; */
+			/* 	  PhyML_Printf("\n. Warning : not using the ML pairwise distances..."); */
+			/* 	  d_max = init; */
 
-						if(d_max >= DIST_MAX)
-						{
-							/* 	      PhyML_Printf("\n. Large distance encountered between %s and %s sequences.", */
-							/* 		     tmpdata->c_seq[1]->name, */
-							/* 		     tmpdata->c_seq[0]->name); */
-							d_max = DIST_MAX;
-						}
+			if(d_max >= DIST_MAX)
+			{
+				/* 	      PhyML_Printf("\n. Large distance encountered between %s and %s sequences.", */
+				/* 		     tmpdata->c_seq[1]->name, */
+				/* 		     tmpdata->c_seq[0]->name); */
+				d_max = DIST_MAX;
+			}
 
-						/* Do not correct for dist < BL_MIN, otherwise Fill_Missing_Dist
-						 *  will not be called
-						 */
+			/* Do not correct for dist < BL_MIN, otherwise Fill_Missing_Dist
+			 *  will not be called
+			 */
 
-						mat->dist[j][k] = d_max;
-						mat->dist[k][j] = mat->dist[j][k];
-						Free_Cseq(twodata);
-					}
-				}
+			mat->dist[j][k] = d_max;
+			mat->dist[k][j] = mat->dist[j][k];
+			Free_Cseq(twodata);
+		}
+	}
 
-				mod->n_catg = n_catg;
+	mod->n_catg = n_catg;
 
-				Free(tmpdata->ambigu);
-				Free(tmpdata->b_frq);
-				Free(tmpdata->c_seq);
-				free(tmpdata);
-				Free_Eigen(eigen_struct);
-				Free(F);
+	Free(tmpdata->ambigu);
+	Free(tmpdata->b_frq);
+	Free(tmpdata->c_seq);
+	free(tmpdata);
+	Free_Eigen(eigen_struct);
+	Free(F);
 
-				return mat;
+	return mat;
 }
 
 /*********************************************************/
@@ -726,11 +716,11 @@ m3ldbl Lk_Given_Two_Seq(allseq *data, int numseq1, int numseq2, m3ldbl dist, mod
 				For(j,mod->n_catg)
 				{
 					site_lk +=
-						mod->gamma_r_proba[j] *
-						mod->pi[k] *
-						p_lk_l[i*dim1+k] *
-						mod->Pij_rr[j*dim2+k*dim1+l] *
-						p_lk_r[i*dim1+l];
+							mod->gamma_r_proba[j] *
+							mod->pi[k] *
+							p_lk_l[i*dim1+k] *
+							mod->Pij_rr[j*dim2+k*dim1+l] *
+							p_lk_r[i*dim1+l];
 				}
 			}
 			else
@@ -738,17 +728,17 @@ m3ldbl Lk_Given_Two_Seq(allseq *data, int numseq1, int numseq2, m3ldbl dist, mod
 				For(j,mod->n_catg)
 				{
 					For(k,mod->ns) /*sort sum terms ? No global effect*/
-							{
+					{
 						For(l,mod->ns)
 						{
 							site_lk +=
-								mod->gamma_r_proba[j] *
-								mod->pi[k] *
-								p_lk_l[i*dim1+k] *
-								mod->Pij_rr[j*dim2+k*dim1+l] *
-								p_lk_r[i*dim1+l];
+									mod->gamma_r_proba[j] *
+									mod->pi[k] *
+									p_lk_l[i*dim1+k] *
+									mod->Pij_rr[j*dim2+k*dim1+l] *
+									p_lk_r[i*dim1+l];
 						}
-							}
+					}
 				}
 			}
 
@@ -785,10 +775,10 @@ void Unconstraint_Lk(arbre *tree)
 	For(i,tree->data->crunch_len)
 	{
 		tree->unconstraint_lk +=
-			tree->data->wght[i]*(m3ldbl)log(tree->data->wght[i]);
+				tree->data->wght[i]*(m3ldbl)log(tree->data->wght[i]);
 	}
 	tree->unconstraint_lk -=
-		tree->data->init_len*(m3ldbl)log(tree->data->init_len);
+			tree->data->init_len*(m3ldbl)log(tree->data->init_len);
 }
 
 /*********************************************************/
@@ -992,7 +982,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 
 					/* 		  if((p_lk[site][catg][i] > MDBL_MAX) || (p_lk[site][catg][i] < MDBL_MIN)) */
 					/* 		    { */
-						/* 		      PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__); */
+					/* 		      PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__); */
 					/* 		      PhyML_Printf("\n. p_lk[%3d][%2d][%3d] = %G max_p_lk = %G",site,catg,i,p_lk[site][catg][i],max_p_lk); */
 					/* 		      PhyML_Printf("\n. alpha=%f pinv=%f",tree->mod->alpha,tree->mod->pinvar); */
 					/* 		      For(i,tree->mod->n_catg) PhyML_Printf("\n. rr[%2d] = %G",i,tree->mod->rr[i]); */
@@ -1071,14 +1061,14 @@ void Init_P_Lk_Tips_Double(arbre *tree)
 				For(k,tree->mod->ns)
 				{
 					tree->noeud[i]->b[0]->p_lk_rght[curr_site*dim1+j*dim2+k] =
-						tree->noeud[i]->b[0]->p_lk_rght[curr_site*dim1+0*dim2+k];
+							tree->noeud[i]->b[0]->p_lk_rght[curr_site*dim1+0*dim2+k];
 				}
 			}
 		}
 	}
 
 #ifdef M4
-if(tree->mod->m4mod) M4_Init_P_Lk_Tips_Double(tree);
+	if(tree->mod->m4mod) M4_Init_P_Lk_Tips_Double(tree);
 #endif
 }
 
@@ -1110,7 +1100,7 @@ void Init_P_Lk_Tips_Int(arbre *tree)
 	}
 
 #ifdef M4
-if(tree->mod->m4mod) M4_Init_P_Lk_Tips_Int(tree);
+	if(tree->mod->m4mod) M4_Init_P_Lk_Tips_Int(tree);
 #endif
 
 }
@@ -1131,15 +1121,15 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 	For(i,tree->mod->n_catg)
 	{	For(j,tree->n_l){
-			if(b_fcus->has_zero_br_len[j]) len = -1.0;
-			else
-			{
-				len = b_fcus->l[j]*tree->mod->gamma_rr[i];
-				if(len < BL_MIN)      len = BL_MIN;
-				else if(len > BL_MAX) len = BL_MAX;
-			}
-			PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr[j]);
+		if(b_fcus->has_zero_br_len[j]) len = -1.0;
+		else
+		{
+			len = b_fcus->l[j]*tree->mod->gamma_rr[i];
+			if(len < BL_MIN)      len = BL_MIN;
+			else if(len > BL_MAX) len = BL_MAX;
 		}
+		PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr[j]);
+	}
 	}
 }
 
@@ -1306,9 +1296,9 @@ m3ldbl Lk_Triplet(node *a, node *d, arbre *tree)
 		else
 		{
 			up_bound =
-				(a == tree->n_root)?
-						(tree->rates->nd_t[a->num]):
-							(tree->rates->nd_t[d->v[i]->num]);
+					(a == tree->n_root)?
+							(tree->rates->nd_t[a->num]):
+								(tree->rates->nd_t[d->v[i]->num]);
 		}
 	}
 
@@ -1330,17 +1320,17 @@ m3ldbl Lk_Triplet(node *a, node *d, arbre *tree)
 		if((d->v[i] != a) && (d->b[i] != tree->e_root))
 		{
 			d->b[i]->l[0] =
-				(tree->rates->nd_t[d->num] - tree->rates->nd_t[d->v[i]->num]) *
-				tree->rates->clock_r *
-				tree->rates->br_r[d->b[i]->num];
+					(tree->rates->nd_t[d->num] - tree->rates->nd_t[d->v[i]->num]) *
+					tree->rates->clock_r *
+					tree->rates->br_r[d->b[i]->num];
 		}
 		else
 		{
 			if(a == tree->n_root)
 			{
 				d->b[i]->l[0] =
-					(tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[0]->num] +
-							tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[1]->num]) * tree->rates->clock_r;
+						(tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[0]->num] +
+								tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[1]->num]) * tree->rates->clock_r;
 			}
 			else
 			{
