@@ -423,7 +423,8 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 									{
 										sum = .0;
 										For(l,ns)
-										{ //JSJ: temp fix to Pij_rr
+										{ //JSJ: integrate over branch length sets
+											for
 											sum +=
 												b->Pij_rr[0][catg*dim3+state*dim2+l] *
 												(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
@@ -1118,24 +1119,27 @@ if(tree->mod->m4mod) M4_Init_P_Lk_Tips_Int(tree);
 
 void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 {
-	int i;
+	int i,j;
 	m3ldbl len;
 
 	len = -1.0;
 	//JSJ: fixes to b_fcus_l, Pir_rr and has_zero_br_len
-	if(b_fcus->l[0] < BL_MIN)      b_fcus->l[0] = BL_MIN;
-	else if(b_fcus->l[0] > BL_MAX) b_fcus->l[0] = BL_MAX;
+	For(i,tree->n_l){
+		if(b_fcus->l[i] < BL_MIN)      b_fcus->l[i] = BL_MIN;
+		else if(b_fcus->l[i] > BL_MAX) b_fcus->l[i] = BL_MAX;
+	}
 
 	For(i,tree->mod->n_catg)
-	{
-		if(b_fcus->has_zero_br_len[0]) len = -1.0;
-		else
-		{
-			len = b_fcus->l[0]*tree->mod->gamma_rr[i];
-			if(len < BL_MIN)      len = BL_MIN;
-			else if(len > BL_MAX) len = BL_MAX;
+	{	For(j,tree->n_l){
+			if(b_fcus->has_zero_br_len[j]) len = -1.0;
+			else
+			{
+				len = b_fcus->l[j]*tree->mod->gamma_rr[i];
+				if(len < BL_MIN)      len = BL_MIN;
+				else if(len > BL_MAX) len = BL_MAX;
+			}
+			PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr[j]);
 		}
-		PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr[0]);
 	}
 }
 

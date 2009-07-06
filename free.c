@@ -84,7 +84,6 @@ void Free_Tree(arbre *tree)
 
   For(i,2*tree->n_otu-2) Free(tree->t_dir[i]);
   Free(tree->t_dir);
-
   if(tree->has_bip)
     {
       For(i,2*tree->n_otu-2)
@@ -100,24 +99,26 @@ void Free_Tree(arbre *tree)
 	  Free(tree->noeud[i]->bip_name);
 	}
     }
-  
-  Free(tree->curr_path);
+  if(tree->curr_path) Free(tree->curr_path);
+  if(tree->props) Free(tree->props);
 
   For(i,2*tree->n_otu-3)
     {
-      b = tree->t_edges[i];
-      Free_Edge(b);
+	  if(tree->t_edges[i]){
+		  b = tree->t_edges[i];
+		  Free_Edge(b);
+	  }
     }
-  Free(tree->t_edges);
+  if(tree->t_edges)Free(tree->t_edges);
 
-
+  printf("JSJ: Made it here in Free_Tree...\n");
   For(i,2*tree->n_otu-2)
     {
       n = tree->noeud[i];
       Free_Node(n);
     }
   Free(tree->noeud);
-
+  printf("JSJ: Made it here in Free_Tree...\n");
   Free(tree);
 }
 
@@ -135,14 +136,23 @@ void Free_Edge_Labels(edge *b)
 
 void Free_Edge(edge *b)
 {
-	int i;
+  int i;
   Free_Edge_Labels(b);
   if(b->l) Free(b->l);//JSJ: freeing up allocated memory
-//  if(b->l_old) Free(b->l_old);
+  if(b->l_old) Free(b->l_old);
   if(b->best_l) Free(b->best_l);
-  if(b->n_l) {For(i,b->n_l) Free(b->Pij_rr[i]);}
+  if(b->n_l){
+	  For(i,b->n_l){
+		  //problems in here...
+		  if(b->Pij_rr[i]){
+			  //Free(b->Pij_rr[i]);
+		  }
+	  }
+  }
+  //printf("JSJ: Made it here in Free_Edge...\n");
   if(b->Pij_rr)Free(b->Pij_rr);
   if(b->has_zero_br_len) Free(b->has_zero_br_len);
+  //printf("JSJ: Made it here in Free_Tree...\n");
   Free(b);
 }
 

@@ -166,7 +166,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 
 		Read_Branch_Label(s_tree_d,s_tree_a,tree->t_edges[tree->num_curr_branch_available]);
 		Read_Branch_Lengths(s_tree_d,s_tree_a,tree);
-//JSJ: doesn't currently work properly
+//JSJ: works now
 		For(i,3)
 		{
 			if(!a->v[i])
@@ -716,8 +716,10 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 // initialize the proportion of sites in each partition
 void Init_Tree(arbre *tree, int n_otu, int n_l)
 {
+	int i;
+	For(i,n_l) tree->props[i]       = 1.0/n_l; //JSJ: initialize with equal proportions of sites in each set
 	tree->n_otu                     = n_otu;
-	tree->n_l						  = n_l;
+	tree->n_l					    = n_l;
 	tree->best_tree                 = NULL;
 	tree->old_tree                  = NULL;
 	tree->mat                       = NULL;
@@ -748,6 +750,17 @@ void Init_Tree(arbre *tree, int n_otu, int n_l)
 	tree->print_boot_val            = 0;
 	tree->print_alrt_val            = 0;
 	tree->num_curr_branch_available = 0;
+	Normalize_Props(tree); //JSJ: Correct for floating point rounding error in props
+}
+
+/*********************************************************/
+//JSJ: Function to normalize the site proportions of a tree to 1
+//     This does a slight fudge to correct for floating point rounding error.
+void Normalize_Props(arbre *tree){
+	int i;
+	m3ldbl sum = 0.;
+	For(i,tree->n_l)sum           += tree->props[i]; //get the sum of props to normalize
+	For(i,tree->n_l)tree->props[i] = tree->props[i] / sum; //normalize proportions to correct for float round error
 }
 
 /*********************************************************/
@@ -2014,7 +2027,8 @@ void *mCalloc(int nb, size_t size)
 		return allocated;
 	}
 	else
-		Warn_And_Exit("\n. Err: low memory\n");
+		printf("Called mCalloc(nb= %i, size= %zu)\n",nb,size);
+		Warn_And_Exit("\n. Err: low memory.\n mCalloc unsuccessful\n");
 
 	return NULL;
 }
@@ -2026,7 +2040,8 @@ void *mRealloc(void *p,int nb, size_t size)
 	if((p = realloc(p,(size_t)nb*size)) != NULL)
 		return p;
 	else
-		Warn_And_Exit("\n. Err: low memory\n");
+		printf("Called mRealloc(nb= %i, size= %zu)\n",nb,size);
+		Warn_And_Exit("\n. Err: low memory\n mRealloc unsuccessful\n");
 
 	return NULL;
 }
@@ -2490,9 +2505,10 @@ arbre *Make_Tree(int n_otu, int n_l)
 	arbre *tree;
 	int i;
 	tree = (arbre *)mCalloc(1,sizeof(arbre ));
-	Init_Tree(tree,n_otu, n_l);
 	tree->t_dir = (int **)mCalloc(2*n_otu-2,sizeof(int *)); //JSJ: not sure what t_dir does!!!
 	For(i,2*n_otu-2) tree->t_dir[i] = (int *)mCalloc(2*n_otu-2,sizeof(int));
+	tree->props = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl)); //JSJ: allocate memory for branch length set proportions
+	Init_Tree(tree,n_otu, n_l);
 	return tree;
 }
 
@@ -6191,6 +6207,11 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 	int i,j,m;
 	cpy->n_l = ori->n_l;
 
+	//JSJ: copy rate proportions
+	For(i,ori->n_l){
+		cpy->props[i] = ori->props[i];
+	}
+
 	For(i,2*ori->n_otu-2)
 	{
 		For(j,3)
@@ -7221,18 +7242,19 @@ void Get_List_Of_Target_Edges(node *a, node *d, edge **list, int *list_size, arb
 
 void Fix_All(arbre *tree)
 {
-	int i;
+	int i,j;
 
 	tree->mod->pinvar_old = tree->mod->pinvar;
 	tree->mod->alpha_old  = tree->mod->alpha;
 	tree->mod->kappa_old  = tree->mod->kappa;
 	tree->mod->lambda_old = tree->mod->lambda;
-
-	for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
-	{
-		tree->noeud[i]->b[0]->l_old = tree->noeud[i]->b[0]->l;
-		tree->noeud[i]->b[1]->l_old = tree->noeud[i]->b[1]->l;
-		tree->noeud[i]->b[2]->l_old = tree->noeud[i]->b[2]->l;
+	For(j,tree->n_l){
+		for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
+		{
+			tree->noeud[i]->b[0]->l_old[j] = tree->noeud[i]->b[0]->l[j];
+			tree->noeud[i]->b[1]->l_old[j] = tree->noeud[i]->b[1]->l[j];
+			tree->noeud[i]->b[2]->l_old[j] = tree->noeud[i]->b[2]->l[j];
+		}
 	}
 }
 
@@ -7245,13 +7267,17 @@ void Record_Br_Len(m3ldbl **where, arbre *tree)
 	if(!where)
 	{
 		For(j,tree->n_l){
-			For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
+			For(i,2*tree->n_otu-3){
+				tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
+			}
 		}
 	}
 	else
 	{
 		For(j,tree->n_l){
-			For(i,2*tree->n_otu-3) where[j][i] = tree->t_edges[i]->l[j];
+			For(i,2*tree->n_otu-3){
+				where[j][i] = tree->t_edges[i]->l[j];
+			}
 		}
 	}
 }
@@ -7264,11 +7290,19 @@ void Restore_Br_Len(m3ldbl **from, arbre *tree)
 
 	if(!from)
 	{
-		For(i,2*tree->n_otu-3){ For(j,tree->n_l)tree->t_edges[i]->l[j] = tree->t_edges[i]->l_old[j]; }
+		For(i,2*tree->n_otu-3){
+			For(j,tree->n_l){
+				tree->t_edges[i]->l[j] = tree->t_edges[i]->l_old[j];
+			}
+		}
 	}
 	else
 	{
-		For(i,2*tree->n_otu-3){ For(j,tree->n_l) tree->t_edges[i]->l[j] = from[j][i]; }
+		For(i,2*tree->n_otu-3){
+			For(j,tree->n_l) {
+				tree->t_edges[i]->l[j] = from[j][i];
+			}
+		}
 	}
 }
 
@@ -8934,6 +8968,7 @@ m3ldbl Mean(m3ldbl *x, int n)
 void Best_Of_NNI_And_SPR(arbre *tree)
 {
 	int i;
+	int n_l = tree->n_l;
 	if(tree->mod->s_opt->random_input_tree) Speed_Spr_Loop(tree); /* Don't do simultaneous NNIs if starting tree is random */
 	else
 	{
@@ -9018,18 +9053,20 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 			PhyML_Printf("\n\n. Log likelihood obtained after NNI moves : %f",nni_lnL);
 			PhyML_Printf("\n. Log likelihood obtained after SPR moves : %f",spr_lnL);
 		}
-		For(i,tree->n_l){
-			Free(ori_bl[i]);
-			Free(best_bl[i]);
+		For(i,n_l){
+
+			if(ori_bl[i]) Free(ori_bl[i]);
+			if(best_bl[i]) Free(best_bl[i]);
 		}
-		Free(ori_bl);
-		Free(best_bl);
+		if(ori_bl) Free(ori_bl);
+		if(best_bl) Free(best_bl);
+		//JSJ: currently problems in Free_Tree... causes bus error...
+		if(ori_tree) Free_Tree(ori_tree);
+		if(best_tree) Free_Tree(best_tree);
 
-		Free_Tree(ori_tree);
-		Free_Tree(best_tree);
+		if(ori_mod) Free_Model(ori_mod);
+		if(best_mod) Free_Model(best_mod);
 
-		Free_Model(ori_mod);
-		Free_Model(best_mod);
 	}
 }
 

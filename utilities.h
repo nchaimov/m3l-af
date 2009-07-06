@@ -297,6 +297,7 @@ typedef struct __Arbre {
   struct __Trate                       *rates; /* structure for handling rates of evolution */
   struct __Tmcmc                        *mcmc;
   int 									  n_l; /* JSJ: the number of branch length sets in this tree */
+  m3ldbl							   *props; /* JSJ: the proportion of sites in each branch length set */
   int                          ps_page_number; /* when multiple trees are printed, this variable give the current page number */
   int                         depth_curr_path; /* depth of the node path defined by curr_path */
   int                                 has_bip; /*if has_bip=1, then the structure to compare
@@ -1147,5 +1148,6 @@ m3ldbl Rnorm(m3ldbl mean, m3ldbl sd);
 m3ldbl *Rnorm_Multid(m3ldbl *mu, m3ldbl *cov, int dim);
 m3ldbl *Matrix_Mult(m3ldbl *A, m3ldbl *B, int nra, int nca, int nrb, int ncb);
 m3ldbl *Matrix_Transpose(m3ldbl *A, int dim);
+void Normalize_Props(arbre *tree);
 
 #endif
