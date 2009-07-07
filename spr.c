@@ -3760,8 +3760,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(spr **spr_list, int list_size, arbre *tr
 
 			if(recorded_l < 0.0)
 			{
-				/* Rough optimisation of the branch length at prune site
-				 * We only need to perform this optimisation for the first
+				/* Rough optimization of the branch length at prune site
+				 * We only need to perform this optimization for the first
 				 * element of spr_list because the pruned subtree is the
 				 * same across all the elements of spr_list. It would not
 				 * be true in the general case

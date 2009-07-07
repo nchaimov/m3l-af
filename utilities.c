@@ -6958,7 +6958,7 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 {
 	m3ldbl sum;
 	m3ldbl *prob, *F;
-	int i, j, k, site;
+	int i, j, k, m, site;
 	m3ldbl v_rght;
 	int dim1,dim2,dim3;
 	m3ldbl eps_bl,old_l,new_l;
@@ -6988,13 +6988,15 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 				For(k,tree->mod->n_catg)
 				{ //JSJ: temp fix of Pij_rr
 					v_rght = (b->rght->tax)?((m3ldbl)(b->p_lk_tip_r[site*dim2+j])):(b->p_lk_rght[site*dim1+k*dim2+j]);
-
-					prob[dim3*k+dim2*i+j]              =
+					For(m,tree->n_l){ //JSJ: made the summed probability include a mixed model
+						prob[dim3*k+dim2*i+j]              +=
 							tree->mod->gamma_r_proba[k]      *
 							tree->mod->pi[i]                 *
-							b->Pij_rr[0][k*dim3+i*dim2+j]       *
+							b->Pij_rr[i][k*dim3+i*dim2+j]    *
 							b->p_lk_left[site*dim1+k*dim2+i] *
-							v_rght;
+							v_rght							 *
+							tree->props[i];
+					}
 				}
 			}
 		}
