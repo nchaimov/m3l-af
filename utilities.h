@@ -744,8 +744,9 @@ typedef struct __SPR{
   struct __Edge       *b_target;
   struct __Edge  *b_init_target;
   struct __Node          **path;
-  m3ldbl          init_target_l;
-  m3ldbl               l0,l1,l2;
+  m3ldbl         *init_target_l; //JSJ: an array of init_target_lengths
+  m3ldbl            *l0,*l1,*l2; //JSJ: an array of edge direction lengths
+  int						n_l; //JSJ: store the number of branch length sets
   m3ldbl                    lnL;
   int                depth_path;
   int                      pars;
