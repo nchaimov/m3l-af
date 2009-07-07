@@ -831,7 +831,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	n_patterns = tree->n_pattern;
 
 	dir1=dir2=-1;
-	For(i,3) if(d->b[i] != b) (dir1<0)?(dir1=i):(dir2=i);
+	For(i,3) if(d->b[i] != b) (dir1<0)?(dir1=i):(dir2=i); //JSJ: not very readable...
 
 	if((dir1 == -1) || (dir2 == -1))
 	{
@@ -879,6 +879,14 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		sum_scale_v2 = d->b[dir2]->sum_scale_f_left;
 	}
 	//JSJ: temp fix to Pij_rr
+	/*
+	 * I think that it might be ok to start iteration here and
+	 * increment the above variables accordingly. However that
+	 * may not be a good idea. I need to take more time to
+	 * figure out what this function is doing before I can be
+	 * sure not to screw anything up...
+	 *
+	 * */
 	Pij1 = d->b[dir1]->Pij_rr[0];
 	Pij2 = d->b[dir2]->Pij_rr[0];
 
@@ -965,7 +973,11 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 						p2_lk2 += Pij2[catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v2[site*dim1+catg*dim2+j];
 					}
 				}
-
+				/**
+				 * What's happening here? Looks like the prod of p1_lk1 and p2_lk2
+				 * is being stored in p_lk, which is a little confusing to tell exactly
+				 * what the position they are being stored in is...
+				 */
 				p_lk[site*dim1+catg*dim2+i] = (plkflt)(p1_lk1 * p2_lk2);
 
 				if(p_lk[site*dim1+catg*dim2+i] > max_p_lk) max_p_lk = p_lk[site*dim1+catg*dim2+i];
@@ -978,6 +990,12 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			{
 				For(i,tree->mod->ns)
 				{
+					/**
+					 * WTF is happening here???
+					 * mod->ns is the number of states (ex 4 for nucleotides)
+					 * mod->n_catg is the number of categories in the
+					 * discrete gamma distribution.
+					 */
 					p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
 
 					/* 		  if((p_lk[site][catg][i] > MDBL_MAX) || (p_lk[site][catg][i] < MDBL_MIN)) */
