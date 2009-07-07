@@ -377,27 +377,38 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 m3ldbl Lk_Core(edge *b, arbre *tree)
 {
-	//printf("JSJ: Calling Lk_Core \n");
-	m3ldbl log_site_lk, site_lk, site_lk_cat;
-	plkflt scale_left, scale_rght;
-	m3ldbl sum;
+	/**
+	* Game plan: iterate through the entirety of this function
+	* on each branch length set. Don't return the lk val in each
+	* iteration though. Instead store an array of those values.
+	* At the end of the loop deal with reducing the array and return
+	* the likelihood given the branch length set.
+	*/
+	/**
+	* Global variables (in the scope of this loop)
+	*/
+	m3ldbl *site_lk = mCalloc(tree->n_l, sizeof(m3ldbl));
+	m3ldbl *site_lk_cat = mCalloc(tree->n_l,sizeof(m3ldbl));
+	m3ldbl sum_site_lk;
+	m3ldbl log_site_lk;
+	int i,j; //loop counters
+	int dim1,dim2,dim3;
 	int ambiguity_check,state;
 	int catg,ns,k,l,site;
-	int dim1,dim2,dim3;
-
+	plkflt scale_left, scale_right;
 
 	dim1 = tree->mod->n_catg * tree->mod->ns;
 	dim2 = tree->mod->ns;
 	dim3 = tree->mod->ns * tree->mod->ns;
 
-	log_site_lk = site_lk = site_lk_cat = .0;
+	site_lk[i] = site_lk_cat[i] = .0;
 	ambiguity_check = state = -1;
 	site = tree->curr_site;
 	ns = tree->mod->ns;
 
 	scale_left = (b->sum_scale_f_left)? (b->sum_scale_f_left[site]): (0.0);
 
-	scale_rght = (b->sum_scale_f_rght)? (b->sum_scale_f_rght[site]): (0.0);
+	scale_right = (b->sum_scale_f_rght)? (b->sum_scale_f_rght[site]): (0.0);
 
 	if((b->rght->tax) && (!tree->mod->s_opt->greedy))
 	{
@@ -407,102 +418,167 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 
 	if(tree->mod->use_m4mod) ambiguity_check = 1;
 
-	For(catg,tree->mod->n_catg)
-	{
-		site_lk_cat = .0;
 
-		if((b->rght->tax) && (!tree->mod->s_opt->greedy))
+	For(i,tree->n_l){
+		/**
+		* Private variables (within the scope of each iteration)
+		*/
+
+		//JSJ: variables privite to each iteration through the loop
+		m3ldbl sum;
+
+		For(catg,tree->mod->n_catg)
 		{
-			if(!ambiguity_check)
+			site_lk_cat[i] = .0;
+
+			if((b->rght->tax) && (!tree->mod->s_opt->greedy))
 			{
-				sum = .0;
-				For(l,ns)
-				{ //JSJ: integrate over branch length sets
-					sum +=
-							b->Pij_rr[0][catg*dim3+state*dim2+l] *
-							(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
+				if(!ambiguity_check)
+				{
+					sum = .0;
+					For(l,ns)
+					{ //JSJ: integrate over branch length sets
+						sum +=
+								b->Pij_rr[i][catg*dim3+state*dim2+l] *
+								(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
+					}
+					site_lk_cat[i] += sum * tree->mod->pi[state];
 				}
-				site_lk_cat += sum * tree->mod->pi[state];
+				else
+				{
+					For(k,ns)
+					{
+						sum = .0;
+						if(b->p_lk_tip_r[site*dim2+k] > .0)
+						{
+							For(l,ns)
+							{//JSJ: integrate over branch length sets
+								sum +=
+										b->Pij_rr[i][catg*dim3+k*dim2+l] *
+										(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
+							}
+							site_lk_cat[i] +=
+									sum *
+									tree->mod->pi[k] *
+									(m3ldbl)b->p_lk_tip_r[site*dim2+k];
+						}
+					}
+				}
 			}
 			else
 			{
 				For(k,ns)
 				{
 					sum = .0;
-					if(b->p_lk_tip_r[site*dim2+k] > .0)
+					if(b->p_lk_rght[site*dim1+catg*dim2+k] > .0)
 					{
 						For(l,ns)
-						{//JSJ: temp fix to Pij_rr
+						{ //JSJ: integrate over branch length sets
 							sum +=
-									b->Pij_rr[0][catg*dim3+k*dim2+l] *
+									b->Pij_rr[i][catg*dim3+k*dim2+l] *
 									(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 						}
-						site_lk_cat +=
+						site_lk_cat[i] +=
 								sum *
 								tree->mod->pi[k] *
-								(m3ldbl)b->p_lk_tip_r[site*dim2+k];
+								(m3ldbl)b->p_lk_rght[site*dim1+catg*dim2+k];
 					}
 				}
 			}
+			site_lk[i] += site_lk_cat[i] * tree->mod->gamma_r_proba[catg];
+
+		}
+	}
+	//return log_site_lk; //JSJ: don't just return the log_site_lk any more...
+
+	/**
+	* Now deal with returning the likelihood given the set of bls
+	*	/* site_lk may be too small ? */
+	/*
+	 * tree->log_site_lk_cat[catg][site] = site_lk_cat;
+		if(site_lk < 1.E-300) site_lk = 1.E-300;
+
+		if(!tree->mod->invar)
+		{
+			log_site_lk[i] = (m3ldbl)log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
 		}
 		else
 		{
-			For(k,ns)
+			if((m3ldbl)tree->data->invar[site] > -0.5)
 			{
-				sum = .0;
-				if(b->p_lk_rght[site*dim1+catg*dim2+k] > .0)
-				{
-					For(l,ns)
-					{ //JSJ: temp fix to Pij_rr
-						sum +=
-								b->Pij_rr[0][catg*dim3+k*dim2+l] *
-								(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
-					}
-					site_lk_cat +=
-							sum *
-							tree->mod->pi[k] *
-							(m3ldbl)b->p_lk_rght[site*dim1+catg*dim2+k];
-				}
+				if((scale_left + scale_rght > 0.0) || (scale_left + scale_rght < 0.0))
+					site_lk *= (m3ldbl)exp(scale_left + scale_rght);
+
+				log_site_lk[i] = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar) + tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]]);
+			}
+			else
+			{
+				log_site_lk[i] = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar)) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
 			}
 		}
+	 *
+	 *
+	 * 	For(catg,tree->mod->n_catg)
+		tree->log_site_lk_cat[catg][site] =
+				(m3ldbl)log(tree->log_site_lk_cat[catg][site]) +
+				(m3ldbl)scale_left +
+				(m3ldbl)scale_rght;
 
-		tree->log_site_lk_cat[catg][site] = site_lk_cat;
-		site_lk += site_lk_cat * tree->mod->gamma_r_proba[catg];
-
+		tree->site_lk[site]      = log_site_lk[i];
+		tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
+	 */
+	For(i, tree->n_l){
+		if(site_lk[i] < 1.E-300) site_lk[i] = 1.E-300;
 	}
-
-	/* site_lk may be too small ? */
-	if(site_lk < 1.E-300) site_lk = 1.E-300;
+	/**
+	 * JSJ: The following code definitely needs some review for correctness!
+	 */
+	sum_site_lk = 0.0;
 
 	if(!tree->mod->invar)
 	{
-		log_site_lk = (m3ldbl)log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
+		For(i,tree->n_l){
+			sum_site_lk += site_lk[i] * tree->props[i];
+		}
+		log_site_lk = (m3ldbl)log(sum_site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_right;
 	}
 	else
 	{
-		if((m3ldbl)tree->data->invar[site] > -0.5)
+		if((m3ldbl)tree->data->invar[site] > -0.5) //JSJ: don't know what to do with this case, made a guess...
 		{
-			if((scale_left + scale_rght > 0.0) || (scale_left + scale_rght < 0.0))
-				site_lk *= (m3ldbl)exp(scale_left + scale_rght);
+			For(i,tree->n_l){
+				if((scale_left + scale_right > 0.0) || (scale_left + scale_right < 0.0))
+					site_lk[i] *= (m3ldbl)exp(scale_left + scale_right);
 
-			log_site_lk = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar) + tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]]);
+				sum_site_lk += tree->props[i]*(site_lk[i]*(1.0-tree->mod->pinvar)) + tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]];
+			}
+			log_site_lk = log(sum_site_lk);
 		}
 		else
 		{
-			log_site_lk = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar)) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
+
+			For(i,tree->n_l){
+				sum_site_lk += site_lk[i]*(1.0-tree->mod->pinvar) * tree->props[i];
+			}
+			log_site_lk = (m3ldbl)log(sum_site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_right;
 		}
 	}
 
-	if(log_site_lk < -MDBL_MAX) Warn_And_Exit("\nlog_site_lk < -MDBL_MAX\n");
+	//
+	sum_site_lk = 0.0;
+	For(j, tree->mod->n_catg){
+		For(i,tree->n_l){
+			sum_site_lk += (site_lk_cat[i] * tree->props[i]); //JSJ: multiply each by their proportion
+		}
+		tree->log_site_lk_cat[j][site] = (m3ldbl)log(sum_site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_right;
+	}
 
-	For(catg,tree->mod->n_catg)
-	tree->log_site_lk_cat[catg][site] =
-			(m3ldbl)log(tree->log_site_lk_cat[catg][site]) +
-			(m3ldbl)scale_left +
-			(m3ldbl)scale_rght;
-
-	tree->site_lk[site]      = log_site_lk;
+	tree->site_lk[site] = log_site_lk;
 	tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
+
+	Free(site_lk);
+	Free(site_lk_cat);
+	if(log_site_lk < -MDBL_MAX) Warn_And_Exit("\nlog_site_lk < -MDBL_MAX\n");
 	return log_site_lk;
 }
 
@@ -974,10 +1050,10 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					}
 				}
 				/**
-				 * What's happening here? Looks like the prod of p1_lk1 and p2_lk2
-				 * is being stored in p_lk, which is a little confusing to tell exactly
-				 * what the position they are being stored in is...
-				 */
+				* What's happening here? Looks like the prod of p1_lk1 and p2_lk2
+				* is being stored in p_lk, which is a little confusing to tell exactly
+				* what the position they are being stored in is...
+				*/
 				p_lk[site*dim1+catg*dim2+i] = (plkflt)(p1_lk1 * p2_lk2);
 
 				if(p_lk[site*dim1+catg*dim2+i] > max_p_lk) max_p_lk = p_lk[site*dim1+catg*dim2+i];
@@ -991,11 +1067,11 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 				For(i,tree->mod->ns)
 				{
 					/**
-					 * WTF is happening here???
-					 * mod->ns is the number of states (ex 4 for nucleotides)
-					 * mod->n_catg is the number of categories in the
-					 * discrete gamma distribution.
-					 */
+					* WTF is happening here???
+					* mod->ns is the number of states (ex 4 for nucleotides)
+					* mod->n_catg is the number of categories in the
+					* discrete gamma distribution.
+					*/
 					p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
 
 					/* 		  if((p_lk[site][catg][i] > MDBL_MAX) || (p_lk[site][catg][i] < MDBL_MIN)) */
