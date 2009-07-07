@@ -10,9 +10,9 @@
 
 . Data set: 				#1
 
-. Tree topology search : 		Best of NNIs and SPRs
+. Tree topology search : 		SPRs
 
-. Initial tree: 			user tree (test/abc_mm.tre)
+. Initial tree: 			user tree (test/abc.tre)
 
 . Model of amino acids substitution: 	LG
 
@@ -30,10 +30,10 @@
   - Number of categories: 		4
   - Gamma shape parameter: 		0.593
 
-. Time used 0h0m3s
+. Time used 0h0m1s
 
 
-. 3 seconds
+. 1 seconds
 
  oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
  Suggested citation:

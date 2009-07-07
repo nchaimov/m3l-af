@@ -401,7 +401,6 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 	dim2 = tree->mod->ns;
 	dim3 = tree->mod->ns * tree->mod->ns;
 
-	site_lk[i] = site_lk_cat[i] = .0;
 	ambiguity_check = state = -1;
 	site = tree->curr_site;
 	ns = tree->mod->ns;
@@ -427,6 +426,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 		//JSJ: variables privite to each iteration through the loop
 		m3ldbl sum;
 
+		site_lk[i] = site_lk_cat[i] = .0;
 		For(catg,tree->mod->n_catg)
 		{
 			site_lk_cat[i] = .0;
@@ -486,53 +486,16 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 				}
 			}
 			site_lk[i] += site_lk_cat[i] * tree->mod->gamma_r_proba[catg];
-
+			if(site_lk[i] < 1.E-300) site_lk[i] = 1.E-300;
 		}
 	}
 	//return log_site_lk; //JSJ: don't just return the log_site_lk any more...
 
 	/**
 	* Now deal with returning the likelihood given the set of bls
-	*	/* site_lk may be too small ? */
-	/*
-	 * tree->log_site_lk_cat[catg][site] = site_lk_cat;
-		if(site_lk < 1.E-300) site_lk = 1.E-300;
-
-		if(!tree->mod->invar)
-		{
-			log_site_lk[i] = (m3ldbl)log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
-		}
-		else
-		{
-			if((m3ldbl)tree->data->invar[site] > -0.5)
-			{
-				if((scale_left + scale_rght > 0.0) || (scale_left + scale_rght < 0.0))
-					site_lk *= (m3ldbl)exp(scale_left + scale_rght);
-
-				log_site_lk[i] = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar) + tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]]);
-			}
-			else
-			{
-				log_site_lk[i] = (m3ldbl)log(site_lk*(1.0-tree->mod->pinvar)) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
-			}
-		}
-	 *
-	 *
-	 * 	For(catg,tree->mod->n_catg)
-		tree->log_site_lk_cat[catg][site] =
-				(m3ldbl)log(tree->log_site_lk_cat[catg][site]) +
-				(m3ldbl)scale_left +
-				(m3ldbl)scale_rght;
-
-		tree->site_lk[site]      = log_site_lk[i];
-		tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
-	 */
-	For(i, tree->n_l){
-		if(site_lk[i] < 1.E-300) site_lk[i] = 1.E-300;
-	}
-	/**
-	 * JSJ: The following code definitely needs some review for correctness!
-	 */
+	*
+	* JSJ: The following code definitely needs some review for correctness!
+	*/
 	sum_site_lk = 0.0;
 
 	if(!tree->mod->invar)
