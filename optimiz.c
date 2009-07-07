@@ -1210,9 +1210,9 @@ void Optimiz_Ext_Br(arbre *tree)
 					b,tree,
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty);
-
-			b->nni->best_l    = b->l[0];
-			b->nni->l0        = b->l[0];
+			//JSJ: temp fixes to l
+			b->nni->best_l[0]    = b->l[0];
+			b->nni->l0[0]        = b->l[0];
 			b->nni->best_conf = 0;
 			b->l[0]              = l_init;
 

@@ -977,7 +977,7 @@ void Make_Edge_Lk(edge *b, arbre *tree)
 
 void Make_Edge_NNI(edge *b)
 {
-	b->nni    = Make_NNI();
+	b->nni    = Make_NNI(b->n_l);
 	b->nni->b = b;
 	b->nni->left = b->left;
 	b->nni->rght = b->rght;
@@ -985,25 +985,29 @@ void Make_Edge_NNI(edge *b)
 
 /*********************************************************/
 
-nni *Make_NNI()
+nni *Make_NNI(int n_l)
 {
 	nni *a_nni;
 	a_nni = (nni *)mCalloc(1,sizeof(nni ));
-	Init_NNI(a_nni);
+	a_nni->init_l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	a_nni->best_l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	a_nni->l0 = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	a_nni->l1 = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	a_nni->l2 = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	Init_NNI(a_nni,n_l);
 	return a_nni;
 }
 
 /*********************************************************/
 
-void Init_NNI(nni *a_nni)
+void Init_NNI(nni *a_nni, int n_l)
 {
 	a_nni->left         = NULL;
 	a_nni->rght         = NULL;
 	a_nni->b            = NULL;
-	a_nni->init_l       = -1.;
+	a_nni->n_l			= n_l;
 	a_nni->init_lk      = .0;
 	a_nni->score        = +1.0;
-	a_nni->best_l       = -1.;
 	a_nni->swap_node_v1 = NULL;
 	a_nni->swap_node_v2 = NULL;
 	a_nni->swap_node_v3 = NULL;
@@ -1011,9 +1015,18 @@ void Init_NNI(nni *a_nni)
 	a_nni->lk0          = UNLIKELY;
 	a_nni->lk1          = UNLIKELY;
 	a_nni->lk2          = UNLIKELY;
-	a_nni->l0           = -1.0;
-	a_nni->l1           = -1.0;
-	a_nni->l2           = -1.0;
+
+	/**
+	 * JSJ: initialize arrays of branch lengths
+	 */
+	int i;
+	For(i,n_l){
+		a_nni->init_l[i] = -1.;
+		a_nni->best_l[i] = -1.;
+		a_nni->l0[i]     = -1.0;
+		a_nni->l1[i]     = -1.0;
+		a_nni->l2[i]     = -1.0;
+	}
 }
 
 /*********************************************************/
@@ -2842,8 +2855,8 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	bl_init                = b_fcus->l[0]; //JSJ: changed so compile
 	lk_init                = tree->c_lnL;
 
-	b_fcus->nni->init_l    = b_fcus->l[0]; //JSJ: changed so compile
-	b_fcus->nni->init_lk   = tree->c_lnL;;
+	b_fcus->nni->init_l[0]    = b_fcus->l[0]; //JSJ: changed so compile
+	b_fcus->nni->init_lk  = tree->c_lnL;;
 
 	b_fcus->nni->best_conf = 0;
 	b_fcus->nni->score     = +1.0;
@@ -2997,10 +3010,10 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	b_fcus->nni->lk0 = lk0;
 	b_fcus->nni->lk1 = lk1;
 	b_fcus->nni->lk2 = lk2;
-
-	b_fcus->nni->l0  = l0;
-	b_fcus->nni->l1  = l1;
-	b_fcus->nni->l2  = l2;
+	//JSJ: temp changes for compilation
+	b_fcus->nni->l0[0]  = l0;
+	b_fcus->nni->l1[0]  = l1;
+	b_fcus->nni->l2[0]  = l2;
 
 	b_fcus->nni->score = lk0 - MAX(lk1,lk2);
 
@@ -3015,7 +3028,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	if(lk0 > MAX(lk1,lk2))
 	{
 		b_fcus->nni->best_conf    = 0;
-		b_fcus->nni->best_l       = l0;
+		b_fcus->nni->best_l[0]       = l0; //JSJ: changed for compilation
 		b_fcus->nni->swap_node_v1 = NULL;
 		b_fcus->nni->swap_node_v2 = NULL;
 		b_fcus->nni->swap_node_v3 = NULL;
@@ -3024,7 +3037,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else if(lk1 > MAX(lk0,lk2))
 	{
 		b_fcus->nni->best_conf    = 1;
-		b_fcus->nni->best_l       = l1;
+		b_fcus->nni->best_l[0]       = l1; //JSJ: changed for compilation
 		b_fcus->nni->swap_node_v1 = v2;
 		b_fcus->nni->swap_node_v2 = b_fcus->left;
 		b_fcus->nni->swap_node_v3 = b_fcus->rght;
@@ -3033,7 +3046,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else if(lk2 > MAX(lk0,lk1))
 	{
 		b_fcus->nni->best_conf    = 2;
-		b_fcus->nni->best_l       = l2;
+		b_fcus->nni->best_l[0]       = l2; //JSJ: changed for compilation
 		b_fcus->nni->swap_node_v1 = v2;
 		b_fcus->nni->swap_node_v2 = b_fcus->left;
 		b_fcus->nni->swap_node_v3 = b_fcus->rght;
@@ -3043,7 +3056,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	{
 		b_fcus->nni->score        = +1.0;
 		b_fcus->nni->best_conf    = 0;
-		b_fcus->nni->best_l       = l0;
+		b_fcus->nni->best_l[0]       = l0; //JSJ: changed for compilation
 		b_fcus->nni->swap_node_v1 = NULL;
 		b_fcus->nni->swap_node_v2 = NULL;
 		b_fcus->nni->swap_node_v3 = NULL;

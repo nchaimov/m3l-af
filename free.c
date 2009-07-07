@@ -219,6 +219,10 @@ void Free_Seq(seq **d, int n_otu)
   Free(d);
 }
 
+//void Free_NNI(nni *n, int n_l){
+//	int i;
+//
+//}
 
 /*********************************************************/
 

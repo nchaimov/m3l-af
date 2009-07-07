@@ -716,12 +716,13 @@ typedef struct __NNI{
   struct __Node         *rght;
   struct __Edge            *b;
 
+  int					  n_l; //JSJ: stores the number of branch length sets
   m3ldbl                score;
-  m3ldbl               init_l;
+  m3ldbl              *init_l; //JSJ: array of initial branch lengths
   m3ldbl              init_lk;
-  m3ldbl               best_l;
+  m3ldbl              *best_l; //JSJ: array of best branch lengths
   m3ldbl          lk0,lk1,lk2;
-  m3ldbl             l0,l1,l2;
+  m3ldbl          *l0,*l1,*l2; //JSJ: array of bls extending in three directions.
 
   struct __Node *swap_node_v1;
   struct __Node *swap_node_v2;
@@ -998,8 +999,8 @@ void Graft_Subtree(edge *target, node *link, edge *add_br, arbre *tree);
 int Get_Subtree_Size(node *a, node *d);
 void Pull_Subtree_From_Dead_Objects(node *a, node *d, arbre *tree);
 void Make_Edge_NNI(edge *b);
-nni *Make_NNI();
-void Init_NNI(nni *a_nni);
+nni *Make_NNI(int n_l); //JSJ: so we can make it with appropriate arrays.
+void Init_NNI(nni *a_nni, int n_l); //JSJ: to help initialize values
 void Insert(arbre *tree);
 void Connect_Two_Nodes(node *a, node *d);
 void Get_List_Of_Target_Edges(node *a, node *d, edge **list, int *list_size, arbre *tree);
