@@ -6992,10 +6992,10 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 						prob[dim3*k+dim2*i+j]              +=
 							tree->mod->gamma_r_proba[k]      *
 							tree->mod->pi[i]                 *
-							b->Pij_rr[i][k*dim3+i*dim2+j]    *
+							b->Pij_rr[m][k*dim3+i*dim2+j]    *
 							b->p_lk_left[site*dim1+k*dim2+i] *
 							v_rght							 *
-							tree->props[i];
+							tree->props[m];
 					}
 				}
 			}
