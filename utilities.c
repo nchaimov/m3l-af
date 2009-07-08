@@ -7025,8 +7025,8 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 	if(b->l[0] < BL_MIN)      b->l[0] = BL_MIN;
 	else if(b->l[0] > BL_MAX) b->l[0] = BL_MAX;
 
-	if(!approx)//fixed call to Br_Len_Brent so it gets an array of lengths
-		Br_Len_Brent(0.02*b->l,b->l,50.*b->l,
+	if(!approx)//JSJ: restored brent temporarily
+		Br_Len_Brent(0.02*b->l[0],b->l[0],50.*b->l[0],
 				tree->mod->s_opt->min_diff_lk_local,
 				b,tree,
 				tree->mod->s_opt->brent_it_max,
