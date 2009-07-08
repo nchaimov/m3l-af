@@ -853,6 +853,10 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	int catg,site;
 	int dir1,dir2;
 	int n_patterns;
+	/**
+	 * ambiguity_check_v1 is used to store the site specific ambiguity of the neighbor
+	 * node in direction dir1. Ambiguity check v2 does the same for dir2
+	 */
 	int ambiguity_check_v1,ambiguity_check_v2;
 	int state_v1,state_v2;
 	int dim1, dim2, dim3;
@@ -860,6 +864,12 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	dim1 = tree->mod->n_catg * tree->mod->ns;
 	dim2 = tree->mod->ns;
 	dim3 = tree->mod->ns * tree->mod->ns;
+
+	/**
+	 * dim1 = number of gamma categories * number of characters in alphabet
+	 * dim2 = number of characters in alphabet
+	 * dim3 = number of characters in alphabet squared
+	 */
 
 	state_v1 = state_v2 = -1;
 	ambiguity_check_v1 = ambiguity_check_v2 = -1;
@@ -931,7 +941,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	}
 	//JSJ: temp fix to Pij_rr
 	/*
-	 * I think that it might be ok to start iteration here and
+	 * JSJ: I think that it might be ok to start iteration here and
 	 * increment the above variables accordingly. However that
 	 * may not be a good idea. I need to take more time to
 	 * figure out what this function is doing before I can be
@@ -941,15 +951,34 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	Pij1 = d->b[dir1]->Pij_rr[0];
 	Pij2 = d->b[dir2]->Pij_rr[0];
 
+
+	/**
+	 * For each site given all possible site patterns
+	 * (deal with site patterns rather than sites due
+	 * 	to phyml's sequence compression...)
+	 */
 	For(site,n_patterns)
 	{
 		//printf("JSJ: In Update_P_Lk iterating over state pattern %i\n",site);
+		/**
+		 * JSJ: If sum_scale_v1 was assigned a non-null value in the above if/else cascade,
+		 * the scale_v1 value is assigned as the site specific sum_scale_v1 from above.
+		 */
 		scale_v1 = (sum_scale_v1)?(sum_scale_v1[site]):(0.0);
 		scale_v2 = (sum_scale_v2)?(sum_scale_v2[site]):(0.0);
+		/**
+		 * JSJ: sum_scale was assigned as a pointer to sum_scale_f_left(or right)
+		 * scale_v1 and v2 above are the same but for the neighbor nodes...
+		 */
 		sum_scale[site] = scale_v1 + scale_v2;
 
+
+
+		/**
+		 * JSJ: max_p_lk is just a double, no global assignments here...
+		 */
 		max_p_lk = -MDBL_MAX;
-		state_v1 = state_v2 = -1;
+		state_v1 = state_v2 = -1; //just ints
 		ambiguity_check_v1 = ambiguity_check_v2 = -1;
 
 		if(!tree->mod->s_opt->greedy)
@@ -1042,7 +1071,6 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 				For(i,tree->mod->ns)
 				{
 					/**
-					* WTF is happening here???
 					* mod->ns is the number of states (ex 4 for nucleotides)
 					* mod->n_catg is the number of categories in the
 					* discrete gamma distribution.

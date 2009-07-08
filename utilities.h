@@ -260,7 +260,7 @@ typedef struct __Edge {
   m3ldbl                   dist_btw_edges;
   int                 topo_dist_btw_edges;
 
-  int                    *has_zero_br_len; /* JSJ: branch length at site is zero? */
+  int                    *has_zero_br_len; /* JSJ: branch length in given set is zero? */
 
   m3ldbl                       ratio_test; /* approximate likelihood ratio test */
   m3ldbl                   alrt_statistic; /* aLRT statistic */
