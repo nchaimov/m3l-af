@@ -38,7 +38,7 @@ m3ldbl    Alpha_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,m3ldbl *xmin,
 		       arbre *tree, allseq *alldata);
 m3ldbl    Br_Len_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
 			m3ldbl *xmin, edge *b_fcus, arbre *tree);
-m3ldbl    Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
+m3ldbl    Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		       edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty);
 int       Br_Len_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, 
 		      m3ldbl *fa, m3ldbl *fb, m3ldbl *fc, 

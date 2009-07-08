@@ -486,7 +486,7 @@ m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 
 /*********************************************************/
 //JSJ: lots of temp fixes in below function to l
-m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
+m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty)
 {
 	int iter;
