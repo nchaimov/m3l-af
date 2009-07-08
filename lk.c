@@ -315,6 +315,8 @@ void Lk(arbre *tree)
 
 /*********************************************************/
 
+// VHS: This method calculates the likelihood for the entire tree, given the site
+// specified by *tree->curr_site
 void Site_Lk(arbre *tree)
 {
 	edge *eroot;
@@ -374,7 +376,8 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 }
 
 /*********************************************************/
-
+// This method calculates the likelihood for the entire tree (we presume) rooted at edge *b,
+// for the site indicated by *tree->curr_site.
 m3ldbl Lk_Core(edge *b, arbre *tree)
 {
 	/**
@@ -403,7 +406,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 
 	ambiguity_check = state = -1;
 	site = tree->curr_site;
-	ns = tree->mod->ns;
+	ns = tree->mod->ns; // ns is the number of states in the alphabet.
 
 	scale_left = (b->sum_scale_f_left)? (b->sum_scale_f_left[site]): (0.0);
 
@@ -491,15 +494,18 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 	}
 	//return log_site_lk; //JSJ: don't just return the log_site_lk any more...
 
+	// VHS: At this point: site_lk[i] should contain the likelihood for the edge, given branch length i
+
 	/**
 	* Now deal with returning the likelihood given the set of bls
 	*
 	* JSJ: The following code definitely needs some review for correctness!
 	*/
-	sum_site_lk = 0.0;
+	sum_site_lk = 0.0; // is going to contain the overall likelihood for all branch length sets.
 
-	if(!tree->mod->invar)
+	if(!tree->mod->invar) // if there is no +I model option....
 	{
+		//VHS: the total likelihood = the sum of likelihoods for each B.L. set, weighting each B.L. likelihood by its proportion.
 		For(i,tree->n_l){
 			sum_site_lk += site_lk[i] * tree->props[i];
 		}
@@ -507,18 +513,20 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 	}
 	else
 	{
-		if((m3ldbl)tree->data->invar[site] > -0.5) //JSJ: don't know what to do with this case, made a guess...
+		if((m3ldbl)tree->data->invar[site] > -0.5) //VHS: I *think* the code will always hit this top case, because invar[site] should be 0 or 1
 		{
 			For(i,tree->n_l){
 				if((scale_left + scale_right > 0.0) || (scale_left + scale_right < 0.0))
 					site_lk[i] *= (m3ldbl)exp(scale_left + scale_right);
 
-				sum_site_lk += tree->props[i]*(site_lk[i]*(1.0-tree->mod->pinvar)) + tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]];
+				sum_site_lk += tree->props[i]*(site_lk[i]*(1.0-tree->mod->pinvar));
 			}
+			sum_site_lk += tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]]; // VHS: this is totally bizarre.  what's happening here?
 			log_site_lk = log(sum_site_lk);
 		}
 		else
 		{
+			printf("in lk.c: in Lk_Core: in else at line 528");
 
 			For(i,tree->n_l){
 				sum_site_lk += site_lk[i]*(1.0-tree->mod->pinvar) * tree->props[i];
@@ -849,7 +857,6 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	int state_v1,state_v2;
 	int dim1, dim2, dim3;
 
-
 	dim1 = tree->mod->n_catg * tree->mod->ns;
 	dim2 = tree->mod->ns;
 	dim3 = tree->mod->ns * tree->mod->ns;
@@ -870,7 +877,9 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	n_patterns = tree->n_pattern;
 
 	dir1=dir2=-1;
-	For(i,3) if(d->b[i] != b) (dir1<0)?(dir1=i):(dir2=i); //JSJ: not very readable...
+	For(i,3) if(d->b[i] != b) (dir1<0)?(dir1=i):(dir2=i); //VHS: here we set dir1 and dir2 to point to the two
+														  // edges (of three possible edges) which aren't
+	                                                      // the edge pointed to by edge *b.
 
 	if((dir1 == -1) || (dir2 == -1))
 	{
@@ -885,6 +894,9 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	n_v1 = d->v[dir1];
 	n_v2 = d->v[dir2];
 
+	// VHS: the following chain of if/else statements fills the variables sum_scale, sum_scale_v1, and sum_scale_v2.
+	// These three variables are "likelihood scaling factors", according to utilities.h.
+	// What are these scaling factors???
 	if(d == b->left)
 	{
 		p_lk = b->p_lk_left;

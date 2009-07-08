@@ -8999,7 +8999,7 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		m3ldbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
 		ori_bl = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
 		best_bl = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
-		For(i,tree->n_l){
+		For(i,tree->n_l){ // VHS: I think John added this loop?
 			ori_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 			best_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 		}
