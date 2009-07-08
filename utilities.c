@@ -6953,7 +6953,13 @@ int Get_Subtree_Size(node *a, node *d)
 }
 
 /*********************************************************/
-
+/**
+ * JSJ: This method is in need of attention. This is what we can use to
+ * modify branch lengths.
+ * @param b
+ * @param tree
+ * @param approx
+ */
 void Fast_Br_Len(edge *b, arbre *tree, int approx)
 {
 	m3ldbl sum;
@@ -7012,15 +7018,15 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 	}
 	//JSJ: More temp fixes...
 	old_l = b->l[0];
-	Opt_Dist_F(&(b->l[0]),F,tree->mod);
+	Opt_Dist_F(&(b->l[0]),F,tree->mod); //JSJ: decide how to get array of bls to this fxn, one at a time, or simult
 	new_l = b->l[0];
 	n_iter++;
 
 	if(b->l[0] < BL_MIN)      b->l[0] = BL_MIN;
 	else if(b->l[0] > BL_MAX) b->l[0] = BL_MAX;
 
-	if(!approx)
-		Br_Len_Brent(0.02*b->l[0],b->l[0],50.*b->l[0],
+	if(!approx)//fixed call to Br_Len_Brent so it gets an array of lengths
+		Br_Len_Brent(0.02*b->l,b->l,50.*b->l,
 				tree->mod->s_opt->min_diff_lk_local,
 				b,tree,
 				tree->mod->s_opt->brent_it_max,

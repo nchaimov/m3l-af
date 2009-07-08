@@ -486,7 +486,7 @@ m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 
 /*********************************************************/
 //JSJ: lots of temp fixes in below function to l
-m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
+m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 		edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty)
 {
 	int iter;
@@ -2138,6 +2138,8 @@ void Opt_Dist_F(m3ldbl *dist, m3ldbl *F, model *mod)
 	cx = BL_MAX;
 
 	/*   Dist_F_Brak(&ax,&bx,&cx,F,dist,mod); */
+	//JSJ: perhaps we can call this several times and iterate through the bl set?
+	//	Alternatively the function calling this one could do the iteration...
 	Dist_F_Brent(ax,bx,cx,1.E-10,1000,dist,F,mod);
 }
 
