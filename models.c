@@ -465,7 +465,16 @@ void PMat_Zero_Br_Len(model  *mod, int pos, double *Pij)
 }
 
 /*********************************************************/
-
+/**
+ * JSJ: called by Lk_Dist (which is called by Dist_F_Brent()(and Brak)) and
+ * also by Update_Pmat_At_Given_Edge(). The call from Lk_Dist supplies the
+ * Pmatrix of the model (which we currently have as a single one rather
+ * than a set.
+ * @param l
+ * @param mod
+ * @param pos
+ * @param Pij
+ */
 void PMat(m3ldbl l, model *mod, int pos, double *Pij)
 {
   if(l < BL_MIN)

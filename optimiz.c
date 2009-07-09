@@ -499,6 +499,9 @@ m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 	b=((ax > cx) ? ax : cx);
 	x=w=v=bx;
 	old_lnL = UNLIKELY;
+	/*
+	 * JSJ: l array is the branch length set.
+	 */
 	b_fcus->l[0] = fabs(bx);
 	fw=fv=fx=fu=-Lk_At_Given_Edge(b_fcus,tree);
 	init_lnL = -fw;

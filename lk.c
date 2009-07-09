@@ -833,7 +833,7 @@ void Unconstraint_Lk(arbre *tree)
 }
 
 /*********************************************************/
-
+//JSJ: Update_Partial_Likelihood
 void Update_P_Lk(arbre *tree, edge *b, node *d)
 {
 	/*
