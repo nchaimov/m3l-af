@@ -698,6 +698,10 @@ matrix *ML_Dist(allseq *data, model *mod)
 
 m3ldbl Lk_Given_Two_Seq(allseq *data, int numseq1, int numseq2, m3ldbl dist, model *mod, m3ldbl *loglk)
 {
+	/**
+	 * JSJ: this likelihood calculating function is nether called in the search with NNI or SPR
+	 * when the user supplies a tree. Perhaps this method is called at some other time?
+	 */
 	seq *seq1,*seq2;
 	m3ldbl site_lk,log_site_lk;
 	int i,j,k,l;

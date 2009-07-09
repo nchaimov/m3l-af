@@ -1061,6 +1061,15 @@ m3ldbl Dist_Seq_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 }
 
 /*********************************************************/
+/**
+ * JSJ: it looks like the following function never gets called...
+ * 	This means that the Lk_Given_Two_Seq and Dist_Seq_Brent
+ *  never gets called
+ * @param mod
+ * @param init
+ * @param twoseqs
+ * @return
+ */
 
 m3ldbl Optimize_Dist(model *mod, m3ldbl init, allseq *twoseqs)
 {
