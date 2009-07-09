@@ -845,18 +845,18 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	node *n_v1, *n_v2;
 	m3ldbl p1_lk1,p2_lk2;
 	plkflt *p_lk,*p_lk_v1,*p_lk_v2;
-	double *Pij1,*Pij2;
+	double **Pij1,**Pij2;
 	plkflt max_p_lk;
 	plkflt *sum_scale, *sum_scale_v1, *sum_scale_v2;
 	plkflt scale_v1, scale_v2;
-	int i,j;
+	int i,j,k;
 	int catg,site;
 	int dir1,dir2;
 	int n_patterns;
 	/**
-	 * ambiguity_check_v1 is used to store the site specific ambiguity of the neighbor
-	 * node in direction dir1. Ambiguity check v2 does the same for dir2
-	 */
+	* ambiguity_check_v1 is used to store the site specific ambiguity of the neighbor
+	* node in direction dir1. Ambiguity check v2 does the same for dir2
+	*/
 	int ambiguity_check_v1,ambiguity_check_v2;
 	int state_v1,state_v2;
 	int dim1, dim2, dim3;
@@ -866,10 +866,10 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	dim3 = tree->mod->ns * tree->mod->ns;
 
 	/**
-	 * dim1 = number of gamma categories * number of characters in alphabet
-	 * dim2 = number of characters in alphabet
-	 * dim3 = number of characters in alphabet squared
-	 */
+	* dim1 = number of gamma categories * number of characters in alphabet
+	* dim2 = number of characters in alphabet
+	* dim3 = number of characters in alphabet squared
+	*/
 
 	state_v1 = state_v2 = -1;
 	ambiguity_check_v1 = ambiguity_check_v2 = -1;
@@ -888,8 +888,8 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 
 	dir1=dir2=-1;
 	For(i,3) if(d->b[i] != b) (dir1<0)?(dir1=i):(dir2=i); //VHS: here we set dir1 and dir2 to point to the two
-														  // edges (of three possible edges) which aren't
-	                                                      // the edge pointed to by edge *b.
+	// edges (of three possible edges) which aren't
+	// the edge pointed to by edge *b.
 
 	if((dir1 == -1) || (dir2 == -1))
 	{
@@ -948,45 +948,45 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	 * sure not to screw anything up...
 	 *
 	 * */
-	Pij1 = d->b[dir1]->Pij_rr[0];
-	Pij2 = d->b[dir2]->Pij_rr[0];
+	Pij1 = d->b[dir1]->Pij_rr;
+	Pij2 = d->b[dir2]->Pij_rr;
 
 
 	/**
-	 * For each site given all possible site patterns
-	 * (deal with site patterns rather than sites due
-	 * 	to phyml's sequence compression...)
-	 */
+	* For each site given all possible site patterns
+	* (deal with site patterns rather than sites due
+	* 	to phyml's sequence compression...)
+	*/
 	For(site,n_patterns)
 	{
 		//printf("JSJ: In Update_P_Lk iterating over state pattern %i\n",site);
 		/**
-		 * JSJ: If sum_scale_v1 was assigned a non-null value in the above if/else cascade,
-		 * the scale_v1 value is assigned as the site specific sum_scale_v1 from above.
-		 */
+		* JSJ: If sum_scale_v1 was assigned a non-null value in the above if/else cascade,
+		* the scale_v1 value is assigned as the site specific sum_scale_v1 from above.
+		*/
 		scale_v1 = (sum_scale_v1)?(sum_scale_v1[site]):(0.0);
 		scale_v2 = (sum_scale_v2)?(sum_scale_v2[site]):(0.0);
 		/**
-		 * JSJ: sum_scale was assigned as a pointer to sum_scale_f_left(or right)
-		 * scale_v1 and v2 above are the same but for the neighbor nodes...
-		 */
+		* JSJ: sum_scale was assigned as a pointer to sum_scale_f_left(or right)
+		* scale_v1 and v2 above are the same but for the neighbor nodes...
+		*/
 		sum_scale[site] = scale_v1 + scale_v2;
 
 
 
 		/**
-		 * JSJ: max_p_lk is just a double, no global assignments here...
-		 */
+		* JSJ: max_p_lk is just a double, no global assignments here...
+		*/
 		max_p_lk = -MDBL_MAX;
 		state_v1 = state_v2 = -1; //just ints
 		ambiguity_check_v1 = ambiguity_check_v2 = -1;
 
 
 		/**
-		 * JSJ: If the model is set to greedy, and the node is terminal,
-		 *  then we check if the site is ambiguous
-		 * 	otherwise if it is not ambiguous we default to true
-		 */
+		* JSJ: If the model is set to greedy, and the node is terminal,
+		*  then we check if the site is ambiguous
+		* 	otherwise if it is not ambiguous we default to true
+		*/
 		if(!tree->mod->s_opt->greedy)
 		{
 			if(n_v1->tax)
@@ -1001,8 +1001,8 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 				if(!ambiguity_check_v2) state_v2 = Get_State_From_P_Pars(n_v2->b[0]->p_lk_tip_r,site*dim2,tree);
 			}
 		}
-
-		if(tree->mod->use_m4mod) //if using Markov modulated Markov Model then the ambiguity checks are true
+		//JSJ: if using Markov modulated Markov Model then the ambiguity checks are true
+		if(tree->mod->use_m4mod)
 		{
 			ambiguity_check_v1 = 1;
 			ambiguity_check_v2 = 1;
@@ -1012,69 +1012,79 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		{
 			For(i,tree->mod->ns)
 			{
-				p1_lk1 = .0;
-
-				if((n_v1->tax) && (!tree->mod->s_opt->greedy))
-				{
-					if(!ambiguity_check_v1)
-					{
-						p1_lk1 = Pij1[catg*dim3+i*dim2+state_v1];
-					}
-					else
-					{
-						For(j,tree->mod->ns)
-						{
-							/**
-							 * JSJ: is p_lk_tip shorthand for partial likelihood at the tip?
-							 * if that is true then you multiply the partial likelihood at the tip
-							 * by the i,jth position in the p matrix given a gamma category and site
-							 *
-							 */
-							p1_lk1 += Pij1[catg*dim3+i*dim2+j] * (m3ldbl)n_v1->b[0]->p_lk_tip_r[site*dim2+j];
-						}
-					}
-				}
-				else
-				{
-					For(j,tree->mod->ns)
-					{
-						p1_lk1 += Pij1[catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v1[site*dim1+catg*dim2+j];
-					}
-				}
-
-				p2_lk2 = .0;
-
-				if((n_v2->tax) && (!tree->mod->s_opt->greedy))
-				{
-					if(!ambiguity_check_v2)
-					{
-						p2_lk2 = Pij2[catg*dim3+i*dim2+state_v2];
-					}
-					else
-					{
-						For(j,tree->mod->ns)
-						{
-							p2_lk2 += Pij2[catg*dim3+i*dim2+j] * (m3ldbl)n_v2->b[0]->p_lk_tip_r[site*dim2+j];
-						}
-					}
-				}
-				else
-				{
-					For(j,tree->mod->ns)
-					{
-						p2_lk2 += Pij2[catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v2[site*dim1+catg*dim2+j];
-					}
-				}
 				/**
-				* What's happening here? Looks like the prod of p1_lk1 and p2_lk2
-				* is being stored in p_lk, which is a little confusing to tell exactly
-				* what the position they are being stored in is...
-				*/
-				p_lk[site*dim1+catg*dim2+i] = (plkflt)(p1_lk1 * p2_lk2);
+				 * JSJ: here is a good point to iterate over branch length sets
+				 * at this point we are in the loops that do the assignment we
+				 * need to modify, and we are also past the variables that will
+				 * not need to be changed.
+				 */
+				For(k,tree->n_l)
+				{
+					p1_lk1 = .0;
 
-				if(p_lk[site*dim1+catg*dim2+i] > max_p_lk) max_p_lk = p_lk[site*dim1+catg*dim2+i];
-			}
-		}
+					if((n_v1->tax) && (!tree->mod->s_opt->greedy))
+					{
+						if(!ambiguity_check_v1)
+						{
+							p1_lk1 = Pij1[k][catg*dim3+i*dim2+state_v1];
+						}
+						else
+						{
+							For(j,tree->mod->ns)
+							{
+								/**
+								* JSJ: is p_lk_tip shorthand for partial likelihood at the tip?
+								* if that is true then you multiply the partial likelihood at the tip
+								* by the i,jth position in the p matrix given a gamma category and site
+								*
+								*/
+								p1_lk1 += Pij1[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v1->b[0]->p_lk_tip_r[site*dim2+j];
+							}
+						}
+					}
+					else
+					{
+						For(j,tree->mod->ns)
+						{
+							p1_lk1 += Pij1[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v1[site*dim1+catg*dim2+j];
+						}
+					}
+
+					p2_lk2 = .0;
+
+					if((n_v2->tax) && (!tree->mod->s_opt->greedy))
+					{
+						if(!ambiguity_check_v2)
+						{
+							p2_lk2 = Pij2[k][catg*dim3+i*dim2+state_v2];
+						}
+						else
+						{
+							For(j,tree->mod->ns)
+							{
+								p2_lk2 += Pij2[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v2->b[0]->p_lk_tip_r[site*dim2+j];
+							} //JSJ: end for J in alphabet
+						}//JSJ: end else
+					}//JSJ: end if(n_v2...)
+					else
+					{
+						For(j,tree->mod->ns)
+						{
+							p2_lk2 += Pij2[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v2[site*dim1+catg*dim2+j];
+						} //end for j in alphabet
+					} //JSJ: end else
+					//JSJ: if we are at the 0th position, we initialize, otherwise we sum the product of
+					// the proportion
+					if(k == 0){
+						p_lk[site*dim1+catg*dim2+i] = (plkflt)(p1_lk1 * p2_lk2 * tree->props[k]);
+					}else{
+						p_lk[site*dim1+catg*dim2+i] += (plkflt)(p1_lk1 * p2_lk2 * tree->props[k]);
+					}
+
+					if(p_lk[site*dim1+catg*dim2+i] > max_p_lk) max_p_lk = p_lk[site*dim1+catg*dim2+i];
+				}//JSJ: end For(k,Num Branch Length sets)
+			}//JSJ: end For(i in alphabet)
+		}//JSJ: end For(catg in gama categories)
 
 		if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
 		{
@@ -1107,11 +1117,11 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					/* 			} */
 					/* 		      Warn_And_Exit("\n. Numerical precision problem ! (send me an e-mail : s.guindon@auckland.ac.nz)\n"); */
 					/* 		    } */
-				}
-			}
+				} //JSJ: end For(i, count of alphabet)
+			}//JSJ: end For(catg in gamma categories...
 			sum_scale[site] += (plkflt)log(max_p_lk);
-		}
-	}
+		}//JSJ: end if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
+	} //JSJ: end For(site,patterns)
 }
 
 /*********************************************************/
@@ -1230,15 +1240,15 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 	For(i,tree->mod->n_catg)
 	{	For(j,tree->n_l){
-			if(b_fcus->has_zero_br_len[j]) len = -1.0;
-			else
-			{
-				len = b_fcus->l[j]*tree->mod->gamma_rr[i];
-				if(len < BL_MIN)      len = BL_MIN;
-				else if(len > BL_MAX) len = BL_MAX;
-			}
-			PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr[j]);
+		if(b_fcus->has_zero_br_len[j]) len = -1.0;
+		else
+		{
+			len = b_fcus->l[j]*tree->mod->gamma_rr[i];
+			if(len < BL_MIN)      len = BL_MIN;
+			else if(len > BL_MAX) len = BL_MAX;
 		}
+		PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr[j]);
+	}
 	}
 }
 
