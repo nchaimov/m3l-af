@@ -981,6 +981,12 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		state_v1 = state_v2 = -1; //just ints
 		ambiguity_check_v1 = ambiguity_check_v2 = -1;
 
+
+		/**
+		 * JSJ: If the model is set to greedy, and the node is terminal,
+		 *  then we check if the site is ambiguous
+		 * 	otherwise if it is not ambiguous we default to true
+		 */
 		if(!tree->mod->s_opt->greedy)
 		{
 			if(n_v1->tax)
@@ -996,7 +1002,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			}
 		}
 
-		if(tree->mod->use_m4mod)
+		if(tree->mod->use_m4mod) //if using Markov modulated Markov Model then the ambiguity checks are true
 		{
 			ambiguity_check_v1 = 1;
 			ambiguity_check_v2 = 1;
@@ -1018,6 +1024,12 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					{
 						For(j,tree->mod->ns)
 						{
+							/**
+							 * JSJ: is p_lk_tip shorthand for partial likelihood at the tip?
+							 * if that is true then you multiply the partial likelihood at the tip
+							 * by the i,jth position in the p matrix given a gamma category and site
+							 *
+							 */
 							p1_lk1 += Pij1[catg*dim3+i*dim2+j] * (m3ldbl)n_v1->b[0]->p_lk_tip_r[site*dim2+j];
 						}
 					}
