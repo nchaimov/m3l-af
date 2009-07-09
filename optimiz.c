@@ -500,21 +500,22 @@ m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 	x=w=v=bx;
 	old_lnL = UNLIKELY;
 	/*
-	 * JSJ: l array is the branch length set.
+	 * JSJ: l array is the branch length set. temporarily grabbing the 0th element for
+	 * compilation.
 	 */
 	b_fcus->l[0] = fabs(bx);
-	fw=fv=fx=fu=-Lk_At_Given_Edge(b_fcus,tree);
+	fw=fv=fx=fu=-Lk_At_Given_Edge(b_fcus,tree); //JSJ: the various f's hold the likelihoods
 	init_lnL = -fw;
 
 	for(iter=1;iter<=BRENT_ITMAX;iter++)
-	{
+	{	//JSJ: perform the next two lines in a loop over the bl set
 		xm=0.5*(a+b);
-		tol2=2.0*(tol1=tol*fabs(x)+BRENT_ZEPS);
+		tol2=2.0*(tol1=tol*fabs(x)+BRENT_ZEPS); //JSJ: note the sneaky assignment...
 
 
 		if((tree->c_lnL > init_lnL + tol) && (quickdirty))
 		{
-			b_fcus->l[0] = x;
+			b_fcus->l[0] = x; //JSJ: need to iteratively assingn
 			Lk_At_Given_Edge(b_fcus,tree);
 			/* 	  PhyML_Printf("\n> iter=%3d max=%3d v=%f lnL=%f init_lnL=%f tol=%f",iter,n_iter_max,(*xmin),tree->c_lnL,init_lnL,tol); */
 			return tree->c_lnL;
@@ -525,12 +526,16 @@ m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 				(tree->c_lnL > init_lnL - tol)) ||
 				(iter > n_iter_max - 1))
 		{
-			b_fcus->l[0]=x;
+			b_fcus->l[0]=x; //JSJ: need to iteratively assign
 			Lk_At_Given_Edge(b_fcus,tree);
 			/* 	  PhyML_Printf("\n. iter=%3d max=%3d l=%f lnL=%f init_lnL=%f",iter,n_iter_max,b_fcus->l,tree->c_lnL,init_lnL); */
 			return tree->c_lnL;
 		}
-
+		/**
+		 * JSJ: Great point for iterating through branch length sets!
+		 * Wont mess with return statement.
+		 *
+		 */
 		if(fabs(e) > tol1)
 		{
 			r=(x-w)*(fx-fv);
@@ -542,7 +547,7 @@ m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 			etemp=e;
 			e=d;
 			if(fabs(p) >= fabs(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
-				d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
+				d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x)); //JSJ: note the other sneaky assignment
 			else{
 				d=p/q;
 				u=x+d;
@@ -552,11 +557,16 @@ m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		}
 		else
 		{
-			d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
+			d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x)); //JSJ: Another obfuscated assignment
 		}
 		u=(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
 		if(u<BL_MIN) u = BL_MIN;
 		b_fcus->l[0]=fabs(u);
+
+
+		/**
+		 * JSJ: loop over bl's to here, skip next two lines, and restart loop!
+		 */
 		old_lnL = tree->c_lnL;
 		fu=-Lk_At_Given_Edge(b_fcus,tree);
 
@@ -565,6 +575,11 @@ m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		if(fu <= fx)
 		{
 			if(u >= x) a=x; else b=x;
+			/**
+			 * JSJ: the shift macro below shifts values over one position from left
+			 * to right. For example SHIFT(v,w,x,u) expands to (v=w);(w=x);(x=u).
+			 * Note that the value to the far left is not changed.
+			 */
 			SHFT(v,w,x,u)
 			SHFT(fv,fw,fx,fu)
 		}
