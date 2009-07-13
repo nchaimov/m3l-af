@@ -2220,6 +2220,11 @@ void Init_Model(allseq *data, model *mod)
   m3ldbl sum,aux;
   int result;
   double *dr, *di, *space;
+  //mod->n_l = n_l;
+  //mod->props = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+ // For(i,n_l) mod->props[i] = props[i];
+
+
 
   if(data) mod->seq_len = data->init_len;
 

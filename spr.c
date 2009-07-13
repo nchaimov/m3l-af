@@ -270,10 +270,10 @@ void Init_SPR (arbre *tree)
 	/*
 	 ** Set variables.
 	 */
-	 nr_d_L = 0;
-	 nr_d_lk = 0;
-	 nr_loc = 0;
-	 nr_glb = 0;
+	nr_d_L = 0;
+	nr_d_lk = 0;
+	nr_loc = 0;
+	nr_glb = 0;
 }
 
 
@@ -2453,7 +2453,7 @@ void Make_Move (_move_ *move, int type, arbre *tree)
 
 int Find_Optim_Local (arbre *tree)
 {
-	int     best_cand, cand, i;
+	int     best_cand, cand, i, j;
 	node   *v_prune, *u_prune, *v_n;
 	edge   *e_prune, *e_regraft, *e_connect, *e_avail;
 	m3ldbl  max_change, new_lk;
@@ -2488,19 +2488,21 @@ int Find_Optim_Local (arbre *tree)
 
 			for (i = 0; i < 3; i++)
 			{
-				v_prune->b[i]->l_old[0] = v_prune->b[i]->l[0];
+				For(j,tree->n_l){
+					v_prune->b[i]->l_old[j] = v_prune->b[i]->l[j];
 
-				if (v_prune->v[i] == u_prune)
-				{
-					v_prune->b[i]->l[0] = move->l_est[0];//JSJ: havn't yet modified move
-				}
-				else if (v_prune->v[i] == v_n)
-				{
-					v_prune->b[i]->l[0] = move->l_est[1];
-				}
-				else
-				{
-					v_prune->b[i]->l[0] = move->l_est[2];
+					if (v_prune->v[i] == u_prune)
+					{
+						v_prune->b[i]->l[j] = move->l_est[0];//JSJ: havn't yet modified move
+					}
+					else if (v_prune->v[i] == v_n)
+					{
+						v_prune->b[i]->l[j] = move->l_est[1];
+					}
+					else
+					{
+						v_prune->b[i]->l[j] = move->l_est[2];
+					}
 				}
 			}
 
@@ -2510,13 +2512,39 @@ int Find_Optim_Local (arbre *tree)
 			/*
 			 ** Use Brent optimization on the relevant edges at the regraft position
 			 ** and calculate the new likelihood value.
-			 */ //JSJ: temp fixes to l
-			Br_Len_Brent (10.*(v_prune->b[0]->l[0]), v_prune->b[0]->l[0], BL_MIN, 1.e-10,
-					v_prune->b[0], tree, 250, 0);
-			Br_Len_Brent (10.*(v_prune->b[1]->l[0]), v_prune->b[1]->l[0], BL_MIN, 1.e-10,
-					v_prune->b[1], tree, 250, 0);
-			Br_Len_Brent (10.*(v_prune->b[2]->l[0]), v_prune->b[2]->l[0], BL_MIN, 1.e-10,
-					v_prune->b[2], tree, 250, 0);
+			 */
+			m3ldbl **max, **min;
+			int tmp;
+			max = (m3ldbl **)mCalloc(3,sizeof(m3ldbl*));
+			min = (m3ldbl **)mCalloc(3,sizeof(m3ldbl*));
+			For(tmp,3){
+				max[tmp] = (m3ldbl *)mCalloc(tree->n_l,sizeof(m3ldbl));
+				min[tmp] = (m3ldbl *)mCalloc(tree->n_l,sizeof(m3ldbl));
+			}
+			For(tmp,3){
+				For(j,tree->n_l){
+					max[tmp][j] = v_prune->b[tmp]->l[j];
+					max[tmp][j] *= 10.0;
+					min[tmp][j] =BL_MIN;
+
+				}
+			}
+			For(tmp,3){
+				Br_Len_Brent(max[tmp], v_prune->b[tmp]->l, min[tmp], 1.e-10, v_prune->b[tmp], tree, 250, 0);
+			}
+			For(tmp,3){
+				Free(max[tmp]);
+				Free(min[tmp]);
+			}
+			Free(max);
+			Free(min);
+
+			//			Br_Len_Brent (10.*(v_prune->b[0]->l[0]), v_prune->b[0]->l[0], BL_MIN, 1.e-10,
+			//					v_prune->b[0], tree, 250, 0);
+			//			Br_Len_Brent (10.*(v_prune->b[1]->l[0]), v_prune->b[1]->l[0], BL_MIN, 1.e-10,
+			//					v_prune->b[1], tree, 250, 0);
+			//			Br_Len_Brent (10.*(v_prune->b[2]->l[0]), v_prune->b[2]->l[0], BL_MIN, 1.e-10,
+			//					v_prune->b[2], tree, 250, 0);
 
 			/* 	  Update_PMat_At_Given_Edge (v_prune->b[0], tree); */
 			/* 	  Update_PMat_At_Given_Edge (v_prune->b[1], tree); */
@@ -4156,21 +4184,21 @@ void Random_Spr(int n_moves, arbre *tree)
 		}
 
 #ifdef DEBUG
-if(!Check_Spr_Move_Validity(spr_struct,tree))
-{
-	Warn_And_Exit("\n. Could not find a valid move...\n");
-}
+		if(!Check_Spr_Move_Validity(spr_struct,tree))
+		{
+			Warn_And_Exit("\n. Could not find a valid move...\n");
+		}
 #endif
 
-Prune_Subtree(spr_struct->n_link,
-		spr_struct->n_opp_to_link,
-		&target,
-		&residual,
-		tree);
+		Prune_Subtree(spr_struct->n_link,
+				spr_struct->n_opp_to_link,
+				&target,
+				&residual,
+				tree);
 
-Graft_Subtree(spr_struct->b_target,
-		spr_struct->n_link,
-		residual,tree);
+		Graft_Subtree(spr_struct->b_target,
+				spr_struct->n_link,
+				residual,tree);
 	}
 	Free(spr_struct);
 }
@@ -4249,8 +4277,8 @@ void Init_One_Spr(spr *a_spr, int n_l)
 	a_spr->b_target        = NULL;
 	a_spr->b_init_target   = NULL;
 	/**
-	 * JSJ: Initialize our arrays of branch lengths
-	 */
+	* JSJ: Initialize our arrays of branch lengths
+	*/
 	int i;
 	For(i,n_l){
 		a_spr->init_target_l[i]   = -1.;

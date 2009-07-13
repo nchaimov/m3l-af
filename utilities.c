@@ -2846,16 +2846,28 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	node *v1,*v2,*v3,*v4;
 	m3ldbl lk0, lk1, lk2;
 	m3ldbl lk0_init, lk1_init, lk2_init;
-	m3ldbl bl_init;
-	m3ldbl l0,l1,l2;
-	m3ldbl l_infa, l_infb, l_max;
+	m3ldbl *bl_init;
+	m3ldbl *l0,*l1,*l2;
+	m3ldbl *l_infa, *l_infb, *l_max;
 	/*   m3ldbl lk_infa, lk_infb, lk_max; */
 	m3ldbl lk_init;
+	int i;
 
-	bl_init                = b_fcus->l[0]; //JSJ: changed so compile
+	bl_init = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l0 = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l1 = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l2 = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l_infa = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l_infb = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l_max = mCalloc(tree->n_l,sizeof(m3ldbl));
+
+
+
 	lk_init                = tree->c_lnL;
-
-	b_fcus->nni->init_l[0]    = b_fcus->l[0]; //JSJ: changed so compile
+	For(i,tree->n_l){
+		bl_init[i]                = b_fcus->l[i];
+		b_fcus->nni->init_l[i]    = b_fcus->l[i]; //JSJ: Fixed!
+	}
 	b_fcus->nni->init_lk  = tree->c_lnL;;
 
 	b_fcus->nni->best_conf = 0;
@@ -2876,16 +2888,30 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 	if(v1->num < v2->num)
 	{
+		Free(bl_init);
+		Free(l0);
+		Free(l1);
+		Free(l2);
+		Free(l_infa);
+		Free(l_infb);
+		Free(l_max);
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 	}
 	if(v3->num < v4->num)
 	{
+		Free(bl_init);
+		Free(l0);
+		Free(l1);
+		Free(l2);
+		Free(l_infa);
+		Free(l_infb);
+		Free(l_max);
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 	}
 
-	l0 = l1 = l2 = -1.;
+	For(i,tree->n_l) l0[i] = l1[i] = l2[i] = -1.;
 
 
 	/***********/
@@ -2893,10 +2919,11 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	tree->both_sides = 1;
 
 	lk1_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-
-	l_infa = 10.*b_fcus->l[0]; //JSJ: Changed so it compiles
-	l_max  = b_fcus->l[0]; //JSJ: Changed so it compiles
-	l_infb = BL_MIN;
+	For(i,tree->n_l){
+		l_infa[i] = 10.*b_fcus->l[i]; //JSJ: Changed so it compiles
+		l_max[i]  = b_fcus->l[i]; //JSJ: Changed so it compiles
+		l_infb[i] = BL_MIN;
+	}
 
 	if(tree->mod->s_opt->fast_nni)
 	{
@@ -2919,21 +2946,22 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		PhyML_Printf("\n. Err. in NNI (1)\n");
 	}
 
-	l1  = b_fcus->l[0];
+	For(i,tree->n_l) l1[i]  = b_fcus->l[i];
 	Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
 	/***********/
 
 
 	/***********/
 	Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
-	b_fcus->l[0] = bl_init;
+	For(i,tree->n_l) b_fcus->l[i] = bl_init[i];
 	tree->both_sides = 1;
 
 	lk2_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-
-	l_infa = 10.*b_fcus->l[0];
-	l_max  = b_fcus->l[0];
-	l_infb = BL_MIN;
+	For(i,tree->n_l){
+		l_infa[i] = 10.*b_fcus->l[i];
+		l_max[i]  = b_fcus->l[i];
+		l_infb[i] = BL_MIN;
+	}
 
 	if(tree->mod->s_opt->fast_nni)
 	{
@@ -2956,20 +2984,27 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		PhyML_Printf("\n. Err. in NNI (2)\n");
 	}
 
-	l2  = b_fcus->l[0];
+	For(i,tree->n_l) l2[i]  = b_fcus->l[i];
 	Swap(v4,b_fcus->left,b_fcus->rght,v2,tree);
 	/***********/
 
 
 
 	/***********/
-	b_fcus->l[0] = bl_init;
+	For(i,tree->n_l) b_fcus->l[i] = bl_init[i];
 	tree->both_sides = 1;
 
 	lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
 
 	if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
 	{
+		Free(bl_init);
+		Free(l0);
+		Free(l1);
+		Free(l2);
+		Free(l_infa);
+		Free(l_infb);
+		Free(l_max);
 		PhyML_Printf("\n. lk_init = %f; lk = %f diff = %f\n",
 				lk_init,
 				lk0_init,
@@ -2977,10 +3012,11 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
 		Warn_And_Exit("\n. Err. in NNI (3)\n");
 	}
-
-	l_infa = 10.*b_fcus->l[0];
-	l_max  = b_fcus->l[0];
-	l_infb = BL_MIN;
+	For(i,tree->n_l){
+		l_infa[i] = 10.*b_fcus->l[i];
+		l_max[i]  = b_fcus->l[i];
+		l_infb[i] = BL_MIN;
+	}
 
 	if(tree->mod->s_opt->fast_nni)
 	{
@@ -2998,22 +3034,32 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 	if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
 	{
+		Free(bl_init);
+		Free(l0);
+		Free(l1);
+		Free(l2);
+		Free(l_infa);
+		Free(l_infb);
+		Free(l_max);
 		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
 		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
 		PhyML_Printf("\n. Err. in NNI (3)\n");
 		Warn_And_Exit("\n");
 	}
 
-	l0  = b_fcus->l[0];
 	/***********/
 
 	b_fcus->nni->lk0 = lk0;
 	b_fcus->nni->lk1 = lk1;
 	b_fcus->nni->lk2 = lk2;
-	//JSJ: temp changes for compilation
-	b_fcus->nni->l0[0]  = l0;
-	b_fcus->nni->l1[0]  = l1;
-	b_fcus->nni->l2[0]  = l2;
+	//JSJ: do over array...
+	For(i,tree->n_l){
+		l0[i]  = b_fcus->l[i];
+		b_fcus->nni->l0[i]  = l0[i];
+		b_fcus->nni->l1[i]  = l1[i];
+		b_fcus->nni->l2[i]  = l2[i];
+	}
+
 
 	b_fcus->nni->score = lk0 - MAX(lk1,lk2);
 
@@ -3028,7 +3074,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	if(lk0 > MAX(lk1,lk2))
 	{
 		b_fcus->nni->best_conf    = 0;
-		b_fcus->nni->best_l[0]       = l0; //JSJ: changed for compilation
+		For(i,tree->n_l) b_fcus->nni->best_l[i]       = l0[i]; //JSJ: fixed
 		b_fcus->nni->swap_node_v1 = NULL;
 		b_fcus->nni->swap_node_v2 = NULL;
 		b_fcus->nni->swap_node_v3 = NULL;
@@ -3037,7 +3083,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else if(lk1 > MAX(lk0,lk2))
 	{
 		b_fcus->nni->best_conf    = 1;
-		b_fcus->nni->best_l[0]       = l1; //JSJ: changed for compilation
+		For(i,tree->n_l) b_fcus->nni->best_l[i]       = l1[i]; //JSJ: fixed
 		b_fcus->nni->swap_node_v1 = v2;
 		b_fcus->nni->swap_node_v2 = b_fcus->left;
 		b_fcus->nni->swap_node_v3 = b_fcus->rght;
@@ -3046,7 +3092,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else if(lk2 > MAX(lk0,lk1))
 	{
 		b_fcus->nni->best_conf    = 2;
-		b_fcus->nni->best_l[0]       = l2; //JSJ: changed for compilation
+		For(i,tree->n_l) b_fcus->nni->best_l[i]       = l2[i]; //JSJ: fixed
 		b_fcus->nni->swap_node_v1 = v2;
 		b_fcus->nni->swap_node_v2 = b_fcus->left;
 		b_fcus->nni->swap_node_v3 = b_fcus->rght;
@@ -3056,7 +3102,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	{
 		b_fcus->nni->score        = +1.0;
 		b_fcus->nni->best_conf    = 0;
-		b_fcus->nni->best_l[0]       = l0; //JSJ: changed for compilation
+		For(i,tree->n_l) b_fcus->nni->best_l[i]       = l0[i]; //JSJ: fixed
 		b_fcus->nni->swap_node_v1 = NULL;
 		b_fcus->nni->swap_node_v2 = NULL;
 		b_fcus->nni->swap_node_v3 = NULL;
@@ -3072,7 +3118,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		{
 			tree->best_lnL = lk1;
 			Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
-			b_fcus->l[0] = l1;
+			For(i,tree->n_l) b_fcus->l[i] = l1[i];
 			tree->both_sides = 1;
 			Lk(tree);
 		}
@@ -3080,17 +3126,24 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		{
 			tree->best_lnL = lk2;
 			Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
-			b_fcus->l[0] = l2;
+			For(i,tree->n_l) b_fcus->l[i] = l2[i];
 			tree->both_sides = 1;
 			Lk(tree);
 		}
 	}
 	else
 	{
-		b_fcus->l[0] = bl_init;
+		For(i,tree->n_l) b_fcus->l[i] = bl_init[i];
 		Update_PMat_At_Given_Edge(b_fcus,tree);
 		tree->c_lnL = lk_init;
 	}
+	Free(bl_init);
+	Free(l0);
+	Free(l1);
+	Free(l2);
+	Free(l_infa);
+	Free(l_infb);
+	Free(l_max);
 }
 
 /*********************************************************/
@@ -6967,14 +7020,14 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 	int i, j, k, m, site;
 	m3ldbl v_rght;
 	int dim1,dim2,dim3;
-	m3ldbl eps_bl,old_l,new_l;
+	//m3ldbl eps_bl,old_l,new_l;
 	int n_iter;
 
 	n_iter = 0;
 	dim1   = tree->mod->ns * tree->mod->n_catg;
 	dim2   = tree->mod->ns ;
 	dim3   = tree->mod->ns * tree->mod->ns;
-	eps_bl = BL_MIN;
+	//eps_bl = BL_MIN;
 
 	F    = tree->triplet_struct->F_bc;
 	prob = tree->triplet_struct->F_cd;
@@ -7017,22 +7070,41 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 		F[dim3*k+dim2*i+j] += tree->data->wght[site] * prob[dim3*k+dim2*i+j];
 	}
 	//JSJ: More temp fixes...
-	old_l = b->l[0];
-	Opt_Dist_F(&(b->l[0]),F,tree->mod); //JSJ: decide how to get array of bls to this fxn, one at a time, or simult
-	new_l = b->l[0];
+	//old_l = b->l[0];
+	/**
+	 * Figure out how to fix the following function so that it works with a set of bls!
+	 */
+	Opt_Dist_F(b->l,F,tree->mod,tree); //JSJ: decide how to get array of bls to this fxn, one at a time, or simult
+	//new_l = b->l[0];
 	n_iter++;
 
-	if(b->l[0] < BL_MIN)      b->l[0] = BL_MIN;
-	else if(b->l[0] > BL_MAX) b->l[0] = BL_MAX;
+	For(m,tree->n_l){
+		if(b->l[m] < BL_MIN)      b->l[m] = BL_MIN;
+		else if(b->l[m] > BL_MAX) b->l[m] = BL_MAX;
+	}
 
-	if(!approx)//JSJ: restored brent temporarily
-		Br_Len_Brent(0.02*b->l[0],b->l[0],50.*b->l[0],
+	if(!approx){//JSJ: restored brent temporarily
+		m3ldbl *min,*max;
+		min = mCalloc(tree->n_l,sizeof(m3ldbl));
+		max = mCalloc(tree->n_l,sizeof(m3ldbl));
+
+		For(m,tree->n_l){
+			min[m] = b->l[m];
+			max[m] = b->l[m];
+			min[m] *= 0.02;
+			max[m] *= 50.0;
+		}
+		Br_Len_Brent(min,b->l,max,
 				tree->mod->s_opt->min_diff_lk_local,
 				b,tree,
 				tree->mod->s_opt->brent_it_max,
 				tree->mod->s_opt->quickdirty);
-	else
+		Free(min);
+		Free(max);
+	}
+	else{
 		Lk_At_Given_Edge(b,tree);
+	}
 }
 
 
@@ -9215,7 +9287,7 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 	if(!io->quiet) PhyML_Printf("\n. Building BioNJ tree...\n");
 	// JSJ: !!!!!!! need to get n_l from io
 	// for now just use a temp n_l
-	int n_l = -2;
+	int n_l = 2;
 	mat->tree = Make_Tree_From_Scratch(alldata->n_otu,alldata,n_l);
 	Bionj(mat);
 	tree      = mat->tree;

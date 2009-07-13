@@ -649,7 +649,16 @@ matrix *ML_Dist(allseq *data, model *mod)
 			For(i,mod->ns*mod->ns) sum += F[i];
 
 			if(sum < .001) d_max = -1.;
-			else if((sum > 1. - .001) && (sum < 1. + .001)) Opt_Dist_F(&(d_max),F,mod);
+			else if((sum > 1. - .001) && (sum < 1. + .001)){
+//				m3ldbl * tmp = mCalloc(tree->n_l,sizeof(m3ldbl));
+//				/**
+//				 * JSJ: this is now in need of a code review
+//				 */
+//				int tmp0;
+//				For(tmp0,tree->n_l) tmp[tmp0] = d_max;
+				Opt_Dist_F_No_Bl(&(d_max),F,mod);
+//				Free(tmp);
+			}
 			else
 			{
 				PhyML_Printf("\n. sum = %f\n",sum);
@@ -699,9 +708,9 @@ matrix *ML_Dist(allseq *data, model *mod)
 m3ldbl Lk_Given_Two_Seq(allseq *data, int numseq1, int numseq2, m3ldbl dist, model *mod, m3ldbl *loglk)
 {
 	/**
-	 * JSJ: this likelihood calculating function is nether called in the search with NNI or SPR
-	 * when the user supplies a tree. Perhaps this method is called at some other time?
-	 */
+	* JSJ: this likelihood calculating function is nether called in the search with NNI or SPR
+	* when the user supplies a tree. Perhaps this method is called at some other time?
+	*/
 	seq *seq1,*seq2;
 	m3ldbl site_lk,log_site_lk;
 	int i,j,k,l;
@@ -1017,11 +1026,11 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			For(i,tree->mod->ns)
 			{
 				/**
-				 * JSJ: here is a good point to iterate over branch length sets
-				 * at this point we are in the loops that do the assignment we
-				 * need to modify, and we are also past the variables that will
-				 * not need to be changed.
-				 */
+				* JSJ: here is a good point to iterate over branch length sets
+				* at this point we are in the loops that do the assignment we
+				* need to modify, and we are also past the variables that will
+				* not need to be changed.
+				*/
 				For(k,tree->n_l)
 				{
 					p1_lk1 = .0;
@@ -1330,36 +1339,97 @@ void Update_P_Lk_Along_A_Path(node **path, int path_length, arbre *tree)
 	}
 }
 
+m3ldbl Lk_Dist_No_Bl(m3ldbl *F, m3ldbl dist, model *mod)
+{
+  int i,j,k;
+  m3ldbl lnL,len;
+  int dim1,dim2;
+
+  For(k,mod->n_catg)
+    {
+      len = dist*mod->gamma_rr[k];
+      if(len < BL_MIN)      len = BL_MIN;
+      else if(len > BL_MAX) len = BL_MAX;
+      PMat(len,mod,mod->ns*mod->ns*k,mod->Pij_rr);
+    }
+
+  dim1 = mod->ns*mod->ns;
+  dim2 = mod->ns;
+  lnL = .0;
+  For(i,mod->ns)
+    {
+      For(j,mod->ns)
+	{
+	  For(k,mod->n_catg)
+	    {
+ 	      lnL += F[dim1*k+dim2*i+j] * log(mod->Pij_rr[dim1*k+dim2*i+j]);
+	    }
+	}
+    }
+
+  return lnL;
+}
 /*********************************************************/
 
-m3ldbl Lk_Dist(m3ldbl *F, m3ldbl dist, model *mod)
+m3ldbl Lk_Dist(m3ldbl *F, m3ldbl *dist, model *mod, arbre *tree)
 {
 	//printf("JSJ: Calling Lk_Dist\n"); //distance based likelihood
-	int i,j,k;
-	m3ldbl lnL,len;
+	int i,j,k,m;
+	m3ldbl lnL,len,tmp;
 	int dim1,dim2;
-
-	For(k,mod->n_catg)
-	{
-		len = dist*mod->gamma_rr[k];
-		if(len < BL_MIN)      len = BL_MIN;
-		else if(len > BL_MAX) len = BL_MAX;
-		PMat(len,mod,mod->ns*mod->ns*k,mod->Pij_rr);
-	}
-
+	lnL = .0;
+	m3ldbl **Pij;
 	dim1 = mod->ns*mod->ns;
 	dim2 = mod->ns;
-	lnL = .0;
+	Pij = mCalloc(tree->n_l,sizeof(m3ldbl *));
+	For(m,tree->n_l){
+		Pij[m] = mCalloc(dim1*mod->n_catg+dim2*mod->ns+mod->ns,sizeof(m3ldbl));
+	}
+
+	For(m,tree->n_l){
+		For(k,mod->n_catg)
+		{
+			len = dist[m]*mod->gamma_rr[k];
+			if(len < BL_MIN)      len = BL_MIN;
+			else if(len > BL_MAX) len = BL_MAX;
+			PMat(len,mod,mod->ns*mod->ns*k,mod->Pij_rr);
+			For(i,mod->ns)
+			{
+				For(j,mod->ns)
+				{
+					For(k,mod->n_catg)
+					{
+						Pij[m][dim1*k+dim2*i+j] = mod->Pij_rr[dim1*k+dim2*i+j];
+					}
+				}
+			}
+		}
+	}
+
 	For(i,mod->ns)
 	{
 		For(j,mod->ns)
 		{
 			For(k,mod->n_catg)
 			{
-				lnL += F[dim1*k+dim2*i+j] * log(mod->Pij_rr[dim1*k+dim2*i+j]);
+				/**
+				* JSJ: now this distance based likelihood calculator
+				* takes into consideration the proportion of sites
+				* described by the length of each branch.
+				*/
+				tmp = 0.0;
+				For(m,tree->n_l){
+					tmp += Pij[m][dim1*k+dim2*i+j] * tree->props[m];
+				}
+				lnL += F[dim1*k+dim2*i+j] * log(tmp);
 			}
 		}
+
 	}
+	For(m,tree->n_l){
+		Free(Pij[m]);
+	}
+	Free(Pij);
 
 	return lnL;
 }

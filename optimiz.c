@@ -164,7 +164,7 @@ int Generic_Brak(m3ldbl *param,
 
 /*********************************************************/
 
-m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
+m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		m3ldbl *xmin, arbre *tree, int n_iter_max,
 		int quickdirty)
 {
@@ -478,44 +478,98 @@ int Br_Len_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx,
 }
 
 /*********************************************************/
-//JSJ: temp fix of arguments
+//JSJ: fixed so it sends the default array of branch lengths
 m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 {
-	return Br_Len_Brent(10.*b_fcus->l[0],b_fcus->l[0],.10*b_fcus->l[0],tree->mod->s_opt->min_diff_lk_local,b_fcus,tree,1000,0);
+	int i;
+	m3ldbl result, *max, *min;
+	max = mCalloc(tree->n_l,sizeof(m3ldbl));
+	min = mCalloc(tree->n_l,sizeof(m3ldbl));
+	For(i, tree->n_l){
+		max[i] = b_fcus->l[i];
+		min[i] = b_fcus->l[i];
+		max[i] *= 10.0;
+		min[i] *= 0.1;
+	}
+	result = Br_Len_Brent(max,b_fcus->l,min,tree->mod->s_opt->min_diff_lk_local,b_fcus,tree,1000,0);
+	Free(min);
+	Free(max);
+	return result;
 }
 
 /*********************************************************/
 //JSJ: lots of temp fixes in below function to l
-m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
+m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 		edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty)
 {
-	int iter;
-	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	m3ldbl e=0.0;
-	m3ldbl old_lnL, init_lnL;
+	int iter,i;
+	m3ldbl *a,*b,*d,*etemp,fu,fv,fw,fx,*p,*q,*r,*tol1,*tol2,*u,*v,*w,*x,*xm;
+	a = mCalloc(tree->n_l,sizeof(m3ldbl));
+	b = mCalloc(tree->n_l,sizeof(m3ldbl));
+	d = mCalloc(tree->n_l,sizeof(m3ldbl));
+	etemp = mCalloc(tree->n_l,sizeof(m3ldbl));
+	p = mCalloc(tree->n_l,sizeof(m3ldbl));
+	q = mCalloc(tree->n_l,sizeof(m3ldbl));
+	r = mCalloc(tree->n_l,sizeof(m3ldbl));
+	tol1 = mCalloc(tree->n_l,sizeof(m3ldbl));
+	tol2 = mCalloc(tree->n_l,sizeof(m3ldbl));
+	u = mCalloc(tree->n_l,sizeof(m3ldbl));
+	v = mCalloc(tree->n_l,sizeof(m3ldbl));
+	w = mCalloc(tree->n_l,sizeof(m3ldbl));
+	x = mCalloc(tree->n_l,sizeof(m3ldbl));
+	xm = mCalloc(tree->n_l,sizeof(m3ldbl));
 
-	d=0.0;
-	a=((ax < cx) ? ax : cx);
-	b=((ax > cx) ? ax : cx);
-	x=w=v=bx;
+	m3ldbl *e;
+	e = mCalloc(tree->n_l,sizeof(m3ldbl));
+
+	/**
+	* JSJ: initialize likelihood storage
+	*/
+	m3ldbl old_lnL, init_lnL;
 	old_lnL = UNLIKELY;
-	/*
-	 * JSJ: l array is the branch length set. temporarily grabbing the 0th element for
-	 * compilation.
-	 */
-	b_fcus->l[0] = fabs(bx);
 	fw=fv=fx=fu=-Lk_At_Given_Edge(b_fcus,tree); //JSJ: the various f's hold the likelihoods
 	init_lnL = -fw;
 
+	/**
+	* JSJ: Set up edge info
+	*/
+	For(i, tree->n_l)
+	{
+		e[i]=d[i]=0.0;
+		a[i]=((ax[i] < cx[i]) ? ax[i] : cx[i]);
+		b[i]=((ax[i] > cx[i]) ? ax[i] : cx[i]);
+		x[i]=w[i]=v[i]=bx[i];
+		b_fcus->l[i] = fabs(bx[i]);
+	}
+
+
 	for(iter=1;iter<=BRENT_ITMAX;iter++)
 	{	//JSJ: perform the next two lines in a loop over the bl set
-		xm=0.5*(a+b);
-		tol2=2.0*(tol1=tol*fabs(x)+BRENT_ZEPS); //JSJ: note the sneaky assignment...
+		For(i,tree->n_l)
+		{
+			xm[i]=0.5*(a[i]+b[i]);
+			tol2[i]=2.0*(tol1[i]=tol*fabs(x[i])+BRENT_ZEPS); //JSJ: note the sneaky assignment...
+		}
 
 
 		if((tree->c_lnL > init_lnL + tol) && (quickdirty))
 		{
-			b_fcus->l[0] = x; //JSJ: need to iteratively assingn
+			For(i,tree->n_l) b_fcus->l[i] = x[i]; //JSJ: need to iteratively assingn
+			Free(a);
+			Free(b);
+			Free(d);
+			Free(etemp);
+			Free(p);
+			Free(q);
+			Free(r);
+			Free(tol1);
+			Free(tol2);
+			Free(u);
+			Free(v);
+			Free(w);
+			Free(x);
+			Free(e);
+			Free(xm);
 			Lk_At_Given_Edge(b_fcus,tree);
 			/* 	  PhyML_Printf("\n> iter=%3d max=%3d v=%f lnL=%f init_lnL=%f tol=%f",iter,n_iter_max,(*xmin),tree->c_lnL,init_lnL,tol); */
 			return tree->c_lnL;
@@ -526,81 +580,116 @@ m3ldbl Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 				(tree->c_lnL > init_lnL - tol)) ||
 				(iter > n_iter_max - 1))
 		{
-			b_fcus->l[0]=x; //JSJ: need to iteratively assign
+			For(i,tree->n_l) b_fcus->l[i]=x[i]; //JSJ: need to iteratively assign
 			Lk_At_Given_Edge(b_fcus,tree);
+			Free(a);
+			Free(b);
+			Free(d);
+			Free(etemp);
+			Free(p);
+			Free(q);
+			Free(r);
+			Free(tol1);
+			Free(tol2);
+			Free(u);
+			Free(v);
+			Free(w);
+			Free(x);
+			Free(xm);
+			Free(e);
 			/* 	  PhyML_Printf("\n. iter=%3d max=%3d l=%f lnL=%f init_lnL=%f",iter,n_iter_max,b_fcus->l,tree->c_lnL,init_lnL); */
 			return tree->c_lnL;
 		}
 		/**
-		 * JSJ: Great point for iterating through branch length sets!
-		 * Wont mess with return statement.
-		 *
-		 */
-		if(fabs(e) > tol1)
+		* JSJ: Great point for iterating through branch length sets!
+		* Wont mess with return statement.
+		*
+		*/
+		For(i, tree->n_l)
 		{
-			r=(x-w)*(fx-fv);
-			q=(x-v)*(fx-fw);
-			p=(x-v)*q-(x-w)*r;
-			q=2.0*(q-r);
-			if(q > 0.0) p = -p;
-			q=fabs(q);
-			etemp=e;
-			e=d;
-			if(fabs(p) >= fabs(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
-				d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x)); //JSJ: note the other sneaky assignment
-			else{
-				d=p/q;
-				u=x+d;
-				if (u-a < tol2 || b-u < tol2)
-					d=SIGN(tol1,xm-x);
+			if(fabs(e[i]) > tol1[i])
+			{
+				r[i]=(x[i]-w[i])*(fx-fv);
+				q[i]=(x[i]-v[i])*(fx-fw);
+				p[i]=(x[i]-v[i])*q[i]-(x[i]-w[i])*r[i];
+				q[i]=2.0*(q[i]-r[i]);
+				if(q[i] > 0.0) p[i] = -p[i];
+				q[i]=fabs(q[i]);
+				etemp[i]=e[i];
+				e[i]=d[i];
+				if(fabs(p[i]) >= fabs(0.5*q[i]*etemp[i]) || p[i] <= q[i]*(a[i]-x[i]) || p[i] >= q[i]*(b[i]-x[i]))
+					d[i]=BRENT_CGOLD*(e[i]=(x[i] >= xm[i] ? a[i]-x[i] : b[i]-x[i])); //JSJ: note the other sneaky assignment
+				else{
+					d[i]=p[i]/q[i];
+					u[i]=x[i]+d[i];
+					if (u[i]-a[i] < tol2[i] || b[i]-u[i] < tol2[i])
+						d[i]=SIGN(tol1[i],xm[i]-x[i]);
+				}
 			}
-		}
-		else
-		{
-			d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x)); //JSJ: Another obfuscated assignment
-		}
-		u=(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
-		if(u<BL_MIN) u = BL_MIN;
-		b_fcus->l[0]=fabs(u);
-
+			else
+			{
+				d[i]=BRENT_CGOLD*(e[i]=(x[i] >= xm[i] ? a[i]-x[i] : b[i]-x[i])); //JSJ: Another obfuscated assignment
+			}
+			u[i]=(fabs(d[i]) >= tol1[i] ? x[i]+d[i] : x[i]+SIGN(tol1[i],d[i]));
+			if(u[i]<BL_MIN) u[i] = BL_MIN;
+			b_fcus->l[i]=fabs(u[i]);
+		} //JSJ: end loop over bls
 
 		/**
-		 * JSJ: loop over bl's to here, skip next two lines, and restart loop!
-		 */
+		* JSJ: loop over bl's to here, skip next two lines, and restart loop!
+		*/
 		old_lnL = tree->c_lnL;
 		fu=-Lk_At_Given_Edge(b_fcus,tree);
 
-		/*       PhyML_Printf("\n. BRENT edge %3d l=%f lnL=%20f iter=%3d",b_fcus->num,b_fcus->l,fu,iter); */
+		For(i,tree->n_l)
+		{
+			/*       PhyML_Printf("\n. BRENT edge %3d l=%f lnL=%20f iter=%3d",b_fcus->num,b_fcus->l,fu,iter); */
 
-		if(fu <= fx)
-		{
-			if(u >= x) a=x; else b=x;
-			/**
-			 * JSJ: the shift macro below shifts values over one position from left
-			 * to right. For example SHIFT(v,w,x,u) expands to (v=w);(w=x);(x=u).
-			 * Note that the value to the far left is not changed.
-			 */
-			SHFT(v,w,x,u)
-			SHFT(fv,fw,fx,fu)
-		}
-		else
-		{
-			if (u < x) a=u; else b=u;
-			if (fu <= fw || w == x)
+			if(fu <= fx)
 			{
-				v=w;
-				w=u;
-				fv=fw;
-				fw=fu;
+				if(u[i] >= x[i]) a[i]=x[i]; else b[i]=x[i];
+				/**
+				* JSJ: the shift macro below shifts values over one position from left
+				* to right. For example SHIFT(v,w,x,u) expands to (v=w);(w=x);(x=u).
+				* Note that the value to the far left is not changed.
+				*/
+				SHFT(v[i],w[i],x[i],u[i])
+				SHFT(fv,fw,fx,fu)
 			}
-			else if (fu <= fv || v == x || v == w)
+			else
 			{
-				v=u;
-				fv=fu;
+				if (u[i] < x[i]) a[i]=u[i]; else b[i]=u[i];
+				if (fu <= fw || w[i] == x[i])
+				{
+					v[i]=w[i];
+					w[i]=u[i];
+					fv=fw;
+					fw=fu;
+				}
+				else if (fu <= fv || v[i] == x[i] || v[i] == w[i])
+				{
+					v[i]=u[i];
+					fv=fu;
+				}
 			}
-		}
+		}//JSJ: end loop over bl set.
 	}
 	if(iter > BRENT_ITMAX) PhyML_Printf("\n. Too many iterations in BRENT (%d) (%f)",iter,b_fcus->l[0]);
+	Free(a);
+	Free(b);
+	Free(d);
+	Free(etemp);
+	Free(p);
+	Free(q);
+	Free(r);
+	Free(tol1);
+	Free(tol2);
+	Free(u);
+	Free(v);
+	Free(w);
+	Free(x);
+	Free(xm);
+	Free(e);
 	return(-1);
 	/* Not Reached ??  *xmin=x;   */
 	/* Not Reached ??  return fx; */
@@ -772,7 +861,7 @@ m3ldbl Time_Stamps_Mult_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		MC_Div_Time_Stamps(tree);
 
 		/*       PhyML_Printf("\n. BRENT mult=%f lnL=%20f", */
-				/* 	     tree->mod->s_opt->tree_size_mult, */
+		/* 	     tree->mod->s_opt->tree_size_mult, */
 		/* 	     tree->c_lnL); */
 
 		if(fu <= fx)
@@ -1080,14 +1169,14 @@ m3ldbl Dist_Seq_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 
 /*********************************************************/
 /**
- * JSJ: it looks like the following function never gets called...
- * 	This means that the Lk_Given_Two_Seq and Dist_Seq_Brent
- *  never gets called
- * @param mod
- * @param init
- * @param twoseqs
- * @return
- */
+* JSJ: it looks like the following function never gets called...
+* 	This means that the Lk_Given_Two_Seq and Dist_Seq_Brent
+*  never gets called
+* @param mod
+* @param init
+* @param twoseqs
+* @return
+*/
 
 m3ldbl Optimize_Dist(model *mod, m3ldbl init, allseq *twoseqs)
 {
@@ -1165,18 +1254,21 @@ void Round_Optimize(arbre *tree, allseq *data, int n_round_max)
 
 void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *alldata)
 {
-	int i;
-	m3ldbl l_infa,l_max,l_infb;
+	int i,j;
+	m3ldbl *l_infa,*l_max,*l_infb;
 	m3ldbl lk_init;
-
+	l_infa = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l_max = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l_infb = mCalloc(tree->n_l,sizeof(m3ldbl));
 
 	lk_init = tree->c_lnL;
-
-	l_infa = l_max  = l_infb = BL_MIN;
-	//JSJ: temp fixes to l
-	l_infa = 10.*b_fcus->l[0];
-	l_max  = b_fcus->l[0];
-	l_infb = BL_MIN;
+	For(j,tree->n_l){
+		l_infa[j] = l_max[j]  = l_infb[j] = BL_MIN;
+		//JSJ: temp fixes to l
+		l_infa[j] = 10.*b_fcus->l[j];
+		l_max[j]  = b_fcus->l[j];
+		l_infb[j] = BL_MIN;
+	}
 
 	/*   Br_Len_Brent(l_infa,l_max,l_infb, */
 	/* 	       1.e-3, */
@@ -1191,7 +1283,10 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 
 	if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
 	{//JSJ: We hit this error when running SPR...
-		PhyML_Printf("\n. %f %f %f %f",l_infa,l_max,l_infb,b_fcus->l[0]);
+		For(j,tree->n_l) PhyML_Printf("\n.Bl Set# %i: %f %f %f %f",j,l_infa[j],l_max[j],l_infb[j],b_fcus->l[j]);
+		Free(l_infa);
+		Free(l_infb);
+		Free(l_max);
 		PhyML_Printf("\n. %f -- %f",lk_init,tree->c_lnL);
 		Warn_And_Exit("\n. Err. in Optimize_Br_Len_Serie\n");
 	}
@@ -1203,16 +1298,26 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 		Optimize_Br_Len_Serie(d,d->v[i],d->b[i],tree,alldata);
 	}
 	For(i,3) if((d->v[i] == a) && !(d->v[i]->tax)) Update_P_Lk(tree,d->b[i],d);
+
+	Free(l_infa);
+	Free(l_infb);
+	Free(l_max);
 }
 
 /*********************************************************/
 
 void Optimiz_Ext_Br(arbre *tree)
 {
-	int i;
+	int i,j;
 	edge *b;
-	m3ldbl l_infa,l_max,l_infb;
-	m3ldbl lk, lk_init,l_init;
+	m3ldbl *l_infa,*l_max,*l_infb;
+	m3ldbl lk, lk_init,*l_init;
+	l_infa = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l_infb = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l_max = mCalloc(tree->n_l,sizeof(m3ldbl));
+	l_init = mCalloc(tree->n_l,sizeof(m3ldbl));
+
+
 
 	lk_init = tree->c_lnL;
 
@@ -1222,15 +1327,18 @@ void Optimiz_Ext_Br(arbre *tree)
 		b = tree->t_edges[i];
 		if((b->left->tax) || (b->rght->tax))
 		{
-			//JSJ: temp fixes...
-			l_init = b->l[0];
 
-			/* 	  Fast_Br_Len(b,tree); */
-			/* 	  lk = Lk_At_Given_Edge(tree,b); */
+			For(j,tree->n_l){
+				//JSJ: temp fixes...
+				l_init[j] = b->l[j];
 
-			l_infa = 10.*b->l[0];
-			l_max  = b->l[0];
-			l_infb = BL_MIN;
+				/* 	  Fast_Br_Len(b,tree); */
+				/* 	  lk = Lk_At_Given_Edge(tree,b); */
+
+				l_infa[j] = 10.*b->l[j];
+				l_max[j]  = b->l[j];
+				l_infb[j] = BL_MIN;
+			}
 
 			lk = Br_Len_Brent(l_infa,l_max,l_infb,
 					tree->mod->s_opt->min_diff_lk_local,
@@ -1238,14 +1346,20 @@ void Optimiz_Ext_Br(arbre *tree)
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty);
 			//JSJ: temp fixes to l
-			b->nni->best_l[0]    = b->l[0];
-			b->nni->l0[0]        = b->l[0];
+			For(j,tree->n_l){
+				b->nni->best_l[j]    = b->l[j];
+				b->nni->l0[j]        = b->l[j];
+				b->l[j]              = l_init[j];
+			}
 			b->nni->best_conf = 0;
-			b->l[0]              = l_init;
 
 		}
 	}
 	tree->c_lnL = lk_init;
+	Free(l_infa);
+	Free(l_infb);
+	Free(l_max);
+	Free(l_init);
 }
 
 /*********************************************************/
@@ -1980,100 +2094,130 @@ void Lnsrch_Nucleotide_Frequencies(arbre *tree, int n, m3ldbl *xold, m3ldbl fold
 
 /*********************************************************/
 
-int Dist_F_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl *F, m3ldbl *param, model *mod)
-{
-	m3ldbl ulim,u,r,q,dum;
-	m3ldbl fa, fb, fc, fu;
-
-	fa = -Lk_Dist(F,fabs(*ax),mod);
-	fb = -Lk_Dist(F,fabs(*bx),mod);
-
-	if(fb > fa)
-	{
-		SHFT(dum,*ax,*bx,dum)
-		SHFT(dum,fb,fa,dum)
-	}
-
-	*cx=(*bx)+MNBRAK_GOLD*(*bx-*ax);
-	fc = -Lk_Dist(F,fabs(*cx),mod);
-
-	while (fb > fc)
-	{
-		r=(*bx-*ax)*(fb-fc);
-		q=(*bx-*cx)*(fb-fa);
-		u=(*bx)-((*bx-*cx)*q-(*bx-*ax)*r)/
-				(2.0*SIGN(MAX(fabs(q-r),MNBRAK_TINY),q-r));
-		ulim=(*bx)+MNBRAK_GLIMIT*(*cx-*bx);
-
-		if ((*bx-u)*(u-*cx) > 0.0)
-		{
-			fu = -Lk_Dist(F,fabs(u),mod);
-			if (fu < fc)
-			{
-				*ax=(*bx);
-				*bx=u;
-				fa=fb;
-				fb=fu;
-				return(0);
-			}
-			else if (fu > fb)
-			{
-				*cx=u;
-				fc=fu;
-				return(0);
-			}
-			u=(*cx)+MNBRAK_GOLD*(*cx-*bx);
-			fu = -Lk_Dist(F,fabs(u),mod);
-		}
-		else if ((*cx-u)*(u-ulim) > 0.0)
-		{
-			fu = -Lk_Dist(F,fabs(u),mod);
-			if (fu < fc)
-			{
-				SHFT(*bx,*cx,u,*cx+MNBRAK_GOLD*(*cx-*bx))
-				SHFT(fb,fc,fu,-Lk_Dist(F,fabs(u),mod))
-			}
-		}
-		else if ((u-ulim)*(ulim-*cx) >= 0.0)
-		{
-			u  = ulim;
-			fu = -Lk_Dist(F,fabs(u),mod);
-		}
-		else
-		{
-			u  =(*cx)+MNBRAK_GOLD*(*cx-*bx);
-			fu = -Lk_Dist(F,fabs(u),mod);
-		}
-
-		SHFT(*ax,*bx,*cx,u)
-		SHFT(fa,fb,fc,fu)
-	}
-	return(0);
-}
+//int Dist_F_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl *F, m3ldbl *param, model *mod)
+//{
+//	m3ldbl ulim,u,r,q,dum;
+//	m3ldbl fa, fb, fc, fu;
+//
+//	fa = -Lk_Dist(F,fabs(ax),mod);
+//	fb = -Lk_Dist(F,fabs(bx),mod);
+//
+//	if(fb > fa)
+//	{
+//		SHFT(dum,*ax,*bx,dum)
+//		SHFT(dum,fb,fa,dum)
+//	}
+//
+//	*cx=(*bx)+MNBRAK_GOLD*(*bx-*ax);
+//	fc = -Lk_Dist(F,fabs(*cx),mod);
+//
+//	while (fb > fc)
+//	{
+//		r=(*bx-*ax)*(fb-fc);
+//		q=(*bx-*cx)*(fb-fa);
+//		u=(*bx)-((*bx-*cx)*q-(*bx-*ax)*r)/
+//				(2.0*SIGN(MAX(fabs(q-r),MNBRAK_TINY),q-r));
+//		ulim=(*bx)+MNBRAK_GLIMIT*(*cx-*bx);
+//
+//		if ((*bx-u)*(u-*cx) > 0.0)
+//		{
+//			fu = -Lk_Dist(F,fabs(u),mod);
+//			if (fu < fc)
+//			{
+//				*ax=(*bx);
+//				*bx=u;
+//				fa=fb;
+//				fb=fu;
+//				return(0);
+//			}
+//			else if (fu > fb)
+//			{
+//				*cx=u;
+//				fc=fu;
+//				return(0);
+//			}
+//			u=(*cx)+MNBRAK_GOLD*(*cx-*bx);
+//			fu = -Lk_Dist(F,fabs(u),mod);
+//		}
+//		else if ((*cx-u)*(u-ulim) > 0.0)
+//		{
+//			fu = -Lk_Dist(F,fabs(u),mod);
+//			if (fu < fc)
+//			{
+//				SHFT(*bx,*cx,u,*cx+MNBRAK_GOLD*(*cx-*bx))
+//				SHFT(fb,fc,fu,-Lk_Dist(F,fabs(u),mod))
+//			}
+//		}
+//		else if ((u-ulim)*(ulim-*cx) >= 0.0)
+//		{
+//			u  = ulim;
+//			fu = -Lk_Dist(F,fabs(u),mod);
+//		}
+//		else
+//		{
+//			u  =(*cx)+MNBRAK_GOLD*(*cx-*bx);
+//			fu = -Lk_Dist(F,fabs(u),mod);
+//		}
+//
+//		SHFT(*ax,*bx,*cx,u)
+//		SHFT(fa,fb,fc,fu)
+//	}
+//	return(0);
+//}
 
 /*********************************************************/
 
-m3ldbl Dist_F_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max, 
-		m3ldbl *param, m3ldbl *F, model *mod)
+m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_max,
+		m3ldbl *param, m3ldbl *F, model *mod, arbre *tree)
 {
-	int iter;
-	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-	m3ldbl e=0.0;
+	int iter, i;
+	m3ldbl *a,*b,*d,*etemp,fu,fv,fw,fx,*p,*q,*r,*tol1,*tol2,*u,*v,*w,*x,*xm, *e,*bxtemp;
+	a = mCalloc(tree->n_l,sizeof(m3ldbl));
+	b = mCalloc(tree->n_l,sizeof(m3ldbl));
+	d = mCalloc(tree->n_l,sizeof(m3ldbl));
+	e = mCalloc(tree->n_l,sizeof(m3ldbl));
+	etemp = mCalloc(tree->n_l,sizeof(m3ldbl));
+	p = mCalloc(tree->n_l,sizeof(m3ldbl));
+	q = mCalloc(tree->n_l,sizeof(m3ldbl));
+	r = mCalloc(tree->n_l,sizeof(m3ldbl));
+	tol1 = mCalloc(tree->n_l,sizeof(m3ldbl));
+	tol2 = mCalloc(tree->n_l,sizeof(m3ldbl));
+	u = mCalloc(tree->n_l,sizeof(m3ldbl));
+	v = mCalloc(tree->n_l,sizeof(m3ldbl));
+	w = mCalloc(tree->n_l,sizeof(m3ldbl));
+	x = mCalloc(tree->n_l,sizeof(m3ldbl));
+	xm = mCalloc(tree->n_l,sizeof(m3ldbl));
+	bxtemp = mCalloc(tree->n_l,sizeof(m3ldbl));
+
+
 	m3ldbl old_lnL,init_lnL, curr_lnL;
 
-	d=0.0;
-	a=((ax < cx) ? ax : cx);
-	b=((ax > cx) ? ax : cx);
-	x = w = v = bx;
+	/**
+	* JSJ: initialize brent values
+	*/
+	For(i,tree->n_l){
+		e[i]=d[i]=0.0;
+		a[i]=((ax[i] < cx[i]) ? ax[i] : cx[i]);
+		b[i]=((ax[i] > cx[i]) ? ax[i] : cx[i]);
+		x[i] = w[i] = v[i] = bx[i];
+		bxtemp[i] = fabs(bx[i]);
+	}
+
+
+
 	old_lnL = UNLIKELY;
-	fw = fv = fx = -Lk_Dist(F,fabs(bx),mod);
+	fw = fv = fx = -Lk_Dist(F,bxtemp,mod,tree);
 	curr_lnL = init_lnL = -fw;
 
 	for(iter=1;iter<=BRENT_ITMAX;iter++)
 	{
-		xm=0.5*(a+b);
-
-		tol2=2.0*(tol1=tol*fabs(x)+BRENT_ZEPS);
+		/**
+		* JSJ: iterate over set of following vars
+		*/
+		For(i,tree->n_l){
+			xm[i]=0.5*(a[i]+b[i]);
+			tol2[i]=2.0*(tol1[i]=tol*fabs(x[i])+BRENT_ZEPS);
+		}
 
 		if(
 				((fabs(curr_lnL-old_lnL) < mod->s_opt->min_diff_lk_local) &&
@@ -2081,93 +2225,261 @@ m3ldbl Dist_F_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max,
 						(iter > n_iter_max - 1)
 		)
 		{
-			*param = x;
-			curr_lnL = Lk_Dist(F,*param,mod);
+			For(i,tree->n_l) param[i] = x[i];
+			//JSJ: return summation of distance based likelihoods multiplied by prop of sites
+			// accounted for by that branch length?
+			curr_lnL = Lk_Dist(F,param,mod,tree);
+			Free(a);
+			Free(b);
+			Free(d);
+			Free(e);
+			Free(etemp);
+			Free(p);
+			Free(q);
+			Free(r);
+			Free(tol1);
+			Free(tol2);
+			Free(u);
+			Free(v);
+			Free(w);
+			Free(x);
+			Free(xm);
+			Free(bxtemp);
 			return -curr_lnL;
 		}
-
-		if(fabs(e) > tol1)
-		{
-			r=(x-w)*(fx-fv);
-			q=(x-v)*(fx-fw);
-			p=(x-v)*q-(x-w)*r;
-			q=2.0*(q-r);
-			if(q > 0.0) p = -p;
-			q=fabs(q);
-			etemp=e;
-			e=d;
-			if(fabs(p) >= fabs(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
+		For(i,tree->n_l){
+			if(fabs(e[i]) > tol1[i])
 			{
-				d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-				/*                   PhyML_Printf("Golden section step\n"); */
+				r[i]=(x[i]-w[i])*(fx-fv);
+				q[i]=(x[i]-v[i])*(fx-fw);
+				p[i]=(x[i]-v[i])*q[i]-(x[i]-w[i])*r[i];
+				q[i]=2.0*(q[i]-r[i]);
+				if(q[i] > 0.0) p[i] = -p[i];
+				q[i]=fabs(q[i]);
+				etemp[i]=e[i];
+				e[i]=d[i];
+				if(fabs(p[i]) >= fabs(0.5*q[i]*etemp[i]) || p[i] <= q[i]*(a[i]-x[i]) || p[i] >= q[i]*(b[i]-x[i]))
+				{
+					d[i]=BRENT_CGOLD*(e[i]=(x[i] >= xm[i] ? a[i]-x[i] : b[i]-x[i]));
+					/*                   PhyML_Printf("Golden section step\n"); */
+				}
+				else
+				{
+					d[i]=p[i]/q[i];
+					u[i]=x[i]+d[i];
+					if (u[i]-a[i] < tol2[i] || b[i]-u[i] < tol2[i])
+						d[i]=SIGN(tol1[i],xm[i]-x[i]);
+					/*                   PhyML_Printf("Parabolic step\n"); */
+				}
 			}
 			else
 			{
-				d=p/q;
-				u=x+d;
-				if (u-a < tol2 || b-u < tol2)
-					d=SIGN(tol1,xm-x);
-				/*                   PhyML_Printf("Parabolic step\n"); */
+				d[i]=BRENT_CGOLD*(e[i]=(x[i] >= xm[i] ? a[i]-x[i] : b[i]-x[i]));
+				/*               PhyML_Printf("Golden section step (default)\n"); */
 			}
-		}
-		else
-		{
-			d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-			/*               PhyML_Printf("Golden section step (default)\n"); */
-		}
 
-		u=(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
-		if(u<BL_MIN) u = BL_MIN;
-		(*param) = fabs(u);
+			u[i]=(fabs(d[i]) >= tol1[i] ? x[i]+d[i] : x[i]+SIGN(tol1[i],d[i]));
+			if(u[i]<BL_MIN) u[i] = BL_MIN;
+			param[i] = fabs(u[i]);
+		}
 		old_lnL = curr_lnL;
-		fu = -Lk_Dist(F,fabs(u),mod);
+
+		m3ldbl *temp = mCalloc(tree->n_l,sizeof(m3ldbl));
+		For(i,tree->n_l)temp[i] = fabs(u[i]);
+		fu = -Lk_Dist(F,temp,mod,tree);
+		Free(temp);
 		curr_lnL = -fu;
 		/*       PhyML_Printf("param=%f loglk=%f\n",*param,fu); */
 
-		if(fu <= fx)
-		{
-			if(iter > n_iter_max) return -fu;
-
-			if(u >= x) a=x; else b=x;
-			SHFT(v,w,x,u)
-			SHFT(fv,fw,fx,fu)
-		}
-		else
-		{
-			if (u < x) a=u; else b=u;
-			if (fu <= fw || w == x)
+		For(i,tree->n_l){
+			if(fu <= fx)
 			{
-				v=w;
-				w=u;
-				fv=fw;
-				fw=fu;
+				if(iter > n_iter_max) return -fu;
+
+				if(u[i] >= x[i]) a[i]=x[i]; else b[i]=x[i];
+				SHFT(v[i],w[i],x[i],u[i])
+				SHFT(fv,fw,fx,fu)
 			}
-			else if (fu <= fv || v == x || v == w) {
-				v=u;
-				fv=fu;
+			else
+			{
+				if (u[i] < x[i]) a[i]=u[i]; else b[i]=u[i];
+				if (fu <= fw || w[i] == x[i])
+				{
+					v[i]=w[i];
+					w[i]=u[i];
+					fv=fw;
+					fw=fu;
+				}
+				else if (fu <= fv || v[i] == x[i] || v[i] == w[i]) {
+					v[i]=u[i];
+					fv=fu;
+				}
 			}
 		}
 	}
+	Free(a);
+	Free(b);
+	Free(d);
+	Free(e);
+	Free(etemp);
+	Free(p);
+	Free(q);
+	Free(r);
+	Free(tol1);
+	Free(tol2);
+	Free(u);
+	Free(v);
+	Free(w);
+	Free(x);
+	Free(xm);
+	Free(bxtemp);
 	Exit("\n. Too many iterations in BRENT !");
 	return(-1);
 }
 
+
+m3ldbl Dist_F_Brent_No_Bl(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max,
+		    m3ldbl *param, m3ldbl *F, model *mod)
+{
+  int iter;
+  m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+  m3ldbl e=0.0;
+  m3ldbl old_lnL,init_lnL, curr_lnL;
+
+  d=0.0;
+  a=((ax < cx) ? ax : cx);
+  b=((ax > cx) ? ax : cx);
+  x = w = v = bx;
+  old_lnL = UNLIKELY;
+  fw = fv = fx = -Lk_Dist_No_Bl(F,fabs(bx),mod);
+  curr_lnL = init_lnL = -fw;
+
+  for(iter=1;iter<=BRENT_ITMAX;iter++)
+    {
+      xm=0.5*(a+b);
+
+      tol2=2.0*(tol1=tol*fabs(x)+BRENT_ZEPS);
+
+      if(
+	 ((fabs(curr_lnL-old_lnL) < mod->s_opt->min_diff_lk_local) &&
+	  (curr_lnL > init_lnL - mod->s_opt->min_diff_lk_local)) ||
+	  (iter > n_iter_max - 1)
+	 )
+	{
+	  *param = x;
+	  curr_lnL = Lk_Dist_No_Bl(F,*param,mod);
+	  return -curr_lnL;
+	}
+
+      if(fabs(e) > tol1)
+	{
+	  r=(x-w)*(fx-fv);
+	  q=(x-v)*(fx-fw);
+	  p=(x-v)*q-(x-w)*r;
+	  q=2.0*(q-r);
+	  if(q > 0.0) p = -p;
+	  q=fabs(q);
+	  etemp=e;
+	  e=d;
+	  if(fabs(p) >= fabs(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
+	    {
+	      d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
+	      /*                   PhyML_Printf("Golden section step\n"); */
+	    }
+	  else
+	    {
+	      d=p/q;
+	      u=x+d;
+	      if (u-a < tol2 || b-u < tol2)
+		d=SIGN(tol1,xm-x);
+	      /*                   PhyML_Printf("Parabolic step\n"); */
+	    }
+        }
+      else
+	{
+	  d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
+	  /*               PhyML_Printf("Golden section step (default)\n"); */
+	}
+
+      u=(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
+      if(u<BL_MIN) u = BL_MIN;
+      (*param) = fabs(u);
+      old_lnL = curr_lnL;
+      fu = -Lk_Dist_No_Bl(F,fabs(u),mod);
+      curr_lnL = -fu;
+/*       PhyML_Printf("param=%f loglk=%f\n",*param,fu); */
+
+      if(fu <= fx)
+	{
+	  if(iter > n_iter_max) return -fu;
+
+	  if(u >= x) a=x; else b=x;
+	  SHFT(v,w,x,u)
+	  SHFT(fv,fw,fx,fu)
+	}
+      else
+	{
+	  if (u < x) a=u; else b=u;
+	  if (fu <= fw || w == x)
+	    {
+	      v=w;
+	      w=u;
+	      fv=fw;
+	      fw=fu;
+	    }
+	  else if (fu <= fv || v == x || v == w) {
+            v=u;
+            fv=fu;
+	  }
+	}
+    }
+  Exit("\n. Too many iterations in BRENT !");
+  return(-1);
+}
+
 /*********************************************************/
 
-void Opt_Dist_F(m3ldbl *dist, m3ldbl *F, model *mod)
+
+void Opt_Dist_F_No_Bl(m3ldbl *dist, m3ldbl *F, model *mod)
 {
-	m3ldbl ax,bx,cx;
+  m3ldbl ax,bx,cx;
 
-	if(*dist < BL_MIN) *dist = BL_MIN;
+  if(*dist < BL_MIN) *dist = BL_MIN;
 
-	ax = BL_MIN;
-	bx =  (*dist);
-	cx = BL_MAX;
+  ax = BL_MIN;
+  bx =  (*dist);
+  cx = BL_MAX;
+
+/*   Dist_F_Brak(&ax,&bx,&cx,F,dist,mod); */
+  Dist_F_Brent_No_Bl(ax,bx,cx,1.E-10,1000,dist,F,mod);
+}
+
+
+/*********************************************************/
+
+void Opt_Dist_F(m3ldbl *dist, m3ldbl *F, model *mod, arbre *tree)
+{
+	m3ldbl *ax,*bx,*cx;
+	int i;
+	ax = mCalloc(tree->n_l,sizeof(m3ldbl));
+	bx = mCalloc(tree->n_l,sizeof(m3ldbl));
+	cx = mCalloc(tree->n_l,sizeof(m3ldbl));
+
+	For(i,tree->n_l){
+		if(dist[i] < BL_MIN) dist[i] = BL_MIN;
+
+		ax[i] = BL_MIN;
+		bx[i] =  dist[i];
+		cx[i] = BL_MAX;
+	}
 
 	/*   Dist_F_Brak(&ax,&bx,&cx,F,dist,mod); */
 	//JSJ: perhaps we can call this several times and iterate through the bl set?
 	//	Alternatively the function calling this one could do the iteration...
-	Dist_F_Brent(ax,bx,cx,1.E-10,1000,dist,F,mod);
+	Dist_F_Brent(ax,bx,cx,1.E-10,1000,dist,F,mod,tree);
+	Free(ax);
+	Free(bx);
+	Free(cx);
 }
 
 /*********************************************************/

@@ -114,6 +114,15 @@ int main(int argc, char **argv)
 		  if((io->mod->s_opt->random_input_tree) && (io->mod->s_opt->topo_search != NNI_MOVE))
 		    if(!io->quiet) PhyML_Printf("\n. [Random start %3d/%3d]\n",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
 
+		  /**
+		   * JSJ: we need to initialize the model with some branch lengths
+		   */
+//		  int n_l = 2;
+//		  int i;
+//		  m3ldbl *props = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+//		  For(i,n_l){
+//			  props[i] = 1.0/n_l;
+//		  }
 		  Init_Model(alldata,mod);
 
 		  switch(io->in_tree)
@@ -122,12 +131,19 @@ int main(int argc, char **argv)
 		    case 2 :          { tree = Read_User_Tree(alldata,mod,io); break; }
 		    }
 
+		  /**
+		   * JSJ: now lets fill the model with the values stored in the tree
+		   * for n_l and props
+		   */
+
 		  if(!tree) continue;
 
 		  time(&t_beg);
 		  time(&(tree->t_beg));
 
 		  tree->mod         = mod;
+//		  tree->mod->n_l    = tree->n_l;
+//		  For(i,tree->n_l) tree->mod->props[i] = tree->props[i];
 		  tree->io          = io;
 		  tree->data        = alldata;
 		  tree->both_sides  = 1;

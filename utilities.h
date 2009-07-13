@@ -512,7 +512,8 @@ typedef struct __Model {
 
   char          *modelname;
   char  *custom_mod_string; /* string of characters used to define custom models of substitution */
-
+ // int				   n_l; /* JSJ: holds the number of branch length categories */
+ // m3ldbl            *props; /* JSJ: holds the proportion of sites that fall under each bl category */
   int              *rr_num; 
   int        *n_rr_per_cat; /* number of rate parameters in each category */
   int            n_diff_rr; /* number of different relative substitution rates in the custom model */

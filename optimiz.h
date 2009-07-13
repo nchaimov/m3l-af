@@ -38,7 +38,7 @@ m3ldbl    Alpha_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,m3ldbl *xmin,
 		       arbre *tree, allseq *alldata);
 m3ldbl    Br_Len_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
 			m3ldbl *xmin, edge *b_fcus, arbre *tree);
-m3ldbl    Br_Len_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
+m3ldbl    Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 		       edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty);
 int       Br_Len_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, 
 		      m3ldbl *fa, m3ldbl *fb, m3ldbl *fc, 
@@ -92,7 +92,7 @@ int Generic_Brak(m3ldbl *param,
 		 m3ldbl *fa, m3ldbl *fb, m3ldbl *fc,
 		 m3ldbl lim_inf, m3ldbl lim_sup,
 		 arbre *tree);
-m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
+m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		     m3ldbl *xmin, arbre *tree, int n_iter_max,int quickdirty);
 void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree,allseq *alldata);
 void Lnsrch_Nucleotide_Frequencies(arbre *tree, int n, m3ldbl *xold, 
@@ -103,10 +103,13 @@ void Optimize_Global_Rate(arbre *tree);
 m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree);
 
 void EM_Dist(model *mod, allseq *data);
-m3ldbl Dist_F_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max, 
+m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_max,
+		    m3ldbl *param, m3ldbl *F, model *mod, arbre *tree);
+m3ldbl Dist_F_Brent_No_Bl(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max,
 		    m3ldbl *param, m3ldbl *F, model *mod);
 int Dist_F_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl *F, m3ldbl *param, model *mod);
-void Opt_Dist_F(m3ldbl *dist, m3ldbl *F, model *mod);
+void Opt_Dist_F(m3ldbl *dist, m3ldbl *F, model *mod, arbre *tree);
+void Opt_Dist_F_No_Bl(m3ldbl *dist, m3ldbl *F, model *mod);
 m3ldbl Missing_Dist_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max, 
 			  int x, int y, matrix *mat);
 int Missing_Dist_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, int x, int y, matrix *mat);
