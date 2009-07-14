@@ -23,8 +23,9 @@ typedef struct
 {
   node   *v_prune, *u_prune, *v_n, *v_nx1, *u_n, **path;
   edge   *e_prune, *e_regraft;
-  m3ldbl  l_connect, l_est[3], delta_lk, d_L, d_up_v, d_un_v;
+  m3ldbl  l_est[MAX_BL_SET][3], delta_lk, d_L, d_up_v, d_un_v;
   int     dist, rgrft_rank, optim_rank, globl_rank;
+  m3ldbl l_connect[MAX_BL_SET];
 } _move_;
 
 

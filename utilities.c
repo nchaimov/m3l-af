@@ -166,7 +166,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 
 		Read_Branch_Label(s_tree_d,s_tree_a,tree->t_edges[tree->num_curr_branch_available]);
 		Read_Branch_Lengths(s_tree_d,s_tree_a,tree);
-//JSJ: works now
+		//JSJ: works now
 		For(i,3)
 		{
 			if(!a->v[i])
@@ -293,7 +293,7 @@ void Read_Branch_Label(char *s_d, char *s_a, edge *b)
 void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 {
 	char *sub_tp;
-//	char *p, *p2;
+	//	char *p, *p2;
 	char *p;
 	char *brac;
 	edge *b;
@@ -316,10 +316,10 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 	}else{
 		strcat(sub_tp,":");
 	}
-//	printf("JSJ:Made it here!\n");
-//	//p = strstr(s_a,sub_tp);
+	//	printf("JSJ:Made it here!\n");
+	//	//p = strstr(s_a,sub_tp);
 	printf("JSJ:The string about to be strstr: %s\n",s_a);
-//	//p2 = strstr((char *)p+(int)strlen(sub_tp),'[');
+	//	//p2 = strstr((char *)p+(int)strlen(sub_tp),'[');
 	p = strstr(s_a,sub_tp);
 	printf("JSJ:Made it here!\n");
 	if(p)
@@ -448,7 +448,7 @@ char **Sub_Trees(char *tree, int *degree)
 	{
 		posbeg = posend;
 		if(tree[posend] != '(')
-				{
+		{
 			while((tree[posend] != ',' ) &&
 					(tree[posend] != ':' ) &&
 					(tree[posend] != '#' ) &&
@@ -459,7 +459,7 @@ char **Sub_Trees(char *tree, int *degree)
 				posend++ ;
 			}
 			posend -= 1;
-				}
+		}
 		else posend=Next_Par(tree,posend);
 
 		while((tree[posend+1] != ',') &&
@@ -623,7 +623,7 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			strcat(s_tree,fils->name);
 		else
 			sprintf(s_tree+(int)strlen(s_tree),"%d",fils->num+1);
-//JSJ: temporary change of l
+		//JSJ: temporary change of l
 		if((fils->b) && (fils->b[0]) && (fils->b[0]->l[0] != -1))
 		{
 			if(tree->print_labels)
@@ -762,6 +762,14 @@ void Normalize_Props(arbre *tree){
 	For(i,tree->n_l)sum           += tree->props[i]; //get the sum of props to normalize
 	For(i,tree->n_l)tree->props[i] = tree->props[i] / sum; //normalize proportions to correct for float round error
 }
+//JSJ: Function to normalize the site proportions of an option struct to 1
+//     This does a slight fudge to correct for floating point rounding error.
+void Normalize_Props_IO(option *io){
+	int i;
+	m3ldbl sum = 0.;
+	For(i,io->n_l)sum           += io->props[i]; //get the sum of props to normalize
+	For(i,io->n_l)io->props[i] = io->props[i] / sum; //normalize proportions to correct for float round error
+}
 
 /*********************************************************/
 
@@ -789,10 +797,6 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 	edge *b;
 	int i;
 	b = (edge *)mCalloc(1,sizeof(edge));
-	b->l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
-	b->l_old = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
-	b->best_l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
-	b->has_zero_br_len = (int *)mCalloc(n_l, sizeof(int));
 	b->n_l = n_l;
 
 	Init_Edge_Light(b,num);
@@ -840,7 +844,7 @@ void Init_Edge_Light(edge *b, int num)
 
 	b->p_lk_left            = NULL;
 	b->p_lk_rght            = NULL;
-	b->Pij_rr               = NULL;
+	For(i,b->n_l)b->Pij_rr[i]= NULL;
 }
 
 /*********************************************************/
@@ -934,7 +938,7 @@ void Make_Edge_Lk(edge *b, arbre *tree)
 
 	b->div_post_pred_left = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
 	b->div_post_pred_rght = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
-	b->Pij_rr             = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
+//	b->Pij_rr             = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
 	For(i,tree->n_l) b->Pij_rr[i] = (m3ldbl *)mCalloc(tree->mod->n_catg*tree->mod->ns*tree->mod->ns,sizeof(m3ldbl));
 
 	b->scale_left = b->scale_rght = 0;
@@ -989,11 +993,6 @@ nni *Make_NNI(int n_l)
 {
 	nni *a_nni;
 	a_nni = (nni *)mCalloc(1,sizeof(nni ));
-	a_nni->init_l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
-	a_nni->best_l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
-	a_nni->l0 = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
-	a_nni->l1 = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
-	a_nni->l2 = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
 	Init_NNI(a_nni,n_l);
 	return a_nni;
 }
@@ -1017,8 +1016,8 @@ void Init_NNI(nni *a_nni, int n_l)
 	a_nni->lk2          = UNLIKELY;
 
 	/**
-	 * JSJ: initialize arrays of branch lengths
-	 */
+	* JSJ: initialize arrays of branch lengths
+	*/
 	int i;
 	For(i,n_l){
 		a_nni->init_l[i] = -1.;
@@ -1053,8 +1052,6 @@ node *Make_Node_Light(int num, int num_bl_set)
 	node *n;
 	n        = (node *)mCalloc(1,sizeof(node));
 	n->v     = (node **)mCalloc(3,sizeof(node *));
-	n->l     = (m3ldbl **)mCalloc(num_bl_set,sizeof(m3ldbl*)); //JSJ: initialize branch length set in nodes
-	For(i,num_bl_set) n->l[i]  = (m3ldbl *)mCalloc(3,sizeof(m3ldbl));
 	n->b     = (edge **)mCalloc(3,sizeof(edge *));
 	n->name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 	n->score = (m3ldbl *)mCalloc(3,sizeof(m3ldbl));
@@ -2041,7 +2038,7 @@ void *mCalloc(int nb, size_t size)
 	}
 	else
 		printf("Called mCalloc(nb= %i, size= %zu)\n",nb,size);
-		Warn_And_Exit("\n. Err: low memory.\n mCalloc unsuccessful\n");
+	Warn_And_Exit("\n. Err: low memory.\n mCalloc unsuccessful\n");
 
 	return NULL;
 }
@@ -2054,7 +2051,7 @@ void *mRealloc(void *p,int nb, size_t size)
 		return p;
 	else
 		printf("Called mRealloc(nb= %i, size= %zu)\n",nb,size);
-		Warn_And_Exit("\n. Err: low memory\n mRealloc unsuccessful\n");
+	Warn_And_Exit("\n. Err: low memory\n mRealloc unsuccessful\n");
 
 	return NULL;
 }
@@ -2520,7 +2517,6 @@ arbre *Make_Tree(int n_otu, int n_l)
 	tree = (arbre *)mCalloc(1,sizeof(arbre ));
 	tree->t_dir = (int **)mCalloc(2*n_otu-2,sizeof(int *)); //JSJ: not sure what t_dir does!!!
 	For(i,2*n_otu-2) tree->t_dir[i] = (int *)mCalloc(2*n_otu-2,sizeof(int));
-	tree->props = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl)); //JSJ: allocate memory for branch length set proportions
 	Init_Tree(tree,n_otu, n_l);
 	return tree;
 }
@@ -2621,7 +2617,7 @@ void Print_Node(node *a, node *d, arbre *tree)
 
 void Share_Lk_Struct(arbre *t_full, arbre *t_empt)
 {
-	int i,j,n_otu;
+	int i,j,k,n_otu;
 	edge *b_e,*b_f;
 	node *n_e, *n_f;
 
@@ -2639,7 +2635,9 @@ void Share_Lk_Struct(arbre *t_full, arbre *t_empt)
 		b_f = t_full->t_edges[i];
 		b_e = t_empt->t_edges[i];
 
-		b_e->Pij_rr = b_f->Pij_rr;
+		For(k,t_full->n_l){
+			b_e->Pij_rr[k] = b_f->Pij_rr[k];
+		}
 
 		b_e->nni = b_f->nni;
 	}
@@ -2837,9 +2835,6 @@ int Sort_Edges_Depth(arbre *tree, edge **sorted_edges, int n_elem)
 }
 
 /*********************************************************/
-//JSJ: temporarily changed b_fcus->l to b_fcus->l[0]
-// double and tripple check that everything is correct
-// when we actually work on this section
 void NNI(arbre *tree, edge *b_fcus, int do_swap)
 {
 	int l_r, r_l, l_v1, l_v2, r_v3, r_v4;
@@ -3034,6 +3029,9 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 	if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
 	{
+		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
+		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
+		PhyML_Printf("\n. Err. in NNI (3)\n");
 		Free(bl_init);
 		Free(l0);
 		Free(l1);
@@ -3041,9 +3039,6 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		Free(l_infa);
 		Free(l_infb);
 		Free(l_max);
-		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
-		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
-		PhyML_Printf("\n. Err. in NNI (3)\n");
 		Warn_And_Exit("\n");
 	}
 
@@ -4723,16 +4718,20 @@ void Bootstrap(arbre *tree)
 //JSJ: temp update to the length
 void Br_Len_Involving_Invar(arbre *tree)
 {
-	int i;
-	For(i,2*tree->n_otu-3) tree->t_edges[i]->l[0] *= (1.0-tree->mod->pinvar);
+	int i,k;
+	For(k,tree->n_l){
+		For(i,2*tree->n_otu-3) tree->t_edges[i]->l[k] *= (1.0-tree->mod->pinvar);
+	}
 }
 
 /*********************************************************/
 //JSJ: Another temp update
 void Br_Len_Not_Involving_Invar(arbre *tree)
 {
-	int i;
-	For(i,2*tree->n_otu-3) tree->t_edges[i]->l[0] /= (1.0-tree->mod->pinvar);
+	int i,k;
+	For(k,tree->n_l){
+		For(i,2*tree->n_otu-3) tree->t_edges[i]->l[k] /= (1.0-tree->mod->pinvar);
+	}
 }
 
 /*********************************************************/
@@ -5065,19 +5064,19 @@ void Record_Model(model *ori, model *cpy)
 	}
 
 #ifndef PHYML
-cpy->use_m4mod = ori->use_m4mod;
+	cpy->use_m4mod = ori->use_m4mod;
 #endif
 
-cpy->eigen->size = ori->eigen->size;
-For(i,2*ori->ns)       cpy->eigen->space[i]       = ori->eigen->space[i];
-For(i,2*ori->ns)       cpy->eigen->space_int[i]   = ori->eigen->space_int[i];
-For(i,ori->ns)         cpy->eigen->e_val[i]       = ori->eigen->e_val[i];
-For(i,ori->ns)         cpy->eigen->e_val_im[i]    = ori->eigen->e_val_im[i];
-For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
-For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
-For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect_im[i] = ori->eigen->r_e_vect_im[i];
-For(i,ori->ns*ori->ns) cpy->eigen->l_e_vect[i]    = ori->eigen->l_e_vect[i];
-For(i,ori->ns*ori->ns) cpy->eigen->q[i]           = ori->eigen->q[i];
+	cpy->eigen->size = ori->eigen->size;
+	For(i,2*ori->ns)       cpy->eigen->space[i]       = ori->eigen->space[i];
+	For(i,2*ori->ns)       cpy->eigen->space_int[i]   = ori->eigen->space_int[i];
+	For(i,ori->ns)         cpy->eigen->e_val[i]       = ori->eigen->e_val[i];
+	For(i,ori->ns)         cpy->eigen->e_val_im[i]    = ori->eigen->e_val_im[i];
+	For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
+	For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
+	For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect_im[i] = ori->eigen->r_e_vect_im[i];
+	For(i,ori->ns*ori->ns) cpy->eigen->l_e_vect[i]    = ori->eigen->l_e_vect[i];
+	For(i,ori->ns*ori->ns) cpy->eigen->q[i]           = ori->eigen->q[i];
 }
 
 /*********************************************************/
@@ -5104,6 +5103,20 @@ option *Make_Input()
 }
 
 /*********************************************************/
+/*
+ * JSJ: takes the number of branch lengths per set from io
+ * 	and reallocates memory to the props, and resets the default
+ * 	value of proportions (equal props).
+ *
+ */
+void Update_Default_Props(option *io){
+	int n_l = io->n_l;
+	int i;
+	For(i,n_l){
+		io->props[i] = 1.0/n_l;
+	}
+	Normalize_Props_IO(io);
+}
 
 void Set_Defaults_Input(option* io)
 {
@@ -5114,7 +5127,9 @@ void Set_Defaults_Input(option* io)
 	io->fp_out_boot_tree           = NULL;
 	io->fp_out_boot_stats          = NULL;
 	io->fp_out_stats               = NULL;
-
+	io->n_l 					   = 1; //JSJ: initialize to 1 branch length set
+	io->props[0]				   = 1.0; //JSJ: initialize to all sites falling under the one set
+	io->fixed_props                = 0; //JSJ: default to optimize the props
 	io->tree                       = NULL;
 	io->mod->datatype              = 0;
 	strcpy(io->nt_or_cd,"nucleotides");
@@ -5127,7 +5142,7 @@ void Set_Defaults_Input(option* io)
 	io->n_data_set_asked           = -1;
 	io->print_boot_trees           = 1;
 	io->n_gt                       = 1;
-	io->ratio_test		 = 4;
+	io->ratio_test		           = 4;
 	io->multigene                  = 0;
 	io->config_multigene           = 0;
 	io->curr_interface             = 0;
@@ -5378,11 +5393,11 @@ void Get_Bip(node *a, node *d, arbre *tree)
 
 				if((k == d->bip_size[d_a]) && (tree->noeud[j]->common))
 					/* 		if(k == d->bip_size[d_a]) */
-					{
-						a->bip_node[i][a->bip_size[i]] = tree->noeud[j];
-						strcpy(a->bip_name[i][a->bip_size[i]],tree->noeud[j]->name);
-						a->bip_size[i]++;
-					}
+				{
+					a->bip_node[i][a->bip_size[i]] = tree->noeud[j];
+					strcpy(a->bip_name[i][a->bip_size[i]],tree->noeud[j]->name);
+					a->bip_size[i]++;
+				}
 			}
 
 			qsort(a->bip_name[i],a->bip_size[i],sizeof(char *),Sort_String);
@@ -5444,7 +5459,7 @@ int Sort_String(const void *a, const void *b)
 
 m3ldbl Compare_Bip_On_Existing_Edges(m3ldbl thresh_len, arbre *tree1, arbre *tree2)
 {
-	int i,j,k;
+	int i,j,k,m;
 	edge *b1,*b2;
 	char **bip1,**bip2;
 	int bip_size,n_edges1,n_edges2;
@@ -5691,21 +5706,21 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
 				switch(a)
 				{
 				case 'A':
-			{
-				switch(b)
 				{
-				case 'A' :
-				case 'M' :
-				case 'R' :
-				case 'W' :
-				case 'D' :
-				case 'H' :
-				case 'V' :
-				case 'X' : {b=b; break;}
-				default : return 0;
+					switch(b)
+					{
+					case 'A' :
+					case 'M' :
+					case 'R' :
+					case 'W' :
+					case 'D' :
+					case 'H' :
+					case 'V' :
+					case 'X' : {b=b; break;}
+					default : return 0;
+					}
+					break;
 				}
-				break;
-			}
 				case 'G':
 				{
 					switch(b)
@@ -7007,12 +7022,12 @@ int Get_Subtree_Size(node *a, node *d)
 
 /*********************************************************/
 /**
- * JSJ: This method is in need of attention. This is what we can use to
- * modify branch lengths.
- * @param b
- * @param tree
- * @param approx
- */
+* JSJ: This method is in need of attention. This is what we can use to
+* modify branch lengths.
+* @param b
+* @param tree
+* @param approx
+*/
 void Fast_Br_Len(edge *b, arbre *tree, int approx)
 {
 	m3ldbl sum;
@@ -7049,12 +7064,12 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 					v_rght = (b->rght->tax)?((m3ldbl)(b->p_lk_tip_r[site*dim2+j])):(b->p_lk_rght[site*dim1+k*dim2+j]);
 					For(m,tree->n_l){ //JSJ: made the summed probability include a mixed model
 						prob[dim3*k+dim2*i+j]              +=
-							tree->mod->gamma_r_proba[k]      *
-							tree->mod->pi[i]                 *
-							b->Pij_rr[m][k*dim3+i*dim2+j]    *
-							b->p_lk_left[site*dim1+k*dim2+i] *
-							v_rght							 *
-							tree->props[m];
+								tree->mod->gamma_r_proba[k]      *
+								tree->mod->pi[i]                 *
+								b->Pij_rr[m][k*dim3+i*dim2+j]    *
+								b->p_lk_left[site*dim1+k*dim2+i] *
+								v_rght							 *
+								tree->props[m];
 					}
 				}
 			}
@@ -7072,8 +7087,8 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 	//JSJ: More temp fixes...
 	//old_l = b->l[0];
 	/**
-	 * Figure out how to fix the following function so that it works with a set of bls!
-	 */
+	* Figure out how to fix the following function so that it works with a set of bls!
+	*/
 	Opt_Dist_F(b->l,F,tree->mod,tree); //JSJ: decide how to get array of bls to this fxn, one at a time, or simult
 	//new_l = b->l[0];
 	n_iter++;
@@ -8521,7 +8536,7 @@ void Random_Lineage_Rates(node *a, node *d, edge *b, m3ldbl stick_prob, m3ldbl *
 {
 	m3ldbl uni;
 	int new_rate;
-	int i;
+	int i,k;
 
 
 	if(b)
@@ -8541,12 +8556,13 @@ void Random_Lineage_Rates(node *a, node *d, edge *b, m3ldbl stick_prob, m3ldbl *
 		{
 			new_rate = curr_rate;
 		}
-
+		For(k,tree->n_l){
 		For(i,3)
 		if(a->v[i] == d)
 		{//JSJ: compilation fix
-			a->b[i]->l[0] *= rates[new_rate];
+			a->b[i]->l[k] *= rates[new_rate];
 			break;
+		}
 		}
 
 		For(i,3)
@@ -9278,6 +9294,8 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 {
 	arbre *tree;
 	matrix *mat;
+	int i;
+
 
 	if(!io->quiet) PhyML_Printf("\n. Computing pairwise distances...\n");
 
@@ -9293,12 +9311,61 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 	tree      = mat->tree;
 	tree->mat = mat;
 
+	Fix_Tree_From_IO(tree,io);
+
 	return tree;
 }
 
 /*********************************************************/
 
-void Add_BioNJ_Branch_Lengths(arbre *tree, allseq *alldata, model *mod)
+void Fix_Tree_From_IO(arbre *tree, option *io){
+	int i,j,k;
+	int num_node = 2*tree->n_otu-2; //node
+	int num_edge = 2*tree->n_otu-3; //edge
+	int num_path = 2*tree->n_otu; //path
+	//JSJ: now copy the branch lengths from this tree into all members of the set
+	tree->n_l = io->n_l;
+	tree->props[io->n_l - 1] = io->props[io->n_l - 1];//since it doesn't get to last element, fill in here
+	for(i = 1; i < tree->n_l; i++){
+		tree->props[i-1] = io->props[i-1];
+		For(j,num_path){
+			tree->curr_path[j]->n_l = io->n_l;
+			For(k,3){
+				tree->curr_path[j]->l[i][k] = tree->curr_path[j]->l[0][k];
+				tree->curr_path[j]->b[k]->best_l[i] = tree->curr_path[j]->b[k]->best_l[0];
+				tree->curr_path[j]->b[k]->l[i] = tree->curr_path[j]->b[k]->l[0];
+				tree->curr_path[j]->b[k]->l_old[i] =  tree->curr_path[j]->b[k]->l_old[0];
+				tree->curr_path[j]->b[k]->has_zero_br_len[i] =  tree->curr_path[j]->b[k]->has_zero_br_len[0];
+				tree->curr_path[j]->b[k]->n_l = io->n_l;
+			}
+		}
+
+		For(j,num_node){
+			tree->noeud[j]->n_l = io->n_l;
+			For(k,3){
+				tree->noeud[j]->l[i][k] = tree->noeud[j]->l[0][k];
+				tree->noeud[j]->b[k]->best_l[i] = tree->noeud[j]->b[k]->best_l[0];
+				tree->noeud[j]->b[k]->n_l = io->n_l;
+				tree->noeud[j]->b[k]->has_zero_br_len[i] = tree->noeud[j]->b[k]->has_zero_br_len[0];
+				tree->noeud[j]->b[k]->l[i] = tree->noeud[j]->b[k]->l[0];
+				tree->noeud[j]->b[k]->l_old[i] = tree->noeud[j]->b[k]->l_old[0];
+			}
+		}
+
+		For(j,num_edge){
+			tree->t_edges[j]->l[j] = tree->t_edges[j]->l[0];
+			tree->t_edges[j]->l_old[j] = tree->t_edges[j]->l_old[0];
+			tree->t_edges[j]->best_l[j] = tree->t_edges[j]->best_l[0];
+			tree->t_edges[j]->n_l = io->n_l;
+			tree->t_edges[j]->has_zero_br_len[i] = tree->t_edges[j]->has_zero_br_len[0];
+		}
+	}
+
+}
+
+
+
+void Add_BioNJ_Branch_Lengths(arbre *tree, allseq *alldata, model *mod, option *io)
 {
 	matrix *mat;
 
@@ -9309,6 +9376,8 @@ void Add_BioNJ_Branch_Lengths(arbre *tree, allseq *alldata, model *mod)
 	mat->tree = tree;
 	mat->method = 0;
 	Bionj_Br_Length(mat);
+
+	Fix_Tree_From_IO(tree, io); //JSJ: coppy over branch lengths
 
 	Free_Mat(mat);
 }
@@ -9325,7 +9394,7 @@ arbre *Read_User_Tree(allseq *alldata, model *mod, option *io)
 	tree = Read_Tree_File(io->fp_in_tree);
 	if(!tree) Exit("\n. Input tree not found...\n");
 	/* Add branch lengths if necessary */
-	if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,alldata,mod);
+	if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,alldata,mod,io);
 
 	return tree;
 }
@@ -9527,15 +9596,17 @@ void Find_Common_Tips(arbre *tree1, arbre *tree2)
 }
 
 /*********************************************************/
-
+//JSJ: returns the summation of the weighted branch lengths from branch length sets
 m3ldbl Get_Tree_Size(arbre *tree)
 {
-	int i;
+	int i,k;
 	m3ldbl tree_size;
 
 	tree_size = 0.0;
-//JSJ: temporary compilation fix
-	For(i,2*tree->n_otu-3) tree_size += tree->t_edges[i]->l[0];
+	//JSJ: temporary compilation fix
+	For(k,tree->n_l){
+	For(i,2*tree->n_otu-3) tree_size += (tree->t_edges[i]->l[k] * tree->props[k]);
+	}
 
 	tree->size = tree_size;
 
@@ -9586,12 +9657,16 @@ int Find_Bipartition(char **target_bip, int bip_size, arbre *tree)
 
 /*********************************************************/
 
-//JSJ: compilation fix
+//JSJ: compilation fix, returns weighted distance to root
 void Dist_To_Root_Pre(node *a, node *d, edge *b, arbre *tree)
 {
-	int i;
+	int i,k;
 
-	if(b) d->dist_to_root = a->dist_to_root + b->l[0];
+	if(b) {
+		For(k,tree->n_l){
+			d->dist_to_root = a->dist_to_root + (b->l[k] * tree->props[k]);
+		}
+	}
 
 	if(d->tax) return;
 	else
@@ -9603,11 +9678,16 @@ void Dist_To_Root_Pre(node *a, node *d, edge *b, arbre *tree)
 }
 
 /*********************************************************/
-//JSJ: more temp fixes
+//JSJ: compilation fix, returns weighted distance to root
 void Dist_To_Root(node *n_root, arbre *tree)
 {
+	int k;
 	n_root->v[0]->dist_to_root = tree->n_root->l[0][0];
 	n_root->v[1]->dist_to_root = tree->n_root->l[0][1];
+	for(k=1;k<tree->n_l;k++){
+		n_root->v[0]->dist_to_root += (tree->n_root->l[k][0] * tree->props[k]);
+		n_root->v[1]->dist_to_root += (tree->n_root->l[k][1] * tree->props[k]);
+	}
 	Dist_To_Root_Pre(n_root,n_root->v[0],NULL,tree);
 	Dist_To_Root_Pre(n_root,n_root->v[1],NULL,tree);
 }

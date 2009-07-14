@@ -292,26 +292,22 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 	int l_r, r_l, l_v1, l_v2, r_v3, r_v4, site;
 	node *v1,*v2,*v3,*v4;
 	edge *e1,*e2,*e3,*e4;
-	m3ldbl *len_e1,*len_e2,*len_e3,*len_e4;
 	m3ldbl lk0, lk1, lk2;
-	m3ldbl *bl_init;
-	m3ldbl *l1,*l2,*l3;
-	m3ldbl *l_infa, *l_infb, *l_max;
 	m3ldbl lk_init, lk_temp;
 	int i,j;
 	int result,counter,wei;
 
-	len_e1 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	len_e2 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	len_e3 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	len_e4 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	bl_init = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l1 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l2 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l3 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l_infa = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l_infb = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l_max = mCalloc(tree->n_l,sizeof(m3ldbl));
+	m3ldbl len_e1[MAX_BL_SET];
+	m3ldbl len_e2[MAX_BL_SET];
+	m3ldbl len_e3[MAX_BL_SET];
+	m3ldbl len_e4[MAX_BL_SET];
+	m3ldbl bl_init[MAX_BL_SET];
+	m3ldbl l1[MAX_BL_SET];
+	m3ldbl l2[MAX_BL_SET];
+	m3ldbl l3[MAX_BL_SET];
+	m3ldbl l_infa[MAX_BL_SET];
+	m3ldbl l_infb[MAX_BL_SET];
+	m3ldbl l_max[MAX_BL_SET];
 
 
 
@@ -342,33 +338,11 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 	if(v1->num < v2->num)
 	{
-		Free(len_e1);
-		Free(len_e2);
-		Free(len_e3);
-		Free(len_e4);
-		Free(bl_init);
-		Free(l1);
-		Free(l2);
-		Free(l3);
-		Free(l_infa);
-		Free(l_infb);
-		Free(l_max);
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 	}
 	if(v3->num < v4->num)
 	{
-		Free(len_e1);
-		Free(len_e2);
-		Free(len_e3);
-		Free(len_e4);
-		Free(bl_init);
-		Free(l1);
-		Free(l2);
-		Free(l3);
-		Free(l_infa);
-		Free(l_infb);
-		Free(l_max);
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 	}
@@ -448,17 +422,6 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 		if(lk_temp < lk0 - tree->mod->s_opt->min_diff_lk_local)
 		{
-			Free(len_e1);
-			Free(len_e2);
-			Free(len_e3);
-			Free(len_e4);
-			Free(bl_init);
-			Free(l1);
-			Free(l2);
-			Free(l3);
-			Free(l_infa);
-			Free(l_infb);
-			Free(l_max);
 			PhyML_Printf("\n. lk_temp = %f lk0 = %f\n",lk_temp,lk0);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 			Warn_And_Exit("");
@@ -682,17 +645,6 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 		if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
 		{
-			Free(len_e1);
-			Free(len_e2);
-			Free(len_e3);
-			Free(len_e4);
-			Free(bl_init);
-			Free(l1);
-			Free(l2);
-			Free(l3);
-			Free(l_infa);
-			Free(l_infb);
-			Free(l_max);
 			PhyML_Printf("\n. lk_temp = %f lk2 = %f\n",lk_temp,lk2);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 			Warn_And_Exit("");
@@ -753,17 +705,6 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 	if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
 	{
-		Free(len_e1);
-		Free(len_e2);
-		Free(len_e3);
-		Free(len_e4);
-		Free(bl_init);
-		Free(l1);
-		Free(l2);
-		Free(l3);
-		Free(l_infa);
-		Free(l_infb);
-		Free(l_max);
 		PhyML_Printf("\n. lk_temp = %f lk_init = %f\n",lk_temp,lk_init);
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
@@ -805,17 +746,6 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 	/* 	     (lk1 > lk2)?(tree->log_lks_aLRT[1][counter]):(tree->log_lks_aLRT[2][counter])); */
 	/*       counter+=tree->data->wght[site]; */
 	/*     } */
-	Free(len_e1);
-	Free(len_e2);
-	Free(len_e3);
-	Free(len_e4);
-	Free(bl_init);
-	Free(l1);
-	Free(l2);
-	Free(l3);
-	Free(l_infa);
-	Free(l_infb);
-	Free(l_max);
 	return result;
 }
 
@@ -834,19 +764,15 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 	edge *e1,*e2,*e3,*e4;
 	m3ldbl lktodo;
 	m3ldbl bl_init;
-	m3ldbl *l_infa, *l_infb, *l_max;
 	m3ldbl lk_init, lk_temp;
 	int i,j;
 
-	l_infa = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l_infb = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l_max  = mCalloc(tree->n_l,sizeof(m3ldbl));
+	m3ldbl l_infa[MAX_BL_SET];
+	m3ldbl l_infb[MAX_BL_SET];
+	m3ldbl l_max[MAX_BL_SET];
 
 	if(swaptodo < 0)
 	{
-		Free(l_infa);
-		Free(l_max);
-		Free(l_infb);
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 	}
@@ -974,9 +900,6 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 
 		if(lk_temp < lktodo - tree->mod->s_opt->min_diff_lk_local)
 		{
-			Free(l_infa);
-			Free(l_max);
-			Free(l_infb);
 			PhyML_Printf("\n. Edge %3d lk_temp = %f lktodo = %f\n",b_fcus->num,lk_temp,lktodo);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 			Warn_And_Exit("");
@@ -997,19 +920,12 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 
 	if(tree->c_lnL < lk_init)
 	{
-		Free(l_infa);
-		Free(l_max);
-		Free(l_infb);
 		PhyML_Printf("\n. [%3d] v1=%d v2=%d v3=%d v4=%d",
 				b_fcus->num,v1->num,v2->num,v3->num,v4->num);
 		PhyML_Printf("\n. tree->c_lnL = %f lk_init = %f\n",tree->c_lnL,lk_init);
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 	}
-
-	Free(l_infa);
-	Free(l_max);
-	Free(l_infb);
 
 }
 

@@ -298,7 +298,7 @@ void Update_Bl(arbre *tree, m3ldbl fact)
 
 void Make_N_Swap(arbre *tree,edge **b, int beg, int end)
 {
-	int i;
+	int i,k;
 
 	/*   PhyML_Printf("\n. Beg Actually performing swaps\n"); */
 	tree->n_swap = 0;
@@ -311,7 +311,7 @@ void Make_N_Swap(arbre *tree,edge **b, int beg, int end)
 				b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 				tree);
 		//JSJ: temporary fix to l
-		b[i]->l[0] = b[i]->nni->best_l[0];
+		For(k,tree->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
 
 		tree->n_swap++;
 	}
@@ -324,7 +324,7 @@ void Make_N_Swap(arbre *tree,edge **b, int beg, int end)
 
 int Make_Best_Swap(arbre *tree)
 {
-	int i,j,return_value;
+	int i,j,k,return_value;
 	edge *b,**sorted_b;
 
 
@@ -349,7 +349,7 @@ int Make_Best_Swap(arbre *tree)
 				tree);
 
 		//JSJ: temp fix to l
-		b->l[0] = b->nni->best_l[0];
+		For(k,tree->n_l) b->l[k] = b->nni->best_l[k];
 
 		/*       (b->nni->best_conf == 1)? */
 		/* 	(Swap(b->left->v[b->l_v2],b->left,b->rght,b->rght->v[b->r_v1],tree)): */
@@ -373,14 +373,17 @@ int Make_Best_Swap(arbre *tree)
 
 int Mov_Backward_Topo_Bl(arbre *tree, m3ldbl lk_old, edge **tested_b, int n_tested)
 {
-	m3ldbl *l_init;
-	int i,step,beg,end;
+	m3ldbl *l_init[MAX_BL_SET];
+	int i,k,step,beg,end;
 	edge *b;
 
 
-	l_init = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
-	//JSJ: temp fix to l
-	For(i,2*tree->n_otu-3) l_init[i] = tree->t_edges[i]->l[0];
+	For(k,tree->n_l) {
+		l_init[k] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
+
+		//JSJ: temp fix to l
+		For(i,2*tree->n_otu-3) l_init[k][i] = tree->t_edges[i]->l[k];
+	}
 
 	step = 2;
 	tree->both_sides = 0;
@@ -389,7 +392,9 @@ int Mov_Backward_Topo_Bl(arbre *tree, m3ldbl lk_old, edge **tested_b, int n_test
 		For(i,2*tree->n_otu-3)
 		{
 			b = tree->t_edges[i]; //JSJ: temp fix to l and  l_old
-			b->l[0] = b->l_old[0] + (1./step) * (l_init[i] - b->l_old[0]);
+			For(k,tree->n_l){
+				b->l[k] = b->l_old[k] + (1./step) * (l_init[k][i] - b->l_old[k]);
+			}
 		}
 
 		beg = (int)floor((m3ldbl)n_tested/(step-1));
@@ -416,14 +421,14 @@ int Mov_Backward_Topo_Bl(arbre *tree, m3ldbl lk_old, edge **tested_b, int n_test
 		For(i,2*tree->n_otu-3)
 		{
 			b = tree->t_edges[i];
-			b->l[0] = b->l_old[0]; //JSJ: Temporary fix
+			For(k,tree->n_l) b->l[k] = b->l_old[k]; //JSJ: Temporary fix
 		}
 
 		tree->both_sides = 0;
 		Lk(tree);
 	}
 
-	Free(l_init);
+	For(k,tree->n_l)Free(l_init[k]);
 
 	tree->n_swap = 0;
 	For(i,2*tree->n_otu-3)
@@ -491,7 +496,7 @@ int Mov_Backward_Topo_Pars(arbre *tree, int pars_old, edge **tested_b, int n_tes
 
 void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 {
-	int i;
+	int i,k;
 
 	if(end>beg)
 	{
@@ -519,7 +524,7 @@ void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 			/* 	    (Swap(b[i]->left->v[b[i]->l_v2],b[i]->left,b[i]->rght,b[i]->rght->v[b[i]->r_v1],tree)): */
 			/* 	    (Swap(b[i]->left->v[b[i]->l_v2],b[i]->left,b[i]->rght,b[i]->rght->v[b[i]->r_v2],tree)); */
 			//JSJ: Temporary fix
-			b[i]->l[0] = b[i]->l_old[0];
+			For(k,tree->n_l) b[i]->l[k] = b[i]->l_old[k];
 		}
 	}
 	else
@@ -532,7 +537,7 @@ void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 					b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 					tree);
 			//JSJ: Temporary Fix
-			b[i]->l[0] = b[i]->l_old[0];
+			For(k,tree->n_l) b[i]->l[k] = b[i]->l_old[k];
 		}
 	}
 }
@@ -541,7 +546,7 @@ void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 
 void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 {
-	int i;
+	int i,k;
 
 	if(end>beg)
 	{
@@ -554,7 +559,7 @@ void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 					tree);
 
 			//JSJ: temp fix to l
-			b[i]->l[0] = b[i]->nni->best_l[0];
+			For(k,tree->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
 
 		}
 	}
@@ -568,7 +573,8 @@ void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 					b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 					tree);
 			//JSJ: temp fix to l
-			b[i]->l[0] = b[i]->nni->best_l[0];
+
+			For(k,tree->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
 		}
 	}
 }

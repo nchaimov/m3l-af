@@ -21,5 +21,6 @@ void Launch_Interface_Model(option *input);
 void Launch_Interface_Topo_Search(option *input);
 void Launch_Interface_Branch_Support(option *input);
 void Launch_Interface_Multigene(option *input);
+void Launch_Interface_MBL_Model(option *input);
 
 #endif
