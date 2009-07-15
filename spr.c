@@ -2539,18 +2539,20 @@ int Find_Optim_Local (arbre *tree)
 			 ** and calculate the new likelihood value.
 			 */
 			int tmp;
-			m3ldbl max[3][MAX_BL_SET];
-			m3ldbl min[3][MAX_BL_SET];
+//			m3ldbl max[3][MAX_BL_SET];
+//			m3ldbl min[3][MAX_BL_SET];
+//			For(tmp,3){
+//				For(j,tree->n_l){
+//					max[tmp][j] = v_prune->b[tmp]->l[j];
+//					max[tmp][j] *= 10.0;
+//					min[tmp][j] =BL_MIN;
+//
+//				}
+//			}
 			For(tmp,3){
 				For(j,tree->n_l){
-					max[tmp][j] = v_prune->b[tmp]->l[j];
-					max[tmp][j] *= 10.0;
-					min[tmp][j] =BL_MIN;
-
+					Br_Len_Brent_Iter(v_prune->b[tmp]->l[j] * 10.0, v_prune->b[tmp]->l[j], BL_MIN, 1.e-10, v_prune->b[tmp], tree, 250, 0,j);
 				}
-			}
-			For(tmp,3){
-				Br_Len_Brent(max[tmp], v_prune->b[tmp]->l, min[tmp], 1.e-10, v_prune->b[tmp], tree, 250, 0);
 			}
 
 			//			Br_Len_Brent (10.*(v_prune->b[0]->l[0]), v_prune->b[0]->l[0], BL_MIN, 1.e-10,
@@ -4160,7 +4162,7 @@ int Try_One_Spr_Move_Full(spr *move, arbre *tree)
 
 void Include_One_Spr_To_List_Of_Spr(spr *move, arbre *tree)
 {
-	int i;
+	int i,j;
 	spr *buff_spr;
 
 	if((( tree->mod->s_opt->spr_lnL) && (move->lnL  > tree->spr_list[tree->size_spr_list-1]->lnL)) ||
@@ -4173,9 +4175,11 @@ void Include_One_Spr_To_List_Of_Spr(spr *move, arbre *tree)
 		tree->spr_list[tree->size_spr_list-1]->n_link        = move->n_link;
 		tree->spr_list[tree->size_spr_list-1]->n_opp_to_link = move->n_opp_to_link;
 		tree->spr_list[tree->size_spr_list-1]->b_opp_to_link = move->b_opp_to_link;
-		tree->spr_list[tree->size_spr_list-1]->l0[0]            = move->l0[0]; //JSJ: temp fixes to l
-		tree->spr_list[tree->size_spr_list-1]->l1[0]            = move->l1[0];
-		tree->spr_list[tree->size_spr_list-1]->l2[0]            = move->l2[0];
+		For(j,tree->n_l){
+			tree->spr_list[tree->size_spr_list-1]->l0[j]            = move->l0[j]; //JSJ: temp fixes to l
+			tree->spr_list[tree->size_spr_list-1]->l1[j]            = move->l1[j];
+			tree->spr_list[tree->size_spr_list-1]->l2[j]            = move->l2[j];
+		}
 		tree->spr_list[tree->size_spr_list-1]->dist          = move->dist;
 
 		For(i,tree->spr_list[tree->size_spr_list-1]->depth_path+1)

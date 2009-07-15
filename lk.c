@@ -1039,7 +1039,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					{
 						if(!ambiguity_check_v1)
 						{
-							p1_lk1 = Pij1[k][catg*dim3+i*dim2+state_v1];
+							p1_lk1 = d->b[dir1]->Pij_rr[k][catg*dim3+i*dim2+state_v1];
 						}
 						else
 						{
@@ -1051,7 +1051,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 								* by the i,jth position in the p matrix given a gamma category and site
 								*
 								*/
-								p1_lk1 += Pij1[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v1->b[0]->p_lk_tip_r[site*dim2+j];
+								p1_lk1 += d->b[dir1]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v1->b[0]->p_lk_tip_r[site*dim2+j];
 							}
 						}
 					}
@@ -1059,7 +1059,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					{
 						For(j,tree->mod->ns)
 						{
-							p1_lk1 += Pij1[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v1[site*dim1+catg*dim2+j];
+							p1_lk1 += d->b[dir1]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v1[site*dim1+catg*dim2+j];
 						}
 					}
 
@@ -1069,13 +1069,13 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					{
 						if(!ambiguity_check_v2)
 						{
-							p2_lk2 = Pij2[k][catg*dim3+i*dim2+state_v2];
+							p2_lk2 = d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+state_v2];
 						}
 						else
 						{
 							For(j,tree->mod->ns)
 							{
-								p2_lk2 += Pij2[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v2->b[0]->p_lk_tip_r[site*dim2+j];
+								p2_lk2 += d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v2->b[0]->p_lk_tip_r[site*dim2+j];
 							} //JSJ: end for J in alphabet
 						}//JSJ: end else
 					}//JSJ: end if(n_v2...)
@@ -1083,7 +1083,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					{
 						For(j,tree->mod->ns)
 						{
-							p2_lk2 += Pij2[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v2[site*dim1+catg*dim2+j];
+							p2_lk2 += d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v2[site*dim1+catg*dim2+j];
 						} //end for j in alphabet
 					} //JSJ: end else
 					//JSJ: if we are at the 0th position, we initialize, otherwise we sum the product of
@@ -1378,10 +1378,9 @@ m3ldbl Lk_Dist(m3ldbl *F, m3ldbl *dist, model *mod, arbre *tree)
 	m3ldbl lnL,len,tmp;
 	int dim1,dim2;
 	lnL = .0;
-	m3ldbl **Pij;
 	dim1 = mod->ns*mod->ns;
 	dim2 = mod->ns;
-	Pij = mCalloc(tree->n_l,sizeof(m3ldbl *));
+	m3ldbl *Pij[MAX_BL_SET];
 	For(m,tree->n_l){
 		Pij[m] = mCalloc(dim1*mod->n_catg+dim2*mod->ns+mod->ns,sizeof(m3ldbl));
 	}
@@ -1429,7 +1428,6 @@ m3ldbl Lk_Dist(m3ldbl *F, m3ldbl *dist, model *mod, arbre *tree)
 	For(m,tree->n_l){
 		Free(Pij[m]);
 	}
-	Free(Pij);
 
 	return lnL;
 }
@@ -1446,7 +1444,10 @@ m3ldbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 /*********************************************************/
 
-/*       root
+/*
+ * JSJ: this function is currently not used, so don't bother
+ * changing it more than needed to simply make it compile...
+ *      root
            \
            /
           a
@@ -1463,88 +1464,88 @@ m3ldbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
        (2) update the change proba matrices along these branches
        (3) update the likelihood of subtree (w,x) (WARNING: (a,x) and (a,w) are not updated)
  */
-m3ldbl Lk_Triplet(node *a, node *d, arbre *tree)
-{
-	int i;
-	m3ldbl max_height;
-	m3ldbl up_bound, low_bound;
-
-	if(d->tax)
-	{
-		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-		Warn_And_Exit("");
-	}
-
-	up_bound = low_bound = -1.0;
-	max_height = -1.0;
-	For(i,3)
-	{
-		if((d->v[i] != a) && (d->b[i] != tree->e_root))
-		{
-			if(tree->rates->nd_t[d->v[i]->num] > max_height)
-			{
-				max_height = tree->rates->nd_t[d->v[i]->num];
-			}
-		}
-		else
-		{
-			up_bound =
-					(a == tree->n_root)?
-							(tree->rates->nd_t[a->num]):
-								(tree->rates->nd_t[d->v[i]->num]);
-		}
-	}
-
-	low_bound = max_height;
-
-	if(up_bound < low_bound - 1.E-10)
-	{
-		PhyML_Printf("\n. a->num=%d d->num=%d",a->num,d->num);
-		PhyML_Printf("\n. up_bound = %f, low_bound = %f",up_bound,low_bound);
-		Warn_And_Exit("\n");
-	}
-
-	if(tree->rates->nd_t[d->num] < low_bound) tree->rates->nd_t[d->num] = low_bound;
-	else if(tree->rates->nd_t[d->num] > up_bound) tree->rates->nd_t[d->num] = up_bound;
-
-	/* Step (1) */
-	For(i,3)
-	{ //JSJ: temporarily fixed b[i]->l
-		if((d->v[i] != a) && (d->b[i] != tree->e_root))
-		{
-			d->b[i]->l[0] =
-					(tree->rates->nd_t[d->num] - tree->rates->nd_t[d->v[i]->num]) *
-					tree->rates->clock_r *
-					tree->rates->br_r[d->b[i]->num];
-		}
-		else
-		{
-			if(a == tree->n_root)
-			{
-				d->b[i]->l[0] =
-						(tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[0]->num] +
-								tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[1]->num]) * tree->rates->clock_r;
-			}
-			else
-			{
-				d->b[i]->l[0] = (tree->rates->nd_t[a->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[d->b[i]->num];
-			}
-		}
-	}
-
-	/* Step (2) */
-	For(i,3) Update_PMat_At_Given_Edge(d->b[i],tree);
-
-	For(i,3)
-	if((d->v[i] == a) || (d->b[i] == tree->e_root))
-	{
-		Update_P_Lk(tree,d->b[i],d);
-		Lk_At_Given_Edge(d->b[i],tree);
-		break;
-	}
-
-	return tree->c_lnL;
-}
+//m3ldbl Lk_Triplet(node *a, node *d, arbre *tree)
+//{
+//	int i;
+//	m3ldbl max_height;
+//	m3ldbl up_bound, low_bound;
+//
+//	if(d->tax)
+//	{
+//		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+//		Warn_And_Exit("");
+//	}
+//
+//	up_bound = low_bound = -1.0;
+//	max_height = -1.0;
+//	For(i,3)
+//	{
+//		if((d->v[i] != a) && (d->b[i] != tree->e_root))
+//		{
+//			if(tree->rates->nd_t[d->v[i]->num] > max_height)
+//			{
+//				max_height = tree->rates->nd_t[d->v[i]->num];
+//			}
+//		}
+//		else
+//		{
+//			up_bound =
+//					(a == tree->n_root)?
+//							(tree->rates->nd_t[a->num]):
+//								(tree->rates->nd_t[d->v[i]->num]);
+//		}
+//	}
+//
+//	low_bound = max_height;
+//
+//	if(up_bound < low_bound - 1.E-10)
+//	{
+//		PhyML_Printf("\n. a->num=%d d->num=%d",a->num,d->num);
+//		PhyML_Printf("\n. up_bound = %f, low_bound = %f",up_bound,low_bound);
+//		Warn_And_Exit("\n");
+//	}
+//
+//	if(tree->rates->nd_t[d->num] < low_bound) tree->rates->nd_t[d->num] = low_bound;
+//	else if(tree->rates->nd_t[d->num] > up_bound) tree->rates->nd_t[d->num] = up_bound;
+//
+//	/* Step (1) */
+//	For(i,3)
+//	{ //JSJ: temporarily fixed b[i]->l
+//		if((d->v[i] != a) && (d->b[i] != tree->e_root))
+//		{
+//			d->b[i]->l[0] =
+//					(tree->rates->nd_t[d->num] - tree->rates->nd_t[d->v[i]->num]) *
+//					tree->rates->clock_r *
+//					tree->rates->br_r[d->b[i]->num];
+//		}
+//		else
+//		{
+//			if(a == tree->n_root)
+//			{
+//				d->b[i]->l[0] =
+//						(tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[0]->num] +
+//								tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[1]->num]) * tree->rates->clock_r;
+//			}
+//			else
+//			{
+//				d->b[i]->l[0] = (tree->rates->nd_t[a->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[d->b[i]->num];
+//			}
+//		}
+//	}
+//
+//	/* Step (2) */
+//	For(i,3) Update_PMat_At_Given_Edge(d->b[i],tree);
+//
+//	For(i,3)
+//	if((d->v[i] == a) || (d->b[i] == tree->e_root))
+//	{
+//		Update_P_Lk(tree,d->b[i],d);
+//		Lk_At_Given_Edge(d->b[i],tree);
+//		break;
+//	}
+//
+//	return tree->c_lnL;
+//}
 
 /*********************************************************/
 

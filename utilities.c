@@ -2841,20 +2841,17 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	node *v1,*v2,*v3,*v4;
 	m3ldbl lk0, lk1, lk2;
 	m3ldbl lk0_init, lk1_init, lk2_init;
-	m3ldbl *bl_init;
-	m3ldbl *l0,*l1,*l2;
-	m3ldbl *l_infa, *l_infb, *l_max;
 	/*   m3ldbl lk_infa, lk_infb, lk_max; */
 	m3ldbl lk_init;
 	int i;
 
-	bl_init = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l0 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l1 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l2 = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l_infa = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l_infb = mCalloc(tree->n_l,sizeof(m3ldbl));
-	l_max = mCalloc(tree->n_l,sizeof(m3ldbl));
+	m3ldbl bl_init[MAX_BL_SET];
+	m3ldbl l0[MAX_BL_SET];
+	m3ldbl l1[MAX_BL_SET];
+	m3ldbl l2[MAX_BL_SET];
+	m3ldbl l_infa[MAX_BL_SET];
+	m3ldbl l_infb[MAX_BL_SET];
+	m3ldbl l_max[MAX_BL_SET];
 
 
 
@@ -2883,25 +2880,13 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 	if(v1->num < v2->num)
 	{
-		Free(bl_init);
-		Free(l0);
-		Free(l1);
-		Free(l2);
-		Free(l_infa);
-		Free(l_infb);
-		Free(l_max);
+
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 	}
 	if(v3->num < v4->num)
 	{
-		Free(bl_init);
-		Free(l0);
-		Free(l1);
-		Free(l2);
-		Free(l_infa);
-		Free(l_infb);
-		Free(l_max);
+
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 	}
@@ -2914,11 +2899,11 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	tree->both_sides = 1;
 
 	lk1_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-	For(i,tree->n_l){
-		l_infa[i] = 10.*b_fcus->l[i]; //JSJ: Changed so it compiles
-		l_max[i]  = b_fcus->l[i]; //JSJ: Changed so it compiles
-		l_infb[i] = BL_MIN;
-	}
+//	For(i,tree->n_l){
+//		l_infa[i] = 10.*b_fcus->l[i]; //JSJ: Changed so it compiles
+//		l_max[i]  = b_fcus->l[i]; //JSJ: Changed so it compiles
+//		l_infb[i] = BL_MIN;
+//	}
 
 	if(tree->mod->s_opt->fast_nni)
 	{
@@ -2927,11 +2912,13 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 	else
 	{
-		lk1 = Br_Len_Brent(l_infa,l_max,l_infb,
-				tree->mod->s_opt->min_diff_lk_local,
+		For(i,tree->n_l){
+		lk1 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
+				tree->mod->s_opt->min_diff_lk_local/tree->n_l,
 				b_fcus,tree,
 				tree->mod->s_opt->brent_it_max,
-				tree->mod->s_opt->quickdirty);
+				tree->mod->s_opt->quickdirty,i);
+		}
 	}
 
 	if(lk1 < lk1_init - tree->mod->s_opt->min_diff_lk_local)
@@ -2952,11 +2939,11 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	tree->both_sides = 1;
 
 	lk2_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-	For(i,tree->n_l){
-		l_infa[i] = 10.*b_fcus->l[i];
-		l_max[i]  = b_fcus->l[i];
-		l_infb[i] = BL_MIN;
-	}
+//	For(i,tree->n_l){
+//		l_infa[i] = 10.*b_fcus->l[i];
+//		l_max[i]  = b_fcus->l[i];
+//		l_infb[i] = BL_MIN;
+//	}
 
 	if(tree->mod->s_opt->fast_nni)
 	{
@@ -2965,11 +2952,13 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 	else
 	{
-		lk2 = Br_Len_Brent(l_infa,l_max,l_infb,
-				tree->mod->s_opt->min_diff_lk_local,
-				b_fcus,tree,
-				tree->mod->s_opt->brent_it_max,
-				tree->mod->s_opt->quickdirty);
+		For(i,tree->n_l){
+			lk2 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
+					tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+					b_fcus,tree,
+					tree->mod->s_opt->brent_it_max,
+					tree->mod->s_opt->quickdirty,i);
+		}
 	}
 
 	if(lk2 < lk2_init - tree->mod->s_opt->min_diff_lk_local)
@@ -2993,13 +2982,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 	if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
 	{
-		Free(bl_init);
-		Free(l0);
-		Free(l1);
-		Free(l2);
-		Free(l_infa);
-		Free(l_infb);
-		Free(l_max);
+
 		PhyML_Printf("\n. lk_init = %f; lk = %f diff = %f\n",
 				lk_init,
 				lk0_init,
@@ -3007,11 +2990,11 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
 		Warn_And_Exit("\n. Err. in NNI (3)\n");
 	}
-	For(i,tree->n_l){
-		l_infa[i] = 10.*b_fcus->l[i];
-		l_max[i]  = b_fcus->l[i];
-		l_infb[i] = BL_MIN;
-	}
+//	For(i,tree->n_l){
+//		l_infa[i] = 10.*b_fcus->l[i];
+//		l_max[i]  = b_fcus->l[i];
+//		l_infb[i] = BL_MIN;
+//	}
 
 	if(tree->mod->s_opt->fast_nni)
 	{
@@ -3020,11 +3003,13 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 	else
 	{
-		lk0 = Br_Len_Brent(l_infa,l_max,l_infb,
-				tree->mod->s_opt->min_diff_lk_local,
+		For(i,tree->n_l){
+			lk0 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
+				tree->mod->s_opt->min_diff_lk_local/tree->n_l,
 				b_fcus,tree,
 				tree->mod->s_opt->brent_it_max,
-				tree->mod->s_opt->quickdirty);
+				tree->mod->s_opt->quickdirty,i);
+		}
 	}
 
 	if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
@@ -3032,13 +3017,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
 		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
 		PhyML_Printf("\n. Err. in NNI (3)\n");
-		Free(bl_init);
-		Free(l0);
-		Free(l1);
-		Free(l2);
-		Free(l_infa);
-		Free(l_infb);
-		Free(l_max);
+
 		Warn_And_Exit("\n");
 	}
 
@@ -3132,13 +3111,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		Update_PMat_At_Given_Edge(b_fcus,tree);
 		tree->c_lnL = lk_init;
 	}
-	Free(bl_init);
-	Free(l0);
-	Free(l1);
-	Free(l2);
-	Free(l_infa);
-	Free(l_infb);
-	Free(l_max);
+
 }
 
 /*********************************************************/
@@ -5231,9 +5204,9 @@ void Set_Defaults_Optimiz(optimiz *s_opt)
 	s_opt->brent_it_max         = 500;
 	s_opt->steph_spr            = 1;
 	s_opt->user_state_freq      = 0;
-	s_opt->min_diff_lk_local    = 1.E-04;
-	s_opt->min_diff_lk_global   = 1.E-03;
-	s_opt->min_diff_lk_move     = 1.E-02;
+	s_opt->min_diff_lk_local    = MIN_DIFF_LK_LOCAL; //JSJ: try playing around with these values
+	s_opt->min_diff_lk_global   = 0.1;
+	s_opt->min_diff_lk_move     = 0.2;
 	s_opt->p_moves_to_examine   = 0.15;
 	s_opt->fast_nni             = 0;
 	s_opt->greedy               = 0;
@@ -5457,121 +5430,121 @@ int Sort_String(const void *a, const void *b)
 
 /*********************************************************/
 
-m3ldbl Compare_Bip_On_Existing_Edges(m3ldbl thresh_len, arbre *tree1, arbre *tree2)
-{
-	int i,j,k,m;
-	edge *b1,*b2;
-	char **bip1,**bip2;
-	int bip_size,n_edges1,n_edges2;
-	m3ldbl rf;
-	int bip_size1, bip_size2;
-
-	n_edges1 = 0;
-	For(i,2*tree1->n_otu-3)
-	{
-		if((!tree1->t_edges[i]->left->tax) &&
-				(!tree1->t_edges[i]->rght->tax) &&
-				(tree1->t_edges[i]->l[0] > thresh_len))
-		{
-			n_edges1++;
-		}
-	}
-	n_edges2 = 0;
-	For(i,2*tree2->n_otu-3)
-	{
-		if((!tree2->t_edges[i]->left->tax) &&
-				(!tree2->t_edges[i]->rght->tax) &&
-				(tree2->t_edges[i]->l[0] > thresh_len))
-		{
-			n_edges2++;
-		}
-	}
-
-
-	rf = 0.0;
-	For(i,2*tree1->n_otu-3)
-	{
-		b1 = tree1->t_edges[i];
-		bip_size1 = MIN(b1->left->bip_size[b1->l_r],b1->rght->bip_size[b1->r_l]);
-
-		if((bip_size1 > 1) && (b1->l[0] > thresh_len))
-		{
-			For(j,2*tree2->n_otu-3)
-			{
-				b2 = tree2->t_edges[j];
-				bip_size2 = MIN(b2->left->bip_size[b2->l_r],b2->rght->bip_size[b2->r_l]);
-
-				if((bip_size2 > 1) && (b2->l[0] > thresh_len))
-				{
-					if(bip_size1 == bip_size2)
-					{
-						bip_size = bip_size1;
-
-						if(b1->left->bip_size[b1->l_r] == b1->rght->bip_size[b1->r_l])
-						{
-							if(b1->left->bip_name[b1->l_r][0][0] < b1->rght->bip_name[b1->r_l][0][0])
-							{
-								bip1 = b1->left->bip_name[b1->l_r];
-							}
-							else
-							{
-								bip1 = b1->rght->bip_name[b1->r_l];
-							}
-						}
-						else if(b1->left->bip_size[b1->l_r] < b1->rght->bip_size[b1->r_l])
-						{
-							bip1 = b1->left->bip_name[b1->l_r];
-						}
-						else
-						{
-							bip1 = b1->rght->bip_name[b1->r_l];
-						}
-
-						if(b2->left->bip_size[b2->l_r] == b2->rght->bip_size[b2->r_l])
-						{
-							if(b2->left->bip_name[b2->l_r][0][0] < b2->rght->bip_name[b2->r_l][0][0])
-							{
-								bip2 = b2->left->bip_name[b2->l_r];
-							}
-							else
-							{
-								bip2 = b2->rght->bip_name[b2->r_l];
-							}
-						}
-						else if(b2->left->bip_size[b2->l_r] < b2->rght->bip_size[b2->r_l])
-						{
-							bip2 = b2->left->bip_name[b2->l_r];
-						}
-						else
-						{
-							bip2 = b2->rght->bip_name[b2->r_l];
-						}
-
-						if(bip_size == 1) Warn_And_Exit("\n. Problem in Compare_Bip\n");
-
-
-						For(k,bip_size)
-						{
-							if(strcmp(bip1[k],bip2[k])) break;
-						}
-
-						if(k == bip_size)
-						{
-							b2->bip_score++;
-							b1->bip_score++;
-							rf+=1.0;
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	PhyML_Printf("\n. rf= %f n_edges1=%d n_edges2=%d",rf,n_edges1,n_edges2);
-	rf /= MIN(n_edges1,n_edges2);
-	return 1-rf;
-}
+//m3ldbl Compare_Bip_On_Existing_Edges(m3ldbl thresh_len, arbre *tree1, arbre *tree2)
+//{
+//	int i,j,k,m;
+//	edge *b1,*b2;
+//	char **bip1,**bip2;
+//	int bip_size,n_edges1,n_edges2;
+//	m3ldbl rf;
+//	int bip_size1, bip_size2;
+//
+//	n_edges1 = 0;
+//	For(i,2*tree1->n_otu-3)
+//	{
+//		if((!tree1->t_edges[i]->left->tax) &&
+//				(!tree1->t_edges[i]->rght->tax) &&
+//				(tree1->t_edges[i]->l[0] > thresh_len))
+//		{
+//			n_edges1++;
+//		}
+//	}
+//	n_edges2 = 0;
+//	For(i,2*tree2->n_otu-3)
+//	{
+//		if((!tree2->t_edges[i]->left->tax) &&
+//				(!tree2->t_edges[i]->rght->tax) &&
+//				(tree2->t_edges[i]->l[0] > thresh_len))
+//		{
+//			n_edges2++;
+//		}
+//	}
+//
+//
+//	rf = 0.0;
+//	For(i,2*tree1->n_otu-3)
+//	{
+//		b1 = tree1->t_edges[i];
+//		bip_size1 = MIN(b1->left->bip_size[b1->l_r],b1->rght->bip_size[b1->r_l]);
+//
+//		if((bip_size1 > 1) && (b1->l[0] > thresh_len))
+//		{
+//			For(j,2*tree2->n_otu-3)
+//			{
+//				b2 = tree2->t_edges[j];
+//				bip_size2 = MIN(b2->left->bip_size[b2->l_r],b2->rght->bip_size[b2->r_l]);
+//
+//				if((bip_size2 > 1) && (b2->l[0] > thresh_len))
+//				{
+//					if(bip_size1 == bip_size2)
+//					{
+//						bip_size = bip_size1;
+//
+//						if(b1->left->bip_size[b1->l_r] == b1->rght->bip_size[b1->r_l])
+//						{
+//							if(b1->left->bip_name[b1->l_r][0][0] < b1->rght->bip_name[b1->r_l][0][0])
+//							{
+//								bip1 = b1->left->bip_name[b1->l_r];
+//							}
+//							else
+//							{
+//								bip1 = b1->rght->bip_name[b1->r_l];
+//							}
+//						}
+//						else if(b1->left->bip_size[b1->l_r] < b1->rght->bip_size[b1->r_l])
+//						{
+//							bip1 = b1->left->bip_name[b1->l_r];
+//						}
+//						else
+//						{
+//							bip1 = b1->rght->bip_name[b1->r_l];
+//						}
+//
+//						if(b2->left->bip_size[b2->l_r] == b2->rght->bip_size[b2->r_l])
+//						{
+//							if(b2->left->bip_name[b2->l_r][0][0] < b2->rght->bip_name[b2->r_l][0][0])
+//							{
+//								bip2 = b2->left->bip_name[b2->l_r];
+//							}
+//							else
+//							{
+//								bip2 = b2->rght->bip_name[b2->r_l];
+//							}
+//						}
+//						else if(b2->left->bip_size[b2->l_r] < b2->rght->bip_size[b2->r_l])
+//						{
+//							bip2 = b2->left->bip_name[b2->l_r];
+//						}
+//						else
+//						{
+//							bip2 = b2->rght->bip_name[b2->r_l];
+//						}
+//
+//						if(bip_size == 1) Warn_And_Exit("\n. Problem in Compare_Bip\n");
+//
+//
+//						For(k,bip_size)
+//						{
+//							if(strcmp(bip1[k],bip2[k])) break;
+//						}
+//
+//						if(k == bip_size)
+//						{
+//							b2->bip_score++;
+//							b1->bip_score++;
+//							rf+=1.0;
+//							break;
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	PhyML_Printf("\n. rf= %f n_edges1=%d n_edges2=%d",rf,n_edges1,n_edges2);
+//	rf /= MIN(n_edges1,n_edges2);
+//	return 1-rf;
+//}
 
 /*********************************************************/
 
@@ -7099,23 +7072,26 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 	}
 
 	if(!approx){//JSJ: restored brent temporarily
-		m3ldbl *min,*max;
-		min = mCalloc(tree->n_l,sizeof(m3ldbl));
-		max = mCalloc(tree->n_l,sizeof(m3ldbl));
-
+		m3ldbl min,max;
+//		m3ldbl min[MAX_BL_SET];
+//		m3ldbl max[MAX_BL_SET];
+//
+//		For(m,tree->n_l){
+//			min[m] = b->l[m];
+//			max[m] = b->l[m];
+//			min[m] *= 0.02;
+//			max[m] *= 50.0;
+//		}
 		For(m,tree->n_l){
-			min[m] = b->l[m];
-			max[m] = b->l[m];
-			min[m] *= 0.02;
-			max[m] *= 50.0;
-		}
-		Br_Len_Brent(min,b->l,max,
-				tree->mod->s_opt->min_diff_lk_local,
+			min = max = b->l[m];
+			min *= 0.02;
+			max *= 50.0;
+			Br_Len_Brent_Iter(min,b->l[m],max,
+				tree->mod->s_opt->min_diff_lk_local/tree->n_l,
 				b,tree,
 				tree->mod->s_opt->brent_it_max,
-				tree->mod->s_opt->quickdirty);
-		Free(min);
-		Free(max);
+				tree->mod->s_opt->quickdirty,m);
+		}
 	}
 	else{
 		Lk_At_Given_Edge(b,tree);
@@ -9322,40 +9298,40 @@ void Fix_Tree_From_IO(arbre *tree, option *io){
 	int i,j,k;
 	int num_node = 2*tree->n_otu-2; //node
 	int num_edge = 2*tree->n_otu-3; //edge
-	int num_path = 2*tree->n_otu; //path
+//	int num_path = 2*tree->n_otu; //path
 	//JSJ: now copy the branch lengths from this tree into all members of the set
 	tree->n_l = io->n_l;
 	tree->props[io->n_l - 1] = io->props[io->n_l - 1];//since it doesn't get to last element, fill in here
 	for(i = 1; i < tree->n_l; i++){
 		tree->props[i-1] = io->props[i-1];
-		For(j,num_path){
-			tree->curr_path[j]->n_l = io->n_l;
-			For(k,3){
-				tree->curr_path[j]->l[i][k] = tree->curr_path[j]->l[0][k];
-				tree->curr_path[j]->b[k]->best_l[i] = tree->curr_path[j]->b[k]->best_l[0];
-				tree->curr_path[j]->b[k]->l[i] = tree->curr_path[j]->b[k]->l[0];
-				tree->curr_path[j]->b[k]->l_old[i] =  tree->curr_path[j]->b[k]->l_old[0];
-				tree->curr_path[j]->b[k]->has_zero_br_len[i] =  tree->curr_path[j]->b[k]->has_zero_br_len[0];
-				tree->curr_path[j]->b[k]->n_l = io->n_l;
-			}
-		}
+//		For(j,num_path){
+//			tree->curr_path[j]->n_l = io->n_l;
+//			For(k,3){
+//				tree->curr_path[j]->l[i][k] = tree->curr_path[j]->l[0][k];
+//				tree->curr_path[j]->b[k]->best_l[i] = tree->curr_path[j]->b[k]->best_l[0];
+//				tree->curr_path[j]->b[k]->l[i] = tree->curr_path[j]->b[k]->l[0];
+//				tree->curr_path[j]->b[k]->l_old[i] =  tree->curr_path[j]->b[k]->l_old[0];
+//				tree->curr_path[j]->b[k]->has_zero_br_len[i] =  tree->curr_path[j]->b[k]->has_zero_br_len[0];
+//				tree->curr_path[j]->b[k]->n_l = io->n_l;
+//			}
+//		}
 
 		For(j,num_node){
 			tree->noeud[j]->n_l = io->n_l;
 			For(k,3){
 				tree->noeud[j]->l[i][k] = tree->noeud[j]->l[0][k];
-				tree->noeud[j]->b[k]->best_l[i] = tree->noeud[j]->b[k]->best_l[0];
-				tree->noeud[j]->b[k]->n_l = io->n_l;
-				tree->noeud[j]->b[k]->has_zero_br_len[i] = tree->noeud[j]->b[k]->has_zero_br_len[0];
-				tree->noeud[j]->b[k]->l[i] = tree->noeud[j]->b[k]->l[0];
-				tree->noeud[j]->b[k]->l_old[i] = tree->noeud[j]->b[k]->l_old[0];
+//				tree->noeud[j]->b[k]->best_l[i] = tree->noeud[j]->b[k]->best_l[0];
+//				tree->noeud[j]->b[k]->n_l = io->n_l;
+//				tree->noeud[j]->b[k]->has_zero_br_len[i] = tree->noeud[j]->b[k]->has_zero_br_len[0];
+//				tree->noeud[j]->b[k]->l[i] = tree->noeud[j]->b[k]->l[0];
+//				tree->noeud[j]->b[k]->l_old[i] = tree->noeud[j]->b[k]->l_old[0];
 			}
 		}
 
 		For(j,num_edge){
-			tree->t_edges[j]->l[j] = tree->t_edges[j]->l[0];
-			tree->t_edges[j]->l_old[j] = tree->t_edges[j]->l_old[0];
-			tree->t_edges[j]->best_l[j] = tree->t_edges[j]->best_l[0];
+			tree->t_edges[j]->l[i] = tree->t_edges[j]->l[0];
+			tree->t_edges[j]->l_old[i] = tree->t_edges[j]->l_old[0];
+			tree->t_edges[j]->best_l[i] = tree->t_edges[j]->best_l[0];
 			tree->t_edges[j]->n_l = io->n_l;
 			tree->t_edges[j]->has_zero_br_len[i] = tree->t_edges[j]->has_zero_br_len[0];
 		}

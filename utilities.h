@@ -101,7 +101,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  BLOCK_LABELS         100
 
 #define  NODE_DEG_MAX          50
-#define  BRENT_ITMAX        10000
+#define  BRENT_ITMAX       100000
 #define  BRENT_CGOLD    0.3819660
 #define  BRENT_ZEPS        1.e-10
 #define  MNBRAK_GOLD     1.618034
@@ -134,6 +134,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  DEFAULT_SIZE_SPR_LIST  20
 #define  OUTPUT_TREE_FORMAT  0 /* 0-->Newick; 1-->Nexus */
 #define  MAX_PARS        1000000000
+#define  MIN_DIFF_LK_LOCAL	 0.09
 
 #define  MIN_CLOCK_RATE   1.E-10
 

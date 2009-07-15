@@ -101,6 +101,8 @@ void Lnsrch_Nucleotide_Frequencies(arbre *tree, int n, m3ldbl *xold,
 
 void Optimize_Global_Rate(arbre *tree);
 m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree);
+m3ldbl Br_Len_Brent_Iter(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
+		    edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty, int lnum);
 
 void EM_Dist(model *mod, allseq *data);
 m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_max,

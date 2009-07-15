@@ -379,27 +379,36 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		{ //JSJ: fixed l
 			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 			For(j,tree->n_l){
-				l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
-				l_max[j]   = b_fcus->left->b[i]->l[j];
-				l_infb[j]  = BL_MIN;
+//				l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
+//				l_max[j]   = b_fcus->left->b[i]->l[j];
+//				l_infb[j]  = BL_MIN;
+				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->left->b[i]->l[j],b_fcus->left->b[i]->l[j],BL_MIN,
+						tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+						b_fcus->left->b[i],tree,
+						tree->mod->s_opt->brent_it_max,0,j);
 			}
-			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-					tree->mod->s_opt->min_diff_lk_local,
-					b_fcus->left->b[i],tree,
-					tree->mod->s_opt->brent_it_max,0);
+//			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//					tree->mod->s_opt->min_diff_lk_local,
+//					b_fcus->left->b[i],tree,
+//					tree->mod->s_opt->brent_it_max,0);
 		}
 
 		Update_P_Lk(tree,b_fcus,b_fcus->left);
 		//JSJ: temp fix to l
 		For(j,tree->n_l){
-			l_infa[j]  = 10.*b_fcus->l[j];
-			l_max[j]   = b_fcus->l[j];
-			l_infb[j]  = BL_MIN;
+//			l_infa[j]  = 10.*b_fcus->l[j];
+//			l_max[j]   = b_fcus->l[j];
+//			l_infb[j]  = BL_MIN;
+			lk_temp = Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
+					tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+					b_fcus,tree,
+					tree->mod->s_opt->brent_it_max,0,j);
 		}
-		lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-				tree->mod->s_opt->min_diff_lk_local,
-				b_fcus,tree,
-				tree->mod->s_opt->brent_it_max,0);
+
+//		lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//				tree->mod->s_opt->min_diff_lk_local,
+//				b_fcus,tree,
+//				tree->mod->s_opt->brent_it_max,0);
 
 
 		For(i,3)
@@ -408,14 +417,19 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 			//JSJ: temp fix to l
 			For(j,tree->n_l){
-				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
-				l_max[j]   = b_fcus->rght->b[i]->l[j];
-				l_infb[j]  = BL_MIN;
+//				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
+//				l_max[j]   = b_fcus->rght->b[i]->l[j];
+//				l_infb[j]  = BL_MIN;
+				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->rght->b[i]->l[j],b_fcus->rght->b[i]->l[j],BL_MIN,
+						tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+						b_fcus->rght->b[i],tree,
+						tree->mod->s_opt->brent_it_max,0,j);
+
 			}
-			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-					tree->mod->s_opt->min_diff_lk_local,
-					b_fcus->rght->b[i],tree,
-					tree->mod->s_opt->brent_it_max,0);
+//			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//					tree->mod->s_opt->min_diff_lk_local,
+//					b_fcus->rght->b[i],tree,
+//					tree->mod->s_opt->brent_it_max,0);
 		}
 
 		Update_P_Lk(tree,b_fcus,b_fcus->rght);
@@ -485,28 +499,36 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 			//JSJ: temporary fixes to l
 			For(j,tree->n_l){
-			l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
-			l_max[j]   = b_fcus->left->b[i]->l[j];
-			l_infb[j]  = BL_MIN;
+//				l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
+//				l_max[j]   = b_fcus->left->b[i]->l[j];
+//				l_infb[j]  = BL_MIN;
+				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->left->b[i]->l[j],b_fcus->left->b[i]->l[j],BL_MIN,
+						tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+						b_fcus->left->b[i],tree,
+						tree->mod->s_opt->brent_it_max,0,j);
 			}
-			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-					tree->mod->s_opt->min_diff_lk_local,
-					b_fcus->left->b[i],tree,
-					tree->mod->s_opt->brent_it_max,0);
+//			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//					tree->mod->s_opt->min_diff_lk_local,
+//					b_fcus->left->b[i],tree,
+//					tree->mod->s_opt->brent_it_max,0);
 		}
 
 
 		Update_P_Lk(tree,b_fcus,b_fcus->left);
 		//JSJ: temp fixes to l
 		For(j,tree->n_l){
-		l_infa[j]  = 10.*b_fcus->l[j];
-		l_max[j]   = b_fcus->l[j];
-		l_infb[j]  = BL_MIN;
+//			l_infa[j]  = 10.*b_fcus->l[j];
+//			l_max[j]   = b_fcus->l[j];
+//			l_infb[j]  = BL_MIN;
+			lk_temp = Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
+					tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+					b_fcus,tree,
+					tree->mod->s_opt->brent_it_max,0,j);
 		}
-		lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-				tree->mod->s_opt->min_diff_lk_local,
-				b_fcus,tree,
-				tree->mod->s_opt->brent_it_max,0);
+//		lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//				tree->mod->s_opt->min_diff_lk_local,
+//				b_fcus,tree,
+//				tree->mod->s_opt->brent_it_max,0);
 
 
 
@@ -516,14 +538,18 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
-			l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
-			l_max[j]   = b_fcus->rght->b[i]->l[j];
-			l_infb[j]  = BL_MIN;
+//				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
+//				l_max[j]   = b_fcus->rght->b[i]->l[j];
+//				l_infb[j]  = BL_MIN;
+				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->rght->b[i]->l[j],b_fcus->rght->b[i]->l[j],BL_MIN,
+						tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+						b_fcus->rght->b[i],tree,
+						tree->mod->s_opt->brent_it_max,0,j);
 			}
-			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-					tree->mod->s_opt->min_diff_lk_local,
-					b_fcus->rght->b[i],tree,
-					tree->mod->s_opt->brent_it_max,0);
+//			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//					tree->mod->s_opt->min_diff_lk_local,
+//					b_fcus->rght->b[i],tree,
+//					tree->mod->s_opt->brent_it_max,0);
 		}
 
 		Update_P_Lk(tree,b_fcus,b_fcus->rght);
@@ -559,12 +585,12 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 	/* Go back to initial branch lengths */
 	For(j,tree->n_l){
-	l2[j]  = b_fcus->l[j];
-	e1->l[j]     = len_e1[j];
-	e2->l[j]     = len_e2[j];
-	e3->l[j]     = len_e3[j];
-	e4->l[j]     = len_e4[j];
-	b_fcus->l[j] = bl_init[j];
+		l2[j]  = b_fcus->l[j];
+		e1->l[j]     = len_e1[j];
+		e2->l[j]     = len_e2[j];
+		e3->l[j]     = len_e3[j];
+		e4->l[j]     = len_e4[j];
+		b_fcus->l[j] = bl_init[j];
 	}
 
 	Update_PMat_At_Given_Edge(e1,tree);
@@ -602,28 +628,36 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
-			l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
-			l_max[j]   = b_fcus->left->b[i]->l[j];
-			l_infb[j]  = BL_MIN;
+//				l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
+//				l_max[j]   = b_fcus->left->b[i]->l[j];
+//				l_infb[j]  = BL_MIN;
+				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->left->b[i]->l[j],b_fcus->left->b[i]->l[j],BL_MIN,
+						tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+						b_fcus->left->b[i],tree,
+						tree->mod->s_opt->brent_it_max,0,j);
 			}
-			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-					tree->mod->s_opt->min_diff_lk_local,
-					b_fcus->left->b[i],tree,
-					tree->mod->s_opt->brent_it_max,0);
+//			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//					tree->mod->s_opt->min_diff_lk_local,
+//					b_fcus->left->b[i],tree,
+//					tree->mod->s_opt->brent_it_max,0);
 		}
 
 
 		Update_P_Lk(tree,b_fcus,b_fcus->left);
 		//JSJ: temp fixes to l
 		For(j,tree->n_l){
-		l_infa[j]  = 10.*b_fcus->l[j];
-		l_max[j]   = b_fcus->l[j];
-		l_infb[j]  = BL_MIN;
+//			l_infa[j]  = 10.*b_fcus->l[j];
+//			l_max[j]   = b_fcus->l[j];
+//			l_infb[j]  = BL_MIN;
+			lk_temp = Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
+					tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+					b_fcus,tree,
+					tree->mod->s_opt->brent_it_max,0,j);
 		}
-		lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-				tree->mod->s_opt->min_diff_lk_local,
-				b_fcus,tree,
-				tree->mod->s_opt->brent_it_max,0);
+//		lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//				tree->mod->s_opt->min_diff_lk_local,
+//				b_fcus,tree,
+//				tree->mod->s_opt->brent_it_max,0);
 
 		For(i,3)
 		if(b_fcus->rght->v[i] != b_fcus->left)
@@ -631,14 +665,18 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
-			l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
-			l_max[j]   = b_fcus->rght->b[i]->l[j];
-			l_infb[j]  = BL_MIN;
+//				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
+//				l_max[j]   = b_fcus->rght->b[i]->l[j];
+//				l_infb[j]  = BL_MIN;
+				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->rght->b[i]->l[j],b_fcus->rght->b[i]->l[j],BL_MIN,
+						tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+						b_fcus->rght->b[i],tree,
+						tree->mod->s_opt->brent_it_max,0,j);
 			}
-			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-					tree->mod->s_opt->min_diff_lk_local,
-					b_fcus->rght->b[i],tree,
-					tree->mod->s_opt->brent_it_max,0);
+//			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//					tree->mod->s_opt->min_diff_lk_local,
+//					b_fcus->rght->b[i],tree,
+//					tree->mod->s_opt->brent_it_max,0);
 		}
 
 		Update_P_Lk(tree,b_fcus,b_fcus->rght);
@@ -671,15 +709,15 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 	/***********/
 
 	For(j,tree->n_l){
-	//JSJ: temp fixes to l
-	//save current length
-	l3[j]  = b_fcus->l[j];
-	//restore the initial branch length values
-	e1->l[j]     = len_e1[j];
-	e2->l[j]     = len_e2[j];
-	e3->l[j]     = len_e3[j];
-	e4->l[j]     = len_e4[j];
-	b_fcus->l[j] = bl_init[j];
+		//JSJ: temp fixes to l
+		//save current length
+		l3[j]  = b_fcus->l[j];
+		//restore the initial branch length values
+		e1->l[j]     = len_e1[j];
+		e2->l[j]     = len_e2[j];
+		e3->l[j]     = len_e3[j];
+		e4->l[j]     = len_e4[j];
+		b_fcus->l[j] = bl_init[j];
 	}
 
 	//recompute likelihoods
@@ -854,28 +892,36 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
-				l_infa[j] = 10.*b_fcus->left->b[i]->l[j];
-				l_max[j]  = b_fcus->left->b[i]->l[j];
-				l_infb[j] = BL_MIN;
+//				l_infa[j] = 10.*b_fcus->left->b[i]->l[j];
+//				l_max[j]  = b_fcus->left->b[i]->l[j];
+//				l_infb[j] = BL_MIN;
+				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->left->b[i]->l[j],b_fcus->left->b[i]->l[j],BL_MIN,
+									tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+									b_fcus->left->b[i],tree,
+									tree->mod->s_opt->brent_it_max,0,j);
 			}
-			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-					tree->mod->s_opt->min_diff_lk_local,
-					b_fcus->left->b[i],tree,
-					tree->mod->s_opt->brent_it_max,0);
+//			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//					tree->mod->s_opt->min_diff_lk_local,
+//					b_fcus->left->b[i],tree,
+//					tree->mod->s_opt->brent_it_max,0);
 		}
 
 
 		Update_P_Lk(tree,b_fcus,b_fcus->left);
 		//JSJ: temp fixes to l
 		For(j,tree->n_l){
-			l_infa[j]  = 10.*b_fcus->l[j];
-			l_max[j]   = b_fcus->l[j];
-			l_infb[j]  = BL_MIN;
+//			l_infa[j]  = 10.*b_fcus->l[j];
+//			l_max[j]   = b_fcus->l[j];
+//			l_infb[j]  = BL_MIN;
+			lk_temp = Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
+							tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+							b_fcus,tree,
+							tree->mod->s_opt->brent_it_max,0,j);
 		}
-		lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-				tree->mod->s_opt->min_diff_lk_local,
-				b_fcus,tree,
-				tree->mod->s_opt->brent_it_max,0);
+//		lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//				tree->mod->s_opt->min_diff_lk_local,
+//				b_fcus,tree,
+//				tree->mod->s_opt->brent_it_max,0);
 
 
 
@@ -885,14 +931,18 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
-				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
-				l_max[j]   = b_fcus->rght->b[i]->l[j];
-				l_infb[j]  = BL_MIN;
+//				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
+//				l_max[j]   = b_fcus->rght->b[i]->l[j];
+//				l_infb[j]  = BL_MIN;
+				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->rght->b[i]->l[j],b_fcus->rght->b[i]->l[j],BL_MIN,
+						tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+						b_fcus->rght->b[i],tree,
+						tree->mod->s_opt->brent_it_max,0,j);
 			}
-			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
-					tree->mod->s_opt->min_diff_lk_local,
-					b_fcus->rght->b[i],tree,
-					tree->mod->s_opt->brent_it_max,0);
+//			lk_temp = Br_Len_Brent(l_infa,l_max,l_infb,
+//					tree->mod->s_opt->min_diff_lk_local,
+//					b_fcus->rght->b[i],tree,
+//					tree->mod->s_opt->brent_it_max,0);
 		}
 
 		Update_P_Lk(tree,b_fcus,b_fcus->rght);
