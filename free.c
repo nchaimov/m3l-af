@@ -100,7 +100,6 @@ void Free_Tree(arbre *tree)
 	}
     }
   if(tree->curr_path) Free(tree->curr_path);
-  if(tree->props) Free(tree->props);
 
   For(i,2*tree->n_otu-3)
     {
@@ -147,7 +146,6 @@ void Free_Node(node *n)
 
   Free(n->b);
   Free(n->v);
-  Free(n->l);
   Free(n->score);
   Free(n->name);
 
@@ -337,7 +335,7 @@ void Free_Edge_Lk(arbre *tree, edge *b)
   
   if(b->p_lk_tip_r) Free(b->p_lk_tip_r);
 
-  For(i,tree->n_l) Free(b->Pij_rr[i]);
+  For(i,tree->n_l) if(b->Pij_rr[i]) Free(b->Pij_rr[i]);
 }
 
 /*********************************************************/
@@ -380,6 +378,7 @@ void Free_Model(model *mod)
 void Free(void *p)
 {
   free(p);
+  p = NULL;
 }
 
 /*********************************************************/
