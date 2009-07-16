@@ -134,7 +134,9 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  DEFAULT_SIZE_SPR_LIST  20
 #define  OUTPUT_TREE_FORMAT  0 /* 0-->Newick; 1-->Nexus */
 #define  MAX_PARS        1000000000
-#define  MIN_DIFF_LK_LOCAL	 0.09
+#define  MIN_DIFF_LK_LOCAL	 1.E-04
+#define  MIN_DIFF_LK_GLOBAL	 1.E-03
+#define  MIN_DIFF_LK_MOVE    1.E-02
 
 #define  MIN_CLOCK_RATE   1.E-10
 

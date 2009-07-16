@@ -111,14 +111,12 @@ void Free_Tree(arbre *tree)
     }
   if(tree->t_edges)Free(tree->t_edges);
 
-  printf("JSJ: Made it here in Free_Tree...\n");
   For(i,2*tree->n_otu-2)
     {
       n = tree->noeud[i];
       Free_Node(n);
     }
   Free(tree->noeud);
-  printf("JSJ: Made it here in Free_Tree...\n");
   Free(tree);
 }
 
@@ -138,21 +136,6 @@ void Free_Edge(edge *b)
 {
   int i;
   Free_Edge_Labels(b);
-  if(b->l) Free(b->l);//JSJ: freeing up allocated memory
-  if(b->l_old) Free(b->l_old);
-  if(b->best_l) Free(b->best_l);
-  if(b->n_l){
-	  For(i,b->n_l){
-		  //problems in here...
-		  if(b->Pij_rr[i]){
-			  //Free(b->Pij_rr[i]);
-		  }
-	  }
-  }
-  //printf("JSJ: Made it here in Free_Edge...\n");
-  if(b->Pij_rr)Free(b->Pij_rr);
-  if(b->has_zero_br_len) Free(b->has_zero_br_len);
-  //printf("JSJ: Made it here in Free_Tree...\n");
   Free(b);
 }
 
@@ -164,7 +147,6 @@ void Free_Node(node *n)
 
   Free(n->b);
   Free(n->v);
-  For(i,n->n_l) Free(n->l[i]); //JSJ: free the list of likelihood lists
   Free(n->l);
   Free(n->score);
   Free(n->name);
@@ -332,6 +314,7 @@ void Free_Node_Lk(node *n)
 
 void Free_Edge_Lk(arbre *tree, edge *b)
 {
+  int i;
   Free(b->nni);
 
   Free(b->div_post_pred_left);
@@ -354,7 +337,7 @@ void Free_Edge_Lk(arbre *tree, edge *b)
   
   if(b->p_lk_tip_r) Free(b->p_lk_tip_r);
 
-  Free(b->Pij_rr);
+  For(i,tree->n_l) Free(b->Pij_rr[i]);
 }
 
 /*********************************************************/

@@ -492,15 +492,15 @@ m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 	int i;
 	m3ldbl result;
 	m3ldbl max,min;
-//	m3ldbl max[MAX_BL_SET];
-//	m3ldbl min[MAX_BL_SET];
-//
-//	For(i, tree->n_l){
-//		max[i] = b_fcus->l[i];
-//		min[i] = b_fcus->l[i];
-//		max[i] *= 10.0;
-//		min[i] *= 0.1;
-//	}
+	//	m3ldbl max[MAX_BL_SET];
+	//	m3ldbl min[MAX_BL_SET];
+	//
+	//	For(i, tree->n_l){
+	//		max[i] = b_fcus->l[i];
+	//		min[i] = b_fcus->l[i];
+	//		max[i] *= 10.0;
+	//		min[i] *= 0.1;
+	//	}
 	For(i,tree->n_l){
 		max = b_fcus->l[i] * 10.0;
 		min = b_fcus->l[i] * 0.1;
@@ -511,119 +511,119 @@ m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 }
 
 /**
- * JSJ: call the following function iteratively and pass the counter as the last argument
- *
- * @param ax
- * @param bx
- * @param cx
- * @param tol
- * @param b_fcus
- * @param tree
- * @param n_iter_max
- * @param quickdirty
- * @param lnum = The counter of the iteration that called this function
- * @return
- */
+* JSJ: call the following function iteratively and pass the counter as the last argument
+*
+* @param ax
+* @param bx
+* @param cx
+* @param tol
+* @param b_fcus
+* @param tree
+* @param n_iter_max
+* @param quickdirty
+* @param lnum = The counter of the iteration that called this function
+* @return
+*/
 m3ldbl Br_Len_Brent_Iter(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
-		    edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty, int lnum)
+		edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty, int lnum)
 {
-  int iter;
-  m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
-  m3ldbl e=0.0;
-  m3ldbl old_lnL, init_lnL;
+	int iter;
+	m3ldbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+	m3ldbl e=0.0;
+	m3ldbl old_lnL, init_lnL;
 
-  d=0.0;
-  a=((ax < cx) ? ax : cx);
-  b=((ax > cx) ? ax : cx);
-  x=w=v=bx;
-  old_lnL = UNLIKELY;
-  b_fcus->l[lnum] = fabs(bx);
-  fw=fv=fx=fu=-Lk_At_Given_Edge(b_fcus,tree);
-  init_lnL = -fw;
+	d=0.0;
+	a=((ax < cx) ? ax : cx);
+	b=((ax > cx) ? ax : cx);
+	x=w=v=bx;
+	old_lnL = UNLIKELY;
+	b_fcus->l[lnum] = fabs(bx);
+	fw=fv=fx=fu=-Lk_At_Given_Edge(b_fcus,tree);
+	init_lnL = -fw;
 
-  for(iter=1;iter<=BRENT_ITMAX;iter++)
-    {
-      xm=0.5*(a+b);
-      tol2=2.0*(tol1=tol*fabs(x)+BRENT_ZEPS);
-
-
-      if((tree->c_lnL > init_lnL + tol) && (quickdirty))
+	for(iter=1;iter<=BRENT_ITMAX;iter++)
 	{
-	  b_fcus->l[lnum] = x;
-	  Lk_At_Given_Edge(b_fcus,tree);
-/* 	  PhyML_Printf("\n> iter=%3d max=%3d v=%f lnL=%f init_lnL=%f tol=%f",iter,n_iter_max,(*xmin),tree->c_lnL,init_lnL,tol); */
-	  return tree->c_lnL;
-	}
+		xm=0.5*(a+b);
+		tol2=2.0*(tol1=tol*fabs(x)+BRENT_ZEPS);
 
 
-      if(((fabs(tree->c_lnL-old_lnL) < tol) &&
-	  (tree->c_lnL > init_lnL - tol)) ||
-	 (iter > n_iter_max - 1))
-	{
-	  b_fcus->l[lnum]=x;
-	  Lk_At_Given_Edge(b_fcus,tree);
-/* 	  PhyML_Printf("\n. iter=%3d max=%3d l=%f lnL=%f init_lnL=%f",iter,n_iter_max,b_fcus->l,tree->c_lnL,init_lnL); */
-	  return tree->c_lnL;
-	}
+		if((tree->c_lnL > init_lnL + tol) && (quickdirty))
+		{
+			b_fcus->l[lnum] = x;
+			Lk_At_Given_Edge(b_fcus,tree);
+			/* 	  PhyML_Printf("\n> iter=%3d max=%3d v=%f lnL=%f init_lnL=%f tol=%f",iter,n_iter_max,(*xmin),tree->c_lnL,init_lnL,tol); */
+			return tree->c_lnL;
+		}
 
-      if(fabs(e) > tol1)
-	{
-	  r=(x-w)*(fx-fv);
-	  q=(x-v)*(fx-fw);
-	  p=(x-v)*q-(x-w)*r;
-	  q=2.0*(q-r);
-	  if(q > 0.0) p = -p;
-	  q=fabs(q);
-	  etemp=e;
-	  e=d;
-	  if(fabs(p) >= fabs(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
-	    d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-	  else{
-	    d=p/q;
-	    u=x+d;
-	    if (u-a < tol2 || b-u < tol2)
-	      d=SIGN(tol1,xm-x);
-	  }
-	}
-      else
-	{
-	  d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-	}
-      u=(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
-      if(u<BL_MIN) u = BL_MIN;
-      b_fcus->l[lnum]=fabs(u);
-      old_lnL = tree->c_lnL;
-      fu=-Lk_At_Given_Edge(b_fcus,tree);
 
-/*       PhyML_Printf("\n. BRENT edge %3d l=%f lnL=%20f iter=%3d",b_fcus->num,b_fcus->l,fu,iter); */
+		if(((fabs(tree->c_lnL-old_lnL) < tol) &&
+				(tree->c_lnL > init_lnL - tol)) ||
+				(iter > n_iter_max - 1))
+		{
+			b_fcus->l[lnum]=x;
+			Lk_At_Given_Edge(b_fcus,tree);
+			/* 	  PhyML_Printf("\n. iter=%3d max=%3d l=%f lnL=%f init_lnL=%f",iter,n_iter_max,b_fcus->l,tree->c_lnL,init_lnL); */
+			return tree->c_lnL;
+		}
 
-      if(fu <= fx)
-	{
-	  if(u >= x) a=x; else b=x;
-	  SHFT(v,w,x,u)
-	  SHFT(fv,fw,fx,fu)
+		if(fabs(e) > tol1)
+		{
+			r=(x-w)*(fx-fv);
+			q=(x-v)*(fx-fw);
+			p=(x-v)*q-(x-w)*r;
+			q=2.0*(q-r);
+			if(q > 0.0) p = -p;
+			q=fabs(q);
+			etemp=e;
+			e=d;
+			if(fabs(p) >= fabs(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
+				d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
+			else{
+				d=p/q;
+				u=x+d;
+				if (u-a < tol2 || b-u < tol2)
+					d=SIGN(tol1,xm-x);
+			}
+		}
+		else
+		{
+			d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
+		}
+		u=(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
+		if(u<BL_MIN) u = BL_MIN;
+		b_fcus->l[lnum]=fabs(u);
+		old_lnL = tree->c_lnL;
+		fu=-Lk_At_Given_Edge(b_fcus,tree);
+
+		/*       PhyML_Printf("\n. BRENT edge %3d l=%f lnL=%20f iter=%3d",b_fcus->num,b_fcus->l,fu,iter); */
+
+		if(fu <= fx)
+		{
+			if(u >= x) a=x; else b=x;
+			SHFT(v,w,x,u)
+			SHFT(fv,fw,fx,fu)
+		}
+		else
+		{
+			if (u < x) a=u; else b=u;
+			if (fu <= fw || w == x)
+			{
+				v=w;
+				w=u;
+				fv=fw;
+				fw=fu;
+			}
+			else if (fu <= fv || v == x || v == w)
+			{
+				v=u;
+				fv=fu;
+			}
+		}
 	}
-      else
-	{
-	  if (u < x) a=u; else b=u;
-	  if (fu <= fw || w == x)
-	    {
-	      v=w;
-	      w=u;
-	      fv=fw;
-	      fw=fu;
-	    }
-	  else if (fu <= fv || v == x || v == w)
-	    {
-	      v=u;
-	      fv=fu;
-	    }
-	}
-    }
-  if(iter > BRENT_ITMAX) PhyML_Printf("\n. Too many iterations in BRENT (%d) (%f)",iter,b_fcus->l);
-  return(-1);
-  /* Not Reached ??  *xmin=x;   */
-  /* Not Reached ??  return fx; */
+	if(iter > BRENT_ITMAX) PhyML_Printf("\n. Too many iterations in BRENT (%d) (%f)",iter,b_fcus->l);
+	return(-1);
+	/* Not Reached ??  *xmin=x;   */
+	/* Not Reached ??  return fx; */
 }
 
 /*********************************************************/
@@ -769,17 +769,17 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 			m3ldbl tmpfw = fw;
 			m3ldbl tmpfv = fv;
 			/**
-			 * JSJ: count the number of times one case is true versus the other, then
-			 * make the appropriate to the fv and fw based on whichever is greater...
-			 */
+			* JSJ: count the number of times one case is true versus the other, then
+			* make the appropriate to the fv and fw based on whichever is greater...
+			*/
 			int count1 = 0;
 			int count2 = 0;
 			For(i,tree->n_l){
 				if (tmpfu <= tmpfw || w[i] == x[i])
 				{
-						v[i]=w[i];
-						w[i]=u[i];
-						count1++;
+					v[i]=w[i];
+					w[i]=u[i];
+					count1++;
 				}
 				else if (tmpfu <= tmpfv || v[i] == x[i] || v[i] == w[i])
 				{
@@ -1366,41 +1366,43 @@ void Round_Optimize(arbre *tree, allseq *data, int n_round_max)
 
 void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *alldata)
 {
-	int i,j;
-//	m3ldbl l_infa[MAX_BL_SET];
-//	m3ldbl l_max[MAX_BL_SET];
-//	m3ldbl l_infb[MAX_BL_SET];
-//	m3ldbl lk_init;
-//
-//	lk_init = tree->c_lnL;
-//	For(j,tree->n_l){
-//		l_infa[j] = l_max[j]  = l_infb[j] = BL_MIN;
-//		//JSJ: temp fixes to l
-//		l_infa[j] = 10.*b_fcus->l[j];
-//		l_max[j]  = b_fcus->l[j];
-//		l_infb[j] = BL_MIN;
-//	}
-//
-//	/*   Br_Len_Brent(l_infa,l_max,l_infb, */
-//	/* 	       1.e-3, */
-//	/* 	       &(b_fcus->l), */
-//	/* 	       b_fcus,tree,500); */
-//
-//	Br_Len_Brent(l_infa,l_max,l_infb,
-//			tree->mod->s_opt->min_diff_lk_local,
-//			b_fcus,tree,
-//			tree->mod->s_opt->brent_it_max,
-//			tree->mod->s_opt->quickdirty);
+	int i,j,iter;
+	//	m3ldbl l_infa[MAX_BL_SET];
+	//	m3ldbl l_max[MAX_BL_SET];
+	//	m3ldbl l_infb[MAX_BL_SET];
+	//	m3ldbl lk_init;
+	//
+	//	lk_init = tree->c_lnL;
+	//	For(j,tree->n_l){
+	//		l_infa[j] = l_max[j]  = l_infb[j] = BL_MIN;
+	//		//JSJ: temp fixes to l
+	//		l_infa[j] = 10.*b_fcus->l[j];
+	//		l_max[j]  = b_fcus->l[j];
+	//		l_infb[j] = BL_MIN;
+	//	}
+	//
+	//	/*   Br_Len_Brent(l_infa,l_max,l_infb, */
+	//	/* 	       1.e-3, */
+	//	/* 	       &(b_fcus->l), */
+	//	/* 	       b_fcus,tree,500); */
+	//
+	//	Br_Len_Brent(l_infa,l_max,l_infb,
+	//			tree->mod->s_opt->min_diff_lk_local,
+	//			b_fcus,tree,
+	//			tree->mod->s_opt->brent_it_max,
+	//			tree->mod->s_opt->quickdirty);
 
 	m3ldbl lk_init;
 	lk_init = tree->c_lnL;
-	For(j,tree->n_l){
-		Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
-				tree->mod->s_opt->min_diff_lk_local/tree->n_l,
-				b_fcus,tree,
-				tree->mod->s_opt->brent_it_max,
-				tree->mod->s_opt->quickdirty,j);
-	}
+	do{ //JSJ: give brent 10 chances
+		For(j,tree->n_l){
+			Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
+					tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+					b_fcus,tree,
+					tree->mod->s_opt->brent_it_max,
+					tree->mod->s_opt->quickdirty,j);
+		}
+	}while((tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local) && (++iter < 10));
 
 	if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
 	{//JSJ: We hit this error when running SPR...

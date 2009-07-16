@@ -171,12 +171,12 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 		{
 			if(!a->v[i])
 			{
-				printf("JSJ: Entered utilities.c line 174\n");
+				//printf("JSJ: Entered utilities.c line 174\n");
 				a->v[i]=d;
 				For(j,tree->n_l){
 					d->l[j][0]=tree->t_edges[tree->num_curr_branch_available]->l[j];
 					a->l[j][i]=tree->t_edges[tree->num_curr_branch_available]->l[j];
-					printf("JSJ: The branch length here is: %f\n",tree->t_edges[tree->num_curr_branch_available]->l[j]);
+					//printf("JSJ: The branch length here is: %f\n",tree->t_edges[tree->num_curr_branch_available]->l[j]);
 				}
 				break;
 			}
@@ -211,11 +211,11 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 			if(!a->v[i])
 			{
 				For(j,tree->n_l){
-					printf("JSJ: Entered utilities.c line 214\n");
+					//printf("JSJ: Entered utilities.c line 214\n");
 					a->v[i]=d;
 					d->l[j][0]=tree->t_edges[tree->num_curr_branch_available]->l[j];
 					a->l[j][i]=tree->t_edges[tree->num_curr_branch_available]->l[j];
-					printf("JSJ: The branch length here is: %f\n",tree->t_edges[tree->num_curr_branch_available]->l[j]);
+					//printf("JSJ: The branch length here is: %f\n",tree->t_edges[tree->num_curr_branch_available]->l[j]);
 				}
 				break;
 			}
@@ -318,10 +318,9 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 	}
 	//	printf("JSJ:Made it here!\n");
 	//	//p = strstr(s_a,sub_tp);
-	printf("JSJ:The string about to be strstr: %s\n",s_a);
+	//printf("JSJ:The string about to be strstr: %s\n",s_a);
 	//	//p2 = strstr((char *)p+(int)strlen(sub_tp),'[');
 	p = strstr(s_a,sub_tp);
-	printf("JSJ:Made it here!\n");
 	if(p)
 	{
 		if(!brac){
@@ -344,7 +343,7 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 			}
 		}
 		//JSJ: Print all of the bls read in
-		For(i,b->n_l) printf("JSJ: Reading a branch from set %i of length %f\n",i,(double)b->l[i]);
+		//For(i,b->n_l) printf("JSJ: Reading a branch from set %i of length %f\n",i,(double)b->l[i]);
 		tree->has_branch_lengths = 1;
 	}
 	Free(sub_tp);
@@ -5205,8 +5204,8 @@ void Set_Defaults_Optimiz(optimiz *s_opt)
 	s_opt->steph_spr            = 1;
 	s_opt->user_state_freq      = 0;
 	s_opt->min_diff_lk_local    = MIN_DIFF_LK_LOCAL; //JSJ: try playing around with these values
-	s_opt->min_diff_lk_global   = 0.1;
-	s_opt->min_diff_lk_move     = 0.2;
+	s_opt->min_diff_lk_global   = MIN_DIFF_LK_GLOBAL;
+	s_opt->min_diff_lk_move     = MIN_DIFF_LK_MOVE;
 	s_opt->p_moves_to_examine   = 0.15;
 	s_opt->fast_nni             = 0;
 	s_opt->greedy               = 0;
