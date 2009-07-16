@@ -673,6 +673,8 @@ typedef struct __Optimiz { /* parameters to be optimised (mostly used in 'optimi
 
 
   int                opt_bl; /* =1 -> the branch lengths are optimised */
+  int             opt_props; /* =1 -> the proportion of sites described by each member of
+							          the branch length sets are optimized */
   int              opt_topo; /* =1 -> the tree topology is optimised */
   int           topo_search;
   m3ldbl            init_lk; /* initial loglikelihood value */

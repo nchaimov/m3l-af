@@ -221,10 +221,10 @@ void Launch_Interface_MBL_Model(option *io)
 
 	PhyML_Printf("\n");
 	PhyML_Printf("                [N] "
-			".......................... Number of Branch lengths per edge:  "
+			"............. Number of Branch lengths per edge:  "
 			" %i \n", io->n_l);
 	PhyML_Printf("                [P] "
-				"... Starting proportions of sites in each branch length set: [");
+			"Initial props in branch length set: [");
 	For(i,io->n_l){
 		if(i+1 != io->n_l){
 			PhyML_Printf(" %lf,",io->props[i]);
@@ -235,9 +235,9 @@ void Launch_Interface_MBL_Model(option *io)
 	PhyML_Printf("]\n");
 
 	PhyML_Printf("                [F] "
-				"....................... Fixed Starting Proportions (Yes/No) "
-				" %-15s \n",
-				(io->fixed_props)?("Yes"):("No"));
+			"...... Fixed Starting Proportions (Yes/No) "
+			" %-15s \n",
+			(io->fixed_props)?("Yes"):("No"));
 
 	PhyML_Printf("\n\n. Are these settings correct ? "
 			"(type '+', '-', 'Y' or other letter for one to change)  ");
@@ -263,7 +263,7 @@ void Launch_Interface_MBL_Model(option *io)
 	}
 	case '-' :
 	{	io->curr_interface = INTERFACE_DATA_TYPE;
-		break;
+	break;
 	}
 	case 'Y' :
 	{
@@ -299,13 +299,26 @@ void Launch_Interface_MBL_Model(option *io)
 		//JSJ: update default branch length proportions, if the user entered a new number
 		if(io->n_l != tmp){
 			Update_Default_Props(io);
+			if(io->n_l == 1){ //if one branch length category, make sure props are fixed
+				io->fixed_props = 1;
+				io->mod->s_opt->opt_props = io->fixed_props;
+			}else if(tmp == 1){
+				io->fixed_props = 0;
+				io->mod->s_opt->opt_props = io->fixed_props;
+			}
 		}
 		Free(n_branches);
 		break;
 	}
 	case 'F':
 	{
-		io->fixed_props = (io->fixed_props)?(0):(1);
+		if(io->n_l == 1){
+			io->fixed_props = 1;
+			io->mod->s_opt->opt_props = io->fixed_props;
+		} else {
+			io->fixed_props = (io->fixed_props)?(0):(1);
+			io->mod->s_opt->opt_props = io->fixed_props;
+		}
 		break;
 	}
 	case 'P':
@@ -1474,7 +1487,7 @@ void Launch_Interface_Model(option *io)
 	}
 	case '-' :
 	{
-		io->curr_interface = INTERFACE_DATA_TYPE;
+		io->curr_interface = INTERFACE_MBL_MODEL;
 		break;
 	}
 	case '+' :

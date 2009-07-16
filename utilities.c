@@ -1982,7 +1982,7 @@ void Connect_One_Edge_To_Two_Nodes(node *a, node *d, edge *b, arbre *tree)
 				if(b->l[i] < BL_MIN)  b->l[i] = BL_MIN;
 				else if(b->l[i] > BL_MAX) b->l[i] = BL_MAX;
 				b->l_old[i]                = b->l[i];
-				printf("JSJ: Connecting node %s to node %s with an edge of length %f \n",a->name, d->name, b->l[i]);
+				//printf("JSJ: Connecting node %s to node %s with an edge of length %f \n",a->name, d->name, b->l[i]);
 			}
 }
 
@@ -2913,7 +2913,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	{
 		For(i,tree->n_l){
 		lk1 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
-				tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+				tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
 				b_fcus,tree,
 				tree->mod->s_opt->brent_it_max,
 				tree->mod->s_opt->quickdirty,i);
@@ -2953,7 +2953,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	{
 		For(i,tree->n_l){
 			lk2 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
-					tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+					tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
 					b_fcus,tree,
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty,i);
@@ -3004,7 +3004,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	{
 		For(i,tree->n_l){
 			lk0 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
-				tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+				tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
 				b_fcus,tree,
 				tree->mod->s_opt->brent_it_max,
 				tree->mod->s_opt->quickdirty,i);
@@ -5101,7 +5101,7 @@ void Set_Defaults_Input(option* io)
 	io->fp_out_stats               = NULL;
 	io->n_l 					   = 1; //JSJ: initialize to 1 branch length set
 	io->props[0]				   = 1.0; //JSJ: initialize to all sites falling under the one set
-	io->fixed_props                = 0; //JSJ: default to optimize the props
+	io->fixed_props                = 1; //JSJ: don't optimize props on single branch length
 	io->tree                       = NULL;
 	io->mod->datatype              = 0;
 	strcpy(io->nt_or_cd,"nucleotides");
@@ -5187,6 +5187,7 @@ void Set_Defaults_Optimiz(optimiz *s_opt)
 	s_opt->opt_alpha            = 1;
 	s_opt->opt_kappa            = 1;
 	s_opt->opt_bl               = 1;
+	s_opt->opt_props			= 0; //JSJ: defaults to 0 because optimizing 1 proportion (default) makes no sense...
 	s_opt->opt_lambda           = 0;
 	s_opt->opt_pinvar           = 0;
 	s_opt->opt_num_param        = 0;
@@ -5239,6 +5240,7 @@ void Copy_Optimiz(optimiz *ori, optimiz *cpy)
 	cpy->opt_alpha            =   ori->opt_alpha            ;
 	cpy->opt_kappa            =   ori->opt_kappa            ;
 	cpy->opt_bl               =   ori->opt_bl               ;
+	cpy->opt_props			  =   ori->opt_props            ;
 	cpy->opt_lambda           =   ori->opt_lambda           ;
 	cpy->opt_pinvar           =   ori->opt_pinvar           ;
 	cpy->opt_num_param        =   ori->opt_num_param        ;
@@ -7086,7 +7088,7 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 			min *= 0.02;
 			max *= 50.0;
 			Br_Len_Brent_Iter(min,b->l[m],max,
-				tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+				tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
 				b,tree,
 				tree->mod->s_opt->brent_it_max,
 				tree->mod->s_opt->quickdirty,m);
@@ -7666,7 +7668,7 @@ void Random_NNI(int n_moves, arbre *tree)
 
 void Print_Settings(option *io)
 {
-	int answer;
+	int answer,i;
 	char *s;
 
 	s = (char *)mCalloc(100,sizeof(char));
@@ -7779,6 +7781,17 @@ void Print_Settings(option *io)
 			io->mod->s_opt->opt_rr) answer = 1;
 
 	PhyML_Printf("\n                . Optimise substitution model parameters : \t %s", (answer) ? "yes" : "no");
+
+	PhyML_Printf("\n                . Number of branch length categories: \t %i", io->n_l);
+	PhyML_Printf("\n                . Proportion of sites in each branch length category: [");
+	For(i,io->n_l){
+		if(i+1 == io->n_l){
+			PhyML_Printf(" %lf ]",(double)io->props[i]);
+		}else{
+			PhyML_Printf(" %lf,",(double)io->props[i]);
+		}
+	}
+	PhyML_Printf("\n                . Optimize proportion of sites in each branch length category: \t %s", (io->fixed_props) ? ("No"):("Yes"));
 
 	PhyML_Printf("\n                . Run ID : \t\t\t\t\t %s", (io->append_run_ID) ? (io->run_id_string) : ("none"));
 

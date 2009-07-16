@@ -8,7 +8,7 @@ Copyright (C) Stephane Guindon. Oct 2003 onward.
 All parts of the source except where indicated are distributed under
 the GNU public licence. See http://www.opensource.org for details.
 
-*/
+ */
 
 #include <unistd.h>
 #include <getopt.h>
@@ -28,1088 +28,1139 @@ the GNU public licence. See http://www.opensource.org for details.
 */
 void Read_Command_Line(option *io, int argc, char **argv)
 {
-  int c;
-  int open_ps_file;
-  int use_gamma;
-  int writemode;
+	int c;
+	int open_ps_file;
+	int use_gamma;
+	int writemode;
+	int fprops = 0;
 
-  struct option longopts[] =
-    {
-      {"n_rgrft",           required_argument,NULL,0},
-      {"n_globl",           required_argument,NULL,1},
-      {"max_dist",          required_argument,NULL,2},
-      {"n_optim",           required_argument,NULL,3},
-      {"n_best",            required_argument,NULL,4},
-      {"model",             required_argument,NULL,5},
-      {"search",            required_argument,NULL,6},
-      {"datatype",          required_argument,NULL,7},
-      {"multiple",          required_argument,NULL,8},
-      {"input",             required_argument,NULL,9},
-      {"bootstrap",         required_argument,NULL,10},
-      {"ts/tv",             required_argument,NULL,11},
-      {"nclasses",          required_argument,NULL,12},
-      {"pinv",              required_argument,NULL,13},
-      {"alpha",             required_argument,NULL,14},
-      {"inputtree",         required_argument,NULL,15},
-      {"min_diff_lk_local", required_argument,NULL,16},
-      {"min_diff_lk_global",required_argument,NULL,17},
-      {"steph_spr",         no_argument,NULL,18},
-      {"brent_it_max",      required_argument,NULL,19},
-      {"rand_start",        no_argument,NULL,20},
-      {"n_rand_starts",     required_argument,NULL,21},
-      {"sequential",        no_argument,NULL,22},
-      {"inside_opt",        no_argument,NULL,23},
-      {"p_moves",           required_argument,NULL,24},
-      {"fast_nni",          no_argument,NULL,25},
-      {"g_pars",            no_argument,NULL,26},
-      {"r_seed",            required_argument,NULL,27},
-      {"collapse_boot",     required_argument,NULL,28},
-      {"random_boot",       required_argument,NULL,29},
-      {"print_trace",       no_argument,NULL,30},
-      {"print_site_lnl",    no_argument,NULL,31},
-      {"cov",               no_argument,NULL,32},
-      {"cov_delta",         required_argument,NULL,33},
-      {"cov_alpha",         required_argument,NULL,34},
-      {"cov_ncats",         required_argument,NULL,35},
-      {"ps",                no_argument,NULL,36},
-      {"cov_free",          no_argument,NULL,37},
-      {"no_gap",            no_argument,NULL,38},
-      {"n_rr_branch",       required_argument,NULL,39},
-      {"append",            no_argument,NULL,40},
-      {"no_five_branch",    no_argument,NULL,41},
-      {"pars_thresh",       required_argument,NULL,42},
-      {"min_diff_lk_move",  required_argument,NULL,43},
-      {"hybrid",            no_argument,NULL,44},
-      {"use_median",        no_argument,NULL,45},
-      {"run_id",            required_argument,NULL,46},
-      {"pars",              no_argument,NULL,47},
-      {"quiet",             no_argument,NULL,48},
-      {0,0,0,0}
-    };
+	struct option longopts[] =
+	{
+			{"n_rgrft",           required_argument,NULL,0},
+			{"n_globl",           required_argument,NULL,1},
+			{"max_dist",          required_argument,NULL,2},
+			{"n_optim",           required_argument,NULL,3},
+			{"n_best",            required_argument,NULL,4},
+			{"model",             required_argument,NULL,5},
+			{"search",            required_argument,NULL,6},
+			{"datatype",          required_argument,NULL,7},
+			{"multiple",          required_argument,NULL,8},
+			{"input",             required_argument,NULL,9},
+			{"bootstrap",         required_argument,NULL,10},
+			{"ts/tv",             required_argument,NULL,11},
+			{"nclasses",          required_argument,NULL,12},
+			{"pinv",              required_argument,NULL,13},
+			{"alpha",             required_argument,NULL,14},
+			{"inputtree",         required_argument,NULL,15},
+			{"min_diff_lk_local", required_argument,NULL,16},
+			{"min_diff_lk_global",required_argument,NULL,17},
+			{"steph_spr",         no_argument,NULL,18},
+			{"brent_it_max",      required_argument,NULL,19},
+			{"rand_start",        no_argument,NULL,20},
+			{"n_rand_starts",     required_argument,NULL,21},
+			{"sequential",        no_argument,NULL,22},
+			{"inside_opt",        no_argument,NULL,23},
+			{"p_moves",           required_argument,NULL,24},
+			{"fast_nni",          no_argument,NULL,25},
+			{"g_pars",            no_argument,NULL,26},
+			{"r_seed",            required_argument,NULL,27},
+			{"collapse_boot",     required_argument,NULL,28},
+			{"random_boot",       required_argument,NULL,29},
+			{"print_trace",       no_argument,NULL,30},
+			{"print_site_lnl",    no_argument,NULL,31},
+			{"cov",               no_argument,NULL,32},
+			{"cov_delta",         required_argument,NULL,33},
+			{"cov_alpha",         required_argument,NULL,34},
+			{"cov_ncats",         required_argument,NULL,35},
+			{"ps",                no_argument,NULL,36},
+			{"cov_free",          no_argument,NULL,37},
+			{"no_gap",            no_argument,NULL,38},
+			{"n_rr_branch",       required_argument,NULL,39},
+			{"append",            no_argument,NULL,40},
+			{"no_five_branch",    no_argument,NULL,41},
+			{"pars_thresh",       required_argument,NULL,42},
+			{"min_diff_lk_move",  required_argument,NULL,43},
+			{"hybrid",            no_argument,NULL,44},
+			{"use_median",        no_argument,NULL,45},
+			{"run_id",            required_argument,NULL,46},
+			{"pars",              no_argument,NULL,47},
+			{"quiet",             no_argument,NULL,48},
+			{"props",             required_argument,NULL,49},
+			{"fprops",            no_argument,NULL,50},
+			{"ncatg",             required_argument,NULL,51},
+			{0,0,0,0}
+	};
 
-  writemode = 1;
-  open_ps_file = 0;
-  use_gamma = 0;
-  while((c = getopt_long(argc,argv,"qi:d:m:b:n:t:f:zk:v:c:a:u:ho:s:x:g:l:ep",longopts,NULL)) != -1)
-      {
-	switch(c)
-	  {
-	  case 48 : 
-	    {
-	      io->quiet = 1;
-	      break;
-	    }
-	  case 'p' : case 47 : 
-	    {
-	      io->in_tree = 1;
-	      break;
-	    }
-	  case 46 : 
-	    {
-	      io->append_run_ID = 1;
-	      strcpy(io->run_id_string,optarg);
-	      break;
-	    }
-	  case 45 : 
-	    {
-	      io->mod->gamma_median = 1;
-	      break;
-	    }
-	  case 44 :
-	    {
-	      io->mod->s_opt->hybrid_thresh = 0;
-	      break;
-	    }
-	  case 43 :
-	    {
-	      io->mod->s_opt->min_diff_lk_move = atof(optarg);
-	      if(io->mod->s_opt->min_diff_lk_move < 0)
+	writemode = 1;
+	open_ps_file = 0;
+	use_gamma = 0;
+	while((c = getopt_long(argc,argv,"qi:d:m:b:n:t:f:zk:v:c:a:u:ho:s:x:g:l:ep:z:w",longopts,NULL)) != -1)
+	{
+		switch(c)
 		{
-		  char choix;
-		  PhyML_Printf("\n. Min_diff_lk_move must be a double greater than 0.\n");
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
-		}
-	      break;
-	    }
-	  case 42 :
-	    {
-	      io->mod->s_opt->pars_thresh = (int)atoi(optarg);
-/* 	      if(io->mod->s_opt->pars_thresh < 0) */
-/* 		{ */
-/* 		  PhyML_Printf("\n. The parsimony threshold must be an integer greater than 0.\n"); */
-/* 		  PhyML_Printf("\n. Type any key to exit.\n"); */
-/* 		  Exit("\n"); */
-/* 		} */
-	      break;
-	    }
-	  case 41 :
-	    {
-	      io->mod->s_opt->opt_five_branch = 0;
-	      break;
-	    }
-	  case 40 :
-	    {
-	      writemode = 2;
-	      break;
-	    }
-	  case 39 :
-	    {
-	      char choix;
-	      io->mod->n_rr_branch = (int)atoi(optarg);
-	      if(io->mod->n_rr_branch < 1)
+		case 48 :
 		{
-		  PhyML_Printf("\n. The number of classes must be an integer greater than 0.\n");
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
+			io->quiet = 1;
+			break;
 		}
-	      break;
-	    }
-	  case 38 :
-	    {
-	      io->rm_ambigu = 1;
-	      break;
-	    }
-	  case 37 :
-	    {
-	      io->mod->s_opt->opt_cov_free_rates = 1;
-	      break;
-	    }
-	  case 36 :
-	    {
-	      open_ps_file = 1;
-	      break;
-	    }
-	  case 35 :
-	    {
-#ifdef M4
-	      io->m4_model = YES;
-	      if(!io->mod->m4mod) io->mod->m4mod = (m4 *)M4_Make_Light((io->mod->datatype == NT)?(4):(20));
-	      io->mod->m4mod->n_h = (int)atoi(optarg);
-	      
-	      if(io->mod->m4mod->n_h < 1)
+		case 'p' : case 47 :
 		{
-		  char choix;
-		  PhyML_Printf("\n. The number of classes must be greater than 0.\n");
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
+			io->in_tree = 1;
+			break;
 		}
-#endif
-	      break;
-	    }
-	  case 34 :
-	    {
-#ifdef M4
-	      io->m4_model = YES;
-	      if(!io->mod->m4mod) io->mod->m4mod = (m4 *)M4_Make_Light((io->mod->datatype == NT)?(4):(20));
-	      io->mod->m4mod->use_cov_alpha = 1;
-	      io->mod->m4mod->use_cov_free  = 0;
-	      
-	      if(!strcmp(optarg,"e") || !strcmp(optarg,"E") ||
-		 !strcmp(optarg,"estimated") || !strcmp(optarg,"ESTIMATED"))
+		case 46 :
 		{
-		  io->mod->s_opt->opt_cov_alpha = 1;
-		  io->mod->m4mod->alpha         = 1.0;
+			io->append_run_ID = 1;
+			strcpy(io->run_id_string,optarg);
+			break;
 		}
-	      else
+		case 45 :
 		{
-		  io->mod->m4mod->alpha = (m3ldbl)atof(optarg);
-
-		  if(io->mod->m4mod->alpha < 1.E-5)
-		    {
-		      char choix;
-		      PhyML_Printf("\n. The value of alpha must be greater than 1.E-5.\n");
-		      PhyML_Printf("\n. Type any key to exit.\n");
-		      if(!scanf("%c",&choix)) Exit("\n");
-		      Exit("\n");
-		    }
+			io->mod->gamma_median = 1;
+			break;
 		}
-#endif	      
-	      break;
-	    }
-
-	  case 33 :
-	    {
-#ifdef M4
-	      io->m4_model = YES;
-	      if(!io->mod->m4mod) io->mod->m4mod = (m4 *)M4_Make_Light((io->mod->datatype == NT)?(4):(20));
-
-	      if(!strcmp(optarg,"e") || !strcmp(optarg,"E") ||
-		 !strcmp(optarg,"estimated") || !strcmp(optarg,"ESTIMATED"))
+		case 44 :
 		{
-		  io->mod->s_opt->opt_cov_delta = 1;
-		  io->mod->m4mod->delta         = 1.0;
+			io->mod->s_opt->hybrid_thresh = 0;
+			break;
 		}
-	      else
+		case 43 :
 		{
-		  io->mod->m4mod->delta = (m3ldbl)atof(optarg);
-
-		  if(atof(optarg) < 1.E-10)
-		    {
-		      char choix;
-		      PhyML_Printf("\n. The value of delta must be larger than 1.E-10.\n");
-		      PhyML_Printf("\n. Type any key to exit.\n");
-		      if(!scanf("%c",&choix)) Exit("\n");
-		      Exit("\n");
-		    }
+			io->mod->s_opt->min_diff_lk_move = atof(optarg);
+			if(io->mod->s_opt->min_diff_lk_move < 0)
+			{
+				char choix;
+				PhyML_Printf("\n. Min_diff_lk_move must be a double greater than 0.\n");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			break;
 		}
-#endif
-	      break;
-	    }
-	  case 32 :
-	    {
-#ifdef M4
-	      io->m4_model = YES;
-#endif	      
-	      break;
-	    }
-	  case 31 :
-	    {
-	      io->print_site_lnl = 1;
-	      break;
-	    }
-	  case 30 :
-	    {
-	      io->print_trace = 1;
-	      break;
-	    }
-	  case 29 :
-	    {
-	      io->random_boot_seq_order = (int)atoi(optarg);
-	      break;
-	    }
-	  case 28 :
-	    {
-	      io->collapse_boot = (int)atoi(optarg);
-	      break;
-	    }
-	  case 27 :
-	    {
-	      io->r_seed = (int)atoi(optarg);
-	      break;
-	    }
-	  case 26 :
-	    {
-	      io->mod->s_opt->general_pars = 1;
-	      break;
-	    }
-	  case 25 :
-	    {
-	      io->mod->s_opt->fast_nni = 1;
-	      break;
-	    }
-	  case 24 :
-	    {
-	      io->mod->s_opt->p_moves_to_examine = (double)atof(optarg);
-	      break;
-	    }
-	  case 23 :
-	    {
-	      io->mod->s_opt->wim_inside_opt = 1;
-	      break;
-	    }
-	  case 0 :
-	    {
-	      io->mod->s_opt->wim_n_rgrft = atoi(optarg);
-	      break;
-	    }
-	  case 1 :
-	    {
-	      io->mod->s_opt->wim_n_globl = atoi(optarg);
-	      break;
-	    }
-	  case 2 :
-	    {
-	      io->mod->s_opt->wim_max_dist = atoi(optarg);
-	      break;
-	    }
-	  case 3 :
-	    {
-	      io->mod->s_opt->wim_n_optim = atoi(optarg);
-	      break;
-	    }
-	  case 4 :
-	    {
-	      io->mod->s_opt->wim_n_best = atoi(optarg);
-	      break;
-	    }
-	  case 16 :
-	    {
-	      io->mod->s_opt->min_diff_lk_local = atof(optarg);
-	      break;
-	    }
-	    
-	  case 17 :
-	    {
-	      io->mod->s_opt->min_diff_lk_global = atof(optarg);
-	      break;
-	    }
-	  case 18 :
-	    {
-	      io->mod->s_opt->steph_spr = 0;
-	      io->mod->s_opt->greedy    = 1;
-	      break;
-	    }
-	  case 19 :
-	    {
-	      io->mod->s_opt->brent_it_max = atoi(optarg);
-	      break;
-	    }
-	  case 20 :
-	    {
-	      io->mod->s_opt->random_input_tree = 1;
-	      break;
-	    }
-	  case 21 :
-	    {
-	      io->mod->s_opt->random_input_tree = 1;
-	      io->mod->s_opt->n_rand_starts = atoi(optarg);
-	      if(io->mod->s_opt->n_rand_starts < 1) Exit("\n. Nunmber of random starting trees must be > 0.\n\n");
-	    }
-	  case 's':case 6:
-	    {
-	      if((!strcmp(optarg,"spr")) || (!strcmp(optarg,"SPR")))
+		case 42 :
 		{
-		  io->mod->s_opt->topo_search = SPR_MOVE;
-		  io->mod->s_opt->greedy      = (io->mod->s_opt->steph_spr)?(0):(1);
+			io->mod->s_opt->pars_thresh = (int)atoi(optarg);
+			/* 	      if(io->mod->s_opt->pars_thresh < 0) */
+			/* 		{ */
+			/* 		  PhyML_Printf("\n. The parsimony threshold must be an integer greater than 0.\n"); */
+			/* 		  PhyML_Printf("\n. Type any key to exit.\n"); */
+			/* 		  Exit("\n"); */
+			/* 		} */
+			break;
 		}
-	      else if((!strcmp(optarg,"nni")) || (!strcmp(optarg,"NNI")))
+		case 41 :
 		{
-		  io->mod->s_opt->topo_search         = NNI_MOVE;
-		  io->mod->s_opt->random_input_tree   = 0;
+			io->mod->s_opt->opt_five_branch = 0;
+			break;
 		}
-	      else if((!strcmp(optarg,"best")) || (!strcmp(optarg,"BEST")))
+		case 40 :
 		{
-		  io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
-		  io->mod->s_opt->greedy      = (io->mod->s_opt->steph_spr)?(0):(1);
+			writemode = 2;
+			break;
 		}
-	      break;
-	    }
-	    
-	  case 'd':case 7:
-	    if(!strcmp(optarg,"nt"))
-	      /*         if(atoi(optarg) == NT) */
-	      {
-		io->mod->datatype = NT;
-		io->mod->stepsize = 1;
-		io->mod->ns = 4;
-		
-		if(
-		   (io->mod->whichmodel == LG)       ||
-		   (io->mod->whichmodel == WAG)       ||
-		   (io->mod->whichmodel == DAYHOFF)   ||
-		   (io->mod->whichmodel == JTT)       ||
-		   (io->mod->whichmodel == BLOSUM62)  ||
-		   (io->mod->whichmodel == MTREV)     ||
-		   (io->mod->whichmodel == RTREV)     ||
-		   (io->mod->whichmodel == CPREV)     ||
-		   (io->mod->whichmodel == DCMUT)     ||
-		   (io->mod->whichmodel == VT)        ||
-		   (io->mod->whichmodel == MTMAM)     ||
-		   (io->mod->whichmodel == MTART)     ||
-		   (io->mod->whichmodel == HIVW)      ||
-		   (io->mod->whichmodel == HIVB)      ||
-		   (io->mod->whichmodel == CUSTOMAA)
-		   )
-		  {
-		    io->mod->whichmodel = HKY85;
-		    strcpy(io->mod->modelname, "HKY85\0");
-		  }
-	      }
-	    else if (!strcmp(optarg,"aa"))
-	      /*         else if (atoi(optarg) == AA) */
-	      {
-		io->mod->datatype         = AA;
-		io->mod->stepsize         = 1;
-		io->mod->s_opt->opt_kappa = 0;
-		io->mod->ns               = 20;
-		if(
-		   (io->mod->whichmodel == JC69)   ||
-		   (io->mod->whichmodel == K80)    ||
-		   (io->mod->whichmodel == F81)    ||
-		   (io->mod->whichmodel == HKY85)  ||
-		   (io->mod->whichmodel == F84)    ||
-		   (io->mod->whichmodel == TN93)   ||
-		   (io->mod->whichmodel == GTR)    ||
-		   (io->mod->whichmodel == CUSTOM)
-		   )
-		  {
-		    io->mod->whichmodel = LG;
-		    strcpy(io->mod->modelname, "LG\0");
-		  }
-	      }
-	    else
-	      {
-		char choix;
-		PhyML_Printf("\n. Unknown argument to -d option: please use `nt' for DNA or `aa' for Amino-Acids\n");
-		PhyML_Printf("\n. Type any key to exit.\n");
-		if(!scanf("%c",&choix)) Exit("\n");
-		Exit("\n");
-	      }
-	    
-	    break;
-	    
-	  case 'm': case 5 :
-	    {
-	      if(!isalpha(optarg[0]))
+		case 39 :
 		{
-		  strcpy(io->mod->custom_mod_string,optarg);
-
-		  if(strlen(io->mod->custom_mod_string) != 6)
-		    {
-		      Warn_And_Exit("\n. The string should be of length 6.\n");
-		    }
-		  else
-		    {
-		      Translate_Custom_Mod_String(io->mod);
-		    }
-
-		  io->mod->datatype = NT;
-		  io->mod->whichmodel = CUSTOM;
-		  strcpy(io->mod->modelname, "custom");
-		  io->mod->s_opt->opt_kappa     = 0;
-		  io->mod->s_opt->opt_rr        = 1;
-		  io->mod->s_opt->opt_num_param = 1;
-		}
-
-	      if (strcmp(optarg, "JC69") == 0)
-		{
-		  io->mod->datatype = NT;
-		  io->mod->whichmodel = JC69;
-		  strcpy(io->mod->modelname, "JC69");
-		  io->mod->s_opt->opt_kappa  = 0;
-		}
-	      else if(strcmp(optarg, "K80") == 0)
-		{
-		  io->mod->datatype = NT;
-		  io->mod->whichmodel = K80;
-		  strcpy(io->mod->modelname, "K80");
-		}
-	      else if(strcmp(optarg, "F81") == 0)
-		{
-		  io->mod->datatype = NT;
-		  io->mod->whichmodel = F81;
-		  strcpy(io->mod->modelname, "F81");
-		  io->mod->s_opt->opt_kappa  = 0;
-		}
-	      else if (strcmp(optarg, "HKY85") == 0)
-		{
-		  io->mod->datatype = NT;
-		  io->mod->whichmodel = HKY85;
-		  strcpy(io->mod->modelname, "HKY85");
-		}
-	      else if(strcmp(optarg, "F84") == 0)
-		{
-		  io->mod->datatype = NT;
-		  io->mod->whichmodel = F84;
-		  strcpy(io->mod->modelname, "F84");
-		}
-	      else if (strcmp (optarg,"TN93") == 0)
-		{
-		  io->mod->datatype = NT;
-		  io->mod->whichmodel = TN93;
-		  strcpy(io->mod->modelname, "TN93");
-		  if(io->mod->s_opt->opt_kappa)
-		    {
-		      io->mod->s_opt->opt_lambda = 1;
-		    }
-		}
-	      else if(strcmp (optarg, "GTR") == 0)
-		{
-		  io->mod->datatype = NT;
-		  io->mod->whichmodel = GTR;
-		  strcpy(io->mod->modelname, "GTR");
-		  io->mod->s_opt->opt_kappa = 0;
-		  io->mod->s_opt->opt_rr    = 1;
-		}
-	      else if(strcmp(optarg, "Dayhoff") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = DAYHOFF;
-		  strcpy(io->mod->modelname, "Dayhoff");
-		}
-	      else if(strcmp (optarg, "JTT") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = JTT;
-		  strcpy(io->mod->modelname, "JTT");
-		}
-	      else if(strcmp(optarg, "MtREV") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = MTREV;
-		  strcpy(io->mod->modelname,"MtREV");
-		}
-	      else if(strcmp (optarg, "LG") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = LG;
-		  strcpy(io->mod->modelname, "LG");
-		}
-	      else if(strcmp (optarg, "WAG") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = WAG;
-		  strcpy(io->mod->modelname, "WAG");
-		}
-	      else if(strcmp(optarg, "DCMut") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = DCMUT;
-		  strcpy(io->mod->modelname, "DCMut");
-		}
-	      else if(strcmp (optarg, "RtREV") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = RTREV;
-		  strcpy(io->mod->modelname, "RtREV");
-		}
-	      else if(strcmp(optarg, "CpREV") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = CPREV;
-		  strcpy(io->mod->modelname, "CpREV");
-		}
-	      else if(strcmp(optarg, "VT") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = VT;
-		  strcpy(io->mod->modelname, "VT");
-		}
-	      else if(strcmp(optarg, "Blosum62") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = BLOSUM62;
-		  strcpy(io->mod->modelname,"Blosum62");
-		}
-	      else if(strcmp(optarg, "MtMam") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = MTMAM;
-		  strcpy(io->mod->modelname, "MtMam");
-		}
-	      else if (strcmp(optarg,"MtArt") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = MTART;
-		  strcpy(io->mod->modelname, "MtArt");
-		}
-	      else if (strcmp(optarg,"HIVw") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = HIVW;
-		  strcpy(io->mod->modelname, "HIVw");
-		}
-	      else if(strcmp(optarg, "HIVb") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = HIVB;
-		  strcpy(io->mod->modelname, "HIVb");
-		}
-	      else if (strcmp(optarg, "custom") == 0)
-		{
-		  io->mod->datatype = AA;
-		  io->mod->whichmodel = CUSTOMAA;
-		  strcpy(io->mod->modelname, "Read from file");
-		}
-	      break;
-	    }
-
-	  case 'a':case 14 :
-	    {
-	      use_gamma = 1;
-	      if ((strcmp (optarg, "e") == 0) ||
-		  (strcmp (optarg, "E") == 0) ||
-		  (strcmp (optarg, "estimated") == 0) ||
-		  (strcmp (optarg, "ESTIMATED") == 0))
-		{
-		  io->mod->s_opt->opt_alpha     = 1;
-		  io->mod->s_opt->opt_num_param = 1;
-		}
-	      else if ((!atof(optarg)) || (atof(optarg) < 1.E-10))
-		{
-		  char choix;
-		  PhyML_Printf("\n. Alpha must be > 1.E-10.\n");
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
-		}
-	      else
-		{
-		  io->mod->alpha = (m3ldbl)atof(optarg);
-		  io->mod->s_opt->opt_alpha  = 0;
-		}
-	      break;
-	    }
-	  case 'b':case 10:
-	  {
-	    if (atoi(optarg) < -4)
-	      {
-		char choix;
-		PhyML_Printf("\n. Branch test value must be a positive integer for bootstrap, or between -1 and -4 for aLRT branch test\n");
-		PhyML_Printf("\n. Type any key to exit.\n");
-		if(!scanf("%c",&choix)) Exit("\n");
-		Exit("\n");
-	      }
-	    else
-	      {
-		if((int)atoi(optarg) > 0)
-		  {
-		    io->ratio_test       = 0;
-		    io->mod->bootstrap   = (int)atoi(optarg);
-		    io->print_boot_trees = 1;
-
-		    if(io->n_data_sets > 1)
-		      {
 			char choix;
-			PhyML_Printf("\n. Bootstrap option is not allowed with multiple data sets\n");
-			PhyML_Printf("\n. Type any key to exit.\n");
-			if(!scanf("%c",&choix)) Exit("\n");
-			Exit("\n");
-		      }
-		  }
-		else if (atoi(optarg)==0)
-		  {
-		    io->mod->bootstrap = 0;
-		    io->ratio_test     = 0;
-		  }
-		else
-		  {
-		    io->mod->bootstrap = 0;
-		    io->ratio_test     = -(int)atoi(optarg);
-		  }
-	      }
-	    break;
-	  }
-	  case 'c':case 12:
-	    {
-	      if ((!atoi(optarg)) || (atoi(optarg) < 0))
-		{
-		  char choix;
-		  PhyML_Printf("\n. Unknown argument to -c option: the number of categories must be a positive integer\n");
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
-		}
-	      else io->mod->n_catg = atoi(optarg);
-	      break;
-	    }
-	case 'f':
-	  {
-	    if(!strcmp(optarg,"e"))
-	      {
-	        if (io->mod->datatype == NT)
-		  io->mod->s_opt->opt_state_freq = 0;
-		else
-		  io->mod->s_opt->opt_state_freq = 1;
-		
-		if((io->mod->whichmodel == JC69) ||
-		   (io->mod->whichmodel == K80))
-		  {
-		    char choix;
-		    PhyML_Printf("\n. Invalid model settings (option '-f').\n");
-		    PhyML_Printf("\n. Type any key to exit.\n");
-		    if(!scanf("%c",&choix)) Exit("\n");
-		    Exit("\n");
-		  }
-	      }
-	    else if(!strcmp(optarg,"m"))
-	      {
-	        if (io->mod->datatype == NT)
-		  io->mod->s_opt->opt_state_freq = 1;
-		else
-		  io->mod->s_opt->opt_state_freq = 0;
-	      }
-	    else if(!isalpha(optarg[0]))
-	      {
-		m3ldbl sum;
-
-		io->mod->s_opt->opt_state_freq  = 0;
-		io->mod->s_opt->user_state_freq = 1;
-		
-		sum =
-		  (io->mod->user_b_freq[0] +
-		   io->mod->user_b_freq[1] +
-		   io->mod->user_b_freq[2] +
-		   io->mod->user_b_freq[3]);
-
-		io->mod->user_b_freq[0] /= sum;
-		io->mod->user_b_freq[1] /= sum;
-		io->mod->user_b_freq[2] /= sum;
-		io->mod->user_b_freq[3] /= sum;
-
-		if(io->mod->user_b_freq[0] < .0 ||
-		   io->mod->user_b_freq[1] < .0 ||
-		   io->mod->user_b_freq[2] < .0 ||
-		   io->mod->user_b_freq[3] < .0 ||
-		   io->mod->user_b_freq[0] > 1. ||
-		   io->mod->user_b_freq[1] > 1. ||
-		   io->mod->user_b_freq[2] > 1. ||
-		   io->mod->user_b_freq[3] > 1.)
-		  {
-		    Warn_And_Exit("\n. Invalid base frequencies.\n");
-		  }
-	      }
-	    break;
-	  }
-	  
-	case 'h':
-	  {
-	    Usage();
-	    break;
-	  }
-
-	  case 'i':case 9:
-	    {
-	      char *tmp;
-	      tmp = (char *) mCalloc (T_MAX_FILE, sizeof(char));
-	      if (strlen (optarg) > T_MAX_FILE -16)
-		{
-		  char choix;
-		  strcpy (tmp, "\n. The file name'");
-		  strcat (tmp, optarg);
-		  strcat (tmp, "' is too long.\n");
-		  PhyML_Printf("%s",tmp);
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
-		}
-	  
-	      else if (!Filexists (optarg))
-		{
-		  char choix;
-		  strcpy (tmp, "\n. The file '");
-		  strcat (tmp, optarg);
-		  strcat (tmp, "' does not exist.\n");
-		  PhyML_Printf("%s",tmp);
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
-		}
-	      else
-		{
-		  strcpy(io->in_seq_file, optarg);
-		  io->fp_in_seq = Openfile(io->in_seq_file,0);
-		  strcpy(io->out_tree_file,optarg);
-#ifdef PHYML
-		  strcat(io->out_tree_file,"_phyml_tree");
-#else
-		  strcat(io->out_tree_file,"_mc_tree.txt");
-#endif
-		  strcpy(io->out_stats_file,optarg);
-#ifdef PHYML
-		  strcat(io->out_stats_file,"_phyml_stats");
-#else
-		  strcat(io->out_stats_file,"_mc_stats.txt");
-#endif
-		}
-	      Free (tmp);
-	      break;
-	    }
-	  
-	  case 't':case 11:
-	    {
-	      if ((io->mod->whichmodel != JC69) &&
-		  (io->mod->whichmodel != F81)  &&
-		  (io->mod->whichmodel != GTR))
-		{
-		  if ((strcmp(optarg, "e") == 0) ||
-		      (strcmp(optarg, "E") == 0) ||
-		      (strcmp(optarg, "estimated") == 0) ||
-		      (strcmp(optarg, "ESTIMATED") == 0))
-		    {
-		      io->mod->kappa                 = 4.0;
-		      io->mod->s_opt->opt_num_param  = 1;
-		      io->mod->s_opt->opt_kappa      = 1;
-		      if (io->mod->whichmodel == TN93)
-			io->mod->s_opt->opt_lambda   = 1;
-		    }
-		  else
-		    {
-		      if ((!atof(optarg)) || (atof(optarg) < .0))
+			io->mod->n_rr_branch = (int)atoi(optarg);
+			if(io->mod->n_rr_branch < 1)
 			{
-			  char choix;
-			  PhyML_Printf("\n. The ts/tv ratio must be a positive number\n");
-			  PhyML_Printf("\n. Type any key to exit.\n");
-			  if(!scanf("%c",&choix)) Exit("\n");
-			  Exit("\n");
+				PhyML_Printf("\n. The number of classes must be an integer greater than 0.\n");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
 			}
-		      else
-			{
-			  io->mod->kappa = (m3ldbl)atof(optarg);
-			  io->mod->s_opt->opt_kappa  = 0;
-			  io->mod->s_opt->opt_lambda = 0;
-			}
-		    }
+			break;
 		}
-	      break;
-	    }
-	  case 'n':case 8:
-	    {
-	      if ((!atoi(optarg)) || (atoi(optarg) < 0))
+		case 38 :
 		{
-		  char choix;
-		  PhyML_Printf("\n. The number of alignments must be a positive integer\n");
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
+			io->rm_ambigu = 1;
+			break;
 		}
-	      else io->n_data_sets = atoi (optarg);
-	      break;
-	    }
-	  case 'q':case 22:
-	    {
-	      io->interleaved = 0;
-	      break;
-	    }
-	  case 'u':case 15:
-	    {
-	      char *tmp;
-	      tmp = (char *)mCalloc(T_MAX_FILE, sizeof(char));
-	      if (strlen (optarg) > T_MAX_FILE -11)
+		case 37 :
 		{
-		  char choix;
-		  strcpy (tmp, "\n. The file name'");
-		  strcat (tmp, optarg);
-		  strcat (tmp, "' is too long.\n");
-		  PhyML_Printf("%s",tmp);
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
+			io->mod->s_opt->opt_cov_free_rates = 1;
+			break;
 		}
-	      else if (! Filexists (optarg))
+		case 36 :
 		{
-		  char choix;
-		  strcpy (tmp, "\n. The file '");
-		  strcat (tmp, optarg);
-		  strcat (tmp, "' doesn't exist.\n");
-		  PhyML_Printf("%s",tmp);
-		  PhyML_Printf("\n. Type any key to exit.\n");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
+			open_ps_file = 1;
+			break;
 		}
-	      else
+		case 35 :
 		{
-		  strcpy(io->in_tree_file, optarg);
-		  io->in_tree = 2;
-		  io->fp_in_tree = Openfile(io->in_tree_file,0);
-		}
-	      Free(tmp);
-	      break;
-	    }
+#ifdef M4
+io->m4_model = YES;
+if(!io->mod->m4mod) io->mod->m4mod = (m4 *)M4_Make_Light((io->mod->datatype == NT)?(4):(20));
+io->mod->m4mod->n_h = (int)atoi(optarg);
 
-	  case 'v':case 13:
-	    {
-	      if ((strcmp (optarg, "e") == 0) ||
-		  (strcmp (optarg, "E") == 0) ||
-		  (strcmp (optarg, "estimated") == 0) ||
-		  (strcmp (optarg, "ESTIMATED") == 0)) {
-		io->mod->s_opt->opt_num_param = 1;
-		io->mod->s_opt->opt_pinvar    = 1;
-		io->mod->invar                = 1;
-	      }
-	      else if ((atof(optarg) < 0.0) || (atof(optarg) > 1.0))
-		{
-		  char choix;
-		  PhyML_Printf("\n. The proportion of invariable site must be a number between 0.0 and 1.0\n");
-		  PhyML_Printf("\n. Type any key to exit.");
-		  if(!scanf("%c",&choix)) Exit("\n");
-		  Exit("\n");
-		}
-	      else
-		{
-		  io->mod->pinvar = (m3ldbl)atof(optarg);
-		  if (io->mod->pinvar > 0.0+MDBL_MIN)
-		    io->mod->invar = 1;
-		  else
-		    io->mod->invar = 0;
-		  io->mod->s_opt->opt_pinvar = 0;
-		}
-	      break;
-	    }
-	case 'o':
-	  {
-	    if(!strcmp(optarg,"tlr"))
-	      {
-		io->mod->s_opt->opt_topo = 1;
-		io->mod->s_opt->opt_bl   = 1;
-	      }
-	    else if(!strcmp(optarg,"tl"))
-	      {
-		io->mod->s_opt->opt_topo = 1;
-		io->mod->s_opt->opt_bl   = 1;
-	      }
-	    else if(!strcmp(optarg,"t"))
-	      {
-		Warn_And_Exit("\n. You can't optimize the topology without adjusting branch length too...\n");
-	      }
-	    else if(!strcmp(optarg,"lr"))
-	      {
-		io->mod->s_opt->opt_topo = 0;
-		io->mod->s_opt->opt_bl   = 1;
-	      }
-	    else if(!strcmp(optarg,"l"))
-	      {
-		io->mod->s_opt->opt_topo = 0;
-		io->mod->s_opt->opt_bl   = 1;
-	      }
-	    else if(!strcmp(optarg,"r"))
-	      {
-		io->mod->s_opt->opt_topo = 0;
-		io->mod->s_opt->opt_bl   = 0;
-	      }
-	    else if(!strcmp(optarg,"none") || !strcmp(optarg,"n"))
-	      {
-		io->mod->s_opt->opt_topo = 0;
-		io->mod->s_opt->opt_bl   = 0;
-	      }
-	    else
-	      {
-		char choix;
-		PhyML_Printf ("\n. The optimization parameter must be 'tlr' or 'tl' or 'lr' or 'l' or 'r' or ''.");
-		PhyML_Printf("\n. Type any key to exit.\n");
-		if(!scanf("%c",&choix)) Exit("\n");
-		Exit("\n");
-	      }
-	    break;
-	  }
-	case '?':
-	  {
-	    char choix;
-	    if (isprint (optopt))
-	      PhyML_Printf ("\n. Unknown option `-%c'.\n", optopt);
-	    else
-	      PhyML_Printf ("\n. Unknown option character `\\x%x'.\n", optopt);
-	    PhyML_Printf("\n. Type any key to exit.\n");
-	    if(!scanf("%c",&choix)) Exit("\n");
-	    Exit("\n");
-	    break;
-	  }
-	  
-	  default:
-	    Usage();
-	  }
-      }
-
-
-#ifndef PHYML
-    if((open_ps_file) || (io->m4_model == YES))
-      {
-	strcpy(io->out_ps_file,io->in_seq_file);
-	strcat(io->out_ps_file, "_mc_tree.ps");
-	io->fp_out_ps = Openfile(io->out_ps_file,1);
-      }
-#endif 
-
-
- 
-    if((io->mod->s_opt->n_rand_starts)           && 
-       (io->mod->s_opt->topo_search == NNI_MOVE) && 
-       (io->mod->s_opt->random_input_tree))
-      {
-	Warn_And_Exit("\n. The random starting tree option is only compatible with SPR based search options.\n"); 
-      }
-
-    if ((io->mod->datatype == NT) && (io->mod->whichmodel > 10))
-      {
+if(io->mod->m4mod->n_h < 1)
+{
 	char choix;
-	PhyML_Printf("\n. Err: model incompatible with the data type. Please use JC69, K80, F81, HKY, F84, TN93 or GTR\n");
-	PhyML_Printf("\n. Type any key to exit.\n");
-	if(!scanf("%c",&choix)) Exit("\n");
-	Warn_And_Exit("\n");
-      }
-    else if ((io->mod->datatype == AA) && (io->mod->whichmodel < 11))
-      {
-	char choix;
-	PhyML_Printf("\n. Err: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw or HIVb.\n");
+	PhyML_Printf("\n. The number of classes must be greater than 0.\n");
 	PhyML_Printf("\n. Type any key to exit.\n");
 	if(!scanf("%c",&choix)) Exit("\n");
 	Exit("\n");
-      }
-
-    if(io->m4_model == YES)
-      {
-#ifdef M4
-	io->mod->ns *= io->mod->m4mod->n_h;
-	io->mod->use_m4mod = 1;
-	M4_Make_Complete(io->mod->m4mod->n_h,
-			 io->mod->m4mod->n_o,
-			 io->mod->m4mod);
+}
 #endif
-      }
-    else
-      {
-	io->mod->s_opt->opt_cov_delta      = 0;
-	io->mod->s_opt->opt_cov_alpha      = 0;
-	io->mod->s_opt->opt_cov_free_rates = 0;
-      }
+break;
+		}
+		case 34 :
+		{
+#ifdef M4
+			io->m4_model = YES;
+			if(!io->mod->m4mod) io->mod->m4mod = (m4 *)M4_Make_Light((io->mod->datatype == NT)?(4):(20));
+			io->mod->m4mod->use_cov_alpha = 1;
+			io->mod->m4mod->use_cov_free  = 0;
 
-    if((io->mod->s_opt->opt_cov_free_rates) && (io->mod->s_opt->opt_cov_alpha))
-      {
-	io->mod->s_opt->opt_cov_free_rates = 0;
-	io->mod->m4mod->use_cov_alpha      = 0;
-	io->mod->m4mod->use_cov_free       = 1;
-      }
-    
-    if(io->print_site_lnl)
-      {
-	strcpy(io->out_lk_file,io->in_seq_file);
-	strcat(io->out_lk_file, "_phyml_lk");
-	if(io->append_run_ID) { strcat(io->out_lk_file,"_"); strcat(io->out_lk_file,io->run_id_string); }
-	strcat(io->out_lk_file, ".txt");
-	io->fp_out_lk = Openfile(io->out_lk_file,1);
-      }
+			if(!strcmp(optarg,"e") || !strcmp(optarg,"E") ||
+					!strcmp(optarg,"estimated") || !strcmp(optarg,"ESTIMATED"))
+			{
+				io->mod->s_opt->opt_cov_alpha = 1;
+				io->mod->m4mod->alpha         = 1.0;
+			}
+			else
+			{
+				io->mod->m4mod->alpha = (m3ldbl)atof(optarg);
 
-    if(io->print_trace)
-      {
-	strcpy(io->out_trace_file,io->in_seq_file);
-	strcat(io->out_trace_file,"_phyml_trace");
-	if(io->append_run_ID) { strcat(io->out_trace_file,"_"); strcat(io->out_trace_file,io->run_id_string); }
-	strcat(io->out_trace_file,".txt");
-	io->fp_out_trace = Openfile(io->out_trace_file,1);
-      }
+				if(io->mod->m4mod->alpha < 1.E-5)
+				{
+					char choix;
+					PhyML_Printf("\n. The value of alpha must be greater than 1.E-5.\n");
+					PhyML_Printf("\n. Type any key to exit.\n");
+					if(!scanf("%c",&choix)) Exit("\n");
+					Exit("\n");
+				}
+			}
+#endif
+			break;
+		}
 
-    if(io->mod->s_opt->random_input_tree)
-      {
-	strcpy(io->out_trees_file,io->in_seq_file);
-	strcat(io->out_trees_file,"_phyml_trees");
-	if(io->append_run_ID) { strcat(io->out_trees_file,"_"); strcat(io->out_trees_file,io->run_id_string); }
-	strcat(io->out_trees_file,".txt");
-	io->fp_out_trees = Openfile(io->out_trees_file,1);
-      }
+		case 33 :
+		{
+#ifdef M4
+			io->m4_model = YES;
+			if(!io->mod->m4mod) io->mod->m4mod = (m4 *)M4_Make_Light((io->mod->datatype == NT)?(4):(20));
 
-    if((io->print_boot_trees) && (io->mod->bootstrap > 0))
-      {
-	strcpy(io->out_boot_tree_file,io->in_seq_file);
-	strcat(io->out_boot_tree_file,"_phyml_boot_trees");
-	if(io->append_run_ID) { strcat(io->out_boot_tree_file,"_"); strcat(io->out_boot_tree_file,io->run_id_string); }
-	strcat(io->out_boot_tree_file,".txt");
-	io->fp_out_boot_tree = Openfile(io->out_boot_tree_file,1);
-	
-	strcpy(io->out_boot_stats_file,io->in_seq_file);
-	strcat(io->out_boot_stats_file,"_phyml_boot_stats");
-	if(io->append_run_ID) { strcat(io->out_boot_stats_file,"_"); strcat(io->out_boot_stats_file,io->run_id_string); }
-	strcat(io->out_boot_stats_file,".txt");
-	io->fp_out_boot_stats = Openfile(io->out_boot_stats_file,1);
-      }
+			if(!strcmp(optarg,"e") || !strcmp(optarg,"E") ||
+					!strcmp(optarg,"estimated") || !strcmp(optarg,"ESTIMATED"))
+			{
+				io->mod->s_opt->opt_cov_delta = 1;
+				io->mod->m4mod->delta         = 1.0;
+			}
+			else
+			{
+				io->mod->m4mod->delta = (m3ldbl)atof(optarg);
 
-    if(io->append_run_ID)
-      {
-	strcat(io->out_tree_file,"_");
-	strcat(io->out_stats_file,"_");
-	strcat(io->out_tree_file,io->run_id_string);
-	strcat(io->out_stats_file,io->run_id_string);
-      }
-    strcat(io->out_tree_file,".txt");
-    strcat(io->out_stats_file,".txt");
+				if(atof(optarg) < 1.E-10)
+				{
+					char choix;
+					PhyML_Printf("\n. The value of delta must be larger than 1.E-10.\n");
+					PhyML_Printf("\n. Type any key to exit.\n");
+					if(!scanf("%c",&choix)) Exit("\n");
+					Exit("\n");
+				}
+			}
+#endif
+			break;
+		}
+		case 32 :
+		{
+#ifdef M4
+			io->m4_model = YES;
+#endif
+			break;
+		}
+		case 31 :
+		{
+			io->print_site_lnl = 1;
+			break;
+		}
+		case 30 :
+		{
+			io->print_trace = 1;
+			break;
+		}
+		case 29 :
+		{
+			io->random_boot_seq_order = (int)atoi(optarg);
+			break;
+		}
+		case 28 :
+		{
+			io->collapse_boot = (int)atoi(optarg);
+			break;
+		}
+		case 27 :
+		{
+			io->r_seed = (int)atoi(optarg);
+			break;
+		}
+		case 26 :
+		{
+			io->mod->s_opt->general_pars = 1;
+			break;
+		}
+		case 25 :
+		{
+			io->mod->s_opt->fast_nni = 1;
+			break;
+		}
+		case 24 :
+		{
+			io->mod->s_opt->p_moves_to_examine = (double)atof(optarg);
+			break;
+		}
+		case 23 :
+		{
+			io->mod->s_opt->wim_inside_opt = 1;
+			break;
+		}
+		case 0 :
+		{
+			io->mod->s_opt->wim_n_rgrft = atoi(optarg);
+			break;
+		}
+		case 1 :
+		{
+			io->mod->s_opt->wim_n_globl = atoi(optarg);
+			break;
+		}
+		case 2 :
+		{
+			io->mod->s_opt->wim_max_dist = atoi(optarg);
+			break;
+		}
+		case 3 :
+		{
+			io->mod->s_opt->wim_n_optim = atoi(optarg);
+			break;
+		}
+		case 4 :
+		{
+			io->mod->s_opt->wim_n_best = atoi(optarg);
+			break;
+		}
+		case 16 :
+		{
+			io->mod->s_opt->min_diff_lk_local = atof(optarg);
+			break;
+		}
 
-    io->fp_out_tree  = Openfile(io->out_tree_file,writemode);
-    io->fp_out_stats = Openfile(io->out_stats_file,writemode);
+		case 17 :
+		{
+			io->mod->s_opt->min_diff_lk_global = atof(optarg);
+			break;
+		}
+		case 18 :
+		{
+			io->mod->s_opt->steph_spr = 0;
+			io->mod->s_opt->greedy    = 1;
+			break;
+		}
+		case 19 :
+		{
+			io->mod->s_opt->brent_it_max = atoi(optarg);
+			break;
+		}
+		case 20 :
+		{
+			io->mod->s_opt->random_input_tree = 1;
+			break;
+		}
+		case 21 :
+		{
+			io->mod->s_opt->random_input_tree = 1;
+			io->mod->s_opt->n_rand_starts = atoi(optarg);
+			if(io->mod->s_opt->n_rand_starts < 1) Exit("\n. Nunmber of random starting trees must be > 0.\n\n");
+		}
+		case 's':case 6:
+		{
+			if((!strcmp(optarg,"spr")) || (!strcmp(optarg,"SPR")))
+			{
+				io->mod->s_opt->topo_search = SPR_MOVE;
+				io->mod->s_opt->greedy      = (io->mod->s_opt->steph_spr)?(0):(1);
+			}
+			else if((!strcmp(optarg,"nni")) || (!strcmp(optarg,"NNI")))
+			{
+				io->mod->s_opt->topo_search         = NNI_MOVE;
+				io->mod->s_opt->random_input_tree   = 0;
+			}
+			else if((!strcmp(optarg,"best")) || (!strcmp(optarg,"BEST")))
+			{
+				io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
+				io->mod->s_opt->greedy      = (io->mod->s_opt->steph_spr)?(0):(1);
+			}
+			break;
+		}
 
-    return;
+		case 'd':case 7:
+			if(!strcmp(optarg,"nt"))
+				/*         if(atoi(optarg) == NT) */
+			{
+				io->mod->datatype = NT;
+				io->mod->stepsize = 1;
+				io->mod->ns = 4;
+
+				if(
+						(io->mod->whichmodel == LG)       ||
+						(io->mod->whichmodel == WAG)       ||
+						(io->mod->whichmodel == DAYHOFF)   ||
+						(io->mod->whichmodel == JTT)       ||
+						(io->mod->whichmodel == BLOSUM62)  ||
+						(io->mod->whichmodel == MTREV)     ||
+						(io->mod->whichmodel == RTREV)     ||
+						(io->mod->whichmodel == CPREV)     ||
+						(io->mod->whichmodel == DCMUT)     ||
+						(io->mod->whichmodel == VT)        ||
+						(io->mod->whichmodel == MTMAM)     ||
+						(io->mod->whichmodel == MTART)     ||
+						(io->mod->whichmodel == HIVW)      ||
+						(io->mod->whichmodel == HIVB)      ||
+						(io->mod->whichmodel == CUSTOMAA)
+				)
+				{
+					io->mod->whichmodel = HKY85;
+					strcpy(io->mod->modelname, "HKY85\0");
+				}
+			}
+			else if (!strcmp(optarg,"aa"))
+				/*         else if (atoi(optarg) == AA) */
+			{
+				io->mod->datatype         = AA;
+				io->mod->stepsize         = 1;
+				io->mod->s_opt->opt_kappa = 0;
+				io->mod->ns               = 20;
+				if(
+						(io->mod->whichmodel == JC69)   ||
+						(io->mod->whichmodel == K80)    ||
+						(io->mod->whichmodel == F81)    ||
+						(io->mod->whichmodel == HKY85)  ||
+						(io->mod->whichmodel == F84)    ||
+						(io->mod->whichmodel == TN93)   ||
+						(io->mod->whichmodel == GTR)    ||
+						(io->mod->whichmodel == CUSTOM)
+				)
+				{
+					io->mod->whichmodel = LG;
+					strcpy(io->mod->modelname, "LG\0");
+				}
+			}
+			else
+			{
+				char choix;
+				PhyML_Printf("\n. Unknown argument to -d option: please use `nt' for DNA or `aa' for Amino-Acids\n");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+
+			break;
+
+		case 'm': case 5 :
+		{
+			if(!isalpha(optarg[0]))
+			{
+				strcpy(io->mod->custom_mod_string,optarg);
+
+				if(strlen(io->mod->custom_mod_string) != 6)
+				{
+					Warn_And_Exit("\n. The string should be of length 6.\n");
+				}
+				else
+				{
+					Translate_Custom_Mod_String(io->mod);
+				}
+
+				io->mod->datatype = NT;
+				io->mod->whichmodel = CUSTOM;
+				strcpy(io->mod->modelname, "custom");
+				io->mod->s_opt->opt_kappa     = 0;
+				io->mod->s_opt->opt_rr        = 1;
+				io->mod->s_opt->opt_num_param = 1;
+			}
+
+			if (strcmp(optarg, "JC69") == 0)
+			{
+				io->mod->datatype = NT;
+				io->mod->whichmodel = JC69;
+				strcpy(io->mod->modelname, "JC69");
+				io->mod->s_opt->opt_kappa  = 0;
+			}
+			else if(strcmp(optarg, "K80") == 0)
+			{
+				io->mod->datatype = NT;
+				io->mod->whichmodel = K80;
+				strcpy(io->mod->modelname, "K80");
+			}
+			else if(strcmp(optarg, "F81") == 0)
+			{
+				io->mod->datatype = NT;
+				io->mod->whichmodel = F81;
+				strcpy(io->mod->modelname, "F81");
+				io->mod->s_opt->opt_kappa  = 0;
+			}
+			else if (strcmp(optarg, "HKY85") == 0)
+			{
+				io->mod->datatype = NT;
+				io->mod->whichmodel = HKY85;
+				strcpy(io->mod->modelname, "HKY85");
+			}
+			else if(strcmp(optarg, "F84") == 0)
+			{
+				io->mod->datatype = NT;
+				io->mod->whichmodel = F84;
+				strcpy(io->mod->modelname, "F84");
+			}
+			else if (strcmp (optarg,"TN93") == 0)
+			{
+				io->mod->datatype = NT;
+				io->mod->whichmodel = TN93;
+				strcpy(io->mod->modelname, "TN93");
+				if(io->mod->s_opt->opt_kappa)
+				{
+					io->mod->s_opt->opt_lambda = 1;
+				}
+			}
+			else if(strcmp (optarg, "GTR") == 0)
+			{
+				io->mod->datatype = NT;
+				io->mod->whichmodel = GTR;
+				strcpy(io->mod->modelname, "GTR");
+				io->mod->s_opt->opt_kappa = 0;
+				io->mod->s_opt->opt_rr    = 1;
+			}
+			else if(strcmp(optarg, "Dayhoff") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = DAYHOFF;
+				strcpy(io->mod->modelname, "Dayhoff");
+			}
+			else if(strcmp (optarg, "JTT") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = JTT;
+				strcpy(io->mod->modelname, "JTT");
+			}
+			else if(strcmp(optarg, "MtREV") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = MTREV;
+				strcpy(io->mod->modelname,"MtREV");
+			}
+			else if(strcmp (optarg, "LG") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = LG;
+				strcpy(io->mod->modelname, "LG");
+			}
+			else if(strcmp (optarg, "WAG") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = WAG;
+				strcpy(io->mod->modelname, "WAG");
+			}
+			else if(strcmp(optarg, "DCMut") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = DCMUT;
+				strcpy(io->mod->modelname, "DCMut");
+			}
+			else if(strcmp (optarg, "RtREV") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = RTREV;
+				strcpy(io->mod->modelname, "RtREV");
+			}
+			else if(strcmp(optarg, "CpREV") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = CPREV;
+				strcpy(io->mod->modelname, "CpREV");
+			}
+			else if(strcmp(optarg, "VT") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = VT;
+				strcpy(io->mod->modelname, "VT");
+			}
+			else if(strcmp(optarg, "Blosum62") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = BLOSUM62;
+				strcpy(io->mod->modelname,"Blosum62");
+			}
+			else if(strcmp(optarg, "MtMam") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = MTMAM;
+				strcpy(io->mod->modelname, "MtMam");
+			}
+			else if (strcmp(optarg,"MtArt") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = MTART;
+				strcpy(io->mod->modelname, "MtArt");
+			}
+			else if (strcmp(optarg,"HIVw") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = HIVW;
+				strcpy(io->mod->modelname, "HIVw");
+			}
+			else if(strcmp(optarg, "HIVb") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = HIVB;
+				strcpy(io->mod->modelname, "HIVb");
+			}
+			else if (strcmp(optarg, "custom") == 0)
+			{
+				io->mod->datatype = AA;
+				io->mod->whichmodel = CUSTOMAA;
+				strcpy(io->mod->modelname, "Read from file");
+			}
+			break;
+		}
+
+		case 'a':case 14 :
+		{
+			use_gamma = 1;
+			if ((strcmp (optarg, "e") == 0) ||
+					(strcmp (optarg, "E") == 0) ||
+					(strcmp (optarg, "estimated") == 0) ||
+					(strcmp (optarg, "ESTIMATED") == 0))
+			{
+				io->mod->s_opt->opt_alpha     = 1;
+				io->mod->s_opt->opt_num_param = 1;
+			}
+			else if ((!atof(optarg)) || (atof(optarg) < 1.E-10))
+			{
+				char choix;
+				PhyML_Printf("\n. Alpha must be > 1.E-10.\n");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else
+			{
+				io->mod->alpha = (m3ldbl)atof(optarg);
+				io->mod->s_opt->opt_alpha  = 0;
+			}
+			break;
+		}
+		case 'b':case 10:
+		{
+			if (atoi(optarg) < -4)
+			{
+				char choix;
+				PhyML_Printf("\n. Branch test value must be a positive integer for bootstrap, or between -1 and -4 for aLRT branch test\n");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else
+			{
+				if((int)atoi(optarg) > 0)
+				{
+					io->ratio_test       = 0;
+					io->mod->bootstrap   = (int)atoi(optarg);
+					io->print_boot_trees = 1;
+
+					if(io->n_data_sets > 1)
+					{
+						char choix;
+						PhyML_Printf("\n. Bootstrap option is not allowed with multiple data sets\n");
+						PhyML_Printf("\n. Type any key to exit.\n");
+						if(!scanf("%c",&choix)) Exit("\n");
+						Exit("\n");
+					}
+				}
+				else if (atoi(optarg)==0)
+				{
+					io->mod->bootstrap = 0;
+					io->ratio_test     = 0;
+				}
+				else
+				{
+					io->mod->bootstrap = 0;
+					io->ratio_test     = -(int)atoi(optarg);
+				}
+			}
+			break;
+		}
+		case 'c':case 12:
+		{
+			if ((!atoi(optarg)) || (atoi(optarg) < 0))
+			{
+				char choix;
+				PhyML_Printf("\n. Unknown argument to -c option: the number of categories must be a positive integer\n");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else io->mod->n_catg = atoi(optarg);
+			break;
+		}
+		case 'f':
+		{
+			if(!strcmp(optarg,"e"))
+			{
+				if (io->mod->datatype == NT)
+					io->mod->s_opt->opt_state_freq = 0;
+				else
+					io->mod->s_opt->opt_state_freq = 1;
+
+				if((io->mod->whichmodel == JC69) ||
+						(io->mod->whichmodel == K80))
+				{
+					char choix;
+					PhyML_Printf("\n. Invalid model settings (option '-f').\n");
+					PhyML_Printf("\n. Type any key to exit.\n");
+					if(!scanf("%c",&choix)) Exit("\n");
+					Exit("\n");
+				}
+			}
+			else if(!strcmp(optarg,"m"))
+			{
+				if (io->mod->datatype == NT)
+					io->mod->s_opt->opt_state_freq = 1;
+				else
+					io->mod->s_opt->opt_state_freq = 0;
+			}
+			else if(!isalpha(optarg[0]))
+			{
+				m3ldbl sum;
+
+				io->mod->s_opt->opt_state_freq  = 0;
+				io->mod->s_opt->user_state_freq = 1;
+
+				sum =
+						(io->mod->user_b_freq[0] +
+								io->mod->user_b_freq[1] +
+								io->mod->user_b_freq[2] +
+								io->mod->user_b_freq[3]);
+
+				io->mod->user_b_freq[0] /= sum;
+				io->mod->user_b_freq[1] /= sum;
+				io->mod->user_b_freq[2] /= sum;
+				io->mod->user_b_freq[3] /= sum;
+
+				if(io->mod->user_b_freq[0] < .0 ||
+						io->mod->user_b_freq[1] < .0 ||
+						io->mod->user_b_freq[2] < .0 ||
+						io->mod->user_b_freq[3] < .0 ||
+						io->mod->user_b_freq[0] > 1. ||
+						io->mod->user_b_freq[1] > 1. ||
+						io->mod->user_b_freq[2] > 1. ||
+						io->mod->user_b_freq[3] > 1.)
+				{
+					Warn_And_Exit("\n. Invalid base frequencies.\n");
+				}
+			}
+			break;
+		}
+
+		case 'h':
+		{
+			Usage();
+			break;
+		}
+
+		case 'i':case 9:
+		{
+			char *tmp;
+			tmp = (char *) mCalloc (T_MAX_FILE, sizeof(char));
+			if (strlen (optarg) > T_MAX_FILE -16)
+			{
+				char choix;
+				strcpy (tmp, "\n. The file name'");
+				strcat (tmp, optarg);
+				strcat (tmp, "' is too long.\n");
+				PhyML_Printf("%s",tmp);
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+
+			else if (!Filexists (optarg))
+			{
+				char choix;
+				strcpy (tmp, "\n. The file '");
+				strcat (tmp, optarg);
+				strcat (tmp, "' does not exist.\n");
+				PhyML_Printf("%s",tmp);
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else
+			{
+				strcpy(io->in_seq_file, optarg);
+				io->fp_in_seq = Openfile(io->in_seq_file,0);
+				strcpy(io->out_tree_file,optarg);
+#ifdef PHYML
+				strcat(io->out_tree_file,"_phyml_tree");
+#else
+				strcat(io->out_tree_file,"_mc_tree.txt");
+#endif
+				strcpy(io->out_stats_file,optarg);
+#ifdef PHYML
+				strcat(io->out_stats_file,"_phyml_stats");
+#else
+				strcat(io->out_stats_file,"_mc_stats.txt");
+#endif
+			}
+			Free (tmp);
+			break;
+		}
+
+		case 't':case 11:
+		{
+			if ((io->mod->whichmodel != JC69) &&
+					(io->mod->whichmodel != F81)  &&
+					(io->mod->whichmodel != GTR))
+			{
+				if ((strcmp(optarg, "e") == 0) ||
+						(strcmp(optarg, "E") == 0) ||
+						(strcmp(optarg, "estimated") == 0) ||
+						(strcmp(optarg, "ESTIMATED") == 0))
+				{
+					io->mod->kappa                 = 4.0;
+					io->mod->s_opt->opt_num_param  = 1;
+					io->mod->s_opt->opt_kappa      = 1;
+					if (io->mod->whichmodel == TN93)
+						io->mod->s_opt->opt_lambda   = 1;
+				}
+				else
+				{
+					if ((!atof(optarg)) || (atof(optarg) < .0))
+					{
+						char choix;
+						PhyML_Printf("\n. The ts/tv ratio must be a positive number\n");
+						PhyML_Printf("\n. Type any key to exit.\n");
+						if(!scanf("%c",&choix)) Exit("\n");
+						Exit("\n");
+					}
+					else
+					{
+						io->mod->kappa = (m3ldbl)atof(optarg);
+						io->mod->s_opt->opt_kappa  = 0;
+						io->mod->s_opt->opt_lambda = 0;
+					}
+				}
+			}
+			break;
+		}
+		case 'n':case 8:
+		{
+			if ((!atoi(optarg)) || (atoi(optarg) < 0))
+			{
+				char choix;
+				PhyML_Printf("\n. The number of alignments must be a positive integer\n");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else io->n_data_sets = atoi (optarg);
+			break;
+		}
+		case 'q':case 22:
+		{
+			io->interleaved = 0;
+			break;
+		}
+
+		/**
+		 * The next three cases are for obtaining information about the mixed branch
+		 * length model.
+		 */
+		case 49: //JSJ: proportions "props"
+		{
+			PhyML_Printf("\n  !!!WARNING!!! the props argument is not currently evaluated...\n");
+			PhyML_Printf("\n  !!!WARNING!!! the props may be modified from the interface that starts by running the program without any arguments.\n");
+
+//			else
+//			{
+//				char choix;
+//				PhyML_Printf ("\n. The optimization parameter must be 'tlr' or 'tl' or 'lr' or 'l' or 'r' or ''.");
+//				PhyML_Printf("\n. Type any key to exit.\n");
+//				if(!scanf("%c",&choix)) Exit("\n");
+//				Exit("\n");
+//			}
+			break;
+		}
+		case 50: //JSJ: fixed proportions "fprops"
+		{
+			fprops = 1; //set the flag to let other functions know that this has been set
+			io->fixed_props = 1;
+			io->mod->s_opt->opt_props = io->fixed_props;
+			break;
+		}
+		case 51: //JSJ: number branch length categories "ncatg"
+		{
+			io->n_l = atoi(optarg);
+			if(!fprops && io->n_l > 1){ //if the fprops option hasn't been flagged, and more than one catg, default to optimize
+				io->fixed_props = 0;
+				io->mod->s_opt->opt_props = io->fixed_props;
+			}
+			if(io->n_l < 1 || io->n_l > MAX_BL_SET){
+				PhyML_Printf("\n. The number of branch length categories (--ncatg or -w) must be at least 1 and no more than %i",MAX_BL_SET);
+				PhyML_Printf("\n. Type any key to exit.\n");
+				Exit("\n");
+			}
+			if(io->n_l > 1){
+				Update_Default_Props(io);
+			}
+			break;
+		}
+		/**
+		 * JSJ: end the functions to modify the mixed branch length model
+		 */
+		case 'u':case 15:
+		{
+			char *tmp;
+			tmp = (char *)mCalloc(T_MAX_FILE, sizeof(char));
+			if (strlen (optarg) > T_MAX_FILE -11)
+			{
+				char choix;
+				strcpy (tmp, "\n. The file name'");
+				strcat (tmp, optarg);
+				strcat (tmp, "' is too long.\n");
+				PhyML_Printf("%s",tmp);
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else if (! Filexists (optarg))
+			{
+				char choix;
+				strcpy (tmp, "\n. The file '");
+				strcat (tmp, optarg);
+				strcat (tmp, "' doesn't exist.\n");
+				PhyML_Printf("%s",tmp);
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else
+			{
+				strcpy(io->in_tree_file, optarg);
+				io->in_tree = 2;
+				io->fp_in_tree = Openfile(io->in_tree_file,0);
+			}
+			Free(tmp);
+			break;
+		}
+
+		case 'v':case 13:
+		{
+			if ((strcmp (optarg, "e") == 0) ||
+					(strcmp (optarg, "E") == 0) ||
+					(strcmp (optarg, "estimated") == 0) ||
+					(strcmp (optarg, "ESTIMATED") == 0)) {
+				io->mod->s_opt->opt_num_param = 1;
+				io->mod->s_opt->opt_pinvar    = 1;
+				io->mod->invar                = 1;
+			}
+			else if ((atof(optarg) < 0.0) || (atof(optarg) > 1.0))
+			{
+				char choix;
+				PhyML_Printf("\n. The proportion of invariable site must be a number between 0.0 and 1.0\n");
+				PhyML_Printf("\n. Type any key to exit.");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else
+			{
+				io->mod->pinvar = (m3ldbl)atof(optarg);
+				if (io->mod->pinvar > 0.0+MDBL_MIN)
+					io->mod->invar = 1;
+				else
+					io->mod->invar = 0;
+				io->mod->s_opt->opt_pinvar = 0;
+			}
+			break;
+		}
+		case 'o':
+		{
+			if(!strcmp(optarg,"tlr"))
+			{
+				io->mod->s_opt->opt_topo = 1;
+				io->mod->s_opt->opt_bl   = 1;
+			}
+			else if(!strcmp(optarg,"tl"))
+			{
+				io->mod->s_opt->opt_topo = 1;
+				io->mod->s_opt->opt_bl   = 1;
+			}
+			else if(!strcmp(optarg,"t"))
+			{
+				Warn_And_Exit("\n. You can't optimize the topology without adjusting branch length too...\n");
+			}
+			else if(!strcmp(optarg,"lr"))
+			{
+				io->mod->s_opt->opt_topo = 0;
+				io->mod->s_opt->opt_bl   = 1;
+			}
+			else if(!strcmp(optarg,"l"))
+			{
+				io->mod->s_opt->opt_topo = 0;
+				io->mod->s_opt->opt_bl   = 1;
+			}
+			else if(!strcmp(optarg,"r"))
+			{
+				io->mod->s_opt->opt_topo = 0;
+				io->mod->s_opt->opt_bl   = 0;
+			}
+			else if(!strcmp(optarg,"none") || !strcmp(optarg,"n"))
+			{
+				io->mod->s_opt->opt_topo = 0;
+				io->mod->s_opt->opt_bl   = 0;
+			}
+			else
+			{
+				char choix;
+				PhyML_Printf ("\n. The optimization parameter must be 'tlr' or 'tl' or 'lr' or 'l' or 'r' or ''.");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			break;
+		}
+		case '?':
+		{
+			char choix;
+			if (isprint (optopt))
+				PhyML_Printf ("\n. Unknown option `-%c'.\n", optopt);
+			else
+				PhyML_Printf ("\n. Unknown option character `\\x%x'.\n", optopt);
+			PhyML_Printf("\n. Type any key to exit.\n");
+			if(!scanf("%c",&choix)) Exit("\n");
+			Exit("\n");
+			break;
+		}
+
+		default:
+			Usage();
+		}
+	}
+
+
+#ifndef PHYML
+	if((open_ps_file) || (io->m4_model == YES))
+	{
+		strcpy(io->out_ps_file,io->in_seq_file);
+		strcat(io->out_ps_file, "_mc_tree.ps");
+		io->fp_out_ps = Openfile(io->out_ps_file,1);
+	}
+#endif 
+
+
+
+	if((io->mod->s_opt->n_rand_starts)           &&
+			(io->mod->s_opt->topo_search == NNI_MOVE) &&
+			(io->mod->s_opt->random_input_tree))
+	{
+		Warn_And_Exit("\n. The random starting tree option is only compatible with SPR based search options.\n");
+	}
+
+	if ((io->mod->datatype == NT) && (io->mod->whichmodel > 10))
+	{
+		char choix;
+		PhyML_Printf("\n. Err: model incompatible with the data type. Please use JC69, K80, F81, HKY, F84, TN93 or GTR\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
+		if(!scanf("%c",&choix)) Exit("\n");
+		Warn_And_Exit("\n");
+	}
+	else if ((io->mod->datatype == AA) && (io->mod->whichmodel < 11))
+	{
+		char choix;
+		PhyML_Printf("\n. Err: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw or HIVb.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
+		if(!scanf("%c",&choix)) Exit("\n");
+		Exit("\n");
+	}
+
+	if(io->m4_model == YES)
+	{
+#ifdef M4
+		io->mod->ns *= io->mod->m4mod->n_h;
+		io->mod->use_m4mod = 1;
+		M4_Make_Complete(io->mod->m4mod->n_h,
+				io->mod->m4mod->n_o,
+				io->mod->m4mod);
+#endif
+	}
+	else
+	{
+		io->mod->s_opt->opt_cov_delta      = 0;
+		io->mod->s_opt->opt_cov_alpha      = 0;
+		io->mod->s_opt->opt_cov_free_rates = 0;
+	}
+
+	if((io->mod->s_opt->opt_cov_free_rates) && (io->mod->s_opt->opt_cov_alpha))
+	{
+		io->mod->s_opt->opt_cov_free_rates = 0;
+		io->mod->m4mod->use_cov_alpha      = 0;
+		io->mod->m4mod->use_cov_free       = 1;
+	}
+
+	if(io->print_site_lnl)
+	{
+		strcpy(io->out_lk_file,io->in_seq_file);
+		strcat(io->out_lk_file, "_phyml_lk");
+		if(io->append_run_ID) { strcat(io->out_lk_file,"_"); strcat(io->out_lk_file,io->run_id_string); }
+		strcat(io->out_lk_file, ".txt");
+		io->fp_out_lk = Openfile(io->out_lk_file,1);
+	}
+
+	if(io->print_trace)
+	{
+		strcpy(io->out_trace_file,io->in_seq_file);
+		strcat(io->out_trace_file,"_phyml_trace");
+		if(io->append_run_ID) { strcat(io->out_trace_file,"_"); strcat(io->out_trace_file,io->run_id_string); }
+		strcat(io->out_trace_file,".txt");
+		io->fp_out_trace = Openfile(io->out_trace_file,1);
+	}
+
+	if(io->mod->s_opt->random_input_tree)
+	{
+		strcpy(io->out_trees_file,io->in_seq_file);
+		strcat(io->out_trees_file,"_phyml_trees");
+		if(io->append_run_ID) { strcat(io->out_trees_file,"_"); strcat(io->out_trees_file,io->run_id_string); }
+		strcat(io->out_trees_file,".txt");
+		io->fp_out_trees = Openfile(io->out_trees_file,1);
+	}
+
+	if((io->print_boot_trees) && (io->mod->bootstrap > 0))
+	{
+		strcpy(io->out_boot_tree_file,io->in_seq_file);
+		strcat(io->out_boot_tree_file,"_phyml_boot_trees");
+		if(io->append_run_ID) { strcat(io->out_boot_tree_file,"_"); strcat(io->out_boot_tree_file,io->run_id_string); }
+		strcat(io->out_boot_tree_file,".txt");
+		io->fp_out_boot_tree = Openfile(io->out_boot_tree_file,1);
+
+		strcpy(io->out_boot_stats_file,io->in_seq_file);
+		strcat(io->out_boot_stats_file,"_phyml_boot_stats");
+		if(io->append_run_ID) { strcat(io->out_boot_stats_file,"_"); strcat(io->out_boot_stats_file,io->run_id_string); }
+		strcat(io->out_boot_stats_file,".txt");
+		io->fp_out_boot_stats = Openfile(io->out_boot_stats_file,1);
+	}
+
+	if(io->append_run_ID)
+	{
+		strcat(io->out_tree_file,"_");
+		strcat(io->out_stats_file,"_");
+		strcat(io->out_tree_file,io->run_id_string);
+		strcat(io->out_stats_file,io->run_id_string);
+	}
+	strcat(io->out_tree_file,".txt");
+	strcat(io->out_stats_file,".txt");
+
+	io->fp_out_tree  = Openfile(io->out_tree_file,writemode);
+	io->fp_out_stats = Openfile(io->out_stats_file,writemode);
+
+	return;
 }
 
 /*********************************************************/

@@ -78,8 +78,6 @@ void Usage()
   PhyML_Printf("%s\n\t-q (or --sequential)\n",BOLD);
   PhyML_Printf("%s\t\tChanges interleaved format (default) to sequential format.\n",FLAT);
 
-  PhyML_Printf("\n");
-
   PhyML_Printf("%s\n\t-n (or --multiple) ""%snb_data_sets%s\n",BOLD,LINE,FLAT);
   PhyML_Printf("%s\t\tnb_data_sets%s is an integer corresponding to the number of data sets to analyse.\n",LINE,FLAT);
 
@@ -226,6 +224,25 @@ void Usage()
   PhyML_Printf("\t\t%sThis option may be useful when running simulations involving PhyML.\n",FLAT);
 
   PhyML_Printf("\n");
+
+  /**
+   * JSJ: shows the options for the mixed branch length model
+   */
+  PhyML_Printf("\n");
+  PhyML_Printf("%s\n\t--ncatg %snum%s\n",BOLD,LINE,FLAT);
+  PhyML_Printf("%s\t\t Change the number of branch length sets to an integer between 1 and %i \n",FLAT,MAX_BL_SET);
+
+  PhyML_Printf("%s\n\t--fprops\n",BOLD);
+  PhyML_Printf("%s\t\t Do not optimize the initial proportion of sites accounted for by each rate category. This option is only valid if -w (or --ncatg) is more than 1 \n",FLAT);
+
+  PhyML_Printf("%s\n\t--props \n",BOLD);
+  PhyML_Printf("%s\t\t This is not yet a valid option, to set the proportions use this program with no arguments \n",FLAT);
+
+
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+
+
 
   PhyML_Printf("%s\n\t--quiet%s\n",BOLD,FLAT);
   PhyML_Printf("\t\t%sNo interactive question (for running in batch mode).\n",FLAT);
