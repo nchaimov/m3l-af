@@ -1,7 +1,7 @@
 /*
 
 PHYML :  a program that  computes maximum likelihood  phylogenies from
-DNA or AA homologous sequences 
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -275,7 +275,7 @@ m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 
 /*********************************************************/
 
-m3ldbl RRparam_GTR_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, 
+m3ldbl RRparam_GTR_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		m3ldbl *xmin, arbre *tree, allseq *alldata, m3ldbl *param, int n_iter_max)
 {
 	m3ldbl f1,f2,x0,x1,x2,x3;
@@ -504,7 +504,7 @@ m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 	For(i,tree->n_l){
 		max = b_fcus->l[i] * 10.0;
 		min = b_fcus->l[i] * 0.1;
-		result = Br_Len_Brent_Iter(max,b_fcus->l[i],min,tree->mod->s_opt->min_diff_lk_local/tree->n_l,b_fcus,tree,1000,0,i);
+		result = Br_Len_Brent_Iter(max,b_fcus->l[i],min,tree->mod->s_opt->min_diff_lk_local,b_fcus,tree,1000,0,i);
 	}
 
 	return result;
@@ -1394,15 +1394,17 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 
 	m3ldbl lk_init;
 	lk_init = tree->c_lnL;
-	do{ //JSJ: give brent 10 chances
+	//do{ //JSJ: give brent 10 chances
+	// VHS: actually, if Brent can't find a better tree on it's first try,
+	// additional attempts are unlikely to do better.
 		For(j,tree->n_l){
 			Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
-					tree->mod->s_opt->min_diff_lk_local/tree->n_l,
+					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty,j);
 		}
-	}while((tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local) && (++iter < 10));
+	//}while((tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local) && (++iter < 10));
 
 	if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
 	{//JSJ: We hit this error when running SPR...
@@ -1873,7 +1875,7 @@ void BFGS(arbre *tree, m3ldbl *p, int n, m3ldbl gtol, m3ldbl step_size,
 #define ALF 1.0e-4
 #define TOLX 1.0e-7
 
-void Lnsrch_RR_Param(arbre *tree, int n, m3ldbl *xold, m3ldbl fold, 
+void Lnsrch_RR_Param(arbre *tree, int n, m3ldbl *xold, m3ldbl fold,
 		m3ldbl *g, m3ldbl *p, m3ldbl *x,
 		m3ldbl *f, m3ldbl stpmax, int *check)
 {
@@ -1984,7 +1986,7 @@ void Lnsrch_RR_Param(arbre *tree, int n, m3ldbl *xold, m3ldbl fold,
 #define ALF 1.0e-4
 #define TOLX 1.0e-7
 
-void Lnsrch_RR_Cov_Param(arbre *tree, int n, m3ldbl *xold, m3ldbl fold, 
+void Lnsrch_RR_Cov_Param(arbre *tree, int n, m3ldbl *xold, m3ldbl fold,
 		m3ldbl *g, m3ldbl *p, m3ldbl *x,
 		m3ldbl *f, m3ldbl stpmax, int *check)
 {
@@ -2636,7 +2638,7 @@ int Missing_Dist_Brak(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, int x, int y, matrix *
 
 /*********************************************************/
 
-m3ldbl Missing_Dist_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max, 
+m3ldbl Missing_Dist_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_iter_max,
 		int x, int y, matrix *mat)
 {
 	int iter;
