@@ -2981,7 +2981,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	{
 		For(i,tree->n_l){
 			lk1 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
-					tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty,i);
@@ -3021,7 +3021,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	{
 		For(i,tree->n_l){
 			lk2 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
-					tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty,i);
@@ -3072,7 +3072,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	{
 		For(i,tree->n_l){
 			lk0 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
-					tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty,i);
@@ -7156,7 +7156,7 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 			min *= 0.02;
 			max *= 50.0;
 			Br_Len_Brent_Iter(min,b->l[m],max,
-					tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+					tree->mod->s_opt->min_diff_lk_local,
 					b,tree,
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty,m);

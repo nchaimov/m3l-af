@@ -434,7 +434,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 		Update_P_Lk(tree,b_fcus,b_fcus->rght);
 
-		if(lk_temp < lk0 - tree->mod->s_opt->min_diff_lk_local)
+		if(lk_temp < lk0 - (tree->mod->s_opt->min_diff_lk_local))
 		{
 			PhyML_Printf("\n. lk_temp = %f lk0 = %f\n",lk_temp,lk0);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -503,7 +503,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //				l_max[j]   = b_fcus->left->b[i]->l[j];
 //				l_infb[j]  = BL_MIN;
 				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->left->b[i]->l[j],b_fcus->left->b[i]->l[j],BL_MIN,
-						tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+						tree->mod->s_opt->min_diff_lk_local,
 						b_fcus->left->b[i],tree,
 						tree->mod->s_opt->brent_it_max,0,j);
 			}
@@ -521,7 +521,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //			l_max[j]   = b_fcus->l[j];
 //			l_infb[j]  = BL_MIN;
 			lk_temp = Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
-					tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
 					tree->mod->s_opt->brent_it_max,0,j);
 		}
@@ -542,7 +542,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //				l_max[j]   = b_fcus->rght->b[i]->l[j];
 //				l_infb[j]  = BL_MIN;
 				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->rght->b[i]->l[j],b_fcus->rght->b[i]->l[j],BL_MIN,
-						tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+						tree->mod->s_opt->min_diff_lk_local,
 						b_fcus->rght->b[i],tree,
 						tree->mod->s_opt->brent_it_max,0,j);
 			}
@@ -555,7 +555,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		Update_P_Lk(tree,b_fcus,b_fcus->rght);
 
 
-		if(lk_temp < lk1 - tree->mod->s_opt->min_diff_lk_local)
+		if(lk_temp < lk1 - (tree->mod->s_opt->min_diff_lk_local))
 		{
 			PhyML_Printf("\n. lk_temp = %f lk1 = %f\n",lk_temp,lk1);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -632,7 +632,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //				l_max[j]   = b_fcus->left->b[i]->l[j];
 //				l_infb[j]  = BL_MIN;
 				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->left->b[i]->l[j],b_fcus->left->b[i]->l[j],BL_MIN,
-						tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+						tree->mod->s_opt->min_diff_lk_local,
 						b_fcus->left->b[i],tree,
 						tree->mod->s_opt->brent_it_max,0,j);
 			}
@@ -650,7 +650,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //			l_max[j]   = b_fcus->l[j];
 //			l_infb[j]  = BL_MIN;
 			lk_temp = Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
-					tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
 					tree->mod->s_opt->brent_it_max,0,j);
 		}
@@ -669,7 +669,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //				l_max[j]   = b_fcus->rght->b[i]->l[j];
 //				l_infb[j]  = BL_MIN;
 				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->rght->b[i]->l[j],b_fcus->rght->b[i]->l[j],BL_MIN,
-						tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+						tree->mod->s_opt->min_diff_lk_local,
 						b_fcus->rght->b[i],tree,
 						tree->mod->s_opt->brent_it_max,0,j);
 			}
@@ -681,7 +681,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 		Update_P_Lk(tree,b_fcus,b_fcus->rght);
 
-		if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
+		if(lk_temp < lk2 - (tree->mod->s_opt->min_diff_lk_local))
 		{
 			PhyML_Printf("\n. lk_temp = %f lk2 = %f\n",lk_temp,lk2);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -896,7 +896,7 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 //				l_max[j]  = b_fcus->left->b[i]->l[j];
 //				l_infb[j] = BL_MIN;
 				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->left->b[i]->l[j],b_fcus->left->b[i]->l[j],BL_MIN,
-									tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+									tree->mod->s_opt->min_diff_lk_local,
 									b_fcus->left->b[i],tree,
 									tree->mod->s_opt->brent_it_max,0,j);
 			}
@@ -914,7 +914,7 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 //			l_max[j]   = b_fcus->l[j];
 //			l_infb[j]  = BL_MIN;
 			lk_temp = Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
-							tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+							tree->mod->s_opt->min_diff_lk_local,
 							b_fcus,tree,
 							tree->mod->s_opt->brent_it_max,0,j);
 		}
@@ -935,7 +935,7 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 //				l_max[j]   = b_fcus->rght->b[i]->l[j];
 //				l_infb[j]  = BL_MIN;
 				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->rght->b[i]->l[j],b_fcus->rght->b[i]->l[j],BL_MIN,
-						tree->mod->s_opt->min_diff_lk_local/(m3ldbl)tree->n_l,
+						tree->mod->s_opt->min_diff_lk_local,
 						b_fcus->rght->b[i],tree,
 						tree->mod->s_opt->brent_it_max,0,j);
 			}

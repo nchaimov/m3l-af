@@ -555,10 +555,13 @@ m3ldbl Br_Len_Brent_Iter(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 			return tree->c_lnL;
 		}
 
-
+//JSJ: removed the last part of this statement, because this function should fail if it is at fault.
+// rather than simply allowing the next function to fail.
+//		if(((fabs(tree->c_lnL-old_lnL) < tol) &&
+//				(tree->c_lnL > init_lnL - tol)) ||
+//				(iter > n_iter_max - 1))
 		if(((fabs(tree->c_lnL-old_lnL) < tol) &&
-				(tree->c_lnL > init_lnL - tol)) ||
-				(iter > n_iter_max - 1))
+				(tree->c_lnL > init_lnL - tol)))
 		{
 			b_fcus->l[lnum]=x;
 			Lk_At_Given_Edge(b_fcus,tree);
@@ -1406,7 +1409,7 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 		}
 	//}while((tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local) && (++iter < 10));
 
-	if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
+	if(tree->c_lnL < lk_init - (tree->mod->s_opt->min_diff_lk_local))
 	{//JSJ: We hit this error when running SPR...
 		For(j,tree->n_l) PhyML_Printf("\n.Bl Set# %i: %lf %lf %lf %lf",j,(double)10.*b_fcus->l[j],(double)b_fcus->l[j],(double)BL_MIN,(double)b_fcus->l[j]);
 
