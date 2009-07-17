@@ -991,7 +991,7 @@ void MCMC_Randomize_Branch_Lengths(arbre *tree)
       if(tree->t_edges[i] != tree->e_root)
 	{
 	  u = Uni();
-	  tree->t_edges[i]->l *= -log(u);
+	  tree->t_edges[i]->l[0] *= -log((double)u);
 	}
       else
 	{

@@ -32,7 +32,10 @@ void Read_Command_Line(option *io, int argc, char **argv)
 	int open_ps_file;
 	int use_gamma;
 	int writemode;
-	int fprops = 0;
+	int fixed_props, proportions, numcatg;
+	fixed_props = 0;
+	proportions = 0;
+	numcatg = 0;
 
 	struct option longopts[] =
 	{
@@ -876,22 +879,33 @@ break;
 		 */
 		case 49: //JSJ: proportions "props"
 		{
-			PhyML_Printf("\n  !!!WARNING!!! the props argument is not currently evaluated...\n");
-			PhyML_Printf("\n  !!!WARNING!!! the props may be modified from the interface that starts by running the program without any arguments.\n");
-
-//			else
-//			{
-//				char choix;
-//				PhyML_Printf ("\n. The optimization parameter must be 'tlr' or 'tl' or 'lr' or 'l' or 'r' or ''.");
-//				PhyML_Printf("\n. Type any key to exit.\n");
-//				if(!scanf("%c",&choix)) Exit("\n");
-//				Exit("\n");
-//			}
+			proportions = 0; // use this as the counter for the numbr of props read in.
+					   // doubles to let one know if any props have been read in...
+			if(optarg[0] != '['){
+				char choix;
+				PhyML_Printf ("\n. The proportions must be in the form [NUM1,NUM2,...,NUMN] with no spaces and surrounded by '[' and ']'.");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			int i,j = 0;
+			char aprop[100];
+			for(i=1; i < strlen(optarg); i++){
+				if(optarg[i] != ',' && optarg[i] != ']'){
+					aprop[j] = optarg[i];
+					j++;
+				}else{
+					aprop[j+1] = '\0'; // end the string
+					j = 0; //start j over
+					io->props[proportions] = atof(aprop);
+					proportions++; //increment the props by one
+				}
+			}
 			break;
 		}
 		case 50: //JSJ: fixed proportions "fprops"
 		{
-			fprops = 1; //set the flag to let other functions know that this has been set
+			fixed_props = 1; //set the flag to let other functions know that this has been set
 			io->fixed_props = 1;
 			io->mod->s_opt->opt_props = io->fixed_props;
 			break;
@@ -899,7 +913,8 @@ break;
 		case 51: //JSJ: number branch length categories "ncatg"
 		{
 			io->n_l = atoi(optarg);
-			if(!fprops && io->n_l > 1){ //if the fprops option hasn't been flagged, and more than one catg, default to optimize
+			numcatg = io->n_l;
+			if(fixed_props == 0 && io->n_l > 1){ //if the fprops option hasn't been flagged, and more than one catg, default to optimize
 				io->fixed_props = 0;
 				io->mod->s_opt->opt_props = io->fixed_props;
 			}
@@ -909,7 +924,9 @@ break;
 				Exit("\n");
 			}
 			if(io->n_l > 1){
-				Update_Default_Props(io);
+				if(proportions == 0){
+					Update_Default_Props(io);
+				}
 			}
 			break;
 		}
@@ -1054,6 +1071,8 @@ break;
 		io->fp_out_ps = Openfile(io->out_ps_file,1);
 	}
 #endif 
+
+
 
 
 

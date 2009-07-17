@@ -7859,7 +7859,7 @@ void Print_Settings(option *io)
 			PhyML_Printf(" %lf,",(double)io->props[i]);
 		}
 	}
-	PhyML_Printf("\n                . Optimize proportion of sites in each branch length category: \t %s", (io->fixed_props) ? ("No"):("Yes"));
+	PhyML_Printf("\n                . Optimize proportion of sites in each branch length category: \t %s", (io->fixed_props == 0) ? ("Yes"):("No"));
 
 	PhyML_Printf("\n                . Run ID : \t\t\t\t\t %s", (io->append_run_ID) ? (io->run_id_string) : ("none"));
 

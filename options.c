@@ -235,8 +235,8 @@ void Usage()
   PhyML_Printf("%s\n\t--fprops\n",BOLD);
   PhyML_Printf("%s\t\t Do not optimize the initial proportion of sites accounted for by each rate category. This option is only valid if -w (or --ncatg) is more than 1 \n",FLAT);
 
-  PhyML_Printf("%s\n\t--props \n",BOLD);
-  PhyML_Printf("%s\t\t This is not yet a valid option, to set the proportions use this program with no arguments \n",FLAT);
+  PhyML_Printf("%s\n\t--props %s[%snum1%s,%snum2%s,...,%snumN%s]\n",BOLD,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT);
+  PhyML_Printf("%s\t\t  Use these starting proportions of branch length categories in the evaluation\n",FLAT);
 
 
   PhyML_Printf("\n");
@@ -255,7 +255,7 @@ void Usage()
   PhyML_Printf("%sEXAMPLES\n\n"
 	 "%s\tDNA interleaved sequence file, default parameters : ""%s  ./phyml -i seqs1"
 	 "%s\n\tAA interleaved sequence file, default parameters :  ""%s  ./phyml -i seqs2 -d aa"
-	 "%s\n\tAA sequential sequence file, with customization :   ""%s  ./phyml -i seqs3 -q -d aa -m JTT -c 4 -a e%s\n",BOLD,FLAT,BOLD,FLAT,BOLD,FLAT,BOLD,FLAT);
+	 "%s\n\tAA sequential sequence file, with customization :   ""%s  ./phyml -i seqs3 -q -d aa -m JTT -c 4 --fprops --props [0.4,0.6] --ncatg 2 -a e%s\n",BOLD,FLAT,BOLD,FLAT,BOLD,FLAT,BOLD,FLAT);
   Exit("");
 }
 
@@ -306,6 +306,8 @@ option *Get_Input(int argc, char **argv)
     default:
       Read_Command_Line(io,argc,argv);
     }
+
+  Normalize_Props_IO(io); //double check that the proportions are normalized...
 
   Print_Settings(io);
   return io;
