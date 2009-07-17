@@ -133,7 +133,7 @@ void Free_Edge_Labels(edge *b)
 
 void Free_Edge(edge *b)
 {
-  int i;
+//  int i;
   Free_Edge_Labels(b);
   Free(b);
 }

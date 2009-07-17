@@ -565,6 +565,12 @@ void Print_Tree(FILE *fp, arbre *tree)
 }
 
 /*********************************************************/
+void Print_Tree_Screen(arbre *tree){
+	char *tree_s;
+	tree_s = (char *)Write_Tree(tree);
+	PhyML_Printf("%s\n",tree_s);
+	Free(tree_s);
+}
 
 char *Write_Tree(arbre *tree)
 {
@@ -2980,6 +2986,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else
 	{
 		For(i,tree->n_l){
+			PhyML_Printf("Tree lnL (line 2983 of utilities.c): %lf \n",tree->c_lnL);
 			lk1 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
@@ -3020,6 +3027,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else
 	{
 		For(i,tree->n_l){
+			PhyML_Printf("Tree lnL (line 3024 of utilities.c): %lf \n",tree->c_lnL);
 			lk2 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
@@ -3071,6 +3079,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else
 	{
 		For(i,tree->n_l){
+			PhyML_Printf("Tree lnL (line 3076 of utilities.c): %lf \n",tree->c_lnL);
 			lk0 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,

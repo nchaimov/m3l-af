@@ -1166,5 +1166,6 @@ m3ldbl *Matrix_Transpose(m3ldbl *A, int dim);
 void Normalize_Props(arbre *tree);
 void Normalize_Props_IO(option *io);
 void Update_Default_Props(option *io);
+void Print_Tree_Screen(arbre *tree);
 
 #endif

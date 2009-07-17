@@ -557,11 +557,9 @@ m3ldbl Br_Len_Brent_Iter(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 
 //JSJ: removed the last part of this statement, because this function should fail if it is at fault.
 // rather than simply allowing the next function to fail.
-//		if(((fabs(tree->c_lnL-old_lnL) < tol) &&
-//				(tree->c_lnL > init_lnL - tol)) ||
-//				(iter > n_iter_max - 1))
 		if(((fabs(tree->c_lnL-old_lnL) < tol) &&
-				(tree->c_lnL > init_lnL - tol)))
+				(tree->c_lnL > init_lnL - tol)) ||
+				(iter > n_iter_max - 1))
 		{
 			b_fcus->l[lnum]=x;
 			Lk_At_Given_Edge(b_fcus,tree);
@@ -624,6 +622,7 @@ m3ldbl Br_Len_Brent_Iter(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		}
 	}
 	if(iter > BRENT_ITMAX) PhyML_Printf("\n. Too many iterations in BRENT (%d) (%f)",iter,b_fcus->l);
+
 	return(-1);
 	/* Not Reached ??  *xmin=x;   */
 	/* Not Reached ??  return fx; */
@@ -1400,7 +1399,9 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 	//do{ //JSJ: give brent 10 chances
 	// VHS: actually, if Brent can't find a better tree on it's first try,
 	// additional attempts are unlikely to do better.
+
 		For(j,tree->n_l){
+			PhyML_Printf("Calling Br_Len_Brent_Iter (in Opt_Br_Len_Ser) lk: %lf \n",tree->c_lnL);
 			Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,

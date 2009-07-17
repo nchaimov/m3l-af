@@ -698,7 +698,7 @@ void MCMC_Stick_Rates_Pre(node *a, node *d, arbre *tree)
 		  printf("\n. lexp=%f alpha=%f b->l = (%f) dt=(%f); cur_lnL_data = %f vs %f ; cur_lnL_rates = %f vs %f",
 			 tree->rates->lexp,
 			 tree->rates->alpha,
-			 b->l,
+			 (double)b->l[0][0],
 			 fabs(tree->rates->nd_t[a->num] - tree->rates->nd_t[d->num]),
 			 cur_lnL_data,tree->c_lnL,
 			 cur_lnL_rate,tree->rates->c_lnL);
