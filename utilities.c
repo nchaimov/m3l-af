@@ -1121,7 +1121,7 @@ void Init_NNI(nni *a_nni, int n_l)
 //JSJ: use this function if the number of bl sets is known
 node *Make_Node_Light(int num, int num_bl_set)
 {
-	int i;
+//	int i;
 	node *n;
 	n        = (node *)mCalloc(1,sizeof(node));
 	n->v     = (node **)mCalloc(3,sizeof(node *));
@@ -9359,7 +9359,7 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 {
 	arbre *tree;
 	matrix *mat;
-	int i;
+//	int i;
 
 
 	if(!io->quiet) PhyML_Printf("\n. Computing pairwise distances...\n");

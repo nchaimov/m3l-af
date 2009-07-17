@@ -229,13 +229,13 @@ void Usage()
    * JSJ: shows the options for the mixed branch length model
    */
   PhyML_Printf("\n");
-  PhyML_Printf("%s\n\t--ncatg %snum%s\n",BOLD,LINE,FLAT);
+  PhyML_Printf("%s\n\t-l (or --blclasses) %snum%s\n",BOLD,LINE,FLAT);
   PhyML_Printf("%s\t\t Change the number of branch length sets to an integer between 1 and %i \n",FLAT,MAX_BL_SET);
 
-  PhyML_Printf("%s\n\t--fprops\n",BOLD);
-  PhyML_Printf("%s\t\t Do not optimize the initial proportion of sites accounted for by each rate category. This option is only valid if -w (or --ncatg) is more than 1 \n",FLAT);
+  PhyML_Printf("%s\n\t-w (or --fixblprops) \n",BOLD);
+  PhyML_Printf("%s\t\t Do not optimize the initial proportion of sites accounted for by each rate category. This option is only valid if -l (or --blclasses) is more than 1 \n",FLAT);
 
-  PhyML_Printf("%s\n\t--props %s[%snum1%s,%snum2%s,...,%snumN%s]\n",BOLD,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT);
+  PhyML_Printf("%s\n\t-z (or --blprops) %s[%snum1%s,%snum2%s,...,%snumN%s]\n",BOLD,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT);
   PhyML_Printf("%s\t\t  Use these starting proportions of branch length categories in the evaluation\n",FLAT);
 
 
@@ -255,7 +255,7 @@ void Usage()
   PhyML_Printf("%sEXAMPLES\n\n"
 	 "%s\tDNA interleaved sequence file, default parameters : ""%s  ./phyml -i seqs1"
 	 "%s\n\tAA interleaved sequence file, default parameters :  ""%s  ./phyml -i seqs2 -d aa"
-	 "%s\n\tAA sequential sequence file, with customization :   ""%s  ./phyml -i seqs3 -q -d aa -m JTT -c 4 --fprops --props [0.4,0.6] --ncatg 2 -a e%s\n",BOLD,FLAT,BOLD,FLAT,BOLD,FLAT,BOLD,FLAT);
+	 "%s\n\tAA sequential sequence file, with customization :   ""%s  ./phyml -i seqs3 -q -d aa -m JTT -c 4 -z -w [0.4,0.6] -l 2 -a e%s\n",BOLD,FLAT,BOLD,FLAT,BOLD,FLAT,BOLD,FLAT);
   Exit("");
 }
 

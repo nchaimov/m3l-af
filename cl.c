@@ -88,16 +88,16 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"run_id",            required_argument,NULL,46},
 			{"pars",              no_argument,NULL,47},
 			{"quiet",             no_argument,NULL,48},
-			{"props",             required_argument,NULL,49},
-			{"fprops",            no_argument,NULL,50},
-			{"ncatg",             required_argument,NULL,51},
+			{"blprops",             required_argument,NULL,49},
+			{"fixblprops",            no_argument,NULL,50},
+			{"blclasses",             required_argument,NULL,51},
 			{0,0,0,0}
 	};
 
 	writemode = 1;
 	open_ps_file = 0;
 	use_gamma = 0;
-	while((c = getopt_long(argc,argv,"qi:d:m:b:n:t:f:zk:v:c:a:u:ho:s:x:g:l:ep:z:w",longopts,NULL)) != -1)
+	while((c = getopt_long(argc,argv,"qi:d:m:b:n:t:f:zk:v:c:a:u:l:w:ho:s:x:g:ep:z",longopts,NULL)) != -1)
 	{
 		switch(c)
 		{
@@ -877,7 +877,7 @@ break;
 		 * The next three cases are for obtaining information about the mixed branch
 		 * length model.
 		 */
-		case 49: //JSJ: proportions "props"
+		case 'w': case 49: //JSJ: proportions "blprops"
 		{
 			proportions = 0; // use this as the counter for the numbr of props read in.
 					   // doubles to let one know if any props have been read in...
@@ -903,14 +903,14 @@ break;
 			}
 			break;
 		}
-		case 50: //JSJ: fixed proportions "fprops"
+		case 'z': case 50: //JSJ: fixed proportions "fixblprops"
 		{
 			fixed_props = 1; //set the flag to let other functions know that this has been set
 			io->fixed_props = 1;
 			io->mod->s_opt->opt_props = io->fixed_props;
 			break;
 		}
-		case 51: //JSJ: number branch length categories "ncatg"
+		case 'l': case 51: //JSJ: number branch length categories "blclasses"
 		{
 			io->n_l = atoi(optarg);
 			numcatg = io->n_l;
