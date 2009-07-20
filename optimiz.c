@@ -1415,7 +1415,7 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 		For(j,tree->n_l) PhyML_Printf("\n.Bl Set# %i: %lf %lf %lf %lf",j,(double)10.*b_fcus->l[j],(double)b_fcus->l[j],(double)BL_MIN,(double)b_fcus->l[j]);
 
 		PhyML_Printf("\n. %f -- %f",lk_init,tree->c_lnL);
-		Warn_And_Exit("\n. Err. in Optimize_Br_Len_Serie\n");
+	//	Warn_And_Exit("\n. Err. in Optimize_Br_Len_Serie\n");
 	}
 
 	if(d->tax) return;

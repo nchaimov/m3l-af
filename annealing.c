@@ -8,11 +8,11 @@
 #include "annealing.h"
 
 //
-argre Get_TA_neighbor_proposition(arbgre *tree){
+arbre *Get_TA_neighbor_proposition(arbgre *tree){
 
 }
 
-arbre Get_QA_neighbor_proposition(arbre *tree){
+arbre *Get_QA_neighbor_proposition(arbre *tree){
 
 }
 

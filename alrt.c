@@ -479,7 +479,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 			 */
 			PhyML_Printf("\n. lk_temp = %f lk0 = %f\n",lk_temp,lk0);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-			Warn_And_Exit(""); //JSJ: temporarily comment out this line...
+	//		Warn_And_Exit(""); //JSJ: temporarily comment out this line...
 		}
 	}
 	while(fabs(lk_temp-lk0) > tree->mod->s_opt->min_diff_lk_global);
@@ -600,7 +600,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		{
 			PhyML_Printf("\n. lk_temp = %f lk1 = %f\n",lk_temp,lk1);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-			Warn_And_Exit(""); //JSJ: commented out temporarily
+		//	Warn_And_Exit(""); //JSJ: commented out temporarily
 		}
 	}
 	while(fabs(lk_temp-lk1) > tree->mod->s_opt->min_diff_lk_global);
@@ -726,7 +726,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		{
 			PhyML_Printf("\n. lk_temp = %f lk2 = %f\n",lk_temp,lk2);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-			Warn_And_Exit(""); //JSJ: temporarily comment out
+	//		Warn_And_Exit(""); //JSJ: temporarily comment out
 		}
 	}
 	while(fabs(lk_temp-lk2) > tree->mod->s_opt->min_diff_lk_global);
@@ -786,7 +786,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 	{
 		PhyML_Printf("\n. lk_temp = %f lk_init = %f\n",lk_temp,lk_init);
 		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-		Warn_And_Exit("");
+//		Warn_And_Exit("");
 	}
 
 
