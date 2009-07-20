@@ -7,12 +7,16 @@
 #include "rates.h"
 #include "annealing.h"
 
-//
+
+//do we want to make a new tree here??
+//otherwise we should return a void and just do work on the input tree
 void Get_TA_neighbor_proposition(arbgre *tree){
+
 
 }
 
-vpod Get_QA_neighbor_proposition(arbre *tree){
+void Get_QA_neighbor_proposition(arbre *tree){
+
 
 }
 
@@ -44,7 +48,7 @@ m3ldbl Thermal_anneal_all_free_params(arbre *tree, int verbose){
 	 * ebest = e
 	 * iter = 0
 	 * while (iter < MAX_QA_ITERS):
-	 * 		snew = Get_QA_neighbor_proposition(s)
+	 * 		snew = Get_TA_neighbor_proposition(s)
 	 * 		enew = likelihood of snew
 	 * 		if enew < ebest:
 	 * 			sbest = snew

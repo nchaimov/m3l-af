@@ -24,6 +24,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "eigen.h"
 #include "pars.h"
 #include "alrt.h"
+#include "annealing.h"
 
 #ifdef MPI
 #include "mpi_boot.h"
@@ -192,9 +193,32 @@ int main(int argc, char **argv)
 
 		  if(tree->mod->s_opt->opt_topo)
 		    {
-		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
-		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
-		      else                                               Best_Of_NNI_And_SPR(tree);
+			  switch(tree->mod->s_opt->topo_search){
+			  case NNI_MOVE:
+				  Simu_loop(tree);
+				  break;
+			  case SPR_MOVE:
+				  Speed_Spr_Loop(tree);
+				  break;
+			  case BEST_OF_NNI_AND_SPR:
+				  Best_Of_NNI_And_SPR(tree);
+				  break;
+			  case SIMULATED_THERMAL_ANNEALING:
+				  Thermal_anneal_all_free_params(tree, 1);//JSJ: 1 for verbose...
+				  break;
+			  case SIMULATED_QUANTUM_ANNEALING:
+				  Quantum_anneal_all_free_params(tree, 1); //JSJ: 1 for verbose...
+				  break;
+			  default:
+				  PhyML_Printf("\n The topology search option was not recognized...");
+				  PhyML_Printf("\n. Err. in file %s on line %d\n",__FILE__,__LINE__);
+				  Warn_And_Exit("\n");
+			  }
+
+//		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
+//		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
+//		      else if(tree->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) Best_Of_NNI_And_SPR(tree);
+//		      else if
 		    }
 		  else
 		    {
