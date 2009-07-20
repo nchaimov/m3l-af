@@ -305,6 +305,8 @@ void Launch_Interface_MBL_Model(option *io)
 			}else if(tmp == 1){
 				io->fixed_props = 0;
 				io->mod->s_opt->opt_props = io->fixed_props;
+				//Default to Simulated Thermal Annealing if there is more than 1 branch length category
+				if(io->user_topo == 0) io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
 			}
 		}
 		Free(n_branches);
@@ -1711,6 +1713,7 @@ void Launch_Interface_Topo_Search(option *io)
 		{
 			io->mod->s_opt->topo_search         = SPR_MOVE;
 			io->mod->s_opt->n_rand_starts       = 1;
+			io->user_topo 						= 1;
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
 		}
@@ -1718,6 +1721,7 @@ void Launch_Interface_Topo_Search(option *io)
 		{
 			io->mod->s_opt->topo_search         = BEST_OF_NNI_AND_SPR;
 			io->mod->s_opt->n_rand_starts       = 1;
+			io->user_topo 						= 1;
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
 		}
@@ -1725,19 +1729,22 @@ void Launch_Interface_Topo_Search(option *io)
 		{
 			io->mod->s_opt->topo_search         = SIMULATED_THERMAL_ANNEALING;
 			io->mod->s_opt->n_rand_starts       = 1;
+			io->user_topo 						= 1;
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
 		}
 		else if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
 		{
-			io->mod->s_opt->topo_search         = SIMULATED_QUANTUML_ANNEALING;
+			io->mod->s_opt->topo_search         = SIMULATED_QUANTUM_ANNEALING;
 			io->mod->s_opt->n_rand_starts       = 1;
+			io->user_topo 						= 1;
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
 		}
 		else if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING){
 			io->mod->s_opt->topo_search         = NNI_MOVE;
 			io->mod->s_opt->n_rand_starts       = 1;
+			io->user_topo 						= 1;
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
 		}

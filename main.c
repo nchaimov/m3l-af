@@ -134,7 +134,9 @@ int main(int argc, char **argv)
 		    	tree = Read_User_Tree(alldata,mod,io);
 		    	//JSJ: Make sure that the user hasn't defined starting
 		    	//parameters that we need to copy into the tree.
-
+		    	if(io->user_topo == 0 && tree->n_l > 1){ //if more than one bl set default to simulated thermal annealing.
+		    		mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
+		    	}
 		    	if(io->user_props != 0){//this value has been set! lets swap the trees value's with this one
 		    		//PhyML_Printf("JSJ: Size of io props array is: %i\n[",((int)(sizeof(io->props)/sizeof(m3ldbl))));
 		    		int tmp = io->n_l;
@@ -152,6 +154,7 @@ int main(int argc, char **argv)
 //		    			else PhyML_Printf(" %lf ]",io->props[i]);
 		    			tree->props[i] = io->props[i];
 		    		}
+
 
 		    	}
 
@@ -204,10 +207,10 @@ int main(int argc, char **argv)
 				  Best_Of_NNI_And_SPR(tree);
 				  break;
 			  case SIMULATED_THERMAL_ANNEALING:
-				  Thermal_anneal_all_free_params(tree, 1);//JSJ: 1 for verbose...
+				  Thermal_Anneal_All_Free_Params(tree, 1);//JSJ: 1 for verbose...
 				  break;
 			  case SIMULATED_QUANTUM_ANNEALING:
-				  Quantum_anneal_all_free_params(tree, 1); //JSJ: 1 for verbose...
+				  Quantum_Anneal_All_Free_Params(tree, 1); //JSJ: 1 for verbose...
 				  break;
 			  default:
 				  PhyML_Printf("\n The topology search option was not recognized...");

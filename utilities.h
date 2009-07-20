@@ -593,6 +593,7 @@ typedef struct __Option { /* mostly used in 'options.c' */
   int							 n_l; /* JSJ: the number of branch length sets, defaults to 1 */
   m3ldbl           props[MAX_BL_SET]; /* JSJ: the proportion of sites in each branch length set */
   int				      user_props; /* JSJ: 0-> proportions are not user defined. */
+  int 					   user_topo; /* JSJ: 0-> user has not defined a topo search method */
   int					 fixed_props; /* JSJ: fix the proportion of sites, defaults to 0 */
 
 

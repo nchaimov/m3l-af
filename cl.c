@@ -381,17 +381,30 @@ break;
 			if((!strcmp(optarg,"spr")) || (!strcmp(optarg,"SPR")))
 			{
 				io->mod->s_opt->topo_search = SPR_MOVE;
+				io->user_topo 						= 1;
 				io->mod->s_opt->greedy      = (io->mod->s_opt->steph_spr)?(0):(1);
 			}
 			else if((!strcmp(optarg,"nni")) || (!strcmp(optarg,"NNI")))
 			{
 				io->mod->s_opt->topo_search         = NNI_MOVE;
+				io->user_topo 						= 1;
 				io->mod->s_opt->random_input_tree   = 0;
 			}
 			else if((!strcmp(optarg,"best")) || (!strcmp(optarg,"BEST")))
 			{
 				io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
+				io->user_topo 						= 1;
 				io->mod->s_opt->greedy      = (io->mod->s_opt->steph_spr)?(0):(1);
+			}
+			else if((!strcmp(optarg,"sta")) || (!strcmp(optarg,"STA")))
+			{
+				io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
+				io->user_topo 						= 1;
+			}
+			else if((!strcmp(optarg,"sqa")) || (!strcmp(optarg,"SQA")))
+			{
+				io->mod->s_opt->topo_search = SIMULATED_QUANTUM_ANNEALING;
+				io->user_topo 						= 1;
 			}
 			break;
 		}
@@ -915,6 +928,9 @@ break;
 		{
 			io->n_l = atoi(optarg);
 			numcatg = io->n_l;
+			if(io->n_l > 1 && io->user_topo == 0){
+				io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
+			}
 			if(fixed_props == 0 && io->n_l > 1){ //if the fprops option hasn't been flagged, and more than one catg, default to optimize
 				io->fixed_props = 0;
 				io->mod->s_opt->opt_props = io->fixed_props;

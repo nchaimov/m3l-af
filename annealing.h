@@ -1,9 +1,13 @@
-void Get_TA_neighbor_proposition(arbre *tree);
-void Get_QA_neighbor_proposition(arbre *tree);
+void Get_TA_Neighbor_Proposition(arbre *tree);
+void Get_QA_Neighbor_Proposition(arbre *tree);
 m3ldbl Boltzmann_P(m3ldbl e, m3ldbl enew, m3ldbl temperature);
-m3ldbl Thermal_anneal_all_free_params(arbre *tree, int verbose);
-m3ldbl Quantum_anneal_all_free_params(arbre *tree, int verbose);
-m3ldbl Scale_acceptance_ratio(arbre *tree);
+m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose);
+m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose);
+m3ldbl Scale_Acceptance_Ratio(arbre *tree);
+void Step_Brlen_Proportion(arbre *tree);
+void Step_Gamma(arbre *tree);
+void Step_Branch_Lengths(arbre *tree);
+void Step_Topology(arbre *tree);
 
 //
 // Global parameters.

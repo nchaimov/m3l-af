@@ -11,8 +11,8 @@
 // This method returns the scaled and estimated acceptance ratio for thermal annealing.
 // The variable "tree" will be modified by this method, such that tree will be in a good
 // starting position for thermal annealing after this method concludes.
-m3ldbl Scale_acceptance_ratio(arbre *tree){
-
+m3ldbl Scale_Acceptance_Ratio(arbre *tree){
+	m3ldbl result = 0.1;
 	/* psuedo-code:
 
 	lnL_best = tree's lnL
@@ -25,7 +25,7 @@ m3ldbl Scale_acceptance_ratio(arbre *tree){
 	tree_proposed = copy of tree
 
 	for iter in range(0, iters_per_temp):
-		Get_TA_neighbor_proposition(tree_proposed)
+		Get_TA_Neighbor_Proposition(tree_proposed)
 		lnL_proposed = tree_proposed's likelihood
 		if (lnL_proposed > -DBL_MAX):
 			n++
@@ -41,6 +41,7 @@ m3ldbl Scale_acceptance_ratio(arbre *tree){
 	aratio = accept_ratio * fsqsum / start_temp
 	return aratio
 	*/
+	return result;
 }
 
 // This method modifies some or all parameters of "tree", including:
@@ -50,43 +51,44 @@ m3ldbl Scale_acceptance_ratio(arbre *tree){
 // * alpha (for gamma distributed ASRV)
 // * gamma proportions
 // * mu (evolutionary rate)
-void Get_TA_neighbor_proposition(arbre *tree){
+void Get_TA_Neighbor_Proposition(arbre *tree){
 	// For now, we'll always perturb every parameter.
 	// In the future, we'll do something more sophisticated, where the probability of perturbing
 	// any particular parameter will be drawn from a probability distribution.
-	Step_brlen_proportion(tree);
-	Step_branch_lengths(tree);
-	Step_gamma(tree);
-	Step_topology(tree);
+	Step_Brlen_Proportion(tree);
+	Step_Branch_Lengths(tree);
+	Step_Gamma(tree);
+	Step_Topology(tree);
 }
 
-// helper for "Get_TA_neighbor_proposition"
-void Step_brlen_proportion(tree){
+// helper for "Get_TA_Neighbor_Proposition"
+void Step_Brlen_Proportion(arbre *tree){
 	// For now, do something simple and stupid, like stepping branch lengths by +/- 0.001.
 	// We'll eventually do something more sophisticated, like selected the new branch
 	// lengths from a Dirichlet distribution.
+	// when we update proportions we need to recalculate the likelihoods on the whole tree...
 }
 
-// helper for "Get_TA_neighbor_proposition"
-void Step_gamma(tree){
+// helper for "Get_TA_Neighbor_Proposition"
+void Step_Gamma(arbre *tree){
 	// For now, do something stupid like incrementing gamma +/- 0.001.
 	// In reality, we'll want to perturb the gamma parameter based on a normal distribution
 	// with mean equal to the current value of gamma and standard deviation equal to some
 	// user-specified parameter sigma.
 }
 
-// helper for "Get_TA_neighbor_proposition"
-void Step_branch_lengths(tree){
+// helper for "Get_TA_Neighbor_Proposition"
+void Step_Branch_Lengths(arbre *tree){
 	// For now, do something stupid like incrementing lengths by +/- 0.001.
 }
 
-// helper for "Get_TA_neighbor_proposition"
-void Step_topology(tree){
+// helper for "Get_TA_Neighbor_Proposition"
+void Step_Topology(arbre *tree){
 	// invoke NNI or SPR to create a new topology.
 }
 
 
-void Get_QA_neighbor_proposition(arbre *tree){
+void Get_QA_Neighbor_Proposition(arbre *tree){
 }
 
 // INPUT: Given the likelihood (lnl_curr) of our current state, the likelihood (lnl_new) of our new proposed state,
@@ -110,13 +112,14 @@ m3ldbl Boltzmann_P(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl temperature){
 //
 // At the end of this method, the object "tree" will contain the best-found topology, branch lengths,
 // and model parameters.
-m3ldbl Thermal_anneal_all_free_params(arbre *tree, int verbose){
+m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
+	m3ldbl result = 1.0;
 	/* Here is psuedocode for the algorithm:
 	 *
 	 * m3ldbl temp = start_temp // start_temp is a global
 	 * m3ldbl tempmult = exp(log(end_temp / start_temp) / double(temp_count - 1) )
 	 *
-	 * aratio = Scale_acceptance_ratio(tree) // accept_ratio is a global value
+	 * aratio = Scale_Acceptance_Ratio(tree) // accept_ratio is a global value
 	 *
 	 * lnL_best = tree's lnL
 	 * tree_current = copy of tree
@@ -136,7 +139,7 @@ m3ldbl Thermal_anneal_all_free_params(arbre *tree, int verbose){
 	 *		for (int iter = 0; iter < iters_per_temp; iter++):
 	 *			steps_tried++;
 	 *			tree_proposed = copy of tree_current
-	 *			Get_TA_neighbor_proposition(tree_proposed)
+	 *			Get_TA_Neighbor_Proposition(tree_proposed)
 	 *			lnL_proposed = tree_proposed's likelihood
 	 *			if lnL_proposed > lnL_best:
 	 *				lnL_best = lnL_proposed
@@ -152,12 +155,12 @@ m3ldbl Thermal_anneal_all_free_params(arbre *tree, int verbose){
 	 *
 	 *		temp *= tempmult // reduce the temperature with geometric descent
 	 */
-
+	return result;
 }
 
 // INPUT: a tree structure, with parameters to optimize specified in tree->mod->s_opt
 // OUTPUT: the likelihood of the best found tree
-m3ldbl Quantum_anneal_all_free_params(arbre *tree, int verbose){
+m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 	m3ldbl result = 1.0;
 
 	return result;
