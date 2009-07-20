@@ -881,6 +881,7 @@ break;
 		{
 			proportions = 0; // use this as the counter for the numbr of props read in.
 					   // doubles to let one know if any props have been read in...
+			io->user_props = 1;
 			if(optarg[0] != '['){
 				char choix;
 				PhyML_Printf ("\n. The proportions must be in the form [NUM1,NUM2,...,NUMN] with no spaces and surrounded by '[' and ']'.");

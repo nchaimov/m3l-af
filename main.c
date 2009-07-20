@@ -118,7 +118,7 @@ int main(int argc, char **argv)
 		   * JSJ: we need to initialize the model with some branch lengths
 		   */
 //		  int n_l = 2;
-//		  int i;
+		  int i;
 //		  m3ldbl *props = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
 //		  For(i,n_l){
 //			  props[i] = 1.0/n_l;
@@ -128,7 +128,34 @@ int main(int argc, char **argv)
 		  switch(io->in_tree)
 		    {
 		    case 0 : case 1 : { tree = Dist_And_BioNJ(alldata,mod,io);    break; }
-		    case 2 :          { tree = Read_User_Tree(alldata,mod,io); break; }
+		    case 2 :
+		    {
+		    	tree = Read_User_Tree(alldata,mod,io);
+		    	//JSJ: Make sure that the user hasn't defined starting
+		    	//parameters that we need to copy into the tree.
+
+		    	if(io->user_props != 0){//this value has been set! lets swap the trees value's with this one
+		    		//PhyML_Printf("JSJ: Size of io props array is: %i\n[",((int)(sizeof(io->props)/sizeof(m3ldbl))));
+		    		int tmp = io->n_l;
+		    		if(tmp == 1) io->n_l = tree->n_l; //if io->n_l hasn't been initialized, set it...
+		    		else if(tmp != tree->n_l){
+		    			//it has been initialized, but not to the correct value!
+		    			PhyML_Printf("Warning, the starting tree you supplied doesn't have the same number of branch length sets that you requested.\n");
+		    			PhyML_Printf("Requested %i branch length sets. Found %i branch length sets on the starting tree.\n",tmp,tree->n_l);
+		    			PhyML_Printf("\n. Err. in file %s on line %d\n",__FILE__,__LINE__);
+		    			Warn_And_Exit("\n");
+		    		}
+		    		Normalize_Props_IO(io);
+		    		For(i,tree->n_l){
+//		    			if(i != (tree->n_l - 1)) PhyML_Printf(" %lf,",io->props[i]);
+//		    			else PhyML_Printf(" %lf ]",io->props[i]);
+		    			tree->props[i] = io->props[i];
+		    		}
+
+		    	}
+
+		    	break;
+		    }
 		    }
 
 		  /**
@@ -137,6 +164,14 @@ int main(int argc, char **argv)
 		   */
 
 		  if(!tree) continue;
+		  /**
+		   * JSJ: print out the current settings...
+		   * It no longer makes sense to print this out right away, since some of these settings
+		   * are dependent on the user's input tree. The output is thus a little sloppier because
+		   * the user is identified that the input tree is read, the sequence is read, all before
+		   * the analysis output is printed to the screen.
+		   */
+		  Print_Settings(io);
 
 		  time(&t_beg);
 		  time(&(tree->t_beg));

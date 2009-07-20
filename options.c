@@ -309,7 +309,7 @@ option *Get_Input(int argc, char **argv)
 
   Normalize_Props_IO(io); //double check that the proportions are normalized...
 
-  Print_Settings(io);
+//  Print_Settings(io); //JSJ: move this line to main.c after the user tree is read in.
   return io;
 }
 

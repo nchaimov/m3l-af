@@ -353,6 +353,7 @@ void Launch_Interface_MBL_Model(option *io)
 		}
 		//JSJ: correct for floating point error
 		Normalize_Props_IO(io);
+		io->user_props = 1;
 
 		break;
 	}

@@ -5179,6 +5179,7 @@ void Set_Defaults_Input(option* io)
 	io->n_l 					   = 1; //JSJ: initialize to 1 branch length set
 	io->props[0]				   = 1.0; //JSJ: initialize to all sites falling under the one set
 	io->fixed_props                = 1; //JSJ: don't optimize props on single branch length
+	io->user_props				   = 0; //JSJ: assume user won't supply proportions...
 	io->tree                       = NULL;
 	io->mod->datatype              = 0;
 	strcpy(io->nt_or_cd,"nucleotides");
