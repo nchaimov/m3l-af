@@ -8,11 +8,11 @@
 #include "annealing.h"
 
 //
-arbre *Get_TA_neighbor_proposition(arbgre *tree){
+void Get_TA_neighbor_proposition(arbgre *tree){
 
 }
 
-arbre *Get_QA_neighbor_proposition(arbre *tree){
+vpod Get_QA_neighbor_proposition(arbre *tree){
 
 }
 
@@ -37,12 +37,6 @@ m3ldbl Boltzmann_P(e, enew, m3ldbl temperature){
 // OUTPUT: the likelihood of the best found tree
 m3ldbl Thermal_anneal_all_free_params(arbre *tree, int verbose){
 
-}
-
-// INPUT: a tree structure, with parameters to optimize specified in tree->mod->s_opt
-// OUTPUT: the likelihood of the best found tree
-m3ldbl Quantum_anneal_all_free_params(arbre *tree, int verbose){
-
 	/* Here is psudocode for the algorithm:
 	 * s = input tree with input parameters
 	 * e = the likelihood of s
@@ -61,6 +55,11 @@ m3ldbl Quantum_anneal_all_free_params(arbre *tree, int verbose){
 	 * 		iter = iter + 1
 	 * return sbest
 	 */
+}
+
+// INPUT: a tree structure, with parameters to optimize specified in tree->mod->s_opt
+// OUTPUT: the likelihood of the best found tree
+m3ldbl Quantum_anneal_all_free_params(arbre *tree, int verbose){
 
 }
 
