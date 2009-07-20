@@ -195,7 +195,7 @@ int main(int argc, char **argv)
 		    {
 			  switch(tree->mod->s_opt->topo_search){
 			  case NNI_MOVE:
-				  Simu_loop(tree);
+				  Simu_Loop(tree);
 				  break;
 			  case SPR_MOVE:
 				  Speed_Spr_Loop(tree);

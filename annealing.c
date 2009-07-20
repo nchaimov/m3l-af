@@ -10,7 +10,7 @@
 
 //do we want to make a new tree here??
 //otherwise we should return a void and just do work on the input tree
-void Get_TA_neighbor_proposition(arbgre *tree){
+void Get_TA_neighbor_proposition(arbre *tree){
 
 
 }
@@ -24,7 +24,9 @@ void Get_QA_neighbor_proposition(arbre *tree){
 //
 // OUTPUT: a temperature value, as a floating-point decimal
 m3ldbl Temperature(m3ldbl k){
+	m3ldbl result = 1.0;
 
+	return result;
 	// Here is where we program the annealing schedule.
 }
 
@@ -33,14 +35,15 @@ m3ldbl Temperature(m3ldbl k){
 // energy equal to enew, where the probability is drawn from a Boltzmann distribution.
 //
 // OUTPUT: a floating point decimal, between 0.0 and 1.0
-m3ldbl Boltzmann_P(e, enew, m3ldbl temperature){
-
+m3ldbl Boltzmann_P(m3ldbl e, m3ldbl enew, m3ldbl temperature){
+	m3ldbl result = 1.0;
+	return result;
 }
 
 // INPUT: a tree structure, with parameters to optimize specified in tree->mod->s_opt
 // OUTPUT: the likelihood of the best found tree
 m3ldbl Thermal_anneal_all_free_params(arbre *tree, int verbose){
-
+	m3ldbl result = 1.0;
 	/* Here is psudocode for the algorithm:
 	 * s = input tree with input parameters
 	 * e = the likelihood of s
@@ -59,11 +62,16 @@ m3ldbl Thermal_anneal_all_free_params(arbre *tree, int verbose){
 	 * 		iter = iter + 1
 	 * return sbest
 	 */
+
+	return result;
 }
 
 // INPUT: a tree structure, with parameters to optimize specified in tree->mod->s_opt
 // OUTPUT: the likelihood of the best found tree
 m3ldbl Quantum_anneal_all_free_params(arbre *tree, int verbose){
+	m3ldbl result = 1.0;
+
+	return result;
 
 }
 
