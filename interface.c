@@ -1597,6 +1597,12 @@ void Launch_Interface_Topo_Search(option *io)
 		else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR)
 		{
 			strcpy(s,"Best of NNI and SPR \0");
+		}else if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
+		{
+			strcpy(s,"Simulated Thermal Annealing \0");
+		}else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING)
+		{
+			strcpy(s,"Simulated Quantum Annealing \0");
 		}
 
 		PhyML_Printf("                [S] "
@@ -1717,6 +1723,19 @@ void Launch_Interface_Topo_Search(option *io)
 		}
 		else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR)
 		{
+			io->mod->s_opt->topo_search         = SIMULATED_THERMAL_ANNEALING;
+			io->mod->s_opt->n_rand_starts       = 1;
+			io->mod->s_opt->random_input_tree   = 0;
+			io->mod->s_opt->greedy              = 0;
+		}
+		else if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
+		{
+			io->mod->s_opt->topo_search         = SIMULATED_QUANTUML_ANNEALING;
+			io->mod->s_opt->n_rand_starts       = 1;
+			io->mod->s_opt->random_input_tree   = 0;
+			io->mod->s_opt->greedy              = 0;
+		}
+		else if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING){
 			io->mod->s_opt->topo_search         = NNI_MOVE;
 			io->mod->s_opt->n_rand_starts       = 1;
 			io->mod->s_opt->random_input_tree   = 0;
