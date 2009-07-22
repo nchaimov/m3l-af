@@ -170,7 +170,7 @@ void Usage()
 
   PhyML_Printf("%s\n\t-s (or --search) %smove%s\n",BOLD,LINE,FLAT);
   PhyML_Printf("\t\tTree topology search operation option.\n");
-  PhyML_Printf("\t\tCan be either %sNNI%s (default, fast) or %sSPR%s (a bit slower than NNI) or %sBEST%s (best of NNI and SPR search).\n",LINE,FLAT,LINE,FLAT,LINE,FLAT);
+  PhyML_Printf("\t\tCan be %sNNI%s (default, fast), %sSPR%s (a bit slower than NNI), %sBEST%s (best of NNI and SPR search), %sSTA%s (simulated thermal annealing, much better option for complex models), or %sSQA%s (simulated quantum annealing, not yet implemented) .\n",LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT);
 
   PhyML_Printf("\n");
 

@@ -78,7 +78,7 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 	Make_All_Tree_Edges(best_tree);
 	best_tree->mod = Copy_Model(tree->mod);
 	Copy_Tree(tree,best_tree);
-
+	PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 
 	For(i,anneal.iters_per_temp){
 		Get_TA_Neighbor_Proposition(tree);
@@ -121,6 +121,7 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 	// For now, we'll always perturb every parameter.
 	// In the future, we'll do something more sophisticated, where the probability of perturbing
 	// any particular parameter will be drawn from a probability distribution.
+	PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 	Step_Brlen_Proportion(tree);
 	Step_Branch_Lengths(tree);
 	Step_Gamma(tree);
@@ -136,12 +137,13 @@ void Step_Brlen_Proportion(arbre *tree){
 	if(tree->mod->s_opt->opt_props == 1){
 		int i,j;
 		double r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
-		int prange = (int)(Rand_Int(1,tree->n_l) * r);
+		int prange = (int)(Rand_Int(1,(tree->n_l - 1)) * r);
 		For(i,prange){
-			j = Rand_Int(0,tree->n_l);
+			j = Rand_Int(0,(tree->n_l - 1));
 			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
 			tree->props[j] += r;
 		}
+		Normalize_Props(tree);
 		//JSJ: recalculate the likelihood of the tree
 		tree->both_sides = 1;
 		Lk(tree);
@@ -177,14 +179,14 @@ void Step_Branch_Lengths(arbre *tree){
 		 * may result in an overflow, or more likely the value will end up being
 		 * the largest negative integer the architecture can represent, so
 		 * to avoid this we convert RAND_MAX and 1 to doubles before adding. */
-		edge_range = (int)(Rand_Int(1,n_edges) * r); //choose a random range shifted toward 1
+		edge_range = (int)(Rand_Int(1,(n_edges - 1)) * r); //choose a random range shifted toward 1
 		r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
-		set_range = (int)(Rand_Int(1,tree->n_l) * r);
+		set_range = (int)(Rand_Int(1,(tree->n_l - 1)) * r);
 		For(i,edge_range){
-			j = Rand_Int(0,n_edges);
+			j = Rand_Int(0,(n_edges - 1));
 			For(m,set_range){
 				r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
-				n = Rand_Int(0,tree->n_l);
+				n = Rand_Int(0,(tree->n_l - 1));
 				tree->t_edges[j]->l[n] += r;
 				Update_Lk_At_Given_Edge(tree->t_edges[j],tree); //calls update_p_lk on appropriate nodes and this edge
 			}
@@ -206,7 +208,7 @@ void Step_Topology(arbre *tree){
 		node *a,*b,*c,*d;
 		int i,j;
 		int n_edges = (tree->n_otu * 2) - 3;
-		int edge = Rand_Int(0,n_edges);
+		int edge = Rand_Int(0,(n_edges - 1));
 		while(tree->t_edges[edge]->left->tax == 1 || tree->t_edges[edge]->rght->tax == 1){
 			edge = ((edge + 1) % (n_edges - 1)); //starting from here, look through edge list
 		}// now we have an internal edge...
@@ -272,16 +274,20 @@ m3ldbl Boltzmann_P(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl temperature){
 // At the end of this method, the object "tree" will contain the best-found topology, branch lengths,
 // and model parameters.
 m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
+	PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 	Set_Anneal();
+	PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 	m3ldbl result = 1.0;
 	int n_edges = (tree->n_otu * 2) - 3;
 	if (n_edges <= 3){
 		tree->mod->s_opt->opt_topo = 0; //make sure that opt_topo is false if there are no meaningful branch swaps.
 	}
+	PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 	m3ldbl temp = anneal.start_temp;
 	m3ldbl tempmult = exp(log(anneal.end_temp/anneal.start_temp)/(((double)anneal.temp_count) - 1.0));
+	PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 	m3ldbl aratio = Scale_Acceptance_Ratio(tree);
-
+	PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
 	Make_All_Tree_Nodes(best_tree);
@@ -302,6 +308,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	int itemp,iter;
 	int steps_tried;
 	int steps_accepted;
+	PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 
 	For(itemp,anneal.temp_count){
 		//recenter the search at each temperature.
@@ -324,18 +331,21 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			lnL_proposed = tree->c_lnL;
 			if(lnL_proposed > lnL_best){
 				//save this tree into best_tree
+				PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 				Copy_Tree(tree,best_tree);
 				Record_Model(tree->mod, best_tree->mod);
+				lnL_best = lnL_proposed;
 
 				iter -= anneal.set_back;
 				if(iter < 0) iter = 0; //make sure not set back into negative...
 			}
 			r = ((double)rand() / ((double)(RAND_MAX)+ 1.0));
-			acc_prob = Boltzmann_P(lnL_proposed, lnL_current, temp);
+			acc_prob = Boltzmann_P(lnL_current, lnL_proposed, temp);
 
 			if(acc_prob > r){
 				steps_accepted++;
 				lnL_current = tree->c_lnL;
+				PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
 			}else{
 				//restore the current tree
 				Copy_Tree(last_tree,tree);
