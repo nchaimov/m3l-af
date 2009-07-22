@@ -13,10 +13,10 @@ annealing anneal;
 void Set_Anneal(){
 	anneal.accept_ratio = 0.8;
 	anneal.end_temp = 0.001;
-	anneal.iters_per_temp = 50;
-	anneal.set_back = 25;
-	anneal.start_temp = 10.0;
-	anneal.temp_count = 100;
+	anneal.iters_per_temp = 80;
+	anneal.set_back = 10;
+	anneal.start_temp = 100.0;
+	anneal.temp_count = 300;
 }
 
 
@@ -157,6 +157,8 @@ void Step_Brlen_Proportion(arbre *tree){
 			j = Rand_Int(0,(tree->n_l - 1));
 			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
 			tree->props[j] += r;
+			if(tree->props[j] > 1.0) tree->props[j] = 1.0;
+			else if(tree->props[j] < 0.0) tree->props[j] = 0.0;
 		}
 		Normalize_Props(tree);
 		//JSJ: recalculate the likelihood of the tree
@@ -291,6 +293,7 @@ void Step_Branch_Lengths(arbre *tree){
 				//									0,n);
 			}
 		}
+		Lk(tree);
 	}
 }
 
@@ -395,6 +398,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	Init_Tree(last_tree,tree->n_otu, tree->n_l);
 	Make_All_Tree_Nodes(last_tree);
 	Make_All_Tree_Edges(last_tree);
+	last_tree->mod = Copy_Model(best_tree->mod);
 
 	m3ldbl lnL_best = tree->c_lnL;
 	m3ldbl lnL_current = tree->c_lnL;
@@ -407,9 +411,11 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 	For(itemp,anneal.temp_count){
 		//recenter the search at each temperature.
-		last_tree->mod = Copy_Model(best_tree->mod);
+		//make the tree our best tree so far
 		Copy_Tree(best_tree,tree);
 		Record_Model(best_tree->mod,tree->mod);
+		Copy_Tree(tree,last_tree);
+		Record_Model(tree->mod,last_tree->mod);
 		lnL_current = lnL_best;
 
 		steps_tried = 0;
@@ -417,12 +423,8 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 		For(iter,anneal.iters_per_temp){
 			steps_tried++;
-			//record current tree and model
-			Copy_Tree(tree,last_tree);
-			Record_Model(tree->mod,last_tree->mod);
 			//get our next proposition.
 			Get_TA_Neighbor_Proposition(tree);
-
 			lnL_proposed = tree->c_lnL;
 			if(lnL_proposed > lnL_best){
 				//save this tree into best_tree
@@ -438,6 +440,9 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			acc_prob = Boltzmann_P(lnL_current, lnL_proposed, temp);
 
 			if(acc_prob > r){
+				//save the current tree
+				Copy_Tree(tree,last_tree);
+				Record_Model(tree->mod,last_tree->mod);
 				steps_accepted++;
 				lnL_current = tree->c_lnL;
 				PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
@@ -448,12 +453,16 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			}
 		}//end inner for loop.
 		temp *= tempmult;
-		if(temp < anneal.end_temp) break;
 
 	}
 
-	Copy_Tree(Best_Tree,tree);
-	Record_Model(Best_Tree->mod,tree->mod);
+	Copy_Tree(best_tree,tree);
+	Record_Model(best_tree->mod,tree->mod);
+
+	Free_Model(best_tree->mod);
+	Free_Tree(best_tree);
+	Free_Model(last_tree->mod);
+	Free_Tree(last_tree);
 	Lk(tree);
 	/* Here is psuedocode for the algorithm:
 	 *
@@ -496,7 +505,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	 *
 	 *		temp *= tempmult // reduce the temperature with geometric descent
 	 */
-	return result;
+	return tree->c_lnL;
 }
 
 // INPUT: a tree structure, with parameters to optimize specified in tree->mod->s_opt
