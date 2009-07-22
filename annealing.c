@@ -13,10 +13,10 @@ annealing anneal;
 void Set_Anneal(){
 	anneal.accept_ratio = 0.8;
 	anneal.end_temp = 0.001;
-	anneal.iters_per_temp = 10;
-	anneal.set_back = 5;
+	anneal.iters_per_temp = 50;
+	anneal.set_back = 25;
 	anneal.start_temp = 10.0;
-	anneal.temp_count = 50;
+	anneal.temp_count = 100;
 }
 
 
@@ -106,6 +106,9 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 	Free_Model(best_tree->mod);
 	Free_Tree(best_tree);
 
+	//now lets get a really good starting position...
+	//Speed_Spr_Loop(tree);
+
 	return aratio;
 }
 
@@ -120,10 +123,24 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 	// For now, we'll always perturb every parameter.
 	// In the future, we'll do something more sophisticated, where the probability of perturbing
 	// any particular parameter will be drawn from a probability distribution.
-	Step_Brlen_Proportion(tree);
-	Step_Branch_Lengths(tree);
-	Step_Gamma(tree);
-	Step_Topology(tree);
+	int x = Rand_Int(0,1);
+	if(x == 1) Step_Brlen_Proportion(tree);
+	x = Rand_Int(0,1);
+	if(x == 1)Step_Branch_Lengths(tree);
+	x = Rand_Int(0,1);
+	if(x == 1)Step_Gamma(tree);
+	x = Rand_Int(0,1);
+	if(x == 1)Step_Topology(tree);
+	x = Rand_Int(0,1);
+	if(x == 1)Step_Pi(tree);
+	x = Rand_Int(0,1);
+	if(x == 1)Step_Lambda(tree);
+	x = Rand_Int(0,1);
+	if(x == 1)Step_Kappa(tree);
+	x = Rand_Int(0,1);
+	if(x == 1)Step_RR(tree);
+	x = Rand_Int(0,1);
+	if(x == 1)Step_Pinvar(tree);
 }
 
 // helper for "Get_TA_Neighbor_Proposition"
@@ -135,7 +152,7 @@ void Step_Brlen_Proportion(arbre *tree){
 	if(tree->mod->s_opt->opt_props == 1){
 		int i,j;
 		double r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
-		int prange = (int)(Rand_Int(1,(tree->n_l - 1)) * r);
+		int prange = (int)(Rand_Int(1,(tree->n_l)) * r);
 		For(i,prange){
 			j = Rand_Int(0,(tree->n_l - 1));
 			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
@@ -148,6 +165,61 @@ void Step_Brlen_Proportion(arbre *tree){
 	}
 }
 
+void Step_Pinvar(arbre *tree){
+	if(tree->mod->s_opt->opt_pinvar == 1){
+		double r;
+		r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+		tree->mod->pinvar += r;
+		if(tree->mod->pinvar < 0.0001) tree->mod->pinvar = 0.0001;
+		else if(tree->mod->pinvar > 0.9999) tree->mod->pinvar = 0.9999;
+		Lk(tree);
+	}
+}
+
+void Step_RR(arbre * tree){
+	if(((tree->mod->whichmodel == GTR) && tree->mod->n_diff_rr > 1) ||
+			((tree->mod->whichmodel == CUSTOM) && (tree->mod->s_opt->opt_rr == 1) && (tree->mod->n_diff_rr > 1)))
+	{
+		double r;
+		int i,j;
+		int range = Rand_Int(1,(tree->mod->n_diff_rr));
+		For(i,range){
+			j = Rand_Int(0,(tree->mod->n_diff_rr - 1));
+			if(j == 5) j = (j+1)%(tree->mod->n_diff_rr);
+			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+			tree->mod->rr_val[j] += r;
+			if(tree->mod->rr_val[j] < 0.01) tree->mod->rr_val[j] = 0.01;
+			else if(tree->mod->rr_val[j] > 100.0) tree->mod->rr_val[j] = 99.999;
+		}
+		Lk(tree);
+	}
+}
+
+//.1 to 100.0
+void Step_Kappa(arbre * tree){
+	if(tree->mod->s_opt->opt_kappa == 1){
+		double r;
+		tree->mod->update_eigen = 1;
+		r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+		tree->mod->kappa += r;
+		if(tree->mod->kappa < 0.1) tree->mod->kappa = 0.1;
+		else if(tree->mod->kappa > 100.0) tree->mod->kappa = 99.9999;
+		Lk(tree);
+		tree->mod->update_eigen = 0;
+	}
+}
+//.001 to 100
+void Step_Lambda(arbre * tree){
+	if(tree->mod->s_opt->opt_lambda == 1){
+		double r;
+		r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+		tree->mod->lambda += r;
+		if(tree->mod->lambda < 0.001) tree->mod->lambda = 0.001;
+		else if(tree->mod->lambda > 100.0) tree->mod->lambda = 99.9999;
+		Lk(tree);
+	}
+}
+
 // helper for "Get_TA_Neighbor_Proposition"
 void Step_Gamma(arbre *tree){
 	// For now, do something stupid like incrementing gamma +/- 0.001.
@@ -155,12 +227,32 @@ void Step_Gamma(arbre *tree){
 	// with mean equal to the current value of gamma and standard deviation equal to some
 	// user-specified parameter sigma.
 	if(tree->mod->s_opt->opt_alpha == 1){
-		m3ldbl r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/100.0;
+		m3ldbl r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
 		tree->mod->alpha += r;
+		if(tree->mod->alpha < 0.01) tree->mod->alpha = 0.01;
+		else if(tree->mod->alpha > 100.0) tree->mod->alpha = 99.9999;
+
+		Lk(tree);
 	}
-	if(tree->mod->alpha < 0.001) tree->mod->alpha == 0.001;
-	tree->both_sides = 1;
-	Lk(tree);
+}
+
+void Step_Pi(arbre * tree){
+	if((tree->mod->s_opt->opt_state_freq) && (tree->mod->datatype == NT)){
+		tree->mod->update_eigen = 1;
+		int i,j;
+		int range = Rand_Int(1,4);
+		double r;
+		For(i,range){
+			j = Rand_Int(0,3);
+			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+			tree->mod->pi_unscaled[j] += r;
+
+			if(tree->mod->pi_unscaled[j] < -1000.0) tree->mod->pi_unscaled[j] = -999.9999;
+			else if(tree->mod->pi_unscaled[j] > 1000.0) tree->mod->pi_unscaled[j] = 999.9999;
+		}
+		Lk(tree);
+		tree->mod->update_eigen = 0;
+	}
 }
 
 // helper for "Get_TA_Neighbor_Proposition"
@@ -178,23 +270,25 @@ void Step_Branch_Lengths(arbre *tree){
 		 * may result in an overflow, or more likely the value will end up being
 		 * the largest negative integer the architecture can represent, so
 		 * to avoid this we convert RAND_MAX and 1 to doubles before adding. */
-		edge_range = (int)(Rand_Int(1,(n_edges - 1)) * r); //choose a random range shifted toward 1
+		edge_range = (int)(Rand_Int(1,(n_edges)) * r); //choose a random range shifted toward 1
 		r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
-		set_range = (int)(Rand_Int(1,(tree->n_l - 1)) * r);
+		set_range = (int)(Rand_Int(1,(tree->n_l)) * r);
 		For(i,edge_range){
 			j = Rand_Int(0,(n_edges - 1));
 			For(m,set_range){
 				r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
 				n = Rand_Int(0,(tree->n_l - 1));
 				tree->t_edges[j]->l[n] += r;
+				if(tree->t_edges[j]->l[n] < BL_MIN) tree->t_edges[j]->l[n] = BL_MIN;
+				else if(tree->t_edges[j]->l[n] > BL_MAX) tree->t_edges[j]->l[n] = BL_MAX;
 				Update_Lk_At_Given_Edge(tree->t_edges[j],tree); //calls update_p_lk on appropriate nodes and this edge
 
 				//JSJ: just for fun...
-//				Br_Len_Brent_Iter(10.*tree->t_edges[j]->l[n],tree->t_edges[j]->l[n],BL_MIN,
-//									0.00000001,
-//									tree->t_edges[j],tree,
-//									10,
-//									0,n);
+				//				Br_Len_Brent_Iter(10.*tree->t_edges[j]->l[n],tree->t_edges[j]->l[n],BL_MIN,
+				//									0.00000001,
+				//									tree->t_edges[j],tree,
+				//									10,
+				//									0,n);
 			}
 		}
 	}
@@ -206,25 +300,25 @@ void Step_Topology(arbre *tree){
 	// JSJ: pick a random edge, from that edge find a path connecting 4 nodes
 	//       swap those four nodes.
 	/**
-	 * Find an edge where both nodes are internal (n_edges > 3 or opt_topo should be set false)
-	 * When both nodes are internal
-	 *
-	 */
+	* Find an edge where both nodes are internal (n_edges > 3 or opt_topo should be set false)
+	* When both nodes are internal
+	*
+	*/
 	if(tree->mod->s_opt->opt_topo){
 		node *a,*b,*c,*d;
 		int i,j;
 		int n_edges = (tree->n_otu * 2) - 3;
 		int edge = Rand_Int(0,(n_edges - 1));
 		while(tree->t_edges[edge]->left->tax == 1 || tree->t_edges[edge]->rght->tax == 1){
-			edge = ((edge + 1) % (n_edges - 1)); //starting from here, look through edge list
+			edge = ((edge + 1) % (n_edges)); //starting from here, look through edge list
 		}// now we have an internal edge...
 		b = tree->t_edges[edge]->left;
 		c = tree->t_edges[edge]->rght;
 
 		/**
-		 * now we need to find nodes a (from b) and d (from c) such that
-		 * a != c, d != a, and either a,d == terminal or a,d == internal
-		 */
+		* now we need to find nodes a (from b) and d (from c) such that
+		* a != c, d != a, and either a,d == terminal or a,d == internal
+		*/
 		For(i,3){
 			if(b->v[i] != c){
 				a = b->v[i];
@@ -245,6 +339,7 @@ void Step_Topology(arbre *tree){
 		Swap(a,b,c,d,tree);
 		tree->both_sides = 1;
 		Lk(tree);
+		tree->both_sides = 0;
 
 
 	}
@@ -356,6 +451,10 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		if(temp < anneal.end_temp) break;
 
 	}
+
+	Copy_Tree(Best_Tree,tree);
+	Record_Model(Best_Tree->mod,tree->mod);
+	Lk(tree);
 	/* Here is psuedocode for the algorithm:
 	 *
 	 * m3ldbl temp = start_temp // start_temp is a global

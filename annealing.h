@@ -9,6 +9,11 @@ void Swap_Tree_And_Mod(arbre *tree1, arbre *tree2);
 void Step_Gamma(arbre *tree);
 void Step_Branch_Lengths(arbre *tree);
 void Step_Topology(arbre *tree);
+void Step_Pi(arbre * tree);
+void Step_Lambda(arbre * tree);
+void Step_Kappa(arbre * tree);
+void Step_RR(arbre * tree);
+void Step_Pinvar(arbre *tree);
 
 //
 // Global parameters.
