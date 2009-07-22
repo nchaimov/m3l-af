@@ -370,14 +370,14 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 	//Optimize branch lengths and update likelihoods for
 	//the original configuration.
 
-	/**
-	 * JSJ: for testing purposes
-	 */
-	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	Print_Tree_Screen(tree);
-	/**
-	 * JSJ: end tree test print section
-	 */
+//	/**
+//	 * JSJ: for testing purposes
+//	 */
+//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//	Print_Tree_Screen(tree);
+//	/**
+//	 * JSJ: end tree test print section
+//	 */
 
 	do
 	{
@@ -391,14 +391,14 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //				l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
 //				l_max[j]   = b_fcus->left->b[i]->l[j];
 //				l_infb[j]  = BL_MIN;
-				/**
-				 * JSJ: for testing purposes
-				 */
-				PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-				Print_Tree_Screen(tree);
-				/**
-				 * JSJ: end tree test print section
-				 */
+//				/**
+//				 * JSJ: for testing purposes
+//				 */
+//				PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//				Print_Tree_Screen(tree);
+//				/**
+//				 * JSJ: end tree test print section
+//				 */
 				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->left->b[i]->l[j],b_fcus->left->b[i]->l[j],BL_MIN,
 						tree->mod->s_opt->min_diff_lk_local,
 						b_fcus->left->b[i],tree,
@@ -416,14 +416,14 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //			l_infa[j]  = 10.*b_fcus->l[j];
 //			l_max[j]   = b_fcus->l[j];
 //			l_infb[j]  = BL_MIN;
-			/**
-			 * JSJ: for testing purposes
-			 */
-			PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-			Print_Tree_Screen(tree);
-			/**
-			 * JSJ: end tree test print section
-			 */
+//			/**
+//			 * JSJ: for testing purposes
+//			 */
+//			PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//			Print_Tree_Screen(tree);
+//			/**
+//			 * JSJ: end tree test print section
+//			 */
 			lk_temp = Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
@@ -445,14 +445,14 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
 //				l_max[j]   = b_fcus->rght->b[i]->l[j];
 //				l_infb[j]  = BL_MIN;
-				/**
-				 * JSJ: for testing purposes
-				 */
-				PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-				Print_Tree_Screen(tree);
-				/**
-				 * JSJ: end tree test print section
-				 */
+//				/**
+//				 * JSJ: for testing purposes
+//				 */
+//				PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//				Print_Tree_Screen(tree);
+//				/**
+//				 * JSJ: end tree test print section
+//				 */
 				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->rght->b[i]->l[j],b_fcus->rght->b[i]->l[j],BL_MIN,
 						tree->mod->s_opt->min_diff_lk_local,
 						b_fcus->rght->b[i],tree,
@@ -469,14 +469,14 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 		if(lk_temp < lk0 - (tree->mod->s_opt->min_diff_lk_local))
 		{
-			/**
-			 * JSJ: for testing purposes
-			 */
-			PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-			Print_Tree_Screen(tree);
-			/**
-			 * JSJ: end tree test print section
-			 */
+//			/**
+//			 * JSJ: for testing purposes
+//			 */
+//			PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//			Print_Tree_Screen(tree);
+//			/**
+//			 * JSJ: end tree test print section
+//			 */
 			PhyML_Printf("\n. lk_temp = %f lk0 = %f\n",lk_temp,lk0);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 	//		Warn_And_Exit(""); //JSJ: temporarily comment out this line...

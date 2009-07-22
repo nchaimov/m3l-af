@@ -2986,7 +2986,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else
 	{
 		For(i,tree->n_l){
-			PhyML_Printf("Tree lnL (line 2983 of utilities.c): %lf \n",tree->c_lnL);
+		//	PhyML_Printf("Tree lnL (line 2983 of utilities.c): %lf \n",tree->c_lnL);
 			lk1 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
@@ -3027,7 +3027,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else
 	{
 		For(i,tree->n_l){
-			PhyML_Printf("Tree lnL (line 3024 of utilities.c): %lf \n",tree->c_lnL);
+		//	PhyML_Printf("Tree lnL (line 3024 of utilities.c): %lf \n",tree->c_lnL);
 			lk2 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
@@ -3063,7 +3063,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 				lk0_init,
 				lk_init-lk0_init);
 		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
-		Warn_And_Exit("\n. Err. in NNI (3)\n");
+		//Warn_And_Exit("\n. Err. in NNI (3)\n");
 	}
 	//	For(i,tree->n_l){
 	//		l_infa[i] = 10.*b_fcus->l[i];
@@ -3079,7 +3079,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else
 	{
 		For(i,tree->n_l){
-			PhyML_Printf("Tree lnL (line 3076 of utilities.c): %lf \n",tree->c_lnL);
+		//	PhyML_Printf("Tree lnL (line 3076 of utilities.c): %lf \n",tree->c_lnL);
 			lk0 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
@@ -3094,7 +3094,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
 		PhyML_Printf("\n. Err. in NNI (3)\n");
 
-		Warn_And_Exit("\n");
+		//Warn_And_Exit("\n");
 	}
 
 	/***********/
@@ -3305,9 +3305,9 @@ void Swap(node *a, node *b, node *c, node *d, arbre *tree)
 	/* \             /d      \             /a
 	 *  \           /         \           /
 	 *   \b__...__c/    ->     \b__...__c/
-	 *   /         \	     /		\
-	 *  /           \	    /		 \
-	 * /a            \  	   /d             \
+	 *   /         \	       /		 \
+	 *  /           \	      /		      \
+	 * /a            \  	 /d            \
 	 *
 	 * nodes b and c are not necessarily on the same branch
 	 */

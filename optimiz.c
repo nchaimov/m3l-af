@@ -1401,7 +1401,7 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 	// additional attempts are unlikely to do better.
 
 		For(j,tree->n_l){
-			PhyML_Printf("Calling Br_Len_Brent_Iter (in Opt_Br_Len_Ser) lk: %lf \n",tree->c_lnL);
+			//PhyML_Printf("Calling Br_Len_Brent_Iter (in Opt_Br_Len_Ser) lk: %lf \n",tree->c_lnL);
 			Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,

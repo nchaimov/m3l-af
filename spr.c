@@ -3615,14 +3615,14 @@ void Speed_Spr_Loop(arbre *tree)
 	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 	tree->best_lnL = tree->c_lnL;
 
-	/**
-	 * JSJ: for testing purposes
-	 */
-	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	Print_Tree_Screen(tree);
-	/**
-	 * JSJ: end tree test print section
-	 */
+//	/**
+//	 * JSJ: for testing purposes
+//	 */
+//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//	Print_Tree_Screen(tree);
+//	/**
+//	 * JSJ: end tree test print section
+//	 */
 	/*****************************/
 	lk_old = UNLIKELY;
 	tree->mod->s_opt->max_depth_path = 2*tree->n_otu-3;
@@ -3637,14 +3637,14 @@ void Speed_Spr_Loop(arbre *tree)
 	while(1);
 	/*****************************/
 
-	/**
-	 * JSJ: for testing purposes
-	 */
-	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	Print_Tree_Screen(tree);
-	/**
-	 * JSJ: end tree test print section
-	 */
+//	/**
+//	 * JSJ: for testing purposes
+//	 */
+//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//	Print_Tree_Screen(tree);
+//	/**
+//	 * JSJ: end tree test print section
+//	 */
 
 	/*****************************/
 	if(tree->mod->datatype == NT)
@@ -3662,14 +3662,14 @@ void Speed_Spr_Loop(arbre *tree)
 		while(1);
 	}
 	/*****************************/
-	/**
-	 * JSJ: for testing purposes
-	 */
-	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	Print_Tree_Screen(tree);
-	/**
-	 * JSJ: end tree test print section
-	 */
+//	/**
+//	 * JSJ: for testing purposes
+//	 */
+//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//	Print_Tree_Screen(tree);
+//	/**
+//	 * JSJ: end tree test print section
+//	 */
 
 
 	/*****************************/
@@ -3682,28 +3682,28 @@ void Speed_Spr_Loop(arbre *tree)
 	}
 	while(fabs(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_global);
 	/*****************************/
-	/**
-	 * JSJ: for testing purposes
-	 */
-	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	Print_Tree_Screen(tree);
-	/**
-	 * JSJ: end tree test print section
-	 */
+//	/**
+//	 * JSJ: for testing purposes
+//	 */
+//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//	Print_Tree_Screen(tree);
+//	/**
+//	 * JSJ: end tree test print section
+//	 */
 	/*****************************/
 	do
 	{
 		if(!Check_NNI_Five_Branches(tree)) break;
 	}while(1);
 	/*****************************/
-	/**
-	 * JSJ: for testing purposes
-	 */
-	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	Print_Tree_Screen(tree);
-	/**
-	 * JSJ: end tree test print section
-	 */
+//	/**
+//	 * JSJ: for testing purposes
+//	 */
+//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+//	Print_Tree_Screen(tree);
+//	/**
+//	 * JSJ: end tree test print section
+//	 */
 	if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n");
 
 }
