@@ -14,6 +14,8 @@ void Step_Lambda(arbre * tree);
 void Step_Kappa(arbre * tree);
 void Step_RR(arbre * tree);
 void Step_Pinvar(arbre *tree);
+void Free_Anneal();
+void Set_Anneal();
 
 //
 // Global parameters.
@@ -27,16 +29,22 @@ typedef struct __ANNEALING{
 	int 	iters_per_temp;	// number of tries at each temperature
 	int 	set_back;	// number of steps to step back if improving
 	m3ldbl  accept_ratio;	// acceptance ratio
+
 	m3ldbl 	prob_trans_model;
 	m3ldbl 	prob_topology;
 	m3ldbl	prob_TBR;
 	m3ldbl 	prob_SPR;
 	m3ldbl  prob_NNI;
 	m3ldbl 	prob_rate_proportion;
-	m3ldbl 	max_alpha;
 	m3ldbl 	prob_brlen;
-	m3ldbl  brlen_sigma;
 	m3ldbl	prob_gamma;
+	m3ldbl 	prob_pinvar;
+
+	m3ldbl 	max_alpha;
+	m3ldbl  brlen_sigma;
 	m3ldbl	gamma_sigma;
+	m3ldbl  pinvar_sigma;
+
 	int     random_seed;
+    gsl_rng *rng;
 }annealing;

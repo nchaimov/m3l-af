@@ -22,6 +22,33 @@ void Set_Anneal(){
 	anneal.set_back = 10;
 	anneal.start_temp = 100.0;
 	anneal.temp_count = 300;
+
+
+	anneal.max_alpha = 4.0;
+
+
+	anneal.brlen_sigma = 0.05;
+	anneal.pinvar_sigma = 0.05;
+	anneal.gamma_sigma = 0.05;
+
+
+	anneal.prob_NNI;
+	anneal.prob_SPR;
+	anneal.prob_TBR;
+	anneal.prob_brlen;
+	anneal.prob_gamma;
+	anneal.prob_rate_proportion;
+	anneal.prob_topology;
+	anneal.prob_trans_model;
+	anneal.prob_pinvar;
+
+	anneal.random_seed = (int)time(NULL);
+	anneal.rng = gsl_rng_alloc(gsl_rng_mt19937);
+	gsl_rng_set(anneal.rng, anneal.random_seed);
+}
+
+void Free_Anneal(){
+	gsl_rng_free( anneal.rng );
 }
 
 
@@ -128,24 +155,21 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 	// For now, we'll always perturb every parameter.
 	// In the future, we'll do something more sophisticated, where the probability of perturbing
 	// any particular parameter will be drawn from a probability distribution.
-	int x = Rand_Int(0,1);
-	if(x == 1) Step_Brlen_Proportion(tree);
-	x = Rand_Int(0,1);
-	if(x == 1)Step_Branch_Lengths(tree);
-	x = Rand_Int(0,1);
-	if(x == 1)Step_Gamma(tree);
-	x = Rand_Int(0,1);
-	if(x == 1)Step_Topology(tree);
-	x = Rand_Int(0,1);
+	double x = gsl_rng_uniform(anneal.rng);
+	if(x < anneal.prob_rate_proportion) Step_Brlen_Proportion(tree);
+	x = gsl_rng_uniform(anneal.rng);
+	if(x < anneal.prob_brlen)Step_Branch_Lengths(tree);
+	x = gsl_rng_uniform(anneal.rng);
+	if(x < anneal.prob_gamma)Step_Gamma(tree);
+	x = gsl_rng_uniform(anneal.rng);
+	if(x < anneal.prob_topology)Step_Topology(tree);
+
 //	if(x == 1)Step_Pi(tree);
-//	x = Rand_Int(0,1);
 //	if(x == 1)Step_Lambda(tree);
-//	x = Rand_Int(0,1);
 //	if(x == 1)Step_Kappa(tree);
-//	x = Rand_Int(0,1);
 //	if(x == 1)Step_RR(tree);
-	x = Rand_Int(0,1);
-	if(x == 1)Step_Pinvar(tree);
+	x = gsl_rng_uniform(anneal.rng);
+	if(x < anneal.prob_pinvar)Step_Pinvar(tree);
 
 	// 1. Update the likelihood of tree
 	Lk(tree);
@@ -161,16 +185,22 @@ void Step_Brlen_Proportion(arbre *tree){
 	// lengths from a Dirichlet distribution.
 	// when we update proportions we need to recalculate the likelihoods on the whole tree...
 	if(tree->mod->s_opt->opt_props == 1){
-		int i,j;
-		double r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
-		int prange = (int)(Rand_Int(1,(tree->n_l)) * r);
-		For(i,prange){
-			j = Rand_Int(0,(tree->n_l - 1));
-			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
-			tree->props[j] += r;
-			if(tree->props[j] > 1.0) tree->props[j] = 1.0;
-			else if(tree->props[j] < 0.0) tree->props[j] = 0.0;
+//		int i,j;
+//		double r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
+//		int prange = (int)(Rand_Int(1,(tree->n_l)) * r);
+//		For(i,prange){
+//			j = Rand_Int(0,(tree->n_l - 1));
+//			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
+//			tree->props[j] += r;
+//			if(tree->props[j] > 1.0) tree->props[j] = 1.0;
+//			else if(tree->props[j] < 0.0) tree->props[j] = 0.0;
+//		}
+		double alpha[MAX_BL_SET];
+		int i;
+		For(i,tree->n_l){
+			alpha[i] = anneal.max_alpha;
 		}
+		gsl_ran_dirichlet(anneal.rng,tree->n_l,alpha,tree->props);
 		Normalize_Props(tree);
 		//JSJ: recalculate the likelihood of the tree
 	}
@@ -179,7 +209,7 @@ void Step_Brlen_Proportion(arbre *tree){
 void Step_Pinvar(arbre *tree){
 	if(tree->mod->s_opt->opt_pinvar == 1){
 		double r;
-		r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+		r = gsl_ran_gaussian(anneal.rng,anneal.pinvar_sigma);
 		tree->mod->pinvar += r;
 		if(tree->mod->pinvar < 0.0001) tree->mod->pinvar = 0.0001;
 		else if(tree->mod->pinvar > 0.9999) tree->mod->pinvar = 0.9999;
@@ -233,10 +263,10 @@ void Step_Gamma(arbre *tree){
 	// with mean equal to the current value of gamma and standard deviation equal to some
 	// user-specified parameter sigma.
 	if(tree->mod->s_opt->opt_alpha == 1){
-		m3ldbl r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+		double r = gsl_ran_gaussian(anneal.rng,anneal.gamma_sigma);
 		tree->mod->alpha += r;
 		if(tree->mod->alpha < 0.01) tree->mod->alpha = 0.01;
-		else if(tree->mod->alpha > 100.0) tree->mod->alpha = 99.9999;
+		else if(tree->mod->alpha > 100.0) tree->mod->alpha = 100.0;
 	}
 }
 
@@ -263,7 +293,7 @@ void Step_Branch_Lengths(arbre *tree){
 	if(tree->mod->s_opt->opt_bl == 1){
 		int i,j,edge_range,set_range,m,n;
 		int n_edges = (tree->n_otu * 2) - 3;
-		double r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
+		double rand_gauss;
 		/* r is a random floating point value in the range (0,1) {not including 0,
 		 * or 1}. Note we must convert rand() and/or RAND_MAX+1 to
 		 * floating point values to avoid integer division. In addition, Sean
@@ -272,18 +302,19 @@ void Step_Branch_Lengths(arbre *tree){
 		 * may result in an overflow, or more likely the value will end up being
 		 * the largest negative integer the architecture can represent, so
 		 * to avoid this we convert RAND_MAX and 1 to doubles before adding. */
-		edge_range = (int)(Rand_Int(1,(n_edges)) * r); //choose a random range shifted toward 1
-		r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
-		set_range = (int)(Rand_Int(1,(tree->n_l)) * r);
+		edge_range = gsl_rng_uniform_int(anneal.rng,(n_edges+1));
+		set_range = gsl_rng_uniform_int(anneal.rng,(tree->n_l + 1));
 		For(i,edge_range){
-			j = Rand_Int(0,(n_edges - 1));
+			j = gsl_rng_uniform_int(anneal.rng,n_edges);
 			For(m,set_range){
-				r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
-				n = Rand_Int(0,(tree->n_l - 1));
-				tree->t_edges[j]->l[n] += r;
+				rand_gauss = gsl_ran_gaussian(anneal.rng,anneal.brlen_sigma);
+				n = gsl_rng_uniform_int(anneal.rng,tree->n_l);
+				tree->t_edges[j]->l[n] += rand_gauss;
 				if(tree->t_edges[j]->l[n] < BL_MIN) tree->t_edges[j]->l[n] = BL_MIN;
 				else if(tree->t_edges[j]->l[n] > BL_MAX) tree->t_edges[j]->l[n] = BL_MAX;
-//				Update_Lk_At_Given_Edge(tree->t_edges[j],tree); //calls update_p_lk on appropriate nodes and this edge
+
+
+				//Update_Lk_At_Given_Edge(tree->t_edges[j],tree); //calls update_p_lk on appropriate nodes and this edge
 
 				//JSJ: just for fun...
 				//				Br_Len_Brent_Iter(10.*tree->t_edges[j]->l[n],tree->t_edges[j]->l[n],BL_MIN,
@@ -292,7 +323,10 @@ void Step_Branch_Lengths(arbre *tree){
 				//									10,
 				//									0,n);
 			}
+			Update_PMat_At_Given_Edge(tree->t_edges[j],tree);
 		}
+
+
 	}
 }
 
@@ -310,9 +344,11 @@ void Step_Topology(arbre *tree){
 		node *a,*b,*c,*d;
 		int i,j;
 		int n_edges = (tree->n_otu * 2) - 3;
-		int edge = Rand_Int(0,(n_edges - 1));
+		int edge = gsl_rng_uniform_int(anneal.rng,n_edges);
+		double r = gsl_rng_uniform(anneal.rng);
 		while(tree->t_edges[edge]->left->tax == 1 || tree->t_edges[edge]->rght->tax == 1){
-			edge = ((edge + 1) % (n_edges)); //starting from here, look through edge list
+			if(r<0.5) edge = ((edge + 1) % (n_edges)); //starting from here, look through edge list
+			else edge = ((edge - 1) % (n_edges));
 		}// now we have an internal edge...
 		b = tree->t_edges[edge]->left;
 		c = tree->t_edges[edge]->rght;
@@ -459,6 +495,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	Free_Tree(best_tree);
 	Free_Model(last_tree->mod);
 	Free_Tree(last_tree);
+	Free_Anneal(); //local function that frees the gsl_rng;
 	Lk(tree);
 	/* Here is psuedocode for the algorithm:
 	 *
