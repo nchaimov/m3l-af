@@ -27,4 +27,17 @@ typedef struct __ANNEALING{
 	int iters_per_temp;	// number of tries at each temperature
 	int set_back;	// number of steps to step back if improving
 	m3ldbl accept_ratio;	// acceptance ratio
+
+	// Victor says: here are variables to add to this struct:
+//	prob_trans_model
+//	prob_topology
+//	prob_TBR
+//	prob_SPR
+//	prob_NNI
+//	prob_rate_proportion
+//	max_alpha
+//	prob_brlen
+//	brlen_sigma
+//	prob_gamma
+//	gamma_sigma
 }annealing;
