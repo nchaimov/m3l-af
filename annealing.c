@@ -16,12 +16,12 @@
 annealing anneal;
 
 void Set_Anneal(){
-	anneal.accept_ratio = 0.8;
-	anneal.end_temp = 0.001;
-	anneal.iters_per_temp = 80;
-	anneal.set_back = 10;
-	anneal.start_temp = 100.0;
-	anneal.temp_count = 300;
+	anneal.accept_ratio = 0.3;
+	anneal.end_temp = 0.000001;
+	anneal.iters_per_temp = 1000;
+	anneal.set_back = 50;
+	anneal.start_temp = 1.0;
+	anneal.temp_count = 2000;
 
 
 	anneal.max_alpha = 4.0;
@@ -32,15 +32,15 @@ void Set_Anneal(){
 	anneal.gamma_sigma = 0.05;
 
 
-	anneal.prob_NNI;
-	anneal.prob_SPR;
-	anneal.prob_TBR;
-	anneal.prob_brlen;
-	anneal.prob_gamma;
-	anneal.prob_rate_proportion;
-	anneal.prob_topology;
-	anneal.prob_trans_model;
-	anneal.prob_pinvar;
+	anneal.prob_NNI = 0.4;
+	anneal.prob_SPR = 0.3;
+	anneal.prob_TBR = 0.3;
+	anneal.prob_brlen = 0.5;
+	anneal.prob_gamma = 0.5;
+	anneal.prob_rate_proportion = 0.2;
+	anneal.prob_topology = 0.4;
+//	anneal.prob_trans_model = 0.1;
+	anneal.prob_pinvar = 0.5;
 
 	anneal.random_seed = (int)time(NULL);
 	anneal.rng = gsl_rng_alloc(gsl_rng_mt19937);
@@ -156,20 +156,23 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 	// In the future, we'll do something more sophisticated, where the probability of perturbing
 	// any particular parameter will be drawn from a probability distribution.
 	double x = gsl_rng_uniform(anneal.rng);
-	if(x < anneal.prob_rate_proportion) Step_Brlen_Proportion(tree);
-	x = gsl_rng_uniform(anneal.rng);
-	if(x < anneal.prob_brlen)Step_Branch_Lengths(tree);
-	x = gsl_rng_uniform(anneal.rng);
-	if(x < anneal.prob_gamma)Step_Gamma(tree);
-	x = gsl_rng_uniform(anneal.rng);
-	if(x < anneal.prob_topology)Step_Topology(tree);
+//	if(x < anneal.prob_rate_proportion) Step_Brlen_Proportion(tree);
+//	x = gsl_rng_uniform(anneal.rng);
+//	if(x < anneal.prob_brlen)Step_Branch_Lengths(tree);
+//	x = gsl_rng_uniform(anneal.rng);
+//	if(x < anneal.prob_gamma)Step_Gamma(tree);
+//	x = gsl_rng_uniform(anneal.rng);
+	if(x < anneal.prob_topology){
+		PhyML_Printf("JSJ: Proposing a new topology\n");
+		Step_Topology(tree);
+	}
 
 //	if(x == 1)Step_Pi(tree);
 //	if(x == 1)Step_Lambda(tree);
 //	if(x == 1)Step_Kappa(tree);
 //	if(x == 1)Step_RR(tree);
-	x = gsl_rng_uniform(anneal.rng);
-	if(x < anneal.prob_pinvar)Step_Pinvar(tree);
+//	x = gsl_rng_uniform(anneal.rng);
+//	if(x < anneal.prob_pinvar)Step_Pinvar(tree);
 
 	// 1. Update the likelihood of tree
 	Lk(tree);
@@ -323,7 +326,7 @@ void Step_Branch_Lengths(arbre *tree){
 				//									10,
 				//									0,n);
 			}
-			Update_PMat_At_Given_Edge(tree->t_edges[j],tree);
+			//Update_PMat_At_Given_Edge(tree->t_edges[j],tree);
 		}
 
 
@@ -345,10 +348,14 @@ void Step_Topology(arbre *tree){
 		int i,j;
 		int n_edges = (tree->n_otu * 2) - 3;
 		int edge = gsl_rng_uniform_int(anneal.rng,n_edges);
+		//PhyML_Printf("JSJ: Edge: %i, Number of Edges: %i\n",edge,n_edges);
 		double r = gsl_rng_uniform(anneal.rng);
 		while(tree->t_edges[edge]->left->tax == 1 || tree->t_edges[edge]->rght->tax == 1){
-			if(r<0.5) edge = ((edge + 1) % (n_edges)); //starting from here, look through edge list
-			else edge = ((edge - 1) % (n_edges));
+			if(r < 0.5) edge = ((edge + 1) % (n_edges)); //starting from here, look through edge list
+			else{
+				if(edge == 0) edge = n_edges - 1;
+				else edge = ((edge - 1) % (n_edges));
+			}
 		}// now we have an internal edge...
 		b = tree->t_edges[edge]->left;
 		c = tree->t_edges[edge]->rght;
@@ -391,15 +398,10 @@ void Get_QA_Neighbor_Proposition(arbre *tree){
 // OUTPUT: a floating point decimal, between 0.0 and 1.0
 m3ldbl Boltzmann_P(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl temperature){
 	m3ldbl result = 1.0;
-	/* psuedocode:
-	if (lnl_new < lnl_curr)
-	{
-		result = exp( (lnl_new - lnl_curr)/(accept_ratio * temperature) );
-	}
-	 */
 	if(lnl_new < lnl_curr){
 		result = exp((lnl_new - lnl_curr)/(anneal.accept_ratio * temperature));
 	}
+	PhyML_Printf("In Boltzmann_P: accept_ratio= %lf, lnl_curr = %lf, lnl_new = %lf, temp= %lf, result = %lf\n",anneal.accept_ratio,lnl_curr,lnl_new,temperature,result);
 	return result;
 }
 
@@ -418,14 +420,14 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	}
 	m3ldbl temp = anneal.start_temp;
 	m3ldbl tempmult = exp(log(anneal.end_temp/anneal.start_temp)/(((double)anneal.temp_count) - 1.0));
-	anneal.accept_ratio = Scale_Acceptance_Ratio(tree);
+	//anneal.accept_ratio = Scale_Acceptance_Ratio(tree);
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
 	Make_All_Tree_Nodes(best_tree);
 	Make_All_Tree_Edges(best_tree);
 	best_tree->mod = Copy_Model(tree->mod);
 	Copy_Tree(tree,best_tree);
-
+	//Speed_Spr_Loop(tree);
 	arbre *last_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(last_tree,tree->n_otu, tree->n_l);
 	Make_All_Tree_Nodes(last_tree);
@@ -449,6 +451,11 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		Copy_Tree(tree,last_tree);
 		Record_Model(tree->mod,last_tree->mod);
 		lnL_current = lnL_best;
+		PhyML_Printf("---------------------------------------------\n");
+		PhyML_Printf("JSJ: Temperature: %lf\n",temp);
+		PhyML_Printf("JSJ: Best Likelihood: %lf\n",lnL_best);
+		PhyML_Printf("JSJ: Current Likelihood: %lf\n",lnL_current);
+		PhyML_Printf("---------------------------------------------\n");
 
 		steps_tried = 0;
 		steps_accepted = 0;
@@ -458,9 +465,13 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			//get our next proposition.
 			Get_TA_Neighbor_Proposition(tree);
 			lnL_proposed = tree->c_lnL;
+		//	PhyML_Printf("JSJ: Proposed Likelihood at iter %i: %lf\n",iter,lnL_current);
 			if(lnL_proposed > lnL_best){
 				//save this tree into best_tree
-				PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
+//				PhyML_Printf("*************************************************\n");
+//				PhyML_Printf("JSJ: Proposed Likelihood is the best so far! \n",__LINE__,__FILE__);
+//				PhyML_Printf("JSJ: Previous best likelihood: %lf\n",lnL_best);
+//				PhyML_Printf("*************************************************\n");
 				Copy_Tree(tree,best_tree);
 				Record_Model(tree->mod, best_tree->mod);
 				lnL_best = lnL_proposed;
@@ -468,16 +479,16 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 				iter -= anneal.set_back;
 				if(iter < 0) iter = 0; //make sure not set back into negative...
 			}
-			r = ((double)rand() / ((double)(RAND_MAX)+ 1.0));
+			r = gsl_rng_uniform(anneal.rng);
 			acc_prob = Boltzmann_P(lnL_current, lnL_proposed, temp);
 
-			if(acc_prob > r){
+			if(acc_prob >= r){
 				//save the current tree
 				Copy_Tree(tree,last_tree);
 				Record_Model(tree->mod,last_tree->mod);
 				steps_accepted++;
 				lnL_current = tree->c_lnL;
-				PhyML_Printf("JSJ: Made it to line %d, in file %s\n",__LINE__,__FILE__);
+				//PhyML_Printf("JSJ: Proposed Likelihood Accepted, acc_prob = %lf\n",acc_prob);
 			}else{
 				//restore the current tree
 				Copy_Tree(last_tree,tree);
