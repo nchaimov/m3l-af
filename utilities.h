@@ -22,6 +22,9 @@ Modified by John St John
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_rng.h>
+
 
 #define VERSION "v3.0 (179M)"
 

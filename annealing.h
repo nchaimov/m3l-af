@@ -21,25 +21,22 @@ void Step_Pinvar(arbre *tree);
 // but we should also provide default values.
 //
 typedef struct __ANNEALING{
-	int temp_count; 	// the number of temperate values to try
-	m3ldbl start_temp;	// initial temperature
-	m3ldbl end_temp;	// order of magnitude of desired accuracy
-	int iters_per_temp;	// number of tries at each temperature
-	int set_back;	// number of steps to step back if improving
-	m3ldbl accept_ratio;	// acceptance ratio
-
-	// Victor says: here are variables to add to this struct:
-//	prob_trans_model
-//	prob_topology
-//	prob_TBR
-//	prob_SPR
-//	prob_NNI
-//	prob_rate_proportion
-//	max_alpha
-//	prob_brlen
-//	brlen_sigma
-//	prob_gamma
-//	gamma_sigma
-
-	// random_seed
+	int 	temp_count; 	// the number of temperate values to try
+	m3ldbl 	start_temp;	// initial temperature
+	m3ldbl 	end_temp;	// order of magnitude of desired accuracy
+	int 	iters_per_temp;	// number of tries at each temperature
+	int 	set_back;	// number of steps to step back if improving
+	m3ldbl  accept_ratio;	// acceptance ratio
+	m3ldbl 	prob_trans_model;
+	m3ldbl 	prob_topology;
+	m3ldbl	prob_TBR;
+	m3ldbl 	prob_SPR;
+	m3ldbl  prob_NNI;
+	m3ldbl 	prob_rate_proportion;
+	m3ldbl 	max_alpha;
+	m3ldbl 	prob_brlen;
+	m3ldbl  brlen_sigma;
+	m3ldbl	prob_gamma;
+	m3ldbl	gamma_sigma;
+	int     random_seed;
 }annealing;

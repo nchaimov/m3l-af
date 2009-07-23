@@ -8,6 +8,11 @@
 #include "annealing.h"
 #include "numeric.h"
 
+/**
+ * JSJ: Note that all external libraries, including math.h, time.h and gsl are included
+ * 		through utilities.h
+ */
+
 annealing anneal;
 
 void Set_Anneal(){
@@ -143,8 +148,10 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 	if(x == 1)Step_Pinvar(tree);
 
 	// 1. Update the likelihood of tree
+	Lk(tree);
 
 	// 2. set update_eigen to 0 (and in some cases, update_eigen will already == 0)
+	tree->mod->update_eigen = 0;
 }
 
 // helper for "Get_TA_Neighbor_Proposition"
@@ -166,8 +173,6 @@ void Step_Brlen_Proportion(arbre *tree){
 		}
 		Normalize_Props(tree);
 		//JSJ: recalculate the likelihood of the tree
-		tree->both_sides = 1;
-		Lk(tree);
 	}
 }
 
@@ -178,7 +183,6 @@ void Step_Pinvar(arbre *tree){
 		tree->mod->pinvar += r;
 		if(tree->mod->pinvar < 0.0001) tree->mod->pinvar = 0.0001;
 		else if(tree->mod->pinvar > 0.9999) tree->mod->pinvar = 0.9999;
-		Lk(tree);
 	}
 }
 
@@ -197,7 +201,6 @@ void Step_RR(arbre * tree){
 			if(tree->mod->rr_val[j] < 0.01) tree->mod->rr_val[j] = 0.01;
 			else if(tree->mod->rr_val[j] > 100.0) tree->mod->rr_val[j] = 99.999;
 		}
-		Lk(tree);
 	}
 }
 
@@ -210,8 +213,6 @@ void Step_Kappa(arbre * tree){
 		tree->mod->kappa += r;
 		if(tree->mod->kappa < 0.1) tree->mod->kappa = 0.1;
 		else if(tree->mod->kappa > 100.0) tree->mod->kappa = 99.9999;
-		Lk(tree);
-		tree->mod->update_eigen = 0;
 	}
 }
 //.001 to 100
@@ -222,7 +223,6 @@ void Step_Lambda(arbre * tree){
 		tree->mod->lambda += r;
 		if(tree->mod->lambda < 0.001) tree->mod->lambda = 0.001;
 		else if(tree->mod->lambda > 100.0) tree->mod->lambda = 99.9999;
-		Lk(tree);
 	}
 }
 
@@ -237,8 +237,6 @@ void Step_Gamma(arbre *tree){
 		tree->mod->alpha += r;
 		if(tree->mod->alpha < 0.01) tree->mod->alpha = 0.01;
 		else if(tree->mod->alpha > 100.0) tree->mod->alpha = 99.9999;
-
-		Lk(tree);
 	}
 }
 
@@ -256,8 +254,6 @@ void Step_Pi(arbre * tree){
 			if(tree->mod->pi_unscaled[j] < -1000.0) tree->mod->pi_unscaled[j] = -999.9999;
 			else if(tree->mod->pi_unscaled[j] > 1000.0) tree->mod->pi_unscaled[j] = 999.9999;
 		}
-		Lk(tree);
-		tree->mod->update_eigen = 0;
 	}
 }
 
@@ -287,7 +283,7 @@ void Step_Branch_Lengths(arbre *tree){
 				tree->t_edges[j]->l[n] += r;
 				if(tree->t_edges[j]->l[n] < BL_MIN) tree->t_edges[j]->l[n] = BL_MIN;
 				else if(tree->t_edges[j]->l[n] > BL_MAX) tree->t_edges[j]->l[n] = BL_MAX;
-				Update_Lk_At_Given_Edge(tree->t_edges[j],tree); //calls update_p_lk on appropriate nodes and this edge
+//				Update_Lk_At_Given_Edge(tree->t_edges[j],tree); //calls update_p_lk on appropriate nodes and this edge
 
 				//JSJ: just for fun...
 				//				Br_Len_Brent_Iter(10.*tree->t_edges[j]->l[n],tree->t_edges[j]->l[n],BL_MIN,
@@ -297,7 +293,6 @@ void Step_Branch_Lengths(arbre *tree){
 				//									0,n);
 			}
 		}
-		Lk(tree);
 	}
 }
 
@@ -344,11 +339,7 @@ void Step_Topology(arbre *tree){
 		}
 
 		Swap(a,b,c,d,tree);
-		tree->both_sides = 1;
-		Lk(tree);
-		tree->both_sides = 0;
-
-
+		Update_Dirs(tree);
 	}
 }
 
@@ -384,6 +375,7 @@ m3ldbl Boltzmann_P(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl temperature){
 m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	Set_Anneal();
 	m3ldbl result = 1.0;
+	tree->both_sides = 1; //search both pre and post order on all subtrees
 	int n_edges = (tree->n_otu * 2) - 3;
 	if (n_edges <= 3){
 		tree->mod->s_opt->opt_topo = 0; //make sure that opt_topo is false if there are no meaningful branch swaps.
