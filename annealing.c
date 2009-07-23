@@ -132,15 +132,19 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 	x = Rand_Int(0,1);
 	if(x == 1)Step_Topology(tree);
 	x = Rand_Int(0,1);
-	if(x == 1)Step_Pi(tree);
-	x = Rand_Int(0,1);
-	if(x == 1)Step_Lambda(tree);
-	x = Rand_Int(0,1);
-	if(x == 1)Step_Kappa(tree);
-	x = Rand_Int(0,1);
-	if(x == 1)Step_RR(tree);
+//	if(x == 1)Step_Pi(tree);
+//	x = Rand_Int(0,1);
+//	if(x == 1)Step_Lambda(tree);
+//	x = Rand_Int(0,1);
+//	if(x == 1)Step_Kappa(tree);
+//	x = Rand_Int(0,1);
+//	if(x == 1)Step_RR(tree);
 	x = Rand_Int(0,1);
 	if(x == 1)Step_Pinvar(tree);
+
+	// 1. Update the likelihood of tree
+
+	// 2. set update_eigen to 0 (and in some cases, update_eigen will already == 0)
 }
 
 // helper for "Get_TA_Neighbor_Proposition"
@@ -225,7 +229,7 @@ void Step_Lambda(arbre * tree){
 // helper for "Get_TA_Neighbor_Proposition"
 void Step_Gamma(arbre *tree){
 	// For now, do something stupid like incrementing gamma +/- 0.001.
-	// In reality, we'll want to perturb the gamma parameter based on a normal distribution
+	// In reality, we'll want to perturb the gamma parameter based on a Gaussian distribution
 	// with mean equal to the current value of gamma and standard deviation equal to some
 	// user-specified parameter sigma.
 	if(tree->mod->s_opt->opt_alpha == 1){

@@ -40,4 +40,6 @@ typedef struct __ANNEALING{
 //	brlen_sigma
 //	prob_gamma
 //	gamma_sigma
+
+	// random_seed
 }annealing;
