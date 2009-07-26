@@ -335,7 +335,7 @@ Copyright (C) 2006 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/Users/jstjohn/Documents/workspace/m3l'
+ac_pwd='/Users/victor/Documents/EclipseWorkspace/phyml-m3l'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 MKDIR_P='./install-sh -c -d'
@@ -527,7 +527,7 @@ s,@AUTOCONF@,|#_!!_#|autoconf,g
 s,@AUTOMAKE@,|#_!!_#|automake-1.10,g
 s,@AUTOHEADER@,|#_!!_#|autoheader,g
 s,@MAKEINFO@,|#_!!_#|makeinfo,g
-s,@install_sh@,|#_!!_#|$(SHELL) /Users/jstjohn/Documents/workspace/m3l/install-sh,g
+s,@install_sh@,|#_!!_#|$(SHELL) /Users/victor/Documents/EclipseWorkspace/phyml-m3l/install-sh,g
 s,@STRIP@,|#_!!_#|,g
 s,@INSTALL_STRIP_PROGRAM@,|#_!!_#|$(install_sh) -c -s,g
 s,@mkdir_p@,|#_!!_#|$(top_builddir)/./install-sh -c -d,g
