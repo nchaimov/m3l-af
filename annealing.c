@@ -15,6 +15,7 @@
 
 annealing anneal;
 
+// "Set_Anneal" sets the default values of thermal annealing parameters. . .
 void Set_Anneal(){
 	anneal.accept_ratio = 0.3;
 	anneal.end_temp = 0.000001;
@@ -23,7 +24,6 @@ void Set_Anneal(){
 	anneal.start_temp = 1.0;
 	anneal.temp_count = 2000;
 
-
 	anneal.max_alpha = 4.0;
 
 
@@ -31,7 +31,7 @@ void Set_Anneal(){
 	anneal.pinvar_sigma = 0.05;
 	anneal.gamma_sigma = 0.05;
 
-
+	// prob_X = the probability of stepping parameter X during each SA iteration.
 	anneal.prob_NNI = 0.4;
 	anneal.prob_SPR = 0.3;
 	anneal.prob_TBR = 0.3;
@@ -174,11 +174,11 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 //	x = gsl_rng_uniform(anneal.rng);
 //	if(x < anneal.prob_pinvar)Step_Pinvar(tree);
 
-	// 1. Update the likelihood of tree
-	Lk(tree);
-
 	// 2. set update_eigen to 0 (and in some cases, update_eigen will already == 0)
 	tree->mod->update_eigen = 0;
+
+	// 1. Update the likelihood of tree
+	Lk(tree);
 }
 
 // helper for "Get_TA_Neighbor_Proposition"
@@ -202,6 +202,7 @@ void Step_Brlen_Proportion(arbre *tree){
 		int i;
 		For(i,tree->n_l){
 			alpha[i] = anneal.max_alpha;
+			PhyML_Printf("(annealing.c 201) alpha[%d] = %f", i, alpha[i]);
 		}
 		gsl_ran_dirichlet(anneal.rng,tree->n_l,alpha,tree->props);
 		Normalize_Props(tree);
@@ -405,13 +406,16 @@ m3ldbl Boltzmann_P(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl temperature){
 	return result;
 }
 
-// INPUT: a tree structure, with parameters to optimize specified in tree->mod->s_opt
+// INPUT: a tree structure, where tree->mod->s_opt contains the
+//	parameters which are free to be optimized.
 // OUTPUT: the likelihood of the best found tree
 //
-// At the end of this method, the object "tree" will contain the best-found topology, branch lengths,
-// and model parameters.
+// At the end of this method, the object "tree" will contain the best-found topology,
+//	branch lengths, and model parameters.
 m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
+
 	Set_Anneal();
+
 	m3ldbl result = 1.0;
 	tree->both_sides = 1; //search both pre and post order on all subtrees
 	int n_edges = (tree->n_otu * 2) - 3;
@@ -421,6 +425,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	m3ldbl temp = anneal.start_temp;
 	m3ldbl tempmult = exp(log(anneal.end_temp/anneal.start_temp)/(((double)anneal.temp_count) - 1.0));
 	//anneal.accept_ratio = Scale_Acceptance_Ratio(tree);
+
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
 	Make_All_Tree_Nodes(best_tree);
@@ -443,9 +448,26 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	int steps_tried;
 	int steps_accepted;
 
-	For(itemp,anneal.temp_count){
+	m3ldbl temp_of_best; // VHS: for optimization purposes, let's record the temperature at which we discovered the best tree.
+	m3ldbl iter_of_best;
+
+	PhyML_Printf("Starting simulated thermal annealing with the following parameters:\n");
+	PhyML_Printf(" * acceptance ratio = %f\n", anneal.accept_ratio);
+	PhyML_Printf(" * start temperatureanne = %f\n", anneal.start_temp);
+	PhyML_Printf(" * end temperature = %f\n", anneal.end_temp);
+	PhyML_Printf(" * temperature count = %f\n", anneal.temp_count);
+	PhyML_Printf(" * temperature multiplier = %f\n", tempmult);
+	PhyML_Printf(" * maximum alpha = %f\n", anneal.max_alpha);
+	PhyML_Printf(" * branch length sigma = %f\n", anneal.brlen_sigma);
+	PhyML_Printf(" * prob. invar. sigma = %f\n", anneal.pinvar_sigma);
+	PhyML_Printf(" * a.s.r.v. gamma sigma = %f\n", anneal.gamma_sigma);
+
+	for(itemp = 0; itemp < anneal.temp_count; itemp++){
 		//recenter the search at each temperature.
 		//make the tree our best tree so far
+		//
+		// VHS: This recentering step might be meretricious.
+		// Let's examine the run without this step.
 		Copy_Tree(best_tree,tree);
 		Record_Model(best_tree->mod,tree->mod);
 		Copy_Tree(tree,last_tree);
@@ -460,27 +482,53 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		steps_tried = 0;
 		steps_accepted = 0;
 
-		For(iter,anneal.iters_per_temp){
+		for(iter = 0; iter < anneal.iters_per_temp; iter++){
 			steps_tried++;
 			//get our next proposition.
 			Get_TA_Neighbor_Proposition(tree);
 			lnL_proposed = tree->c_lnL;
+
+
+			// Some useful debugging statements:
+			//Print_Tree_Screen(tree);
+			PhyML_Printf("temperature: %f iter: %d lnL_proposed: %f lnL_current: %f\n", temp, iter, lnL_proposed, lnL_current);
+
+
 		//	PhyML_Printf("JSJ: Proposed Likelihood at iter %i: %lf\n",iter,lnL_current);
+
 			if(lnL_proposed > lnL_best){
 				//save this tree into best_tree
+
+				//PhyML_Printf("(annealing.c, 465): Found a new best tree with lnL = %f\n", lnL_best);
+
+
 //				PhyML_Printf("*************************************************\n");
 //				PhyML_Printf("JSJ: Proposed Likelihood is the best so far! \n",__LINE__,__FILE__);
 //				PhyML_Printf("JSJ: Previous best likelihood: %lf\n",lnL_best);
 //				PhyML_Printf("*************************************************\n");
+
 				Copy_Tree(tree,best_tree);
 				Record_Model(tree->mod, best_tree->mod);
+
 				lnL_best = lnL_proposed;
 
+				temp_of_best = itemp;
+				iter_of_best = iter;
+
+				// This temperature is yielding good results: let's stay here
+				// longer, thus increasing our chances of reaching the best ground
+				// state at this temperature.
 				iter -= anneal.set_back;
 				if(iter < 0) iter = 0; //make sure not set back into negative...
+
+				acc_prob = 1.0;
+				r = 0.0;
 			}
-			r = gsl_rng_uniform(anneal.rng);
-			acc_prob = Boltzmann_P(lnL_current, lnL_proposed, temp);
+			else{
+				acc_prob = Boltzmann_P(lnL_current, lnL_proposed, temp);
+				r = ((double)rand() / ((double)(RAND_MAX)+ 1.0));
+			}
+
 
 			if(acc_prob >= r){
 				//save the current tree
@@ -488,9 +536,11 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 				Record_Model(tree->mod,last_tree->mod);
 				steps_accepted++;
 				lnL_current = tree->c_lnL;
+
 				//PhyML_Printf("JSJ: Proposed Likelihood Accepted, acc_prob = %lf\n",acc_prob);
+
 			}else{
-				//restore the current tree
+				//restore the current tree to be our last tree
 				Copy_Tree(last_tree,tree);
 				Record_Model(last_tree->mod,tree->mod);
 			}
@@ -498,6 +548,9 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		temp *= tempmult;
 
 	}
+
+	PhyML_Printf("Annealing finished.\n");
+	PhyML_Printf("In temperature range [%f, %f], the best tree was found at %f, iteration %f\n", temp, anneal.start_temp, temp_of_best, iter_of_best);
 
 	Copy_Tree(best_tree,tree);
 	Record_Model(best_tree->mod,tree->mod);
