@@ -2539,16 +2539,16 @@ int Find_Optim_Local (arbre *tree)
 			 ** and calculate the new likelihood value.
 			 */
 			int tmp;
-//			m3ldbl max[3][MAX_BL_SET];
-//			m3ldbl min[3][MAX_BL_SET];
-//			For(tmp,3){
-//				For(j,tree->n_l){
-//					max[tmp][j] = v_prune->b[tmp]->l[j];
-//					max[tmp][j] *= 10.0;
-//					min[tmp][j] =BL_MIN;
-//
-//				}
-//			}
+			//			m3ldbl max[3][MAX_BL_SET];
+			//			m3ldbl min[3][MAX_BL_SET];
+			//			For(tmp,3){
+			//				For(j,tree->n_l){
+			//					max[tmp][j] = v_prune->b[tmp]->l[j];
+			//					max[tmp][j] *= 10.0;
+			//					min[tmp][j] =BL_MIN;
+			//
+			//				}
+			//			}
 			For(tmp,3){
 				For(j,tree->n_l){
 					Br_Len_Brent_Iter(v_prune->b[tmp]->l[j] * 10.0, v_prune->b[tmp]->l[j], BL_MIN, 1.e-10, v_prune->b[tmp], tree, 250, 0,j);
@@ -3615,14 +3615,14 @@ void Speed_Spr_Loop(arbre *tree)
 	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 	tree->best_lnL = tree->c_lnL;
 
-//	/**
-//	 * JSJ: for testing purposes
-//	 */
-//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-//	Print_Tree_Screen(tree);
-//	/**
-//	 * JSJ: end tree test print section
-//	 */
+	//	/**
+	//	 * JSJ: for testing purposes
+	//	 */
+	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+	//	Print_Tree_Screen(tree);
+	//	/**
+	//	 * JSJ: end tree test print section
+	//	 */
 	/*****************************/
 	lk_old = UNLIKELY;
 	tree->mod->s_opt->max_depth_path = 2*tree->n_otu-3;
@@ -3637,14 +3637,14 @@ void Speed_Spr_Loop(arbre *tree)
 	while(1);
 	/*****************************/
 
-//	/**
-//	 * JSJ: for testing purposes
-//	 */
-//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-//	Print_Tree_Screen(tree);
-//	/**
-//	 * JSJ: end tree test print section
-//	 */
+	//	/**
+	//	 * JSJ: for testing purposes
+	//	 */
+	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+	//	Print_Tree_Screen(tree);
+	//	/**
+	//	 * JSJ: end tree test print section
+	//	 */
 
 	/*****************************/
 	if(tree->mod->datatype == NT)
@@ -3662,14 +3662,14 @@ void Speed_Spr_Loop(arbre *tree)
 		while(1);
 	}
 	/*****************************/
-//	/**
-//	 * JSJ: for testing purposes
-//	 */
-//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-//	Print_Tree_Screen(tree);
-//	/**
-//	 * JSJ: end tree test print section
-//	 */
+	//	/**
+	//	 * JSJ: for testing purposes
+	//	 */
+	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+	//	Print_Tree_Screen(tree);
+	//	/**
+	//	 * JSJ: end tree test print section
+	//	 */
 
 
 	/*****************************/
@@ -3682,28 +3682,28 @@ void Speed_Spr_Loop(arbre *tree)
 	}
 	while(fabs(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_global);
 	/*****************************/
-//	/**
-//	 * JSJ: for testing purposes
-//	 */
-//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-//	Print_Tree_Screen(tree);
-//	/**
-//	 * JSJ: end tree test print section
-//	 */
+	//	/**
+	//	 * JSJ: for testing purposes
+	//	 */
+	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+	//	Print_Tree_Screen(tree);
+	//	/**
+	//	 * JSJ: end tree test print section
+	//	 */
 	/*****************************/
 	do
 	{
 		if(!Check_NNI_Five_Branches(tree)) break;
 	}while(1);
 	/*****************************/
-//	/**
-//	 * JSJ: for testing purposes
-//	 */
-//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-//	Print_Tree_Screen(tree);
-//	/**
-//	 * JSJ: end tree test print section
-//	 */
+	//	/**
+	//	 * JSJ: for testing purposes
+	//	 */
+	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
+	//	Print_Tree_Screen(tree);
+	//	/**
+	//	 * JSJ: end tree test print section
+	//	 */
 	if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n");
 
 }
@@ -4253,7 +4253,14 @@ void Random_Spr(int n_moves, arbre *tree)
 		do
 		{
 			br_target = (int)((m3ldbl)rand()/RAND_MAX * (2*tree->n_otu-3-1));
-		}while(br_target == br_pulled);
+			//JSJ: make sure not to select neighboring branches.
+		}while((br_target == br_pulled) &&
+				(  (tree->t_edges[br_pulled]->left->num == tree->t_edges[br_target]->rght->num)
+						|| (tree->t_edges[br_pulled]->left->num == tree->t_edges[br_target]->left->num)
+						|| (tree->t_edges[br_pulled]->rght->num == tree->t_edges[br_target]->left->num)
+						|| (tree->t_edges[br_pulled]->rght->num == tree->t_edges[br_target]->rght->num)
+						|| (tree->t_edges[br_target]->rght->tax == 1)
+						|| (tree->t_edges[br_target]->left->tax == 1)));
 
 		spr_struct->n_link        = tree->t_edges[br_pulled]->left;
 		spr_struct->n_opp_to_link = tree->t_edges[br_pulled]->rght;

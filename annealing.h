@@ -39,6 +39,10 @@ typedef struct __ANNEALING{
 	m3ldbl 	prob_brlen;
 	m3ldbl	prob_gamma;
 	m3ldbl 	prob_pinvar;
+	m3ldbl  prob_pi;
+	m3ldbl  prob_kappa;
+	m3ldbl  prob_lambda;
+	m3ldbl  prob_rr;
 
 	m3ldbl 	max_alpha;
 	m3ldbl  brlen_sigma;
