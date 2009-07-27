@@ -238,6 +238,12 @@ void Usage()
   PhyML_Printf("%s\n\t-z (or --blprops) %s[%snum1%s,%snum2%s,...,%snumN%s]\n",BOLD,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT);
   PhyML_Printf("%s\t\t  Use these starting proportions of branch length categories in the evaluation\n",FLAT);
 
+  PhyML_Printf("%s\n\t --temp_count %snum%s\n",BOLD,LINE,FLAT);
+  PhyML_Printf("%s\t\t Sets the number of temperatures to try in Simulated Annealing (defaults to 2000) \n",FLAT);
+
+  PhyML_Printf("%s\n\t --temp_iter %snum%s\n",BOLD,LINE,FLAT);
+  PhyML_Printf("%s\t\t Sets the number of iterations per temperature to try in Simulated Annealing (defaults to 1000) \n",FLAT);
+
 
   PhyML_Printf("\n");
   PhyML_Printf("\n");

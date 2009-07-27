@@ -598,7 +598,8 @@ typedef struct __Option { /* mostly used in 'options.c' */
   int				      user_props; /* JSJ: 0-> proportions are not user defined. */
   int 					   user_topo; /* JSJ: 0-> user has not defined a topo search method */
   int					 fixed_props; /* JSJ: fix the proportion of sites, defaults to 0 */
-
+  int 					  temp_count; /* JSJ: the temp count for use in Simulated Annealing */
+  int 					   temp_iter; /* JSJ: the number of iterations per temp in Simulated Annealing*/
 
   char                  *in_seq_file; /* sequence file name */
   FILE                    *fp_in_seq; /* pointer to the sequence file */

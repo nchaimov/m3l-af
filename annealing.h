@@ -15,7 +15,7 @@ void Step_Kappa(arbre * tree);
 void Step_RR(arbre * tree);
 void Step_Pinvar(arbre *tree);
 void Free_Anneal();
-void Set_Anneal();
+void Set_Anneal(option *io);
 
 //
 // Global parameters.

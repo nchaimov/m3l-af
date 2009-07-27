@@ -5181,6 +5181,8 @@ void Set_Defaults_Input(option* io)
 	io->fixed_props                = 1; //JSJ: don't optimize props on single branch length
 	io->user_props				   = 0; //JSJ: assume user won't supply proportions...
 	io->user_topo				   = 0; //JSJ: assume user won't supply search algo
+	io->temp_count				   = 2000;
+	io->temp_iter				   = 1000;
 	io->tree                       = NULL;
 	io->mod->datatype              = 0;
 	strcpy(io->nt_or_cd,"nucleotides");

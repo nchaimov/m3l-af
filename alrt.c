@@ -993,7 +993,7 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 		{
 			PhyML_Printf("\n. Edge %3d lk_temp = %f lktodo = %f\n",b_fcus->num,lk_temp,lktodo);
 			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-			Warn_And_Exit("");
+//			Warn_And_Exit("");
 		}
 	}
 	while(fabs(lk_temp-lktodo) > tree->mod->s_opt->min_diff_lk_global);

@@ -91,6 +91,8 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"blprops",             required_argument,NULL,49},
 			{"fixblprops",            no_argument,NULL,50},
 			{"blclasses",             required_argument,NULL,51},
+			{"temp_iter",             required_argument,NULL,52},
+			{"temp_count",             required_argument,NULL,53},
 			{0,0,0,0}
 	};
 
@@ -945,6 +947,20 @@ break;
 					Update_Default_Props(io);
 				}
 			}
+			break;
+		}
+		case 52: //JSJ: temp_iter
+		{
+			int tmp = io->temp_iter;
+			io->temp_iter = atoi(optarg);
+			if(io->temp_iter < 1) io->temp_iter = tmp;
+			break;
+		}
+		case 53: //JSJ: temp_count
+		{
+			int tmp = io->temp_count;
+			io->temp_count = atoi(optarg);
+			if(io->temp_count < 1) io->temp_count = tmp;
 			break;
 		}
 		/**

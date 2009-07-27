@@ -17,13 +17,13 @@
 annealing anneal;
 
 // "Set_Anneal" sets the default values of thermal annealing parameters. . .
-void Set_Anneal(){
+void Set_Anneal(option *io){
 	anneal.accept_ratio = 0.3;
 	anneal.end_temp = 0.000001;
-	anneal.iters_per_temp = 1000;
+	anneal.iters_per_temp = io->temp_iter;
 	anneal.set_back = 50;
 	anneal.start_temp = 1.0;
-	anneal.temp_count = 2000;
+	anneal.temp_count = io->temp_count;
 
 	anneal.max_alpha = 4.0;
 
@@ -137,7 +137,7 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 	}
 	fsum /= (double)n;
 	fsqsum /= (double)n;
-	fsqsum = sqrt(fsqsum - (fsum * fsum));
+	fsqsum = sqrt(fsqsum - fsum * fsum);
 	aratio = anneal.accept_ratio * fsqsum / anneal.start_temp;
 
 	Free_Model(best_tree->mod);
@@ -178,7 +178,7 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 	if(x < anneal.prob_pi)Step_Pi(tree);
 	x = gsl_rng_uniform(anneal.rng);
 	if(x < anneal.prob_topology){
-		PhyML_Printf("JSJ: Proposing a new topology\n");
+		//PhyML_Printf("JSJ: Proposing a new topology\n");
 		Step_Topology(tree);
 	}
 
@@ -464,7 +464,7 @@ m3ldbl Boltzmann_P(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl temperature){
 m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 
-	Set_Anneal();
+	Set_Anneal(tree->io);
 	m3ldbl result = 1.0;
 	tree->both_sides = 1; //search both pre and post order on all subtrees
 	int n_edges = (tree->n_otu * 2) - 3;
@@ -473,7 +473,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	}
 	m3ldbl temp = anneal.start_temp;
 	m3ldbl tempmult = exp(log(anneal.end_temp/anneal.start_temp)/(((double)anneal.temp_count) - 1.0));
-	//anneal.accept_ratio = Scale_Acceptance_Ratio(tree);
+	anneal.accept_ratio = Scale_Acceptance_Ratio(tree);
 
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
@@ -660,7 +660,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 // INPUT: a tree structure, with parameters to optimize specified in tree->mod->s_opt
 // OUTPUT: the likelihood of the best found tree
 m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
-	Set_Anneal();
+	Set_Anneal(tree->io);
 	m3ldbl result = 1.0;
 	int n_edges = (tree->n_otu * 2) - 3;
 	if (n_edges <= 3){
