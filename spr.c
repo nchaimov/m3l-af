@@ -4260,7 +4260,12 @@ void Random_Spr(int n_moves, arbre *tree)
 						|| (tree->t_edges[br_pulled]->rght->num == tree->t_edges[br_target]->left->num)
 						|| (tree->t_edges[br_pulled]->rght->num == tree->t_edges[br_target]->rght->num)
 						|| (tree->t_edges[br_target]->rght->tax == 1)
-						|| (tree->t_edges[br_target]->left->tax == 1)));
+						|| (tree->t_edges[br_target]->left->tax == 1)
+						|| (tree->t_edges[br_target]->left->num == 1)
+						|| (tree->t_edges[br_target]->rght->num == 1)
+						|| (tree->t_edges[br_pulled]->left->num == 1)
+						|| (tree->t_edges[br_pulled]->rght->num == 1)
+						));
 
 		spr_struct->n_link        = tree->t_edges[br_pulled]->left;
 		spr_struct->n_opp_to_link = tree->t_edges[br_pulled]->rght;

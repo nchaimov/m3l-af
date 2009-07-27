@@ -528,7 +528,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			//Print_Tree_Screen(tree);
 			PhyML_Printf("temperature: %f iter: %d lnL_proposed: %f lnL_current: %f\n", temp, iter, lnL_proposed, lnL_current);
 			PhyML_Printf("plot1 %i %lf\n",(steps_tried * (itemp + 1)), lnL_current);
-			PhyML_Printf("plot2 %ld %i", (long)now,(steps_tried * (itemp + 1)));
+			PhyML_Printf("plot2 %ld %i\n", (long)now,(steps_tried * (itemp + 1)));
 
 			//      PhyML_Printf("JSJ: Proposed Likelihood at iter %i: %lf\n",iter,lnL_current);
 
