@@ -136,7 +136,7 @@ int Check_NNI_Five_Branches(arbre *tree)
 		{
 			PhyML_Printf("\n\n. tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
 			PhyML_Printf("\n. Err in file %s at line %d.\n",__FILE__,__LINE__);
-			Warn_And_Exit("\n");
+	//		Warn_And_Exit("\n");
 		}
 
 		//Don't do any NNI if the user doesn't want to optimize topology
@@ -153,7 +153,7 @@ int Check_NNI_Five_Branches(arbre *tree)
 			{
 				PhyML_Printf("\n\n. tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
 				PhyML_Printf("\n. Err in file %s at line %d.\n",__FILE__,__LINE__);
-				Warn_And_Exit("\n");
+		//		Warn_And_Exit("\n");
 			}
 
 			if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");

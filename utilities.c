@@ -7363,11 +7363,16 @@ void Multiply_Mat_By_Vect(m3ldbl **F, m3ldbl *vect, int size)
 
 void Found_In_Subtree(node *a, node *d, node *target, int *match, arbre *tree)
 {
-	if(d->tax) return;
+	if(d->tax){
+		if(d == target) (*match) =  1;
+		if(a == target) (*match) =  1;
+		return;
+	}
 	else
 	{
 		int i;
-		if(d == target) *match =  1;
+		if(d == target) (*match) =  1;
+		if(a == target) (*match) =  1;
 		For(i,3)
 		{
 			if(d->v[i] != a)

@@ -33,9 +33,9 @@ void Set_Anneal(){
 	anneal.gamma_sigma = 0.05;
 
 	// prob_X = the probability of stepping parameter X during each SA iteration.
-	anneal.prob_NNI = 0.4;
+	anneal.prob_NNI = 0.7;
 	anneal.prob_SPR = 0.3;
-	anneal.prob_TBR = 0.3;
+	//anneal.prob_TBR = 0.3;
 	anneal.prob_brlen = 0.5;
 	anneal.prob_gamma = 0.5;
 	anneal.prob_kappa = 0.2;
@@ -369,55 +369,70 @@ void Step_Topology(arbre *tree){
 		double p = gsl_rng_uniform(anneal.rng);
 		if(p <= anneal.prob_NNI){
 			tree->mod->update_eigen = 1;
-			Random_NNI(1,tree);
+			//Random_NNI(1,tree);
 			//Update_Dirs(tree);
-		}
-		p = gsl_rng_uniform(anneal.rng);
-		if(p <= anneal.prob_SPR){
-			tree->mod->update_eigen = 1;
-			//Random_Spr(1,tree);
+
+			node *a,*b,*c,*d;
+			int i,j;
+			int n_edges = (tree->n_otu * 2) - 3;
+			int edge = gsl_rng_uniform_int(anneal.rng,n_edges);
+			//PhyML_Printf("JSJ: Edge: %i, Number of Edges: %i\n",edge,n_edges);
+			double r = gsl_rng_uniform(anneal.rng);
+			while(tree->t_edges[edge]->left->tax == 1 || tree->t_edges[edge]->rght->tax == 1){
+				if(r < 0.5) edge = ((edge + 1) % (n_edges)); //starting from here, look through edge list
+				else{
+					if(edge == 0) edge = n_edges - 1;
+					else edge = ((edge - 1) % (n_edges));
+				}
+			}// now we have an internal edge...
+			b = tree->t_edges[edge]->left;
+			c = tree->t_edges[edge]->rght;
+
+			/**
+			* now we need to find nodes a (from b) and d (from c) such that
+			* a != c, d != a, and either a,d == terminal or a,d == internal
+			*/
+			For(i,3){
+				if(b->v[i] != c){
+					a = b->v[i];
+					For(j,3){
+						if(c->v[j] != b){
+							d = c->v[j];
+							if(a->tax == d->tax){
+								break;
+							}
+						}
+					}
+					if(a->tax == d->tax){
+						break;
+					}
+				}
+			}
+
+			Swap(a,b,c,d,tree);
+			Update_Dirs(tree);
+		}else{ //otherwise do SPR
+//		p = gsl_rng_uniform(anneal.rng);
+//		if(p <= anneal.prob_SPR && tree->n_otu > 4){
+			//tree->mod->update_eigen = 1;
+			Random_Spr(1,tree);
+		//	Perform_One_SPR(tree,0);
+//			int n_edges = (tree->n_otu * 2) - 3;
+//			int e = gsl_rng_uniform_int(anneal.rng,n_edges);
+//			double r = gsl_rng_uniform(anneal.rng);
+//			int left = 0;
+//			while(((tree->t_edges[e]->left->tax == 1 ) && (tree->t_edges[e]->rght->tax == 1))
+//
+//			){
+//				if(r < 0.5) e = ((e + 1) % (n_edges)); //starting from here, look through edge list
+//				else{
+//					if(e == 0) e = n_edges - 1;
+//					else e = ((e - 1) % (n_edges));
+//				}
+//			}// now we have an internal edge...
+
 
 		}
-
-		//		node *a,*b,*c,*d;
-		//		int i,j;
-		//		int n_edges = (tree->n_otu * 2) - 3;
-		//		int edge = gsl_rng_uniform_int(anneal.rng,n_edges);
-		//		//PhyML_Printf("JSJ: Edge: %i, Number of Edges: %i\n",edge,n_edges);
-		//		double r = gsl_rng_uniform(anneal.rng);
-		//		while(tree->t_edges[edge]->left->tax == 1 || tree->t_edges[edge]->rght->tax == 1){
-		//			if(r < 0.5) edge = ((edge + 1) % (n_edges)); //starting from here, look through edge list
-		//			else{
-		//				if(edge == 0) edge = n_edges - 1;
-		//				else edge = ((edge - 1) % (n_edges));
-		//			}
-		//		}// now we have an internal edge...
-		//		b = tree->t_edges[edge]->left;
-		//		c = tree->t_edges[edge]->rght;
-		//
-		//		/**
-		//		* now we need to find nodes a (from b) and d (from c) such that
-		//		* a != c, d != a, and either a,d == terminal or a,d == internal
-		//		*/
-		//		For(i,3){
-		//			if(b->v[i] != c){
-		//				a = b->v[i];
-		//				For(j,3){
-		//					if(c->v[j] != b){
-		//						d = c->v[j];
-		//						if(a->tax == d->tax){
-		//							break;
-		//						}
-		//					}
-		//				}
-		//				if(a->tax == d->tax){
-		//					break;
-		//				}
-		//			}
-		//		}
-		//
-		//		Swap(a,b,c,d,tree);
-		//		Update_Dirs(tree);
 	}
 }
 

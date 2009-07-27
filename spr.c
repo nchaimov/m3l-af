@@ -4097,7 +4097,7 @@ int Try_One_Spr_Move_Triple(spr *move, arbre *tree)
 			if(tree->mod->s_opt->print) PhyML_Printf("\n. c_lnL = %f move_lnL = %f",
 					tree->c_lnL,move->lnL);
 			PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__);
-			Warn_And_Exit("");
+		//	Warn_And_Exit("");
 		}
 
 		if((tree->mod->s_opt->print) && (!tree->io->quiet))
@@ -4241,6 +4241,7 @@ void Random_Spr(int n_moves, arbre *tree)
 {
 	int i;
 	int br_pulled, br_target;
+	int n_edges = (2*tree->n_otu-3);
 	spr *spr_struct;
 	edge *target, *residual;
 
@@ -4249,23 +4250,44 @@ void Random_Spr(int n_moves, arbre *tree)
 	target = residual = NULL;
 	For(i,n_moves)
 	{
-		br_pulled = (int)((m3ldbl)rand()/RAND_MAX * (2*tree->n_otu-3-1));
+		br_pulled = (int)((m3ldbl)rand()/RAND_MAX * (n_edges-1));
+		br_target = (int)((m3ldbl)rand()/RAND_MAX * (n_edges-1));
+		double r = (   (double)rand() / ((double)(RAND_MAX)+(double)(1)) );
+		int iter = 0;
 		do
 		{
-			br_target = (int)((m3ldbl)rand()/RAND_MAX * (2*tree->n_otu-3-1));
+			++iter;
+			if(iter == n_edges){
+				iter = 0;
+				if(r < 0.5){
+					br_pulled = (br_pulled + 1)%(n_edges);
+				}else{
+					if(br_pulled == 0) br_pulled = (n_edges) - 1;
+					else br_pulled = (br_pulled - 1)%(n_edges);
+				}
+			}else{
+				if(r < 0.5){
+					br_target = (br_target + 1)%(n_edges);
+				}else{
+					if(br_target == 0) br_target = (n_edges) - 1;
+					else br_target = (br_target - 1)%(n_edges);
+				}
+			}
 			//JSJ: make sure not to select neighboring branches.
-		}while((br_target == br_pulled) &&
+		}while((br_target == br_pulled) ||
 				(  (tree->t_edges[br_pulled]->left->num == tree->t_edges[br_target]->rght->num)
 						|| (tree->t_edges[br_pulled]->left->num == tree->t_edges[br_target]->left->num)
 						|| (tree->t_edges[br_pulled]->rght->num == tree->t_edges[br_target]->left->num)
 						|| (tree->t_edges[br_pulled]->rght->num == tree->t_edges[br_target]->rght->num)
-						|| (tree->t_edges[br_target]->rght->tax == 1)
-						|| (tree->t_edges[br_target]->left->tax == 1)
-						|| (tree->t_edges[br_target]->left->num == 1)
-						|| (tree->t_edges[br_target]->rght->num == 1)
-						|| (tree->t_edges[br_pulled]->left->num == 1)
-						|| (tree->t_edges[br_pulled]->rght->num == 1)
-						));
+						//						|| (tree->t_edges[br_target]->rght->tax == 1)
+						//						|| (tree->t_edges[br_target]->left->tax == 1)
+						//						|| (tree->t_edges[br_pulled]->rght->tax == 1)
+						//						|| (tree->t_edges[br_pulled]->left->tax == 1)
+						//						|| (tree->t_edges[br_target]->left->num == 1)
+						//						|| (tree->t_edges[br_target]->rght->num == 1)
+						//						|| (tree->t_edges[br_pulled]->left->num == 1)
+						//						|| (tree->t_edges[br_pulled]->rght->num == 1)
+				));
 
 		spr_struct->n_link        = tree->t_edges[br_pulled]->left;
 		spr_struct->n_opp_to_link = tree->t_edges[br_pulled]->rght;
@@ -4326,10 +4348,10 @@ int Check_Spr_Move_Validity(spr *this_spr_move, arbre *tree)
 	Found_In_Subtree(this_spr_move->n_link,
 			this_spr_move->n_opp_to_link,
 			this_spr_move->b_target->left,
-			&match,
+			&(match),
 			tree);
 
-	if(match) return 0;
+	if(match != 0) return 0;
 	else      return 1;
 }
 
