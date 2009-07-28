@@ -244,6 +244,9 @@ void Usage()
   PhyML_Printf("%s\n\t --temp_iter %snum%s\n",BOLD,LINE,FLAT);
   PhyML_Printf("%s\t\t Sets the number of iterations per temperature to try in Simulated Annealing (defaults to 1000) \n",FLAT);
 
+  PhyML_Printf("%s\n\t --acc_ratio %snum%s\n",BOLD,LINE,FLAT);
+  PhyML_Printf("%s\t\t Sets the acceptance ratio for use in Simulated Annealing, larger values are more permissive to changes resulting in worse likelihoods in the initial temperatures. \n",FLAT);
+
 
   PhyML_Printf("\n");
   PhyML_Printf("\n");

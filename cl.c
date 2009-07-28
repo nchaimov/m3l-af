@@ -88,11 +88,12 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"run_id",            required_argument,NULL,46},
 			{"pars",              no_argument,NULL,47},
 			{"quiet",             no_argument,NULL,48},
-			{"blprops",             required_argument,NULL,49},
-			{"fixblprops",            no_argument,NULL,50},
-			{"blclasses",             required_argument,NULL,51},
-			{"temp_iter",             required_argument,NULL,52},
-			{"temp_count",             required_argument,NULL,53},
+			{"blprops",           required_argument,NULL,49},
+			{"fixblprops",        no_argument,NULL,50},
+			{"blclasses",         required_argument,NULL,51},
+			{"temp_iter",         required_argument,NULL,52},
+			{"temp_count",        required_argument,NULL,53},
+			{"acc_ratio",         required_argument,NULL,54},
 			{0,0,0,0}
 	};
 
@@ -961,6 +962,13 @@ break;
 			int tmp = io->temp_count;
 			io->temp_count = atoi(optarg);
 			if(io->temp_count < 1) io->temp_count = tmp;
+			break;
+		}
+		case 54: //JSJ: acc_ratio
+		{
+			double tmp = io->acc_ratio;
+			io->acc_ratio = atof(optarg);
+			if(io->acc_ratio < 0.0) io->acc_ratio = tmp;
 			break;
 		}
 		/**

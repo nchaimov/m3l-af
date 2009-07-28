@@ -135,8 +135,8 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 		}
 
 	}
-	fsum /= (double)n;
-	fsqsum /= (double)n;
+	fsum /= (double)n; //average proposed likelihood
+	fsqsum /= (double)n; //average (squared) proposed likelihood
 	fsqsum = sqrt(fsqsum - fsum * fsum);
 	aratio = anneal.accept_ratio * fsqsum / anneal.start_temp;
 
@@ -240,17 +240,31 @@ void Step_RR(arbre * tree){
 	if(((tree->mod->whichmodel == GTR) && tree->mod->n_diff_rr > 1) ||
 			((tree->mod->whichmodel == CUSTOM) && (tree->mod->s_opt->opt_rr == 1) && (tree->mod->n_diff_rr > 1)))
 	{
-		double r;
-		int i,j;
-		int range = Rand_Int(1,(tree->mod->n_diff_rr));
-		For(i,range){
-			j = Rand_Int(0,(tree->mod->n_diff_rr - 1));
-			if(j == 5) j = (j+1)%(tree->mod->n_diff_rr);
-			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
-			tree->mod->rr_val[j] += r;
-			if(tree->mod->rr_val[j] < 0.01) tree->mod->rr_val[j] = 0.01;
-			else if(tree->mod->rr_val[j] > 100.0) tree->mod->rr_val[j] = 99.999;
+		int i;
+		m3ldbl tmp;
+		double *alpha = calloc(tree->mod->n_diff_rr,sizeof(double));
+		if(tree->mod->n_diff_rr > 5){
+			tmp = tree->mod->rr_val[5]; //save this number to restore later
 		}
+		for(i = 0; i < tree->mod->n_diff_rr; i++){
+			alpha[i] = anneal.max_alpha;
+		}
+		gsl_ran_dirichlet(anneal.rng,tree->mod->n_diff_rr,alpha,tree->mod->rr_val);
+		if(tree->mod->n_diff_rr > 5){
+			tree->mod->rr_val[5] = tmp; //restore this number
+			//not exactly sure why but this is what is done in Optimize_All_Free_Params
+		}
+		free(alpha);
+//		int i,j;
+//		int range = Rand_Int(1,(tree->mod->n_diff_rr));
+//		For(i,range){
+//			j = Rand_Int(0,(tree->mod->n_diff_rr - 1));
+//			if(j == 5) j = (j+1)%(tree->mod->n_diff_rr);
+//			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+//			tree->mod->rr_val[j] += r;
+//			if(tree->mod->rr_val[j] < 0.01) tree->mod->rr_val[j] = 0.01;
+//			else if(tree->mod->rr_val[j] > 100.0) tree->mod->rr_val[j] = 99.999;
+//		}
 	}
 }
 
@@ -259,17 +273,23 @@ void Step_Kappa(arbre * tree){
 	if(tree->mod->s_opt->opt_kappa == 1){
 		double r;
 		tree->mod->update_eigen = 1;
-		r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+		r = gsl_ran_gaussian(anneal.rng,tree->mod->kappa);
 		tree->mod->kappa += r;
 		if(tree->mod->kappa < 0.1) tree->mod->kappa = 0.1;
 		else if(tree->mod->kappa > 100.0) tree->mod->kappa = 99.9999;
+//		double r;
+//		tree->mod->update_eigen = 1;
+//		r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+//		tree->mod->kappa += r;
+//		if(tree->mod->kappa < 0.1) tree->mod->kappa = 0.1;
+//		else if(tree->mod->kappa > 100.0) tree->mod->kappa = 99.9999;
 	}
 }
 //.001 to 100
 void Step_Lambda(arbre * tree){
 	if(tree->mod->s_opt->opt_lambda == 1){
 		double r;
-		r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
+		r = gsl_ran_gaussian(anneal.rng,tree->mod->lambda);
 		tree->mod->lambda += r;
 		if(tree->mod->lambda < 0.001) tree->mod->lambda = 0.001;
 		else if(tree->mod->lambda > 100.0) tree->mod->lambda = 99.9999;
@@ -293,16 +313,15 @@ void Step_Gamma(arbre *tree){
 void Step_Pi(arbre * tree){
 	if((tree->mod->s_opt->opt_state_freq) && (tree->mod->datatype == NT)){
 		tree->mod->update_eigen = 1;
-		int i,j;
-		int range = Rand_Int(1,4);
-		double r;
-		For(i,range){
-			j = Rand_Int(0,3);
-			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0;
-			tree->mod->pi_unscaled[j] += r;
-
-			if(tree->mod->pi_unscaled[j] < -1000.0) tree->mod->pi_unscaled[j] = -999.9999;
-			else if(tree->mod->pi_unscaled[j] > 1000.0) tree->mod->pi_unscaled[j] = 999.9999;
+		int i;
+		double *alpha = calloc(tree->mod->ns, sizeof(double));
+		for(i = 0; i < tree->mod->ns; i++){
+			alpha[i] = anneal.max_alpha;
+		}
+		gsl_ran_dirichlet(anneal.rng,tree->mod->ns,alpha,tree->mod->pi_unscaled);
+		for(i = 0; i < tree->mod->ns; i++){
+			if(tree->mod->pi_unscaled[i] < -1000.0) tree->mod->pi_unscaled[i] = -999.9999;
+			else if(tree->mod->pi_unscaled[i] > 1000.0) tree->mod->pi_unscaled[i] = 999.9999;
 		}
 	}
 }
@@ -366,11 +385,9 @@ void Step_Topology(arbre *tree){
 	*
 	*/
 	if(tree->mod->s_opt->opt_topo){
+		tree->mod->update_eigen = 1;
 		double p = gsl_rng_uniform(anneal.rng);
 		if(p <= anneal.prob_NNI){
-			tree->mod->update_eigen = 1;
-			//Random_NNI(1,tree);
-			//Update_Dirs(tree);
 
 			node *a,*b,*c,*d;
 			int i,j;
@@ -410,26 +427,9 @@ void Step_Topology(arbre *tree){
 			}
 
 			Swap(a,b,c,d,tree);
-			Update_Dirs(tree);
 		}else{ //otherwise do SPR
-//		p = gsl_rng_uniform(anneal.rng);
-//		if(p <= anneal.prob_SPR && tree->n_otu > 4){
-			//tree->mod->update_eigen = 1;
+			//int num_spr = gsl_rng_uniform_int(anneal.rng,3);
 			Random_Spr(1,tree);
-		//	Perform_One_SPR(tree,0);
-//			int n_edges = (tree->n_otu * 2) - 3;
-//			int e = gsl_rng_uniform_int(anneal.rng,n_edges);
-//			double r = gsl_rng_uniform(anneal.rng);
-//			int left = 0;
-//			while(((tree->t_edges[e]->left->tax == 1 ) && (tree->t_edges[e]->rght->tax == 1))
-//
-//			){
-//				if(r < 0.5) e = ((e + 1) % (n_edges)); //starting from here, look through edge list
-//				else{
-//					if(e == 0) e = n_edges - 1;
-//					else e = ((e - 1) % (n_edges));
-//				}
-//			}// now we have an internal edge...
 
 
 		}
@@ -473,7 +473,8 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	}
 	m3ldbl temp = anneal.start_temp;
 	m3ldbl tempmult = exp(log(anneal.end_temp/anneal.start_temp)/(((double)anneal.temp_count) - 1.0));
-	anneal.accept_ratio = Scale_Acceptance_Ratio(tree);
+	if(tree->io->acc_ratio < 0.0) anneal.accept_ratio = Scale_Acceptance_Ratio(tree);
+	else anneal.accept_ratio = tree->io->acc_ratio; //if positive, user input a value, don't estimate.
 
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
@@ -500,17 +501,18 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 	m3ldbl temp_of_best; // VHS: for optimization purposes, let's record the temperature at which we discovered the best tree.
 	m3ldbl iter_of_best;
-
-	PhyML_Printf("Starting simulated thermal annealing with the following parameters:\n");
-	PhyML_Printf(" * acceptance ratio = %f\n", anneal.accept_ratio);
-	PhyML_Printf(" * start temperatureanne = %f\n", anneal.start_temp);
-	PhyML_Printf(" * end temperature = %f\n", anneal.end_temp);
-	PhyML_Printf(" * temperature count = %f\n", anneal.temp_count);
-	PhyML_Printf(" * temperature multiplier = %f\n", tempmult);
-	PhyML_Printf(" * maximum alpha = %f\n", anneal.max_alpha);
-	PhyML_Printf(" * branch length sigma = %f\n", anneal.brlen_sigma);
-	PhyML_Printf(" * prob. invar. sigma = %f\n", anneal.pinvar_sigma);
-	PhyML_Printf(" * a.s.r.v. gamma sigma = %f\n", anneal.gamma_sigma);
+	if(verbose){
+		PhyML_Printf("Starting simulated thermal annealing with the following parameters:\n");
+		PhyML_Printf(" * acceptance ratio = %f\n", anneal.accept_ratio);
+		PhyML_Printf(" * start temperatureanne = %f\n", anneal.start_temp);
+		PhyML_Printf(" * end temperature = %f\n", anneal.end_temp);
+		PhyML_Printf(" * temperature count = %f\n", anneal.temp_count);
+		PhyML_Printf(" * temperature multiplier = %f\n", tempmult);
+		PhyML_Printf(" * maximum alpha = %f\n", anneal.max_alpha);
+		PhyML_Printf(" * branch length sigma = %f\n", anneal.brlen_sigma);
+		PhyML_Printf(" * prob. invar. sigma = %f\n", anneal.pinvar_sigma);
+		PhyML_Printf(" * a.s.r.v. gamma sigma = %f\n", anneal.gamma_sigma);
+	}
 
 	for(itemp = 0; itemp < anneal.temp_count; itemp++){
 		//recenter the search at each temperature.
@@ -523,11 +525,13 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		Copy_Tree(tree,last_tree);
 		Record_Model(tree->mod,last_tree->mod);
 		lnL_current = lnL_best;
-		PhyML_Printf("---------------------------------------------\n");
-		PhyML_Printf("JSJ: Temperature: %lf\n",temp);
-		PhyML_Printf("JSJ: Best Likelihood: %lf\n",lnL_best);
-		PhyML_Printf("JSJ: Current Likelihood: %lf\n",lnL_current);
-		PhyML_Printf("---------------------------------------------\n");
+		if(verbose){
+			PhyML_Printf("---------------------------------------------\n");
+			PhyML_Printf("JSJ: Temperature: %lf\n",temp);
+			PhyML_Printf("JSJ: Best Likelihood: %lf\n",lnL_best);
+			PhyML_Printf("JSJ: Current Likelihood: %lf\n",lnL_current);
+			PhyML_Printf("---------------------------------------------\n");
+		}
 
 		//steps_tried = 0;
 		//steps_accepted = 0;
@@ -541,11 +545,13 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			now = clock() / (CLOCKS_PER_SEC / 1000);
 			// Some useful debugging statements:
 			//Print_Tree_Screen(tree);
-			PhyML_Printf("temperature: %f iter: %d lnL_proposed: %f lnL_current: %f\n", temp, iter, lnL_proposed, lnL_current);
-			//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itemp + 1)), lnL_current);
-			//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
-			PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
-			PhyML_Printf("plot2 %ld %d\n", (long)now, steps_tried);
+			if(verbose){
+				PhyML_Printf("temperature: %f iter: %d lnL_proposed: %f lnL_current: %f\n", temp, iter, lnL_proposed, lnL_current);
+				//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itemp + 1)), lnL_current);
+				//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
+				PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
+				PhyML_Printf("plot2 %ld %d\n", (long)now, steps_tried);
+			}
 
 			//      PhyML_Printf("JSJ: Proposed Likelihood at iter %i: %lf\n",iter,lnL_current);
 
@@ -579,7 +585,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			}
 			else{
 				acc_prob = Boltzmann_P(lnL_current, lnL_proposed, temp);
-				r = ((double)rand() / ((double)(RAND_MAX)+ 1.0));
+				r = gsl_rng_uniform(anneal.rng);
 			}
 
 
@@ -601,10 +607,10 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		temp *= tempmult;
 
 	}
-
-	PhyML_Printf("Annealing finished.\n");
-	PhyML_Printf("In temperature range [%f, %f], the best tree was found at %f, iteration %f\n", temp, anneal.start_temp, temp_of_best, iter_of_best);
-
+	if(verbose){
+		PhyML_Printf("Annealing finished.\n");
+		PhyML_Printf("In temperature range [%f, %f], the best tree was found at %f, iteration %f\n", temp, anneal.start_temp, temp_of_best, iter_of_best);
+	}
 	Copy_Tree(best_tree,tree);
 	Record_Model(best_tree->mod,tree->mod);
 

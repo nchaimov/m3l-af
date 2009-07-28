@@ -600,6 +600,7 @@ typedef struct __Option { /* mostly used in 'options.c' */
   int					 fixed_props; /* JSJ: fix the proportion of sites, defaults to 0 */
   int 					  temp_count; /* JSJ: the temp count for use in Simulated Annealing */
   int 					   temp_iter; /* JSJ: the number of iterations per temp in Simulated Annealing*/
+  double 				   acc_ratio; /* JSJ: the acceptance ratio, defaults to -1.0, used if set positive */
 
   char                  *in_seq_file; /* sequence file name */
   FILE                    *fp_in_seq; /* pointer to the sequence file */
