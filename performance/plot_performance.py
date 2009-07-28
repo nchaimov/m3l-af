@@ -101,7 +101,7 @@ def plot_in_r(points, output_filename_seed, title, xlab, ylab):
         string += points[x].__str__() + ","
     string = re.sub(",$", "", string)
     string += ");\n"
-    string += "plot(x, y, type='b', main='" + title + "', xlab='" + xlab + "', ylab='" + ylab + "');\n"
+    string += "plot(x, y, type='l', main='" + title + "', xlab='" + xlab + "', ylab='" + ylab + "');\n"
     
     fout_cran = open(output_filename_seed + ".cran", "w")
     fout_cran.write("pdf('" + output_filename_seed + ".pdf', width=10, height=5);\n")
