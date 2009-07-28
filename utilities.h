@@ -601,6 +601,27 @@ typedef struct __Option { /* mostly used in 'options.c' */
   int 					  temp_count; /* JSJ: the temp count for use in Simulated Annealing */
   int 					   temp_iter; /* JSJ: the number of iterations per temp in Simulated Annealing*/
   double 				   acc_ratio; /* JSJ: the acceptance ratio, defaults to -1.0, used if set positive */
+  double					temp_end; /* JSJ: the following, until the break, are options for simulated annealing*/
+  int						set_back;
+  double				  temp_start;
+  double                   max_alpha;
+  double                 brlen_sigma;
+  double                pinvar_sigma;
+  double                 gamma_sigma;
+  double                  emig_sigma;
+  double                    prob_NNI;
+  double                    prob_SPR;
+  double                  prob_brlen;
+  double                  prob_gamma;
+  double                  prob_kappa;
+  double                 prob_lambda;
+  double                     prob_rr;
+  double                     prob_pi;
+  double        prob_rate_proportion;
+  double               prob_topology;
+  double                 prob_pinvar;
+  double 				   prob_emig;
+
 
   char                  *in_seq_file; /* sequence file name */
   FILE                    *fp_in_seq; /* pointer to the sequence file */

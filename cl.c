@@ -94,6 +94,27 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"temp_iter",         required_argument,NULL,52},
 			{"temp_count",        required_argument,NULL,53},
 			{"acc_ratio",         required_argument,NULL,54},
+			{"temp_end",          required_argument,NULL,55},
+			{"set_back",          required_argument,NULL,56},
+			{"temp_start",        required_argument,NULL,57},
+			{"max_alpha",         required_argument,NULL,58},
+			{"brlen_sigma",       required_argument,NULL,59},
+			{"pinvar_sigma",      required_argument,NULL,60},
+			{"gamma_sigma",       required_argument,NULL,61},
+			{"emig_sigma",        required_argument,NULL,62},
+			{"prob_nni",          required_argument,NULL,63},
+			{"prob_spr",          required_argument,NULL,64},
+			{"prob_brlen",        required_argument,NULL,65},
+			{"prob_gamma",        required_argument,NULL,66},
+			{"prob_kappa",        required_argument,NULL,67},
+			{"prob_lambda",       required_argument,NULL,68},
+			{"prob_rr",           required_argument,NULL,69},
+			{"prob_rate_proportion",required_argument,NULL,70},
+			{"prob_topology",     required_argument,NULL,71},
+			{"prob_pinvar",       required_argument,NULL,72},
+			{"prob_pi",           required_argument,NULL,73},
+			{"prob_emig",         required_argument,NULL,74},
+
 			{0,0,0,0}
 	};
 
@@ -195,20 +216,20 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		case 35 :
 		{
 #ifdef M4
-io->m4_model = YES;
-if(!io->mod->m4mod) io->mod->m4mod = (m4 *)M4_Make_Light((io->mod->datatype == NT)?(4):(20));
-io->mod->m4mod->n_h = (int)atoi(optarg);
+			io->m4_model = YES;
+			if(!io->mod->m4mod) io->mod->m4mod = (m4 *)M4_Make_Light((io->mod->datatype == NT)?(4):(20));
+			io->mod->m4mod->n_h = (int)atoi(optarg);
 
-if(io->mod->m4mod->n_h < 1)
-{
-	char choix;
-	PhyML_Printf("\n. The number of classes must be greater than 0.\n");
-	PhyML_Printf("\n. Type any key to exit.\n");
-	if(!scanf("%c",&choix)) Exit("\n");
-	Exit("\n");
-}
+			if(io->mod->m4mod->n_h < 1)
+			{
+				char choix;
+				PhyML_Printf("\n. The number of classes must be greater than 0.\n");
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
 #endif
-break;
+			break;
 		}
 		case 34 :
 		{
@@ -889,14 +910,23 @@ break;
 			break;
 		}
 
+
+
+
+
+
+
+
+
+
 		/**
-		 * The next three cases are for obtaining information about the mixed branch
-		 * length model.
-		 */
+		* The next three cases are for obtaining information about the mixed branch
+		* length model.
+		*/
 		case 'w': case 49: //JSJ: proportions "blprops"
 		{
 			proportions = 0; // use this as the counter for the numbr of props read in.
-					   // doubles to let one know if any props have been read in...
+			// doubles to let one know if any props have been read in...
 			io->user_props = 1;
 			if(optarg[0] != '['){
 				char choix;
@@ -971,9 +1001,181 @@ break;
 			if(io->acc_ratio < 0.0) io->acc_ratio = tmp;
 			break;
 		}
+		case 55:
+		{
+			double tmp = io->temp_end;
+			io->temp_end = atof(optarg);
+			if(io->temp_end < 0.0) io->temp_end = tmp;
+			break;
+		}
+		//		{"temp_end",          required_argument,NULL,55},
+		case 56:
+		{
+			int tmp = io->set_back;
+			io->set_back = atoi(optarg);
+			if(io->set_back < 0) io->set_back = tmp;
+			break;
+		}
+		//		{"set_back",          required_argument,NULL,56},
+		case 57:
+		{
+			double tmp = io->temp_start;
+			io->temp_start = atof(optarg);
+			if(io->temp_start < 0.0) io->temp_start = tmp;
+			break;
+		}
+		//		{"temp_start",        required_argument,NULL,57},
+		case 58:
+		{
+			double tmp = io->max_alpha;
+			io->max_alpha = atof(optarg);
+			if(io->max_alpha < 0.0) io->max_alpha = tmp;
+			break;
+		}
+		//		{"max_alpha",         required_argument,NULL,58},
+		case 59:
+		{
+			double tmp = io->brlen_sigma;
+			io->brlen_sigma = atof(optarg);
+			if(io->brlen_sigma < 0.0) io->brlen_sigma = tmp;
+			break;
+		}
+		//		{"brlen_sigma",       required_argument,NULL,59},
+		case 60:
+		{
+			double tmp = io->pinvar_sigma;
+			io->pinvar_sigma = atof(optarg);
+			if(io->pinvar_sigma < 0.0) io->pinvar_sigma = tmp;
+			break;
+		}
+		//		{"pinvar_sigma",      required_argument,NULL,60},
+		case 61:
+		{
+			double tmp = io->gamma_sigma;
+			io->gamma_sigma = atof(optarg);
+			if(io->gamma_sigma < 0.0) io->gamma_sigma = tmp;
+			break;
+
+		}
+		//		{"gamma_sigma",       required_argument,NULL,61},
+		case 62:
+		{
+			double tmp = io->emig_sigma;
+			io->emig_sigma = atof(optarg);
+			if(io->emig_sigma < 0.0) io->emig_sigma = tmp;
+			break;
+		}
+		//		{"emig_sigma",        required_argument,NULL,62},
+		case 63:
+		{
+			double tmp = io->prob_NNI;
+			io->prob_NNI = atof(optarg);
+			if(io->prob_NNI < 0.0) io->prob_NNI = tmp;
+			break;
+		}
+		//		{"prob_nni",          required_argument,NULL,63},
+		case 64:
+		{
+			double tmp = io->prob_SPR;
+			io->prob_SPR = atof(optarg);
+			if(io->prob_SPR < 0.0) io->prob_SPR = tmp;
+			break;
+		}
+		//		{"prob_spr",          required_argument,NULL,64},
+		case 65:
+		{
+			double tmp = io->prob_brlen;
+			io->prob_brlen = atof(optarg);
+			if(io->prob_brlen < 0.0) io->prob_brlen = tmp;
+			break;
+		}
+		//		{"prob_brlen",        required_argument,NULL,65},
+		case 66:
+		{
+			double tmp = io->prob_gamma;
+			io->prob_gamma = atof(optarg);
+			if(io->prob_gamma < 0.0) io->prob_gamma = tmp;
+			break;
+		}
+		//		{"prob_gamma",        required_argument,NULL,66},
+		case 67:
+		{
+			double tmp = io->prob_kappa;
+			io->prob_kappa = atof(optarg);
+			if(io->prob_kappa < 0.0) io->prob_kappa = tmp;
+			break;
+
+		}
+		//		{"prob_kappa",        required_argument,NULL,67},
+		case 68:
+		{
+			double tmp = io->prob_lambda;
+			io->prob_lambda = atof(optarg);
+			if(io->prob_lambda < 0.0) io->prob_lambda = tmp;
+			break;
+		}
+		//		{"prob_lambda",       required_argument,NULL,68},
+		case 69:
+		{
+			double tmp = io->prob_rr;
+			io->prob_rr = atof(optarg);
+			if(io->prob_rr < 0.0) io->prob_rr = tmp;
+			break;
+		}
+		//		{"prob_rr",           required_argument,NULL,69},
+		case 70:
+		{
+			double tmp = io->prob_rate_proportion;
+			io->prob_rate_proportion = atof(optarg);
+			if(io->prob_rate_proportion < 0.0) io->prob_rate_proportion = tmp;
+			break;
+		}
+		//		{"prob_rate_proportion",required_argument,NULL,70},
+		case 71:
+		{
+			double tmp = io->prob_topology;
+			io->prob_topology = atof(optarg);
+			if(io->prob_topology < 0.0) io->prob_topology = tmp;
+			break;
+		}
+		//		{"prob_topology",     required_argument,NULL,71},
+		case 72:
+		{
+			double tmp = io->prob_pinvar;
+			io->prob_pinvar = atof(optarg);
+			if(io->prob_pinvar < 0.0) io->prob_pinvar = tmp;
+			break;
+		}
+		//		{"prob_pinvar",       required_argument,NULL,72},
+		case 73:
+		{
+			double tmp = io->prob_pi;
+			io->prob_pi = atof(optarg);
+			if(io->prob_pi < 0.0) io->prob_pi = tmp;
+			break;
+		}
+		//		{"prob_pi",           required_argument,NULL,73},
+		case 74:
+		{
+			double tmp = io->prob_emig;
+			io->prob_emig = atof(optarg);
+			if(io->prob_emig < 0.0) io->prob_emig = tmp;
+			break;
+		}
+		//		{"prob_emig",         required_argument,NULL,74},
 		/**
-		 * JSJ: end the functions to modify the mixed branch length model
-		 */
+		* JSJ: end the functions to modify the mixed branch length model
+		*/
+
+
+
+
+
+
+
+
+
+
 		case 'u':case 15:
 		{
 			char *tmp;
@@ -1085,18 +1287,18 @@ break;
 			}
 			break;
 		}
-		case '?':
-		{
-			char choix;
-			if (isprint (optopt))
-				PhyML_Printf ("\n. Unknown option `-%c'.\n", optopt);
-			else
-				PhyML_Printf ("\n. Unknown option character `\\x%x'.\n", optopt);
-			PhyML_Printf("\n. Type any key to exit.\n");
-			if(!scanf("%c",&choix)) Exit("\n");
-			Exit("\n");
-			break;
-		}
+//		case '?':
+//		{
+//			char choix;
+//			if (isprint (optopt))
+//				PhyML_Printf ("\n. Unknown option `-%c'.\n", optopt);
+//			else
+//				PhyML_Printf ("\n. Unknown option character `\\x%x'.\n", optopt);
+//			PhyML_Printf("\n. Type any key to exit.\n");
+//			if(!scanf("%c",&choix)) Exit("\n");
+//			Exit("\n");
+//			break;
+//		}
 
 		default:
 			Usage();

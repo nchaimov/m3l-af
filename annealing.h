@@ -43,11 +43,13 @@ typedef struct __ANNEALING{
 	m3ldbl  prob_kappa;
 	m3ldbl  prob_lambda;
 	m3ldbl  prob_rr;
+	m3ldbl  prob_emig;
 
 	m3ldbl 	max_alpha;
 	m3ldbl  brlen_sigma;
 	m3ldbl	gamma_sigma;
 	m3ldbl  pinvar_sigma;
+	m3ldbl  emig_sigma;
 
 	int     random_seed;
     gsl_rng *rng;

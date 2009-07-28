@@ -8,6 +8,7 @@
 #include "annealing.h"
 #include "numeric.h"
 #include "spr.h"
+#include "emig.h"
 
 /**
 * JSJ: Note that all external libraries, including math.h, time.h and gsl are included
@@ -18,34 +19,36 @@ annealing anneal;
 
 // "Set_Anneal" sets the default values of thermal annealing parameters. . .
 void Set_Anneal(option *io){
-	anneal.accept_ratio = 0.3;
-	anneal.end_temp = 0.000001;
+	anneal.accept_ratio = 0.3; //this one gets set from io later... don't change this line.
+	anneal.end_temp = io->temp_end;
 	anneal.iters_per_temp = io->temp_iter;
-	anneal.set_back = 50;
-	anneal.start_temp = 1.0;
+	anneal.set_back = io->set_back;
+	anneal.start_temp = io->temp_start;
 	anneal.temp_count = io->temp_count;
 
-	anneal.max_alpha = 4.0;
+	anneal.max_alpha = io->max_alpha;
 
 
-	anneal.brlen_sigma = 0.05;
-	anneal.pinvar_sigma = 0.05;
-	anneal.gamma_sigma = 0.05;
+	anneal.brlen_sigma = io->brlen_sigma;
+	anneal.pinvar_sigma = io->pinvar_sigma;
+	anneal.gamma_sigma = io->gamma_sigma;
+	anneal.emig_sigma = io->emig_sigma;
+	anneal.prob_emig = io->prob_emig;
 
 	// prob_X = the probability of stepping parameter X during each SA iteration.
-	anneal.prob_NNI = 0.7;
-	anneal.prob_SPR = 0.3;
+	anneal.prob_NNI = io->prob_NNI;
+	anneal.prob_SPR = io->prob_SPR;
 	//anneal.prob_TBR = 0.3;
-	anneal.prob_brlen = 0.5;
-	anneal.prob_gamma = 0.5;
-	anneal.prob_kappa = 0.2;
-	anneal.prob_lambda = 0.2;
-	anneal.prob_rr = 0.2;
-	anneal.prob_pi = 0.4;
-	anneal.prob_rate_proportion = 0.2;
-	anneal.prob_topology = 0.4;
+	anneal.prob_brlen = io->prob_brlen;
+	anneal.prob_gamma = io->prob_gamma;
+	anneal.prob_kappa = io->prob_kappa;
+	anneal.prob_lambda = io->prob_lambda;
+	anneal.prob_rr = io->prob_rr;
+	anneal.prob_pi = io->prob_pi;
+	anneal.prob_rate_proportion = io->prob_rate_proportion;
+	anneal.prob_topology = io->prob_topology;
 	//	anneal.prob_trans_model = 0.1;
-	anneal.prob_pinvar = 0.5;
+	anneal.prob_pinvar = io->prob_pinvar;
 
 	anneal.random_seed = (int)time(NULL);
 	anneal.rng = gsl_rng_alloc(gsl_rng_mt19937);
@@ -427,11 +430,11 @@ void Step_Topology(arbre *tree){
 			}
 
 			Swap(a,b,c,d,tree);
-		}else{ //otherwise do SPR
+		}else if(p <= anneal.prob_SPR){ //otherwise do SPR
 			//int num_spr = gsl_rng_uniform_int(anneal.rng,3);
 			Random_Spr(1,tree);
-
-
+		}else{
+			Migrate_One_Edge(tree,&(anneal));
 		}
 	}
 }
@@ -466,6 +469,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 	Set_Anneal(tree->io);
 	m3ldbl result = 1.0;
+	tree->mod->update_eigen = 1;
 	tree->both_sides = 1; //search both pre and post order on all subtrees
 	int n_edges = (tree->n_otu * 2) - 3;
 	if (n_edges <= 3){
@@ -474,7 +478,10 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	m3ldbl temp = anneal.start_temp;
 	m3ldbl tempmult = exp(log(anneal.end_temp/anneal.start_temp)/(((double)anneal.temp_count) - 1.0));
 	if(tree->io->acc_ratio < 0.0) anneal.accept_ratio = Scale_Acceptance_Ratio(tree);
-	else anneal.accept_ratio = tree->io->acc_ratio; //if positive, user input a value, don't estimate.
+	else{
+		anneal.accept_ratio = tree->io->acc_ratio; //if positive, user input a value, don't estimate.
+		Lk(tree);
+	}
 
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
@@ -583,7 +590,10 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 				acc_prob = 1.0;
 				r = 0.0;
 			}
-			else{
+			else if(lnL_proposed > lnL_current){
+				acc_prob = 1.0;
+				r = 0.0;
+			}else{
 				acc_prob = Boltzmann_P(lnL_current, lnL_proposed, temp);
 				r = gsl_rng_uniform(anneal.rng);
 			}

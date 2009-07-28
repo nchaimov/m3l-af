@@ -1,7 +1,7 @@
-#AM_CFLAGS=-O3 -fomit-frame-pointer -ftree-vectorize -funroll-loops -Wall -lgsl
-AM_CFLAGS=-O3 -funroll-loops -Wall -g -pg -lgsl 
+#AM_CFLAGS=-O3 -fomit-frame-pointer -ftree-vectorize -funroll-loops -Wall
+AM_CFLAGS=-O3 -funroll-loops -Wall -g -pg 
 
-AM_LDFLAGS=-lm
+AM_LDFLAGS=-lm -lgsl
 
 
 # Uncomment (i.e. remove the `#' character at the begining of) 

@@ -5183,9 +5183,35 @@ void Set_Defaults_Input(option* io)
 	io->user_topo				   = 0; //JSJ: assume user won't supply search algo
 	io->acc_ratio				   = -1.0; //JSJ: a negative value here means that the accept ratio
 										   // estimated from the data.
+	io->temp_end                   = 0.000001;
+	io->set_back                   = 50;
+	io->temp_start				   = 1.0;
+	io->max_alpha 				   = 4.0;
+	io->brlen_sigma 			   = 0.05;
+	io->pinvar_sigma 			   = 0.05;
+	io->gamma_sigma 			   = 0.05;
+	io->emig_sigma 				   = 0.8;
+	io->prob_NNI 				   = 0.7;
+	io->prob_SPR				   = 0.3;
+	io->prob_brlen 				   = 0.5;
+	io->prob_gamma 				   = 0.5;
+	io->prob_kappa 				   = 0.2;
+	io->prob_lambda				   = 0.2;
+	io->prob_rr 				   = 0.2;
+	io->prob_pi 				   = 0.4;
+	io->prob_rate_proportion	   = 0.2;
+	io->prob_topology 			   = 0.4;
+	io->prob_pinvar 			   = 0.5;
+	io->prob_emig                  = 0.0;
 	io->temp_count				   = 2000;
 	io->temp_iter				   = 1000;
 	io->tree                       = NULL;
+
+
+
+
+
+
 	io->mod->datatype              = 0;
 	strcpy(io->nt_or_cd,"nucleotides");
 	io->n_data_sets                = 1;
