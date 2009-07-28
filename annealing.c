@@ -495,8 +495,8 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	m3ldbl acc_prob;
 	double r;
 	int itemp,iter;
-	int steps_tried;
-	int steps_accepted;
+	int steps_tried = 0;
+	int steps_accepted = 0;
 
 	m3ldbl temp_of_best; // VHS: for optimization purposes, let's record the temperature at which we discovered the best tree.
 	m3ldbl iter_of_best;
@@ -529,8 +529,8 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		PhyML_Printf("JSJ: Current Likelihood: %lf\n",lnL_current);
 		PhyML_Printf("---------------------------------------------\n");
 
-		steps_tried = 0;
-		steps_accepted = 0;
+		//steps_tried = 0;
+		//steps_accepted = 0;
 
 		for(iter = 0; iter < anneal.iters_per_temp; iter++){
 			steps_tried++;
@@ -542,8 +542,10 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			// Some useful debugging statements:
 			//Print_Tree_Screen(tree);
 			PhyML_Printf("temperature: %f iter: %d lnL_proposed: %f lnL_current: %f\n", temp, iter, lnL_proposed, lnL_current);
-			PhyML_Printf("plot1 %i %lf\n",(steps_tried * (itemp + 1)), lnL_current);
-			PhyML_Printf("plot2 %ld %i\n", (long)now,(steps_tried * (itemp + 1)));
+			//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itemp + 1)), lnL_current);
+			//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
+			PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
+			PhyML_Printf("plot2 %ld %d\n", (long)now, steps_tried);
 
 			//      PhyML_Printf("JSJ: Proposed Likelihood at iter %i: %lf\n",iter,lnL_current);
 
@@ -563,7 +565,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 				lnL_best = lnL_proposed;
 
-				temp_of_best = itemp;
+				temp_of_best = temp;
 				iter_of_best = iter;
 
 				// This temperature is yielding good results: let's stay here
