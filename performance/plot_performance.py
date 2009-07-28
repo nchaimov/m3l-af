@@ -59,41 +59,52 @@ plot2_xy = {} # where key = milliseconds as doubles, value = current iteration a
 # Parse the PhyML output
 #
 for line in fin.readlines():
-    if line.startswitch("plot1"):
-        pass
+    if line.startswith("plot1"):
+        line = line.strip()
+        tokens = line.split()
+        plot1_xy[ float(tokens[1]) ] = float(tokens[2])
     elif line.startswith("plot2"):
-        pass
+        line = line.strip()
+        tokens = line.split()
+        plot2_xy[ float(tokens[1]) ] = float(tokens[2])
 
 fin.close()
 
 #
 # Sanity check
 #
+early_quit = False
 if plot1_xy.__len__() < 1:
     print "I did not find any data for plot1 (iterations vs. -lnL)"
+    early_quit = True
 if plot2_xy.__len__() < 1:
     print "I did not find any data for plot2 (time vs. iterations)"
+    early_quit = True
+if early_quit:
+    exit(1)
 
 #
-# Write CRAN scripts
+# Write CRAN scripts and plot PDFs.
 #
 def plot_in_r(points, output_filename_seed, title, xlab, ylab):
     x_sorted = points.keys()
-    x_sorted = sort()
+    x_sorted.sort()
     
     string = "x<-c("
     for x in x_sorted:
         string += x.__str__() + ","   
     string = re.sub(",$", "", string)
     string += ");\n"
+    
+    string += "y<-c("
     for x in x_sorted:
         string += points[x].__str__() + ","
     string = re.sub(",$", "", string)
     string += ");\n"
-    string += "barplot(h, xlab=\"state pattern\", ylab=\"P(anc. state)\", space=c(1.5,0,0,0), ylim=range(0,1.0), col=c(\"#0099ff\", \"#ffcc00\", \"#ff6633\", \"#33cc33\"));\n"
+    string += "plot(x, y, type='b', main='" + title + "', xlab='" + xlab + "', ylab='" + ylab + "');\n"
     
     fout_cran = open(output_filename_seed + ".cran", "w")
-    fout_cran.write("pdf('" + output_filename_seed + ".pdf', main='" + title + "' xlab='" + xlab + "', ylab='" + ylab + "');\n")
+    fout_cran.write("pdf('" + output_filename_seed + ".pdf', width=10, height=5);\n")
     fout_cran.write(string)
     fout_cran.write("dev.off();\n")
     fout_cran.close()
