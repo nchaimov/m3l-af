@@ -1,5 +1,5 @@
 #AM_CFLAGS=-O3 -fomit-frame-pointer -ftree-vectorize -funroll-loops -Wall -lgsl
-AM_CFLAGS=-O3 -funroll-loops -Wall -g -lgsl 
+AM_CFLAGS=-O3 -funroll-loops -Wall -g -pg -lgsl 
 
 AM_LDFLAGS=-lm
 
@@ -10,6 +10,7 @@ AM_LDFLAGS=-lm
 
 # CC=mpicc
 # DEFS=-DUNIX -D$(PROG) -DDEBUG -DMPI
+#SCFLAGS=-finstrument-functions -pg
 
 # Comment the line below if you want to use MPI.
 # Uncomment the line below if you don't want to use MPI.
@@ -21,9 +22,9 @@ EXTRA_PROGRAMS = m4 mg mc
 PROG = PHYML
 
 
-phyml_SOURCES = main.c utilities.c optimiz.c annealing.c lk.c bionj.c models.c free.c\
+phyml_SOURCES = main.c utilities.c optimiz.c annealing.c emig.c lk.c bionj.c models.c free.c\
 options.c simu.c eigen.c pars.c alrt.c interface.c cl.c spr.c  draw.c mpi_boot.c numeric.c
-phyml_LDADD = main.o utilities.o optimiz.o annealing.o lk.o bionj.o models.o free.o\
+phyml_LDADD = main.o utilities.o optimiz.o annealing.o lk.o emig.o bionj.o models.o free.o\
 options.o simu.o eigen.o pars.o alrt.o interface.o cl.o spr.o draw.o mpi_boot.o numeric.o
 
 
@@ -59,6 +60,9 @@ optimiz.o: optimiz.c optimiz.h
 
 annealing.o: annealing.c annealing.h
 	$(SCOMPILE) -c annealing.c
+
+emig.o: emig.c emig.h
+	$(SCOMPILE) -c emig.c
 
 lk.o: lk.c lk.h
 	$(SCOMPILE) -c lk.c

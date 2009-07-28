@@ -1,8 +1,19 @@
-	//Input: a directed acyclic graph with n leaves (i.e. a phylogeny).  Each leaf node corresponds to a unique taxon; each internal node corresponds to an ancestral taxon.  The length (or weight) of each edge indicates the phylogenetic distance between two taxa.
+#include "utilities.h"
+#include "optimiz.h"
+#include "lk.h"
+#include "free.h"
+#include "models.h"
+#include "mc.h"
+#include "rates.h"
+#include "annealing.h"
+#include "numeric.h"
+#include "spr.h"
+
+//Input: a directed acyclic graph with n leaves (i.e. a phylogeny).  Each leaf node corresponds to a unique taxon; each internal node corresponds to an ancestral taxon.  The length (or weight) of each edge indicates the phylogenetic distance between two taxa.
 	//
 	//Output: a new phylogeny, which will have different branch lengths than the input phylogeny and potentially a different branching pattern than the input tree.
 
-void Emig_swap(arbre *tree, edge *a, node *v_a, edge *b, node *v_b)
+void Emig_Swap(arbre *tree, edge *ea, node *v_ea, edge *eb, node *v_eb)
 {
 	// The swap operation should exchange a's pointer to node v_a with
 	// b's pointer to node v_b.
@@ -10,12 +21,51 @@ void Emig_swap(arbre *tree, edge *a, node *v_a, edge *b, node *v_b)
 	// In other words: swap the branches, but maintain branch lengths and
 	// the topology of attached clades.
 
+
+	//JSJ: lets implement this using the existing Swap algorithm
+
+
+	/*
+	 * Swap(node *a, node *b, node *c, node *d, arbre *tree);
+	 *
+	 * \             /d      \             /a
+	 *  \           /         \           /
+	 *   \b__...__c/    ->     \b__...__c/
+	 *   /         \	       /		 \
+	 *  /           \	      /		      \
+	 * /a            \  	 /d            \
+	 *
+	 * nodes b and c are not necessarily on the same branch
+	 */
+
+
+	node *a,*b,*c,*d; //four node pointers to use in swap.
+
+	a = v_ea;
+	d = v_eb;
+
+	if(ea->left == a){
+		b = ea->rght;
+	}else{
+		b = ea->left;
+	}
+
+	if(eb->left == d){
+		c = eb->rght;
+	}else{
+		c = eb->left;
+	}
+
+	Swap(a,b,c,d,tree);
+
+
+
 }
 
 //
 // At the end of this method, th object 'tree' will be modified.
 //
-void Migrate_one_edge(arbre *tree)
+void Migrate_One_Edge(arbre *tree)
 {
 	//
 	//	1. 	Select a maximum perturbation distance.
