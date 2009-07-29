@@ -650,14 +650,14 @@ matrix *ML_Dist(allseq *data, model *mod)
 
 			if(sum < .001) d_max = -1.;
 			else if((sum > 1. - .001) && (sum < 1. + .001)){
-//				m3ldbl * tmp = mCalloc(tree->n_l,sizeof(m3ldbl));
-//				/**
-//				 * JSJ: this is now in need of a code review
-//				 */
-//				int tmp0;
-//				For(tmp0,tree->n_l) tmp[tmp0] = d_max;
+				//				m3ldbl * tmp = mCalloc(tree->n_l,sizeof(m3ldbl));
+				//				/**
+				//				 * JSJ: this is now in need of a code review
+				//				 */
+				//				int tmp0;
+				//				For(tmp0,tree->n_l) tmp[tmp0] = d_max;
 				Opt_Dist_F_No_Bl(&(d_max),F,mod);
-//				Free(tmp);
+				//				Free(tmp);
 			}
 			else
 			{
@@ -970,7 +970,10 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	* (deal with site patterns rather than sites due
 	* 	to phyml's sequence compression...)
 	*/
-	For(site,n_patterns)
+#pragma omp parallel for \
+		default(shared) private(k,catg,i,j,site)\
+		schedule(static,1) reduction(+:p1_lk1,p2_lk2)
+	for(site = 0; site < n_patterns; site++)
 	{
 		//printf("JSJ: In Update_P_Lk iterating over state pattern %i\n",site);
 		/**
@@ -1021,18 +1024,24 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			ambiguity_check_v2 = 1;
 		}
 
-		For(catg,tree->mod->n_catg)
+		/**
+		* JSJ: here is a good point to iterate over branch length sets
+		* at this point we are in the loops that do the assignment we
+		* need to modify, and we are also past the variables that will
+		* not need to be changed.
+		*/
+		for(k = 0; k < tree->n_l; k++)
 		{
-			For(i,tree->mod->ns)
+			For(catg,tree->mod->n_catg)
 			{
-				/**
-				* JSJ: here is a good point to iterate over branch length sets
-				* at this point we are in the loops that do the assignment we
-				* need to modify, and we are also past the variables that will
-				* not need to be changed.
-				*/
-				For(k,tree->n_l)
+				For(i,tree->mod->ns)
 				{
+					/**
+					* JSJ: here is a good point to iterate over branch length sets
+					* at this point we are in the loops that do the assignment we
+					* need to modify, and we are also past the variables that will
+					* not need to be changed.
+					*/
 					p1_lk1 = .0;
 
 					if((n_v1->tax) && (!tree->mod->s_opt->greedy))
@@ -1095,9 +1104,10 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					}
 
 					if(p_lk[site*dim1+catg*dim2+i] > max_p_lk) max_p_lk = p_lk[site*dim1+catg*dim2+i];
-				}//JSJ: end For(k,Num Branch Length sets)
-			}//JSJ: end For(i in alphabet)
-		}//JSJ: end For(catg in gama categories)
+
+				}//JSJ: end For(i in alphabet)
+			}//JSJ: end For(catg in gama categories)
+		}//JSJ: end For(k,Num Branch Length sets)
 
 		if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
 		{
@@ -1341,33 +1351,33 @@ void Update_P_Lk_Along_A_Path(node **path, int path_length, arbre *tree)
 
 m3ldbl Lk_Dist_No_Bl(m3ldbl *F, m3ldbl dist, model *mod)
 {
-  int i,j,k;
-  m3ldbl lnL,len;
-  int dim1,dim2;
+	int i,j,k;
+	m3ldbl lnL,len;
+	int dim1,dim2;
 
-  For(k,mod->n_catg)
-    {
-      len = dist*mod->gamma_rr[k];
-      if(len < BL_MIN)      len = BL_MIN;
-      else if(len > BL_MAX) len = BL_MAX;
-      PMat(len,mod,mod->ns*mod->ns*k,mod->Pij_rr);
-    }
-
-  dim1 = mod->ns*mod->ns;
-  dim2 = mod->ns;
-  lnL = .0;
-  For(i,mod->ns)
-    {
-      For(j,mod->ns)
+	For(k,mod->n_catg)
 	{
-	  For(k,mod->n_catg)
-	    {
- 	      lnL += F[dim1*k+dim2*i+j] * log(mod->Pij_rr[dim1*k+dim2*i+j]);
-	    }
+		len = dist*mod->gamma_rr[k];
+		if(len < BL_MIN)      len = BL_MIN;
+		else if(len > BL_MAX) len = BL_MAX;
+		PMat(len,mod,mod->ns*mod->ns*k,mod->Pij_rr);
 	}
-    }
 
-  return lnL;
+	dim1 = mod->ns*mod->ns;
+	dim2 = mod->ns;
+	lnL = .0;
+	For(i,mod->ns)
+	{
+		For(j,mod->ns)
+		{
+			For(k,mod->n_catg)
+			{
+				lnL += F[dim1*k+dim2*i+j] * log(mod->Pij_rr[dim1*k+dim2*i+j]);
+			}
+		}
+	}
+
+	return lnL;
 }
 /*********************************************************/
 

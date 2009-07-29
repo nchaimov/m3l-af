@@ -24,6 +24,7 @@ Modified by John St John
 #include <time.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
+#include <omp.h>
 
 
 #define VERSION "v3.0 (179M)"

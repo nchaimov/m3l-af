@@ -430,7 +430,7 @@ void Step_Topology(arbre *tree){
 			}
 
 			Swap(a,b,c,d,tree);
-		}else if(p <= anneal.prob_SPR){ //otherwise do SPR
+		}else if((p - anneal.prob_NNI) <= anneal.prob_SPR){ //otherwise do SPR
 			//int num_spr = gsl_rng_uniform_int(anneal.rng,3);
 			Random_Spr(1,tree);
 		}else{

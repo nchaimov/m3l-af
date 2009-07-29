@@ -15,11 +15,25 @@
 
 void Emig_Swap(arbre *tree, edge *ea, node *v_ea, edge *eb, node *v_eb)
 {
-	// The swap operation should exchange a's pointer to node v_a with
-	// b's pointer to node v_b.
+	// The swap operation should exchange ea's pointer to node v_ea with
+	// eb's pointer to node ev_b.
 	//
 	// In other words: swap the branches, but maintain branch lengths and
 	// the topology of attached clades.
+
+	// Each edge has a left and right pointer to nodes. each node has a pointer
+	// to the three or one edges and the three or one neighbor nodes as well.
+
+
+
+
+
+
+
+
+
+
+
 
 
 	//JSJ: lets implement this using the existing Swap algorithm
@@ -38,26 +52,28 @@ void Emig_Swap(arbre *tree, edge *ea, node *v_ea, edge *eb, node *v_eb)
 	 * nodes b and c are not necessarily on the same branch, I think b == c is ok...
 	 */
 
-
 	node *a,*b,*c,*d; //four node pointers to use in swap.
 
 	a = v_ea;
 	d = v_eb;
 
-	if(ea->left == a){
+	if(ea->left->num == a->num){
 		b = ea->rght;
 	}else{
 		b = ea->left;
 	}
 
-	if(eb->left == d){
+	if(eb->left->num == d->num){
 		c = eb->rght;
 	}else{
 		c = eb->left;
 	}
-
-	Swap(a,b,c,d,tree);
-
+//	if(b->num == c->num){ //this is expected, now it is safe to swap
+		PhyML_Printf("Call to swap at line %d, in file %s\n",__LINE__,__FILE__);
+		Swap(a,b,c,d,tree);
+//	}else{
+//		PhyML_Printf("Bad call to swap at line %d, in file %s\n",__LINE__,__FILE__);
+//	}
 
 
 }
@@ -90,13 +106,13 @@ void Migrate_One_Edge(arbre *tree,annealing *ann)
 		//randomly check left or rght node first...
 		r = gsl_rng_uniform(ann->rng);
 		if(r > 0.5){
-			if(e1->left->tax == 0){
+			if(!e1->left->tax){
 				v1 = e1->left;
 			}else{
 				v1 = e1->rght;
 			}
 		}else{
-			if(e1->rght->tax == 0){
+			if(!e1->rght->tax){
 				v1 = e1->rght;
 			}else{
 				v1 = e1->left;
@@ -147,6 +163,7 @@ void Migrate_One_Edge(arbre *tree,annealing *ann)
 		}
 		default:
 		{ //this is bad!
+			PhyML_Printf("In default case at line %d, in file %s\n",__LINE__,__FILE__);
 			break;
 		}
 		}//end switch(tmp)
@@ -182,7 +199,7 @@ void Migrate_One_Edge(arbre *tree,annealing *ann)
 	//		     // Deal with the case where e3 is terminal
 	//
 	//	16.	     if is_leaf(v2):
-			if(v2->tax == 1){
+			if(v2->tax){
 	//	17.	     	if length(e1) >= d_max - d_total:
 				if(e1->l[set] >= (d_max - d_total)){
 	//	18.		   		length(e1) -= d_max - d_total
@@ -192,16 +209,17 @@ void Migrate_One_Edge(arbre *tree,annealing *ann)
 	//	20.		   		d_total = d_max
 					d_total = d_max;
 				}
-			}
+
 	//	21.		 else if length(e1) < d_max - d_total:
-			else if(e1->l[set] < (d_max - d_total)){
+				else if(e1->l[set] < (d_max - d_total)){
 	//	22.		   	d_total += length(e1)
-				d_total += e1->l[set];
+					d_total += e1->l[set];
 	//	24.		   	length(e2) += length(e1)
-				e2->l[set] += e1->l[set];
+					e2->l[set] += e1->l[set];
 	//	23.		   	length(e1) = 0
-				e1->l[set] = 0.0;
+					e1->l[set] = 0.0;
 	//
+				}
 			}
 	//		     // Deal with the case where e3 is internal
 	//
@@ -253,17 +271,19 @@ void Migrate_One_Edge(arbre *tree,annealing *ann)
 				}
 				default:
 				{ //this is bad!
+					PhyML_Printf("In default case at line %d, in file %s\n",__LINE__,__FILE__);
 					break;
 				}
 				}//end switch(tmp)
 	//	26.			Swap e1 with e4.
-				Emig_Swap(tree,e1,v1,e4,v2);
 	//	27.			if length(e5) >= d_max - d_total:
 				if(e5->l[set] >= (d_max - d_total)){
 	//	28.		   		length(e5) -= d_max - d_total
 					e5->l[set] -= (d_max - d_total);
+					//if(e5->l[set] < 0.0) e5->l[set] = 0.0;
 	//	29.		   		length(e3) += d_max - d_total
 					e3->l[set] += (d_max - d_total);
+					//if(e3->l[set] < 0.0) e3->l[set] = 0.0;
 	//	30.		   		d_total = d_max
 					d_total = d_max;
 				}
@@ -274,6 +294,7 @@ void Migrate_One_Edge(arbre *tree,annealing *ann)
 	//	33.		   		length(e5) = 0
 					e5->l[set] = 0.0;
 				}
+				Emig_Swap(tree,e1,v1,e4,v2);
 			}
 		}
 	}
