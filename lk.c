@@ -275,11 +275,11 @@ void Lk(arbre *tree)
 	if(tree->bl_from_node_stamps) MC_Bl_From_T(tree);
 #endif
 
-//	chunk = (2*tree->n_otu-3)/omp_get_num_procs();
-//	printf("chunk: %i total: %i\n",chunk,(2*tree->n_otu-3));
-//#pragma omp parallel for \
-//   shared(tree,n_patterns,chunk) \
-//   schedule(static,chunk)
+	//	chunk = (2*tree->n_otu-3)/omp_get_num_procs();
+	//	printf("chunk: %i total: %i\n",chunk,(2*tree->n_otu-3));
+	//#pragma omp parallel for \
+	//   shared(tree,n_patterns,chunk) \
+	//   schedule(static,chunk)
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
 		if(!tree->t_edges[br]->rght->tax)
@@ -300,10 +300,10 @@ void Lk(arbre *tree)
 	tree->c_lnL     = .0;
 	tree->curr_catg =  0;
 	tree->curr_site =  0;
-//	chunk = n_patterns/2;
-//#pragma omp parallel for \
-//   default(shared) private(site) \
-//   schedule(static,chunk)
+//		chunk = n_patterns/omp_get_num_procs();
+//#pragma omp parallel\
+//	   shared(tree,n_patterns,chunk) private(tree->curr_site, site)
+//#pragma omp for schedule(static,chunk) nowait
 	for(site = 0; site < n_patterns; site++)
 	{
 		//printf("JSJ: Iterating over state pattern %i in Lk\n",site);
@@ -316,9 +316,9 @@ void Lk(arbre *tree)
 	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
 
 	tree->c_lnL = .0;
-//#pragma omp parallel for \
-//   default(shared) private(site) \
-//   schedule(static,chunk)
+	//#pragma omp parallel for \
+	//   default(shared) private(site) \
+	//   schedule(static,chunk)
 	For(site,n_patterns)
 	{
 		if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
@@ -987,7 +987,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	*/
 
 	int chunk = n_patterns/omp_get_num_procs();
-	//int chunk = n_patterns/2;
+//	int chunk = n_patterns/2;
 	//printf("Chunk size: %i\n",chunk);
 #pragma omp parallel\
 		default(shared) private(k,catg,i,j,site,scale_v1,scale_v2,\
@@ -1289,16 +1289,17 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 	}
 
 	For(i,tree->mod->n_catg)
-	{	For(j,tree->n_l){
-		if(b_fcus->has_zero_br_len[j]) len = -1.0;
-		else
-		{
-			len = b_fcus->l[j]*tree->mod->gamma_rr[i];
-			if(len < BL_MIN)      len = BL_MIN;
-			else if(len > BL_MAX) len = BL_MAX;
+	{
+		For(j,tree->n_l){
+			if(b_fcus->has_zero_br_len[j]) len = -1.0;
+			else
+			{
+				len = b_fcus->l[j]*tree->mod->gamma_rr[i];
+				if(len < BL_MIN)      len = BL_MIN;
+				else if(len > BL_MAX) len = BL_MAX;
+			}
+			PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr[j]);
 		}
-		PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr[j]);
-	}
 	}
 }
 
