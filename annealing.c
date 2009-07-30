@@ -495,7 +495,8 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	Make_All_Tree_Nodes(last_tree);
 	Make_All_Tree_Edges(last_tree);
 	last_tree->mod = Copy_Model(best_tree->mod);
-	clock_t now;
+	time_t start = time(NULL);
+	time_t now;
 
 	m3ldbl lnL_best = tree->c_lnL;
 	m3ldbl lnL_current = tree->c_lnL;
@@ -549,7 +550,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			Get_TA_Neighbor_Proposition(tree);
 			lnL_proposed = tree->c_lnL;
 
-			now = clock() / (CLOCKS_PER_SEC / 1000);
+			now = time(NULL);
 			// Some useful debugging statements:
 			//Print_Tree_Screen(tree);
 			if(verbose){
@@ -557,7 +558,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 				//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itemp + 1)), lnL_current);
 				//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
 				PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
-				PhyML_Printf("plot2 %ld %d\n", (long)now, steps_tried);
+				PhyML_Printf("plot2 %ld %d\n", (long)difftime(now,start), steps_tried);
 			}
 
 			//      PhyML_Printf("JSJ: Proposed Likelihood at iter %i: %lf\n",iter,lnL_current);

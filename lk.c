@@ -262,7 +262,7 @@ void Lk(arbre *tree)
 {
 	int br,site;
 	int n_patterns;
-//	int chunk; //number of processors
+	int chunk; //number of processors
 
 	n_patterns = tree->n_pattern;
 
@@ -275,9 +275,10 @@ void Lk(arbre *tree)
 	if(tree->bl_from_node_stamps) MC_Bl_From_T(tree);
 #endif
 
-//	chunk = (2*tree->n_otu-3)/2;
+//	chunk = (2*tree->n_otu-3)/omp_get_num_procs();
+//	printf("chunk: %i total: %i\n",chunk,(2*tree->n_otu-3));
 //#pragma omp parallel for \
-//   default(shared) private(br,site) \
+//   shared(tree,n_patterns,chunk) \
 //   schedule(static,chunk)
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
@@ -985,15 +986,16 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	* 	to phyml's sequence compression...)
 	*/
 
-//	int chunk = n_patterns/2;
+//	int chunk = n_patterns/omp_get_num_procs();
+	int chunk = n_patterns/2;
 	//printf("Chunk size: %i\n",chunk);
-//#pragma omp parallel\
-//		default(shared) private(k,catg,i,j,site,scale_v1,scale_v2,\
-//				max_p_lk,state_v1,state_v2,ambiguity_check_v1,\
-//				ambiguity_check_v2,p1_lk1,p2_lk2)
+#pragma omp parallel\
+		default(shared) private(k,catg,i,j,site,scale_v1,scale_v2,\
+				max_p_lk,state_v1,state_v2,ambiguity_check_v1,\
+				ambiguity_check_v2,p1_lk1,p2_lk2)
 	{
 
-//#pragma omp for schedule(static,chunk) nowait
+#pragma omp for schedule(static,chunk) nowait
 		for(site = 0; site < n_patterns; site++)
 
 		{
