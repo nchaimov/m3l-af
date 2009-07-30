@@ -112,4 +112,4 @@ def plot_in_r(points, output_filename_seed, title, xlab, ylab):
     os.system("r --no-save < " + output_filename_seed + ".cran")
 
 plot_in_r(plot1_xy, "plot1", "-lnL(iterations)", "iterations", "-lnL")
-plot_in_r(plot2_xy, "plot2", "iterations(time)", "milliseconds", "iterations")
+plot_in_r(plot2_xy, "plot2", "iterations(time)", "seconds", "iterations")

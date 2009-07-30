@@ -1,6 +1,6 @@
 #AM_CFLAGS=-O3 -fomit-frame-pointer -funroll-loops -ftree-vectorize -Wall -fopenmp
 #AM_CFLAGS=-O3 -funroll-loops -Wall -g -pg -fopenmp
-AM_CFLAGS=-O3 -fomit-frame-pointer -funroll-loops -Wall -ftree-vectorize -fopenmp
+AM_CFLAGS=-O3 -fomit-frame-pointer -funroll-loops -Wall -ftree-vectorize -ffast-math -fopenmp
 
 AM_LDFLAGS=-lm -lgsl
 

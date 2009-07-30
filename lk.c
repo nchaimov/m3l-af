@@ -986,8 +986,8 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	* 	to phyml's sequence compression...)
 	*/
 
-//	int chunk = n_patterns/omp_get_num_procs();
-	int chunk = n_patterns/2;
+	int chunk = n_patterns/omp_get_num_procs();
+	//int chunk = n_patterns/2;
 	//printf("Chunk size: %i\n",chunk);
 #pragma omp parallel\
 		default(shared) private(k,catg,i,j,site,scale_v1,scale_v2,\
