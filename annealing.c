@@ -106,12 +106,14 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 	 */
 
 	m3ldbl aratio;
+	Lk(tree);
 	m3ldbl lnL_best = tree->c_lnL;
 	m3ldbl lnL_proposed = tree->c_lnL;
 	m3ldbl fsum = 0.0;
 	m3ldbl fsqsum = 0.0;
 	int n = 0;
 	int i;
+	//Optimiz_All_Free_Param(tree,0);
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
 	Make_All_Tree_Nodes(best_tree);
@@ -488,6 +490,8 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		Lk(tree);
 	}
 
+	Optimiz_All_Free_Param(tree,1);
+
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
 	Make_All_Tree_Nodes(best_tree);
@@ -548,6 +552,8 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 		//steps_tried = 0;
 		//steps_accepted = 0;
+
+		//Optimiz_All_Free_Param(tree,1);
 
 		for(iter = 0; iter < anneal.iters_per_temp; iter++){
 			steps_tried++;
