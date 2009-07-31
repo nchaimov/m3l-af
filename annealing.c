@@ -553,7 +553,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		//steps_tried = 0;
 		//steps_accepted = 0;
 
-		//Optimiz_All_Free_Param(tree,1);
+		Optimiz_All_Free_Param(tree,1);
 
 		for(iter = 0; iter < anneal.iters_per_temp; iter++){
 			steps_tried++;

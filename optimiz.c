@@ -35,11 +35,11 @@ void Optimize_Single_Param_Generic(arbre *tree, m3ldbl *param, m3ldbl lim_inf, m
 
 	if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_global)
 	{
-		PhyML_Printf("\n. %.10f < %.10f --> diff=%.10f param value = %f initial value = %f\n",
-				tree->c_lnL,lk_init,
-				tree->c_lnL-lk_init,
-				*param,bx);
-		Exit("\n. Optimisation failed !\n");
+//		PhyML_Printf("\n. %.10f < %.10f --> diff=%.10f param value = %f initial value = %f\n",
+//				tree->c_lnL,lk_init,
+//				tree->c_lnL-lk_init,
+//				*param,bx);
+//		Exit("\n. Optimisation failed !\n");
 	}
 }
 

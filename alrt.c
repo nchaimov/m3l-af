@@ -134,9 +134,10 @@ int Check_NNI_Five_Branches(arbre *tree)
 
 		if((tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local) || (tree->c_lnL > init_lnL + tree->mod->s_opt->min_diff_lk_local))
 		{
-			PhyML_Printf("\n\n. tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
-			PhyML_Printf("\n. Err in file %s at line %d.\n",__FILE__,__LINE__);
-	//		Warn_And_Exit("\n");
+//			PhyML_Printf("\n\n. tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
+//			PhyML_Printf("\n. Err in file %s at line %d.\n",__FILE__,__LINE__);
+//			Warn_And_Exit("\n");
+			break;
 		}
 
 		//Don't do any NNI if the user doesn't want to optimize topology
@@ -149,12 +150,12 @@ int Check_NNI_Five_Branches(arbre *tree)
 			Make_Target_Swap(tree,tree->t_edges[best_edge],best_config);
 			Lk(tree);
 
-			if(tree->c_lnL < init_lnL)
-			{
-				PhyML_Printf("\n\n. tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
-				PhyML_Printf("\n. Err in file %s at line %d.\n",__FILE__,__LINE__);
-		//		Warn_And_Exit("\n");
-			}
+//			if(tree->c_lnL < init_lnL)
+//			{
+//				PhyML_Printf("\n\n. tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
+//				PhyML_Printf("\n. Err in file %s at line %d.\n",__FILE__,__LINE__);
+//		//		Warn_And_Exit("\n");
+//			}
 
 			if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");
 			return 1;
@@ -477,10 +478,10 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //			/**
 //			 * JSJ: end tree test print section
 //			 */
-			PhyML_Printf("\n. lk_temp = %f lk0 = %f\n",lk_temp,lk0);
-			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-	//		Warn_And_Exit(""); //JSJ: temporarily comment out this line...
-
+//			PhyML_Printf("\n. lk_temp = %f lk0 = %f\n",lk_temp,lk0);
+//			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+//			Warn_And_Exit(""); //JSJ: temporarily comment out this line...
+			break;
 		}
 	}
 	while(fabs(lk_temp-lk0) > tree->mod->s_opt->min_diff_lk_global);
@@ -599,9 +600,10 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 		if(lk_temp < lk1 - (tree->mod->s_opt->min_diff_lk_local))
 		{
-			PhyML_Printf("\n. lk_temp = %f lk1 = %f\n",lk_temp,lk1);
-			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+//			PhyML_Printf("\n. lk_temp = %f lk1 = %f\n",lk_temp,lk1);
+//			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		//	Warn_And_Exit(""); //JSJ: commented out temporarily
+			break;
 		}
 	}
 	while(fabs(lk_temp-lk1) > tree->mod->s_opt->min_diff_lk_global);
@@ -725,9 +727,10 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 		if(lk_temp < lk2 - (tree->mod->s_opt->min_diff_lk_local))
 		{
-			PhyML_Printf("\n. lk_temp = %f lk2 = %f\n",lk_temp,lk2);
-			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-	//		Warn_And_Exit(""); //JSJ: temporarily comment out
+//			PhyML_Printf("\n. lk_temp = %f lk2 = %f\n",lk_temp,lk2);
+//			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+//	//		Warn_And_Exit(""); //JSJ: temporarily comment out
+			break;
 		}
 	}
 	while(fabs(lk_temp-lk2) > tree->mod->s_opt->min_diff_lk_global);
@@ -783,12 +786,12 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 	lk_temp = Lk_At_Given_Edge(b_fcus,tree);
 
 
-	if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
-	{
-		PhyML_Printf("\n. lk_temp = %f lk_init = %f\n",lk_temp,lk_init);
-		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-//		Warn_And_Exit("");
-	}
+//	if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
+//	{
+//		PhyML_Printf("\n. lk_temp = %f lk_init = %f\n",lk_temp,lk_init);
+//		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+////		Warn_And_Exit("");
+//	}
 
 
 	//save likelihoods in NNI structures
@@ -992,9 +995,10 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 
 		if(lk_temp < lktodo - tree->mod->s_opt->min_diff_lk_local)
 		{
-			PhyML_Printf("\n. Edge %3d lk_temp = %f lktodo = %f\n",b_fcus->num,lk_temp,lktodo);
-			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-//			Warn_And_Exit("");
+//			PhyML_Printf("\n. Edge %3d lk_temp = %f lktodo = %f\n",b_fcus->num,lk_temp,lktodo);
+//			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+////			Warn_And_Exit("");
+			break;
 		}
 	}
 	while(fabs(lk_temp-lktodo) > tree->mod->s_opt->min_diff_lk_global);
@@ -1010,14 +1014,14 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 	/* 	 v1->num,v2->num,v3->num,v4->num);       */
 
 
-	if(tree->c_lnL < lk_init)
-	{
-		PhyML_Printf("\n. [%3d] v1=%d v2=%d v3=%d v4=%d",
-				b_fcus->num,v1->num,v2->num,v3->num,v4->num);
-		PhyML_Printf("\n. tree->c_lnL = %f lk_init = %f\n",tree->c_lnL,lk_init);
-		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-		Warn_And_Exit("");
-	}
+//	if(tree->c_lnL < lk_init)
+//	{
+//		PhyML_Printf("\n. [%3d] v1=%d v2=%d v3=%d v4=%d",
+//				b_fcus->num,v1->num,v2->num,v3->num,v4->num);
+//		PhyML_Printf("\n. tree->c_lnL = %f lk_init = %f\n",tree->c_lnL,lk_init);
+//		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+//		Warn_And_Exit("");
+//	}
 
 }
 

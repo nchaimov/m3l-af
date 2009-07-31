@@ -3055,16 +3055,16 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 	lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
 
-	if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
-	{
-
-		PhyML_Printf("\n. lk_init = %f; lk = %f diff = %f\n",
-				lk_init,
-				lk0_init,
-				lk_init-lk0_init);
-		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
-		//Warn_And_Exit("\n. Err. in NNI (3)\n");
-	}
+//	if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
+//	{
+//
+//		PhyML_Printf("\n. lk_init = %f; lk = %f diff = %f\n",
+//				lk_init,
+//				lk0_init,
+//				lk_init-lk0_init);
+//		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
+//		//Warn_And_Exit("\n. Err. in NNI (3)\n");
+//	}
 	//	For(i,tree->n_l){
 	//		l_infa[i] = 10.*b_fcus->l[i];
 	//		l_max[i]  = b_fcus->l[i];
@@ -3088,14 +3088,14 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		}
 	}
 
-	if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
-	{
-		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
-		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
-		PhyML_Printf("\n. Err. in NNI (3)\n");
-
-		//Warn_And_Exit("\n");
-	}
+//	if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
+//	{
+//		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
+//		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
+//		PhyML_Printf("\n. Err. in NNI (3)\n");
+//
+//		//Warn_And_Exit("\n");
+//	}
 
 	/***********/
 
@@ -9228,12 +9228,12 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 
 		/* Make sure the tree is in its original form */
 		Lk(tree);
-		if(fabs(tree->c_lnL - ori_lnL) > tree->mod->s_opt->min_diff_lk_global)
-		{
-			PhyML_Printf("\n. ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
-			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-			Warn_And_Exit("");
-		}
+//		if(fabs(tree->c_lnL - ori_lnL) > tree->mod->s_opt->min_diff_lk_global)
+//		{
+//			PhyML_Printf("\n. ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
+//			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+//			Warn_And_Exit("");
+//		}
 
 		Speed_Spr_Loop(tree);
 		spr_lnL = tree->c_lnL;
@@ -9252,12 +9252,12 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 
 		/* Make sure the current tree has the best topology, branch lengths and model parameters */
 		Lk(tree);
-		if(fabs(tree->c_lnL - best_lnL) > tree->mod->s_opt->min_diff_lk_global)
-		{
-			PhyML_Printf("\n. best_lnL = %f, c_lnL = %f",best_lnL,tree->c_lnL);
-			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-			Warn_And_Exit("");
-		}
+//		if(fabs(tree->c_lnL - best_lnL) > tree->mod->s_opt->min_diff_lk_global)
+//		{
+//			PhyML_Printf("\n. best_lnL = %f, c_lnL = %f",best_lnL,tree->c_lnL);
+//			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+//			Warn_And_Exit("");
+//		}
 
 		if(tree->mod->s_opt->print)
 		{

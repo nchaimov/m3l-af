@@ -300,17 +300,17 @@ void Lk(arbre *tree)
 	tree->c_lnL     = .0;
 	tree->curr_catg =  0;
 	tree->curr_site =  0;
-//		chunk = n_patterns/omp_get_num_procs();
-//#pragma omp parallel\
-//	   shared(tree,n_patterns,chunk) private(tree->curr_site, site)
-//#pragma omp for schedule(static,chunk) nowait
+		chunk = n_patterns/omp_get_num_procs();
+#pragma omp parallel for \
+	shared(tree,n_patterns,chunk) private(site)\
+	schedule(static,chunk)
 	for(site = 0; site < n_patterns; site++)
 	{
 		//printf("JSJ: Iterating over state pattern %i in Lk\n",site);
 		tree->c_lnL_sorted[site] = .0;
 		tree->site_lk[site]      = .0;
-		tree->curr_site          = site;
-		Site_Lk(tree);
+//		tree->curr_site          = site;
+		Site_Lk(tree,site);
 	}
 
 	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
@@ -330,7 +330,7 @@ void Lk(arbre *tree)
 
 // VHS: This method calculates the likelihood for the entire tree, given the site
 // specified by *tree->curr_site
-void Site_Lk(arbre *tree)
+void Site_Lk(arbre *tree, int site)
 {
 	edge *eroot;
 
@@ -342,7 +342,7 @@ void Site_Lk(arbre *tree)
 		Warn_And_Exit("");
 	}
 
-	if(tree->data->wght[tree->curr_site] > MDBL_MIN) Lk_Core(eroot,tree);
+	if(tree->data->wght[tree->curr_site] > MDBL_MIN) Lk_Core(eroot,tree,site);
 	else tree->c_lnL_sorted[tree->curr_site] = 1.; /* WARNING : change cautiously */
 }
 
@@ -351,7 +351,8 @@ void Site_Lk(arbre *tree)
 
 m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 {
-	int n_patterns;
+	int n_patterns,site;
+	int chunk;
 
 	tree->number_of_branch_lk_calls++;
 
@@ -371,11 +372,15 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 	}
 
 	tree->c_lnL = .0;
-	For(tree->curr_site,n_patterns)
+	chunk = n_patterns/omp_get_num_procs();
+#pragma omp parallel for \
+		shared(tree,n_patterns,chunk,b_fcus) private(site) \
+		schedule(static,chunk)
+	for(site = 0; site < n_patterns; site++)
 	{
 		//printf("JSJ: Iterating over state pattern %i in Lk_At_Given_Edge\n",tree->curr_site);
-		if(tree->data->wght[tree->curr_site] > MDBL_MIN) Lk_Core(b_fcus,tree);
-		else tree->c_lnL_sorted[tree->curr_site] = 1.; /* WARNING : change cautiously */
+		if(tree->data->wght[site] > MDBL_MIN) Lk_Core(b_fcus,tree,site);
+		else tree->c_lnL_sorted[site] = 1.; /* WARNING : change cautiously */
 	}
 
 	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
@@ -391,7 +396,7 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 /*********************************************************/
 // This method calculates the likelihood for the entire tree (we presume) rooted at edge *b,
 // for the site indicated by *tree->curr_site.
-m3ldbl Lk_Core(edge *b, arbre *tree)
+m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 {
 	/**
 	* Game plan: iterate through the entirety of this function
@@ -410,7 +415,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 	int i,j; //loop counters
 	int dim1,dim2,dim3;
 	int ambiguity_check,state;
-	int catg,ns,k,l,site;
+	int catg,ns,k,l;
 	plkflt scale_left, scale_right;
 
 	dim1 = tree->mod->n_catg * tree->mod->ns;
@@ -418,7 +423,6 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 	dim3 = tree->mod->ns * tree->mod->ns;
 
 	ambiguity_check = state = -1;
-	site = tree->curr_site;
 	ns = tree->mod->ns; // ns is the number of states in the alphabet.
 
 	scale_left = (b->sum_scale_f_left)? (b->sum_scale_f_left[site]): (0.0);
@@ -433,7 +437,10 @@ m3ldbl Lk_Core(edge *b, arbre *tree)
 
 	if(tree->mod->use_m4mod) ambiguity_check = 1;
 
-
+//			chunk = n_patterns/omp_get_num_procs();
+//	#pragma omp parallel\
+//		   shared(tree,n_patterns,chunk) private(tree->curr_site, site)
+//	#pragma omp for schedule(static,chunk) nowait
 	For(i,tree->n_l){
 		/**
 		* Private variables (within the scope of each iteration)

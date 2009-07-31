@@ -2445,12 +2445,12 @@ void Make_Move (_move_ *move, int type, arbre *tree)
 	tree->both_sides = 1;
 	new_lk = Return_Lk (tree);
 
-	if(tree->c_lnL < cur_lk-tree->mod->s_opt->min_diff_lk_local)
-	{
-		PhyML_Printf("\n. tree->c_lnL = %f cur_lk = %f",tree->c_lnL,cur_lk);
-		PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__);
-		Warn_And_Exit("");
-	}
+//	if(tree->c_lnL < cur_lk-tree->mod->s_opt->min_diff_lk_local)
+//	{
+//		PhyML_Printf("\n. tree->c_lnL = %f cur_lk = %f",tree->c_lnL,cur_lk);
+//		PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__);
+//		Warn_And_Exit("");
+//	}
 	cur_lk = new_lk;
 
 	/*
@@ -3783,12 +3783,12 @@ void Speed_Spr(arbre *tree, int max_cycles)
 
 		if(!tree->mod->s_opt->spr_pars)
 		{
-			if(tree->c_lnL < old_lnL-tree->mod->s_opt->min_diff_lk_local)
-			{
-				PhyML_Printf("\n. old_lnL = %f c_lnL = %f",old_lnL,tree->c_lnL);
-				PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__);
-				Warn_And_Exit("");
-			}
+//			if(tree->c_lnL < old_lnL-tree->mod->s_opt->min_diff_lk_local)
+//			{
+//				PhyML_Printf("\n. old_lnL = %f c_lnL = %f",old_lnL,tree->c_lnL);
+//				PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__);
+//				Warn_And_Exit("");
+//			}
 		}
 		else
 		{
@@ -4094,10 +4094,10 @@ int Try_One_Spr_Move_Triple(spr *move, arbre *tree)
 
 		if(fabs(tree->c_lnL - move->lnL) > 1.E-3)
 		{
-			if(tree->mod->s_opt->print) PhyML_Printf("\n. c_lnL = %f move_lnL = %f",
-					tree->c_lnL,move->lnL);
-			PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__);
-		//	Warn_And_Exit("");
+//			if(tree->mod->s_opt->print) PhyML_Printf("\n. c_lnL = %f move_lnL = %f",
+//					tree->c_lnL,move->lnL);
+//			PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__);
+//		//	Warn_And_Exit("");
 		}
 
 		if((tree->mod->s_opt->print) && (!tree->io->quiet))
