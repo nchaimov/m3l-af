@@ -248,7 +248,7 @@ typedef struct __Edge {
   short int           *div_post_pred_left; /* posterior prediction of nucleotide/aa diversity (left-hand subtree) */
   short int           *div_post_pred_rght; /* posterior prediction of nucleotide/aa diversity (rght-hand subtree) */
 
-  double                         *Pij_rr[MAX_BL_SET]; /* JSJ: set of matrices of change probabilities and its first and secnd derivates */
+  double                         **Pij_rr; /* JSJ: set of matrices of change probabilities and its first and secnd derivates */
   int                     *pars_l,*pars_r; /* parsimony of the subtree on the left and right sides (for each site) */
   unsigned int               *ui_l, *ui_r; /* union - intersection vectors used in Fitch's parsimony algorithm */
   int                *p_pars_l, *p_pars_r; /* conditional parsimony vectors */

@@ -917,7 +917,7 @@ void Init_Edge_Light(edge *b, int num)
 
 	b->p_lk_left            = NULL;
 	b->p_lk_rght            = NULL;
-	For(i,b->n_l)b->Pij_rr[i]= NULL;
+	//For(i,b->n_l)b->Pij_rr[i]= NULL;
 }
 
 /*********************************************************/
@@ -1011,7 +1011,7 @@ void Make_Edge_Lk(edge *b, arbre *tree)
 
 	b->div_post_pred_left = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
 	b->div_post_pred_rght = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
-	//	b->Pij_rr             = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
+	b->Pij_rr             = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
 	For(i,tree->n_l) b->Pij_rr[i] = (m3ldbl *)mCalloc(tree->mod->n_catg*tree->mod->ns*tree->mod->ns,sizeof(m3ldbl));
 
 	b->scale_left = b->scale_rght = 0;
