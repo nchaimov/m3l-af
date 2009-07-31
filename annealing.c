@@ -163,6 +163,7 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 	// For now, we'll always perturb every parameter.
 	// In the future, we'll do something more sophisticated, where the probability of perturbing
 	// any particular parameter will be drawn from a probability distribution.
+	tree->both_sides = 0; //set 1 if topology, brlen, or props
 	double x = gsl_rng_uniform(anneal.rng);
 	if(x < anneal.prob_rate_proportion) Step_Brlen_Proportion(tree);
 	x = gsl_rng_uniform(anneal.rng);
@@ -198,6 +199,7 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 	// 1. Update the likelihood of tree
 	Lk(tree);
 	tree->mod->update_eigen = 0;
+	tree->both_sides = 1; // reset to 1
 }
 
 // helper for "Get_TA_Neighbor_Proposition"
@@ -207,6 +209,7 @@ void Step_Brlen_Proportion(arbre *tree){
 	// lengths from a Dirichlet distribution.
 	// when we update proportions we need to recalculate the likelihoods on the whole tree...
 	if(tree->mod->s_opt->opt_props == 1){
+		tree->both_sides = 1;
 		//		int i,j;
 		//		double r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
 		//		int prange = (int)(Rand_Int(1,(tree->n_l)) * r);
@@ -333,6 +336,7 @@ void Step_Pi(arbre * tree){
 void Step_Branch_Lengths(arbre *tree){
 	// For now, do something stupid like incrementing lengths by +/- 0.001.
 	if(tree->mod->s_opt->opt_bl == 1){
+		tree->both_sides = 1;
 		int i,j,edge_range,set_range,m,n;
 		int n_edges = (tree->n_otu * 2) - 3;
 		double rand_gauss;
@@ -389,6 +393,7 @@ void Step_Topology(arbre *tree){
 	*/
 	if(tree->mod->s_opt->opt_topo){
 		tree->mod->update_eigen = 1;
+		tree->both_sides = 1;
 		double p = gsl_rng_uniform(anneal.rng);
 		if(p <= anneal.prob_NNI){
 
