@@ -1412,9 +1412,9 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 
 	if(tree->c_lnL < lk_init - (tree->mod->s_opt->min_diff_lk_local))
 	{//JSJ: We hit this error when running SPR...
-		For(j,tree->n_l) PhyML_Printf("\n.Bl Set# %i: %lf %lf %lf %lf",j,(double)10.*b_fcus->l[j],(double)b_fcus->l[j],(double)BL_MIN,(double)b_fcus->l[j]);
+//		For(j,tree->n_l) PhyML_Printf("\n.Bl Set# %i: %lf %lf %lf %lf",j,(double)10.*b_fcus->l[j],(double)b_fcus->l[j],(double)BL_MIN,(double)b_fcus->l[j]);
 
-		PhyML_Printf("\n. %f -- %f",lk_init,tree->c_lnL);
+//		PhyML_Printf("\n. %f -- %f",lk_init,tree->c_lnL);
 	//	Warn_And_Exit("\n. Err. in Optimize_Br_Len_Serie\n");
 	}
 
@@ -2830,8 +2830,8 @@ int Optimiz_Alpha_And_Pinv(arbre *tree)
 
 	if(lk_a < lk_b - tree->mod->s_opt->min_diff_lk_local)
 	{
-		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-		Warn_And_Exit("");
+//		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+//		Warn_And_Exit("");
 	}
 	else if(fabs(lk_a - lk_b) < tree->mod->s_opt->min_diff_lk_local)
 	{

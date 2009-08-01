@@ -395,7 +395,7 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 /*********************************************************/
 // This method calculates the likelihood for the entire tree (we presume) rooted at edge *b,
-// for the site indicated by *tree->curr_site.
+// for the site indicated by site
 m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 {
 	/**
@@ -437,10 +437,6 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 
 	if(tree->mod->use_m4mod) ambiguity_check = 1;
 
-//			chunk = n_patterns/omp_get_num_procs();
-//	#pragma omp parallel\
-//		   shared(tree,n_patterns,chunk) private(tree->curr_site, site)
-//	#pragma omp for schedule(static,chunk) nowait
 	For(i,tree->n_l){
 		/**
 		* Private variables (within the scope of each iteration)
@@ -533,7 +529,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 	}
 	else
 	{
-		if((m3ldbl)tree->data->invar[site] > -0.5) //VHS: I *think* the code will always hit this top case, because invar[site] should be 0 or 1
+		if((m3ldbl)tree->data->invar[site] > -0.5) //VHS: I *think* the code will always hit this top case, because invar[site] should be 0 or 1 nope...
 		{
 			For(i,tree->n_l){
 				if((scale_left + scale_right > 0.0) || (scale_left + scale_right < 0.0))
@@ -545,8 +541,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 			log_site_lk = log(sum_site_lk);
 		}
 		else
-		{
-			printf("in lk.c: in Lk_Core: in else at line 528");
+		{ //hit this section when estimating pinvar.
 
 			For(i,tree->n_l){
 				sum_site_lk += site_lk[i]*(1.0-tree->mod->pinvar) * tree->props[i];
