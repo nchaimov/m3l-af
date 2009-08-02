@@ -52,6 +52,7 @@ void Set_Anneal(option *io){
 
 	anneal.random_seed = (int)time(NULL);
 	anneal.rng = gsl_rng_alloc(gsl_rng_mt19937);
+	anneal.no_change = 1;
 	gsl_rng_set(anneal.rng, anneal.random_seed);
 }
 
@@ -122,7 +123,7 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 	Copy_Tree(tree,best_tree);
 
 	For(i,anneal.iters_per_temp){
-		Get_TA_Neighbor_Proposition(tree);
+		Get_TA_Neighbor_Proposition(tree,anneal.start_temp);
 		lnL_proposed = tree->c_lnL;
 		if(lnL_proposed > UNLIKELY){
 			n++;
@@ -161,15 +162,14 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 // * alpha (for gamma distributed ASRV)
 // * gamma proportions
 // * mu (evolutionary rate)
-void Get_TA_Neighbor_Proposition(arbre *tree){
+void Get_TA_Neighbor_Proposition(arbre *tree,m3ldbl temp){
 	// For now, we'll always perturb every parameter.
 	// In the future, we'll do something more sophisticated, where the probability of perturbing
 	// any particular parameter will be drawn from a probability distribution.
 	tree->both_sides = 0; //set 1 if topology, brlen, or props
+	anneal.no_change = 1;
 	double x = gsl_rng_uniform(anneal.rng);
 	if(x < anneal.prob_rate_proportion) Step_Brlen_Proportion(tree);
-	x = gsl_rng_uniform(anneal.rng);
-	if(x < anneal.prob_brlen)Step_Branch_Lengths(tree);
 	x = gsl_rng_uniform(anneal.rng);
 	if(x < anneal.prob_gamma)Step_Gamma(tree);
 	x = gsl_rng_uniform(anneal.rng);
@@ -187,6 +187,8 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 		//PhyML_Printf("JSJ: Proposing a new topology\n");
 		Step_Topology(tree);
 	}
+	x = gsl_rng_uniform(anneal.rng);
+	if(x < anneal.prob_brlen)Step_Branch_Lengths(tree,temp);
 
 	//	if(x == 1)Step_Pi(tree);
 	//	if(x == 1)Step_Lambda(tree);
@@ -199,7 +201,7 @@ void Get_TA_Neighbor_Proposition(arbre *tree){
 
 
 	// 1. Update the likelihood of tree
-	Lk(tree);
+	if(anneal.no_change == 0) Lk(tree);
 	tree->mod->update_eigen = 0;
 	tree->both_sides = 1; // reset to 1
 }
@@ -212,6 +214,7 @@ void Step_Brlen_Proportion(arbre *tree){
 	// when we update proportions we need to recalculate the likelihoods on the whole tree...
 	if(tree->mod->s_opt->opt_props == 1){
 		tree->both_sides = 1;
+		anneal.no_change = 0;
 		//		int i,j;
 		//		double r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
 		//		int prange = (int)(Rand_Int(1,(tree->n_l)) * r);
@@ -237,6 +240,7 @@ void Step_Brlen_Proportion(arbre *tree){
 void Step_Pinvar(arbre *tree){
 	if(tree->mod->s_opt->opt_pinvar == 1){
 		double r;
+		anneal.no_change = 0;
 		r = gsl_ran_gaussian(anneal.rng,anneal.pinvar_sigma);
 		tree->mod->pinvar += r;
 		if(tree->mod->pinvar < 0.0001) tree->mod->pinvar = 0.0001;
@@ -250,6 +254,7 @@ void Step_RR(arbre * tree){
 	{
 		int i;
 		m3ldbl tmp;
+		anneal.no_change = 0;
 		double *alpha = calloc(tree->mod->n_diff_rr,sizeof(double));
 		if(tree->mod->n_diff_rr > 5){
 			tmp = tree->mod->rr_val[5]; //save this number to restore later
@@ -281,6 +286,7 @@ void Step_Kappa(arbre * tree){
 	if(tree->mod->s_opt->opt_kappa == 1){
 		double r;
 		tree->mod->update_eigen = 1;
+		anneal.no_change = 0;
 		r = gsl_ran_gaussian(anneal.rng,tree->mod->kappa);
 		tree->mod->kappa += r;
 		if(tree->mod->kappa < 0.1) tree->mod->kappa = 0.1;
@@ -297,6 +303,7 @@ void Step_Kappa(arbre * tree){
 void Step_Lambda(arbre * tree){
 	if(tree->mod->s_opt->opt_lambda == 1){
 		double r;
+		anneal.no_change = 0;
 		r = gsl_ran_gaussian(anneal.rng,tree->mod->lambda);
 		tree->mod->lambda += r;
 		if(tree->mod->lambda < 0.001) tree->mod->lambda = 0.001;
@@ -311,6 +318,7 @@ void Step_Gamma(arbre *tree){
 	// with mean equal to the current value of gamma and standard deviation equal to some
 	// user-specified parameter sigma.
 	if(tree->mod->s_opt->opt_alpha == 1){
+		anneal.no_change = 0;
 		double r = gsl_ran_gaussian(anneal.rng,anneal.gamma_sigma);
 		tree->mod->alpha += r;
 		if(tree->mod->alpha < 0.01) tree->mod->alpha = 0.01;
@@ -321,6 +329,7 @@ void Step_Gamma(arbre *tree){
 void Step_Pi(arbre * tree){
 	if((tree->mod->s_opt->opt_state_freq) && (tree->mod->datatype == NT)){
 		tree->mod->update_eigen = 1;
+		anneal.no_change = 0;
 		int i;
 		double *alpha = calloc(tree->mod->ns, sizeof(double));
 		for(i = 0; i < tree->mod->ns; i++){
@@ -335,11 +344,12 @@ void Step_Pi(arbre * tree){
 }
 
 // helper for "Get_TA_Neighbor_Proposition"
-void Step_Branch_Lengths(arbre *tree){
+void Step_Branch_Lengths(arbre *tree, m3ldbl temp){
 	// For now, do something stupid like incrementing lengths by +/- 0.001.
 	if(tree->mod->s_opt->opt_bl == 1){
 		tree->both_sides = 1;
-		int i,j,edge_range,set_range,m,n;
+		anneal.no_change = 0;
+		int i,j,edge_range,set_range,m,n,max;
 		int n_edges = (tree->n_otu * 2) - 3;
 		double rand_gauss;
 		/* r is a random floating point value in the range (0,1) {not including 0,
@@ -350,8 +360,15 @@ void Step_Branch_Lengths(arbre *tree){
 		 * may result in an overflow, or more likely the value will end up being
 		 * the largest negative integer the architecture can represent, so
 		 * to avoid this we convert RAND_MAX and 1 to doubles before adding. */
-		edge_range = gsl_rng_uniform_int(anneal.rng,(n_edges+1));
-		set_range = gsl_rng_uniform_int(anneal.rng,(tree->n_l + 1));
+		max = (n_edges + 1) * temp;
+		if (max < 1) max = 1;
+		edge_range = gsl_rng_uniform_int(anneal.rng,max);
+		if(edge_range < 1) edge_range = 1;
+
+		max = (tree->n_l + 1) * temp;
+		if(max < 1) max = 1;
+		set_range = gsl_rng_uniform_int(anneal.rng,max);
+		if(set_range < 1) set_range = 1;
 		For(i,edge_range){
 			j = gsl_rng_uniform_int(anneal.rng,n_edges);
 			For(m,set_range){
@@ -371,7 +388,12 @@ void Step_Branch_Lengths(arbre *tree){
 				//									10,
 				//									0,n);
 			}
-			//Update_PMat_At_Given_Edge(tree->t_edges[j],tree);
+//			if(anneal.full_lk == 0){
+//				Update_PMat_At_Given_Edge(tree->t_edges[j],tree);
+//				if(!tree->t_edges[j]->left->tax) Update_P_Lk(tree,tree->t_edges[j],tree->t_edges[j]->left);
+//				if(!tree->t_edges[j]->rght->tax) Update_P_Lk(tree,tree->t_edges[j],tree->t_edges[j]->rght);
+//				Update_Lk_At_Given_Edge(tree->t_edges[j],tree);
+//			}
 		}
 
 
@@ -396,6 +418,7 @@ void Step_Topology(arbre *tree){
 	if(tree->mod->s_opt->opt_topo){
 		tree->mod->update_eigen = 1;
 		tree->both_sides = 1;
+		anneal.no_change = 0;
 		double p = gsl_rng_uniform(anneal.rng);
 		if(p <= anneal.prob_NNI){
 
@@ -437,6 +460,21 @@ void Step_Topology(arbre *tree){
 			}
 
 			Swap(a,b,c,d,tree);
+//			if(anneal.full_lk == 0){
+//				tree->both_sides = 1;
+//				Update_PMat_At_Given_Edge(tree->t_edges[edge],tree);
+//				if(!tree->t_edges[edge]->left->tax){
+//					For(i,3)
+//					if(tree->t_edges[edge]->left->v[i] != tree->t_edges[edge]->rght)
+//						Update_P_Lk(tree,tree->t_edges[edge]->left->b[i],tree->t_edges[edge]->left);
+//				}
+//				if(!tree->t_edges[edge]->rght->tax){
+//					For(i,3)
+//					if(tree->t_edges[edge]->rght->v[i] != tree->t_edges[edge]->left)
+//						Update_P_Lk(tree,tree->t_edges[edge]->rght->b[i],tree->t_edges[edge]->rght);
+//				}
+//				Update_Lk_At_Given_Edge(tree->t_edges[edge],tree);
+//			}
 		}else if((p - anneal.prob_NNI) <= anneal.prob_SPR){ //otherwise do SPR
 			//int num_spr = gsl_rng_uniform_int(anneal.rng,3);
 			Random_Spr(1,tree);
@@ -558,7 +596,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		for(iter = 0; iter < anneal.iters_per_temp; iter++){
 			steps_tried++;
 			//get our next proposition.
-			Get_TA_Neighbor_Proposition(tree);
+			Get_TA_Neighbor_Proposition(tree,temp);
 			lnL_proposed = tree->c_lnL;
 
 			now = time(NULL);
@@ -613,8 +651,10 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 			if(acc_prob >= r){
 				//save the current tree
-				Copy_Tree(tree,last_tree);
-				Record_Model(tree->mod,last_tree->mod);
+				if(anneal.no_change == 0){
+					Copy_Tree(tree,last_tree);
+					Record_Model(tree->mod,last_tree->mod);
+				}
 				steps_accepted++;
 				lnL_current = tree->c_lnL;
 
@@ -622,8 +662,10 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 			}else{
 				//restore the current tree to be our last tree
-				Copy_Tree(last_tree,tree);
-				Record_Model(last_tree->mod,tree->mod);
+				if(anneal.no_change == 0){
+					Copy_Tree(last_tree,tree);
+					Record_Model(last_tree->mod,tree->mod);
+				}
 			}
 		}//end inner for loop.
 		temp *= tempmult;

@@ -1,6 +1,7 @@
 #AM_CFLAGS=-O3 -fomit-frame-pointer -funroll-loops -ftree-vectorize -Wall -ffast-math -fopenmp
 #AM_CFLAGS=-O3 -funroll-loops -Wall -g -pg -fopenmp
-AM_CFLAGS=-O3 -fomit-frame-pointer -funroll-loops -Wall -ftree-vectorize -ffast-math -fopenmp
+AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math -fopenmp
+#AM_CFLAGS=-tau_makefile=/Applications/TAU/tau-2.18.2/apple/lib/Makefile.tau-callpath-mpi-pthread-pdt-profile-trace 
 
 AM_LDFLAGS=-lm -lgsl
 
@@ -11,7 +12,7 @@ AM_LDFLAGS=-lm -lgsl
 
 # CC=mpicc
 # DEFS=-DUNIX -D$(PROG) -DDEBUG -DMPI
-#SCFLAGS=-finstrument-functions -pg
+#SCFLAGS=-tau_makefile=/Applications/TAU/tau-2.18.2/apple/lib/Makefile.tau-callpath-mpi-pthread-pdt-profile-trace -optTauCC=gcc-4.2
 
 # Comment the line below if you want to use MPI.
 # Uncomment the line below if you don't want to use MPI.

@@ -1,4 +1,4 @@
-void Get_TA_Neighbor_Proposition(arbre *tree);
+void Get_TA_Neighbor_Proposition(arbre *tree,m3ldbl temp);
 void Get_QA_Neighbor_Proposition(arbre *tree);
 m3ldbl Boltzmann_P(m3ldbl e, m3ldbl enew, m3ldbl temperature);
 m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose);
@@ -7,7 +7,7 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree);
 void Step_Brlen_Proportion(arbre *tree);
 void Swap_Tree_And_Mod(arbre *tree1, arbre *tree2);
 void Step_Gamma(arbre *tree);
-void Step_Branch_Lengths(arbre *tree);
+void Step_Branch_Lengths(arbre *tree,m3ldbl temp);
 void Step_Topology(arbre *tree);
 void Step_Pi(arbre * tree);
 void Step_Lambda(arbre * tree);
@@ -50,6 +50,7 @@ typedef struct __ANNEALING{
 	m3ldbl	gamma_sigma;
 	m3ldbl  pinvar_sigma;
 	m3ldbl  emig_sigma;
+	int 	no_change;
 
 	int     random_seed;
     gsl_rng *rng;
