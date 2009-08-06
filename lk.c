@@ -300,9 +300,8 @@ void Lk(arbre *tree)
 	tree->c_lnL     = .0;
 	tree->curr_catg =  0;
 	tree->curr_site =  0;
-		chunk = n_patterns/omp_get_num_procs();
-
 #ifdef USE_OPENMP
+	chunk = n_patterns/omp_get_num_procs();
 #pragma omp parallel for \
 	shared(tree,n_patterns,chunk) private(site)\
 	schedule(static,chunk)
@@ -375,8 +374,8 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 	}
 
 	tree->c_lnL = .0;
-	chunk = n_patterns/omp_get_num_procs();
 #ifdef USE_OPENMP
+	chunk = n_patterns/omp_get_num_procs();
 #pragma omp parallel for \
 		shared(tree,n_patterns,chunk,b_fcus) private(site) \
 		schedule(static,chunk)
@@ -993,10 +992,10 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	* 	to phyml's sequence compression...)
 	*/
 
+#ifdef USE_OPENMP
 	int chunk = n_patterns/omp_get_num_procs();
 //	int chunk = n_patterns/2;
 	//printf("Chunk size: %i\n",chunk);
-#ifdef USE_OPENMP
 #pragma omp parallel\
 		default(shared) private(k,catg,i,j,site,scale_v1,scale_v2,\
 				max_p_lk,state_v1,state_v2,ambiguity_check_v1,\

@@ -15,7 +15,7 @@ Modified by John St John
 #define UTILITIES_H
 
 
-#define USE_OPENMP 1 // use openmp? if no, then remove this line.
+//#define USE_OPENMP 1 // use openmp? if no, then remove this line.
 
 #include <stdarg.h>
 #include <stdio.h>
