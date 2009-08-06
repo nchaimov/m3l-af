@@ -15,6 +15,8 @@ Modified by John St John
 #define UTILITIES_H
 
 
+#define USE_OPENMP 1 // use openmp? if no, then remove this line.
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +26,10 @@ Modified by John St John
 #include <time.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
+
+#ifdef USE_OPENMP
 #include <omp.h>
+#endif //USE_OPENMP
 
 
 #define VERSION "v3.0 (179M)"
@@ -58,7 +63,7 @@ static inline int isinf_f  (float       x) { return isnan (x - x); }
 static inline int isinf_d  (double      x) { return isnan (x - x); }
 static inline int isinf_ld (long double x) { return isnan (x - x); }
 #endif
-     
+
 
 
 #define  NNI_MOVE                    0
@@ -244,7 +249,7 @@ typedef struct __Edge {
 
   plkflt            *p_lk_left,*p_lk_rght; /* likelihoods of the subtree on the left and
 					      right side (for each site and each relative rate category) */
-  short int      *p_lk_tip_r, *p_lk_tip_l; 
+  short int      *p_lk_tip_r, *p_lk_tip_l;
   short int           *div_post_pred_left; /* posterior prediction of nucleotide/aa diversity (left-hand subtree) */
   short int           *div_post_pred_rght; /* posterior prediction of nucleotide/aa diversity (rght-hand subtree) */
 
@@ -359,9 +364,9 @@ typedef struct __Arbre {
   time_t                            t_current;
 
   struct __Triplet            *triplet_struct;
-  
+
   int                     bl_from_node_stamps; /* == 1 -> Branch lengths are determined by node times */
-  
+
 }arbre;
 
 /*********************************************************/
@@ -412,7 +417,7 @@ typedef struct __Super_Arbre {
    */
 
   struct __Node                  ****closest_match;
-  /* closest_match[gt_num][st_node_num][dir] gives the 
+  /* closest_match[gt_num][st_node_num][dir] gives the
    * closest node in st that matches a node in gt gt_num
    */
 
@@ -434,22 +439,22 @@ typedef struct __Super_Arbre {
   /* copy of bl */
 
   m3ldbl                                     **bl0;
-  /* bl estimated during NNI (original topo) 
+  /* bl estimated during NNI (original topo)
    * See Mg_NNI.
    */
 
   m3ldbl                                     **bl1;
-  /* bl estimated during NNI (topo conf 1) 
+  /* bl estimated during NNI (topo conf 1)
    * See Mg_NNI.
    */
 
   m3ldbl                                     **bl2;
-  /* bl estimated during NNI (topo conf 2) 
+  /* bl estimated during NNI (topo conf 2)
    * See Mg_NNI.
    */
 
   int                                *bl_partition;
-  /* partition[gt_num] gives the edge partition number 
+  /* partition[gt_num] gives the edge partition number
    * gt_num belongs to.
    */
   int                               n_bl_partition;
@@ -525,7 +530,7 @@ typedef struct __Model {
   char  *custom_mod_string; /* string of characters used to define custom models of substitution */
  // int				   n_l; /* JSJ: holds the number of branch length categories */
  // m3ldbl            *props; /* JSJ: holds the proportion of sites that fall under each bl category */
-  int              *rr_num; 
+  int              *rr_num;
   int        *n_rr_per_cat; /* number of rate parameters in each category */
   int            n_diff_rr; /* number of different relative substitution rates in the custom model */
   int         update_eigen; /* update_eigen=1-> eigen values/vectors need to be updated */
@@ -736,7 +741,7 @@ typedef struct __Optimiz { /* parameters to be optimised (mostly used in 'optimi
   int        min_depth_path;
   int          deepest_path;
   m3ldbl  max_delta_lnL_spr;
-  
+
 
 
   int           wim_n_rgrft;
@@ -881,7 +886,7 @@ typedef struct __Trate {
   m3ldbl  *old_r; /* Old node rates */
   m3ldbl  *nd_t; /* Current node times */
   m3ldbl  *old_t; /* Old node times */
-  
+
 
   int bl_from_rt; /* if =1, branch lengths are obtained as the product of cur_r and t */
   int approx;

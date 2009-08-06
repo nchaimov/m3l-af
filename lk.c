@@ -301,9 +301,12 @@ void Lk(arbre *tree)
 	tree->curr_catg =  0;
 	tree->curr_site =  0;
 		chunk = n_patterns/omp_get_num_procs();
+
+#ifdef USE_OPENMP
 #pragma omp parallel for \
 	shared(tree,n_patterns,chunk) private(site)\
 	schedule(static,chunk)
+#endif
 	for(site = 0; site < n_patterns; site++)
 	{
 		//printf("JSJ: Iterating over state pattern %i in Lk\n",site);
@@ -373,9 +376,11 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 	tree->c_lnL = .0;
 	chunk = n_patterns/omp_get_num_procs();
+#ifdef USE_OPENMP
 #pragma omp parallel for \
 		shared(tree,n_patterns,chunk,b_fcus) private(site) \
 		schedule(static,chunk)
+#endif
 	for(site = 0; site < n_patterns; site++)
 	{
 		//printf("JSJ: Iterating over state pattern %i in Lk_At_Given_Edge\n",tree->curr_site);
@@ -991,13 +996,14 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	int chunk = n_patterns/omp_get_num_procs();
 //	int chunk = n_patterns/2;
 	//printf("Chunk size: %i\n",chunk);
+#ifdef USE_OPENMP
 #pragma omp parallel\
 		default(shared) private(k,catg,i,j,site,scale_v1,scale_v2,\
 				max_p_lk,state_v1,state_v2,ambiguity_check_v1,\
 				ambiguity_check_v2,p1_lk1,p2_lk2)
 	{
-
 #pragma omp for schedule(static,chunk) nowait
+#endif
 		for(site = 0; site < n_patterns; site++)
 
 		{
@@ -1173,7 +1179,9 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 				sum_scale[site] += (plkflt)log(max_p_lk);
 			}//JSJ: end if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
 		} //JSJ: end For(site,patterns)
+#ifdef USE_OPENMP
 	} //end parallel
+#endif
 }
 
 /*********************************************************/
