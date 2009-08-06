@@ -1,10 +1,14 @@
 #AM_CFLAGS=-O3 -fomit-frame-pointer -funroll-loops -ftree-vectorize -Wall -ffast-math -fopenmp
 #AM_CFLAGS=-O3 -funroll-loops -Wall -g -pg -fopenmp
-AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math -fopenmp
-#AM_CFLAGS=-tau_makefile=/Applications/TAU/tau-2.18.2/apple/lib/Makefile.tau-callpath-mpi-pthread-pdt-profile-trace 
+
+#This version uses OpenMP:
+#AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math -fopenmp
+# This version does not use OpenMP:
+AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math -L./libs
 
 AM_LDFLAGS=-lm -lgsl
 
+INCLUDES = -I./libs
 
 # Uncomment (i.e. remove the `#' character at the begining of) 
 # the two lines below if you want to use MPI.
