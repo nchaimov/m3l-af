@@ -1,0 +1,75 @@
+GSL - GNU Scientific Library
+============================
+
+This is GSL, the GNU Scientific Library, a collection of numerical
+routines for scientific computing.
+
+GSL is free software, you can redistribute it and/or modify it under
+the terms of the GNU General Public License.
+
+The GNU General Public License does not permit this software to be
+redistributed in proprietary programs.
+
+This library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Availability
+============
+
+The current stable version of GSL is always available from ftp.gnu.org
+in the directory /pub/gnu.
+
+A list of mirror sites can be found at http://www.gnu.org/order/ftp.html
+
+Installation
+============
+
+GSL follows the standard GNU installation procedure.  Please consult
+the INSTALL file in this distribution for more detailed instructions.
+
+For information about specific platforms and compilers see the
+"Compilation Notes" section in the INSTALL file.
+
+More information about GSL
+==========================
+
+The project homepage is http://www.gnu.org/software/gsl/
+
+The development site is http://sources.redhat.com/gsl/
+
+Please report bugs to the GSL discussion list gsl-discuss@sources.redhat.com
+
+See the NEWS file for recent developments.
+
+The GSL Manual has been published and can be ordered from most
+bookstores. The publication details are,
+
+  GNU Scientific Library Reference Manual, M. Galassi et al, ISBN
+  095416170X (600 pages, paperback).
+
+If you are interested in participating in GSL development, please send
+mail to Mark Galassi -- rosalia@lanl.gov
+
+Reporting Bugs
+==============
+
+A list of known bugs can be found in the BUGS file.  
+Details of compilation problems can be found in the INSTALL file.
+
+If you find a bug which is not listed in these files please report it
+to the mailing list gsl-discuss@sources.redhat.com.
+
+All bug reports should include:
+
+       The version number of GSL
+       The hardware and operating system
+       The compiler used, including version number and compilation options
+       A description of the bug behaviour
+       A short program which reproducibly exercises the bug
+
+It is also useful if you can report whether the same problem occurs
+when the library is compiled without optimization.
+
+Thank you.
+
