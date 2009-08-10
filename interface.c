@@ -305,6 +305,7 @@ void Launch_Interface_MBL_Model(option *io)
 			}else if(tmp == 1){
 				io->fixed_props = 0;
 				io->mod->s_opt->opt_props = io->fixed_props;
+				io->mod->s_opt->opt_five_branch = 0;
 				//Default to Simulated Thermal Annealing if there is more than 1 branch length category
 				if(io->user_topo == 0) io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
 			}

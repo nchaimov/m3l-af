@@ -969,11 +969,12 @@ void Read_Command_Line(option *io, int argc, char **argv)
 				io->mod->s_opt->opt_props = io->fixed_props;
 			}
 			if(io->n_l < 1 || io->n_l > MAX_BL_SET){
-				PhyML_Printf("\n. The number of branch length categories (--ncatg or -w) must be at least 1 and no more than %i",MAX_BL_SET);
+				PhyML_Printf("\n. The number of branch length categories (--nclasses or -l) must be at least 1 and no more than %i",MAX_BL_SET);
 				PhyML_Printf("\n. Type any key to exit.\n");
 				Exit("\n");
 			}
 			if(io->n_l > 1){
+				io->mod->s_opt->opt_five_branch = 0;
 				if(proportions == 0){
 					Update_Default_Props(io);
 				}

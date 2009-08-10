@@ -134,6 +134,7 @@ int main(int argc, char **argv)
 		    	tree = Read_User_Tree(alldata,mod,io);
 		    	//JSJ: Make sure that the user hasn't defined starting
 		    	//parameters that we need to copy into the tree.
+		    	if(tree->n_l > 1) io->mod->s_opt->opt_five_branch = 0;
 		    	if(io->user_topo == 0 && tree->n_l > 1){ //if more than one bl set default to simulated thermal annealing.
 		    		mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
 		    	}

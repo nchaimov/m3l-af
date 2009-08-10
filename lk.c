@@ -303,15 +303,15 @@ void Lk(arbre *tree)
 #ifdef USE_OPENMP
 	chunk = n_patterns/omp_get_num_procs();
 #pragma omp parallel for \
-	shared(tree,n_patterns,chunk) private(site)\
-	schedule(static,chunk)
+		shared(tree,n_patterns,chunk) private(site)\
+		schedule(static,chunk)
 #endif
 	for(site = 0; site < n_patterns; site++)
 	{
 		//printf("JSJ: Iterating over state pattern %i in Lk\n",site);
 		tree->c_lnL_sorted[site] = .0;
 		tree->site_lk[site]      = .0;
-//		tree->curr_site          = site;
+		//		tree->curr_site          = site;
 		Site_Lk(tree,site);
 	}
 
@@ -994,193 +994,189 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 
 #ifdef USE_OPENMP
 	int chunk = n_patterns/omp_get_num_procs();
-//	int chunk = n_patterns/2;
+	//	int chunk = n_patterns/2;
 	//printf("Chunk size: %i\n",chunk);
-#pragma omp parallel\
+#pragma omp parallel for\
 		default(shared) private(k,catg,i,j,site,scale_v1,scale_v2,\
 				max_p_lk,state_v1,state_v2,ambiguity_check_v1,\
-				ambiguity_check_v2,p1_lk1,p2_lk2)
+				ambiguity_check_v2,p1_lk1,p2_lk2)\
+				schedule(static,chunk)
+#endif
+	for(site = 0; site < n_patterns; site++)
+
 	{
-#pragma omp for schedule(static,chunk) nowait
-#endif
-		for(site = 0; site < n_patterns; site++)
+		//printf("JSJ: In Update_P_Lk iterating over state pattern %i\n",site);
 
+		/**
+		* JSJ: If sum_scale_v1 was assigned a non-null value in the above if/else cascade,
+		* the scale_v1 value is assigned as the site specific sum_scale_v1 from above.
+		*/
+
+		scale_v1 = (sum_scale_v1)?(sum_scale_v1[site]):(0.0);
+		scale_v2 = (sum_scale_v2)?(sum_scale_v2[site]):(0.0);
+		/**
+		* JSJ: sum_scale was assigned as a pointer to sum_scale_f_left(or right)
+		* scale_v1 and v2 above are the same but for the neighbor nodes...
+		*/
+		sum_scale[site] = scale_v1 + scale_v2;
+
+
+
+		/**
+		* JSJ: max_p_lk is just a double, no global assignments here...
+		*/
+		max_p_lk = -MDBL_MAX;
+		state_v1 = state_v2 = -1; //just ints
+		ambiguity_check_v1 = ambiguity_check_v2 = -1;
+
+
+		/**
+		* JSJ: If the model is set to greedy, and the node is terminal,
+		*  then we check if the site is ambiguous
+		* 	otherwise if it is not ambiguous we default to true
+		*/
+		if(!tree->mod->s_opt->greedy)
 		{
-			//printf("JSJ: In Update_P_Lk iterating over state pattern %i\n",site);
-
-			/**
-			* JSJ: If sum_scale_v1 was assigned a non-null value in the above if/else cascade,
-			* the scale_v1 value is assigned as the site specific sum_scale_v1 from above.
-			*/
-
-			scale_v1 = (sum_scale_v1)?(sum_scale_v1[site]):(0.0);
-			scale_v2 = (sum_scale_v2)?(sum_scale_v2[site]):(0.0);
-			/**
-			* JSJ: sum_scale was assigned as a pointer to sum_scale_f_left(or right)
-			* scale_v1 and v2 above are the same but for the neighbor nodes...
-			*/
-			sum_scale[site] = scale_v1 + scale_v2;
-
-
-
-			/**
-			* JSJ: max_p_lk is just a double, no global assignments here...
-			*/
-			max_p_lk = -MDBL_MAX;
-			state_v1 = state_v2 = -1; //just ints
-			ambiguity_check_v1 = ambiguity_check_v2 = -1;
-
-
-			/**
-			* JSJ: If the model is set to greedy, and the node is terminal,
-			*  then we check if the site is ambiguous
-			* 	otherwise if it is not ambiguous we default to true
-			*/
-			if(!tree->mod->s_opt->greedy)
+			if(n_v1->tax)
 			{
-				if(n_v1->tax)
-				{
-					ambiguity_check_v1 = tree->data->c_seq[n_v1->num]->is_ambigu[site];
-					if(!ambiguity_check_v1) state_v1 = Get_State_From_P_Pars(n_v1->b[0]->p_lk_tip_r,site*dim2,tree);
-				}
-
-				if(n_v2->tax)
-				{
-					ambiguity_check_v2 = tree->data->c_seq[n_v2->num]->is_ambigu[site];
-					if(!ambiguity_check_v2) state_v2 = Get_State_From_P_Pars(n_v2->b[0]->p_lk_tip_r,site*dim2,tree);
-				}
-			}
-			//JSJ: if using Markov modulated Markov Model then the ambiguity checks are true
-			if(tree->mod->use_m4mod)
-			{
-				ambiguity_check_v1 = 1;
-				ambiguity_check_v2 = 1;
+				ambiguity_check_v1 = tree->data->c_seq[n_v1->num]->is_ambigu[site];
+				if(!ambiguity_check_v1) state_v1 = Get_State_From_P_Pars(n_v1->b[0]->p_lk_tip_r,site*dim2,tree);
 			}
 
-			/**
-			* JSJ: here is a good point to iterate over branch length sets
-			* at this point we are in the loops that do the assignment we
-			* need to modify, and we are also past the variables that will
-			* not need to be changed.
-			*/
-			for(k = 0; k < tree->n_l; k++)
+			if(n_v2->tax)
 			{
-				For(catg,tree->mod->n_catg)
+				ambiguity_check_v2 = tree->data->c_seq[n_v2->num]->is_ambigu[site];
+				if(!ambiguity_check_v2) state_v2 = Get_State_From_P_Pars(n_v2->b[0]->p_lk_tip_r,site*dim2,tree);
+			}
+		}
+		//JSJ: if using Markov modulated Markov Model then the ambiguity checks are true
+		if(tree->mod->use_m4mod)
+		{
+			ambiguity_check_v1 = 1;
+			ambiguity_check_v2 = 1;
+		}
+
+		/**
+		* JSJ: here is a good point to iterate over branch length sets
+		* at this point we are in the loops that do the assignment we
+		* need to modify, and we are also past the variables that will
+		* not need to be changed.
+		*/
+		for(k = 0; k < tree->n_l; k++)
+		{
+			For(catg,tree->mod->n_catg)
+			{
+				For(i,tree->mod->ns)
 				{
-					For(i,tree->mod->ns)
+					/**
+					* JSJ: here is a good point to iterate over branch length sets
+					* at this point we are in the loops that do the assignment we
+					* need to modify, and we are also past the variables that will
+					* not need to be changed.
+					*/
+					p1_lk1 = .0;
+
+					if((n_v1->tax) && (!tree->mod->s_opt->greedy))
 					{
-						/**
-						* JSJ: here is a good point to iterate over branch length sets
-						* at this point we are in the loops that do the assignment we
-						* need to modify, and we are also past the variables that will
-						* not need to be changed.
-						*/
-						p1_lk1 = .0;
-
-						if((n_v1->tax) && (!tree->mod->s_opt->greedy))
+						if(!ambiguity_check_v1)
 						{
-							if(!ambiguity_check_v1)
-							{
-								p1_lk1 = d->b[dir1]->Pij_rr[k][catg*dim3+i*dim2+state_v1];
-							}
-							else
-							{
-								For(j,tree->mod->ns)
-								{
-									/**
-									* JSJ: is p_lk_tip shorthand for partial likelihood at the tip?
-									* if that is true then you multiply the partial likelihood at the tip
-									* by the i,jth position in the p matrix given a gamma category and site
-									*
-									*/
-									p1_lk1 += d->b[dir1]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v1->b[0]->p_lk_tip_r[site*dim2+j];
-								}
-							}
+							p1_lk1 = d->b[dir1]->Pij_rr[k][catg*dim3+i*dim2+state_v1];
 						}
 						else
 						{
 							For(j,tree->mod->ns)
 							{
-								p1_lk1 += d->b[dir1]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v1[site*dim1+catg*dim2+j];
+								/**
+								* JSJ: is p_lk_tip shorthand for partial likelihood at the tip?
+								* if that is true then you multiply the partial likelihood at the tip
+								* by the i,jth position in the p matrix given a gamma category and site
+								*
+								*/
+								p1_lk1 += d->b[dir1]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v1->b[0]->p_lk_tip_r[site*dim2+j];
 							}
 						}
-
-						p2_lk2 = .0;
-
-						if((n_v2->tax) && (!tree->mod->s_opt->greedy))
+					}
+					else
+					{
+						For(j,tree->mod->ns)
 						{
-							if(!ambiguity_check_v2)
-							{
-								p2_lk2 = d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+state_v2];
-							}
-							else
-							{
-								For(j,tree->mod->ns)
-								{
-									p2_lk2 += d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v2->b[0]->p_lk_tip_r[site*dim2+j];
-								} //JSJ: end for J in alphabet
-							}//JSJ: end else
-						}//JSJ: end if(n_v2...)
+							p1_lk1 += d->b[dir1]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v1[site*dim1+catg*dim2+j];
+						}
+					}
+
+					p2_lk2 = .0;
+
+					if((n_v2->tax) && (!tree->mod->s_opt->greedy))
+					{
+						if(!ambiguity_check_v2)
+						{
+							p2_lk2 = d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+state_v2];
+						}
 						else
 						{
 							For(j,tree->mod->ns)
 							{
-								p2_lk2 += d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v2[site*dim1+catg*dim2+j];
-							} //end for j in alphabet
-						} //JSJ: end else
-						//JSJ: if we are at the 0th position, we initialize, otherwise we sum the product of
-						// the proportion
-						if(k == 0){
-							p_lk[site*dim1+catg*dim2+i] = (plkflt)(p1_lk1 * p2_lk2 * tree->props[k]);
-						}else{
-							p_lk[site*dim1+catg*dim2+i] += (plkflt)(p1_lk1 * p2_lk2 * tree->props[k]);
-						}
-
-						if(p_lk[site*dim1+catg*dim2+i] > max_p_lk) max_p_lk = p_lk[site*dim1+catg*dim2+i];
-
-					}//JSJ: end For(i in alphabet)
-				}//JSJ: end For(catg in gama categories)
-			}//JSJ: end For(k,Num Branch Length sets)
-
-			if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
-			{
-				For(catg,tree->mod->n_catg)
-				{
-					For(i,tree->mod->ns)
+								p2_lk2 += d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)n_v2->b[0]->p_lk_tip_r[site*dim2+j];
+							} //JSJ: end for J in alphabet
+						}//JSJ: end else
+					}//JSJ: end if(n_v2...)
+					else
 					{
-						/**
-						* mod->ns is the number of states (ex 4 for nucleotides)
-						* mod->n_catg is the number of categories in the
-						* discrete gamma distribution.
-						*/
-						p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
+						For(j,tree->mod->ns)
+						{
+							p2_lk2 += d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v2[site*dim1+catg*dim2+j];
+						} //end for j in alphabet
+					} //JSJ: end else
+					//JSJ: if we are at the 0th position, we initialize, otherwise we sum the product of
+					// the proportion
+					if(k == 0){
+						p_lk[site*dim1+catg*dim2+i] = (plkflt)(p1_lk1 * p2_lk2 * tree->props[k]);
+					}else{
+						p_lk[site*dim1+catg*dim2+i] += (plkflt)(p1_lk1 * p2_lk2 * tree->props[k]);
+					}
 
-						/* 		  if((p_lk[site][catg][i] > MDBL_MAX) || (p_lk[site][catg][i] < MDBL_MIN)) */
-						/* 		    { */
-						/* 		      PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__); */
-						/* 		      PhyML_Printf("\n. p_lk[%3d][%2d][%3d] = %G max_p_lk = %G",site,catg,i,p_lk[site][catg][i],max_p_lk); */
-						/* 		      PhyML_Printf("\n. alpha=%f pinv=%f",tree->mod->alpha,tree->mod->pinvar); */
-						/* 		      For(i,tree->mod->n_catg) PhyML_Printf("\n. rr[%2d] = %G",i,tree->mod->rr[i]); */
-						/* 		      PhyML_Printf("\n. d->b[dir1]->l = %f, d->b[dir2]->l = %f",d->b[dir1]->l,d->b[dir2]->l); */
-						/* 		      PhyML_Printf("\n. d->v[dir1]->num = %d, d->v[dir2]->num = %d",d->v[dir1]->num,d->v[dir2]->num); */
-						/* 		      if(d->v[dir1]->tax) */
-						/* 			{ */
-						/* 			  PhyML_Printf("\n. Character observed at d->v[dir1] = %d",state_v1); */
-						/* 			} */
-						/* 		      if(d->v[dir2]->tax) */
-						/* 			{ */
-						/* 			  PhyML_Printf("\n. Character observed at d->v[dir2] = %d",state_v2); */
-						/* 			} */
-						/* 		      Warn_And_Exit("\n. Numerical precision problem ! (send me an e-mail : s.guindon@auckland.ac.nz)\n"); */
-						/* 		    } */
-					} //JSJ: end For(i, count of alphabet)
-				}//JSJ: end For(catg in gamma categories...
-				sum_scale[site] += (plkflt)log(max_p_lk);
-			}//JSJ: end if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
-		} //JSJ: end For(site,patterns)
-#ifdef USE_OPENMP
-	} //end parallel
-#endif
+					if(p_lk[site*dim1+catg*dim2+i] > max_p_lk) max_p_lk = p_lk[site*dim1+catg*dim2+i];
+
+				}//JSJ: end For(i in alphabet)
+			}//JSJ: end For(catg in gama categories)
+		}//JSJ: end For(k,Num Branch Length sets)
+
+		if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
+		{
+			For(catg,tree->mod->n_catg)
+			{
+				For(i,tree->mod->ns)
+				{
+					/**
+					* mod->ns is the number of states (ex 4 for nucleotides)
+					* mod->n_catg is the number of categories in the
+					* discrete gamma distribution.
+					*/
+					p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
+
+					/* 		  if((p_lk[site][catg][i] > MDBL_MAX) || (p_lk[site][catg][i] < MDBL_MIN)) */
+					/* 		    { */
+					/* 		      PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__); */
+					/* 		      PhyML_Printf("\n. p_lk[%3d][%2d][%3d] = %G max_p_lk = %G",site,catg,i,p_lk[site][catg][i],max_p_lk); */
+					/* 		      PhyML_Printf("\n. alpha=%f pinv=%f",tree->mod->alpha,tree->mod->pinvar); */
+					/* 		      For(i,tree->mod->n_catg) PhyML_Printf("\n. rr[%2d] = %G",i,tree->mod->rr[i]); */
+					/* 		      PhyML_Printf("\n. d->b[dir1]->l = %f, d->b[dir2]->l = %f",d->b[dir1]->l,d->b[dir2]->l); */
+					/* 		      PhyML_Printf("\n. d->v[dir1]->num = %d, d->v[dir2]->num = %d",d->v[dir1]->num,d->v[dir2]->num); */
+					/* 		      if(d->v[dir1]->tax) */
+					/* 			{ */
+					/* 			  PhyML_Printf("\n. Character observed at d->v[dir1] = %d",state_v1); */
+					/* 			} */
+					/* 		      if(d->v[dir2]->tax) */
+					/* 			{ */
+					/* 			  PhyML_Printf("\n. Character observed at d->v[dir2] = %d",state_v2); */
+					/* 			} */
+					/* 		      Warn_And_Exit("\n. Numerical precision problem ! (send me an e-mail : s.guindon@auckland.ac.nz)\n"); */
+					/* 		    } */
+				} //JSJ: end For(i, count of alphabet)
+			}//JSJ: end For(catg in gamma categories...
+			sum_scale[site] += (plkflt)log(max_p_lk);
+		}//JSJ: end if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
+	} //JSJ: end For(site,patterns)
 }
 
 /*********************************************************/
