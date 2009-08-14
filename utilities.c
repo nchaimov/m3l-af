@@ -5181,8 +5181,7 @@ void Set_Defaults_Input(option* io)
 	io->fixed_props                = 1; //JSJ: don't optimize props on single branch length
 	io->user_props				   = 0; //JSJ: assume user won't supply proportions...
 	io->user_topo				   = 0; //JSJ: assume user won't supply search algo
-	io->acc_ratio				   = -1.0; //JSJ: a negative value here means that the accept ratio
-										   // estimated from the data.
+	io->acc_ratio				   = 0.3;
 	io->temp_end                   = 0.000001;
 	io->set_back                   = 50;
 	io->temp_start				   = 1.0;

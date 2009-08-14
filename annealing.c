@@ -529,6 +529,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		Lk(tree);
 	}
 
+	// VHS: do we need this? I think it gets us to a good starting location.
 	Optimiz_All_Free_Param(tree,1);
 
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
@@ -557,38 +558,37 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 	m3ldbl temp_of_best; // VHS: for optimization purposes, let's record the temperature at which we discovered the best tree.
 	m3ldbl iter_of_best;
-	if(verbose){
-		PhyML_Printf("\n\t Starting simulated thermal annealing with the following parameters:\n");
-		PhyML_Printf("\t. acceptance ratio = %f\n", anneal.accept_ratio);
-		PhyML_Printf("\t. start temperature = %f\n", anneal.start_temp);
-		PhyML_Printf("\t. end temperature = %f\n", anneal.end_temp);
-		PhyML_Printf("\t. temperature count = %f\n", anneal.temp_count);
-		PhyML_Printf("\t. temperature multiplier = %f\n", tempmult);
 
-		PhyML_Printf("\t. P of adjusting alpha = %f\n", anneal.prob_gamma );
-		PhyML_Printf("\t. maximum alpha  = %f\n", anneal.max_alpha);
-		PhyML_Printf("\t. a.s.r.v. gamma sigma = %f\n", anneal.gamma_sigma);
+	PhyML_Printf("\n\n Starting simulated thermal annealing with the following parameters:\n");
+	PhyML_Printf("\t. acceptance ratio = %f\n", anneal.accept_ratio);
+	PhyML_Printf("\t. start temperature = %f\n", anneal.start_temp);
+	PhyML_Printf("\t. end temperature = %f\n", anneal.end_temp);
+	PhyML_Printf("\t. temperature count = %f\n", anneal.temp_count);
+	PhyML_Printf("\t. temperature multiplier = %f\n", tempmult);
 
-		PhyML_Printf("\t. P of adjusting branch lengths = %f\n", anneal.prob_brlen );
-		PhyML_Printf("\t. branch length sigma = %f\n", anneal.brlen_sigma);
+	PhyML_Printf("\t. P of adjusting alpha = %f\n", anneal.prob_gamma );
+	PhyML_Printf("\t. maximum alpha  = %f\n", anneal.max_alpha);
+	PhyML_Printf("\t. a.s.r.v. gamma sigma = %f\n", anneal.gamma_sigma);
 
-		PhyML_Printf("\t. P of adjusting pinvar = %f\n", anneal.prob_pinvar );
-		PhyML_Printf("\t. pinvar. sigma = %f\n", anneal.pinvar_sigma);
+	PhyML_Printf("\t. P of adjusting branch lengths = %f\n", anneal.prob_brlen );
+	PhyML_Printf("\t. branch length sigma = %f\n", anneal.brlen_sigma);
 
-		PhyML_Printf("\t. P of changing topology = %f\n", anneal.prob_topology );
-		PhyML_Printf("\t. P of using TBR = %f\n", anneal.prob_TBR );
-		PhyML_Printf("\t. P of using NNI = %f\n", anneal.prob_NNI );
-		PhyML_Printf("\t. P of using SPR = %f\n", anneal.prob_SPR );
+	PhyML_Printf("\t. P of adjusting pinvar = %f\n", anneal.prob_pinvar );
+	PhyML_Printf("\t. pinvar. sigma = %f\n", anneal.pinvar_sigma);
 
-		PhyML_Printf("\t. P of adjusting branch length rate proportions = %f\n", anneal.prob_rate_proportion );
+	PhyML_Printf("\t. P of changing topology = %f\n", anneal.prob_topology );
+	PhyML_Printf("\t. P of using TBR = %f\n", anneal.prob_TBR );
+	PhyML_Printf("\t. P of using NNI = %f\n", anneal.prob_NNI );
+	PhyML_Printf("\t. P of using SPR = %f\n", anneal.prob_SPR );
 
-		//m3ldbl  prob_pi;
-		//m3ldbl  prob_kappa;
-		//m3ldbl  prob_lambda;
-		//m3ldbl  prob_rr;
-		//m3ldbl  prob_emig;
+	PhyML_Printf("\t. P of adjusting branch length rate proportions = %f\n", anneal.prob_rate_proportion );
 
-	}
+	//m3ldbl  prob_pi;
+	//m3ldbl  prob_kappa;
+	//m3ldbl  prob_lambda;
+	//m3ldbl  prob_rr;
+	//m3ldbl  prob_emig;
+
 
 	for(itemp = 0; itemp < anneal.temp_count; itemp++){
 		//recenter the search at each temperature.
@@ -616,13 +616,13 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			now = time(NULL);
 			// Some useful debugging statements:
 			//Print_Tree_Screen(tree);
-			if(verbose){
-				PhyML_Printf("T: %f iter: %d current lnL = %f proposed lnL = %f\n", temp, iter, lnL_current, lnL_proposed);
-				//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itemp + 1)), lnL_current);
-				//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
-				PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
-				PhyML_Printf("plot2 %ld %d\n", (long)difftime(now,start), steps_tried);
-			}
+			//if(verbose){
+			PhyML_Printf("T: %f iter: %d current lnL = %f proposed lnL = %f\n", temp, iter, lnL_current, lnL_proposed);
+			//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itemp + 1)), lnL_current);
+			//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
+			PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
+			PhyML_Printf("plot2 %ld %d\n", (long)difftime(now,start), steps_tried);
+			//}
 
 			//      PhyML_Printf("JSJ: Proposed Likelihood at iter %i: %lf\n",iter,lnL_current);
 
