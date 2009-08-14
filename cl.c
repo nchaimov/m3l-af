@@ -91,8 +91,8 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"blprops",           required_argument,NULL,49},
 			{"fixblprops",        no_argument,NULL,50},
 			{"blclasses",         required_argument,NULL,51},
-			{"temp_iter",         required_argument,NULL,52},
-			{"temp_count",        required_argument,NULL,53},
+			{"iters_per_stage",         required_argument,NULL,52},
+			{"num_anneal_stages",        required_argument,NULL,53},
 			{"acc_ratio",         required_argument,NULL,54},
 			{"temp_end",          required_argument,NULL,55},
 			{"set_back",          required_argument,NULL,56},
@@ -981,18 +981,18 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			}
 			break;
 		}
-		case 52: //JSJ: temp_iter
+		case 52: //JSJ: iters_per_stage
 		{
-			int tmp = io->temp_iter;
-			io->temp_iter = atoi(optarg);
-			if(io->temp_iter < 1) io->temp_iter = tmp;
+			int tmp = io->iters_per_stage;
+			io->iters_per_stage = atoi(optarg);
+			if(io->iters_per_stage < 1) io->iters_per_stage = tmp;
 			break;
 		}
-		case 53: //JSJ: temp_count
+		case 53: //JSJ: num_anneal_stages
 		{
-			int tmp = io->temp_count;
-			io->temp_count = atoi(optarg);
-			if(io->temp_count < 1) io->temp_count = tmp;
+			int tmp = io->num_anneal_stages;
+			io->num_anneal_stages = atoi(optarg);
+			if(io->num_anneal_stages < 1) io->num_anneal_stages = tmp;
 			break;
 		}
 		case 54: //JSJ: acc_ratio
@@ -1314,7 +1314,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		strcat(io->out_ps_file, "_mc_tree.ps");
 		io->fp_out_ps = Openfile(io->out_ps_file,1);
 	}
-#endif 
+#endif
 
 
 

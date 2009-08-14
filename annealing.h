@@ -23,7 +23,7 @@ void Set_Anneal(option *io);
 // but we should also provide default values.
 //
 typedef struct __ANNEALING{
-	int 	temp_count; 	// the number of temperate values to try
+	int 	num_anneal_stages; 	// the number of temperate values to try
 	m3ldbl 	start_temp;	// initial temperature
 	m3ldbl 	end_temp;	// order of magnitude of desired accuracy
 	int 	iters_per_temp;	// number of tries at each temperature

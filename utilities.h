@@ -604,12 +604,14 @@ typedef struct __Option { /* mostly used in 'options.c' */
   int				      user_props; /* JSJ: 0-> proportions are not user defined. */
   int 					   user_topo; /* JSJ: 0-> user has not defined a topo search method */
   int					 fixed_props; /* JSJ: fix the proportion of sites, defaults to 0 */
-  int 					  temp_count; /* JSJ: the temp count for use in Simulated Annealing */
-  int 					   temp_iter; /* JSJ: the number of iterations per temp in Simulated Annealing*/
-  double 				   acc_ratio; /* JSJ: the acceptance ratio, defaults to -1.0, used if set positive */
+  int 					  num_anneal_stages; /* JSJ: the temp count for use in Simulated Annealing */
+  int 					   iters_per_stage; /* JSJ: the number of iterations per temp in Simulated Annealing*/
   double					temp_end; /* JSJ: the following, until the break, are options for simulated annealing*/
-  int						set_back;
   double				  temp_start;
+  double				   tau_start; // VHS: the starting value of the kinetic energy term for quantum annealing
+  double					 tau_end; // VHS: the final value of the kinetic energy term for quantum annelaing
+  double 				   acc_ratio; /* JSJ: the acceptance ratio, defaults to -1.0, used if set positive */
+  int						set_back;
   double                   max_alpha;
   double                 brlen_sigma;
   double                pinvar_sigma;

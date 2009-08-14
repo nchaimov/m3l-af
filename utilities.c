@@ -5202,8 +5202,8 @@ void Set_Defaults_Input(option* io)
 	io->prob_topology 			   = 0.4;
 	io->prob_pinvar 			   = 0.5;
 	io->prob_emig                  = 0.0;
-	io->temp_count				   = 2000;
-	io->temp_iter				   = 1000;
+	io->num_anneal_stages				   = 2000;
+	io->iters_per_stage				   = 1000;
 	io->tree                       = NULL;
 
 
