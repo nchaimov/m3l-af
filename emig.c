@@ -86,7 +86,11 @@ void Migrate_One_Edge(arbre *tree,annealing *ann)
 	int ran,i,set,tmp;
 	double r;
 	int n_edges = (tree->n_otu * 2 - 3);
-	edge *e1,*e2,*e3,*e4,*e5;
+	edge *e1 = NULL; // VHS: all these NULL assignments are added to avoid warnings during compilation.
+	edge *e2 = NULL;
+	edge *e3 = NULL;
+	edge *e4 = NULL;
+	edge *e5 = NULL;
 	node *v1,*v2;
 	set = 0;
 	//

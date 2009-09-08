@@ -262,7 +262,6 @@ void Lk(arbre *tree)
 {
 	int br,site;
 	int n_patterns;
-	int chunk; //number of processors
 
 	n_patterns = tree->n_pattern;
 
@@ -277,9 +276,8 @@ void Lk(arbre *tree)
 
 	//	chunk = (2*tree->n_otu-3)/omp_get_num_procs();
 	//	printf("chunk: %i total: %i\n",chunk,(2*tree->n_otu-3));
-	//#pragma omp parallel for \
-	//   shared(tree,n_patterns,chunk) \
-	//   schedule(static,chunk)
+
+	//#pragma omp parallel for shared(tree,n_patterns,chunk) schedule(static,chunk)
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
 		if(!tree->t_edges[br]->rght->tax)
@@ -301,7 +299,7 @@ void Lk(arbre *tree)
 	tree->curr_catg =  0;
 	tree->curr_site =  0;
 #ifdef USE_OPENMP
-	chunk = n_patterns/omp_get_num_procs();
+	int chunk = n_patterns/omp_get_num_procs();
 #pragma omp parallel for \
 		shared(tree,n_patterns,chunk) private(site)\
 		schedule(static,chunk)
@@ -318,9 +316,7 @@ void Lk(arbre *tree)
 	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
 
 	tree->c_lnL = .0;
-	//#pragma omp parallel for \
-	//   default(shared) private(site) \
-	//   schedule(static,chunk)
+	//#pragma omp parallel for default(shared) private(site) schedule(static,chunk)
 	For(site,n_patterns)
 	{
 		if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
@@ -354,10 +350,7 @@ void Site_Lk(arbre *tree, int site)
 m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 {
 	int n_patterns,site;
-	int chunk;
-
 	tree->number_of_branch_lk_calls++;
-
 	n_patterns = tree->n_pattern;
 
 #ifdef MC
@@ -375,7 +368,7 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 	tree->c_lnL = .0;
 #ifdef USE_OPENMP
-	chunk = n_patterns/omp_get_num_procs();
+	int chunk = n_patterns/omp_get_num_procs();
 #pragma omp parallel for \
 		shared(tree,n_patterns,chunk,b_fcus) private(site) \
 		schedule(static,chunk)

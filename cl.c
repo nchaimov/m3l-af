@@ -114,6 +114,8 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"prob_pinvar",       required_argument,NULL,72},
 			{"prob_pi",           required_argument,NULL,73},
 			{"prob_emig",         required_argument,NULL,74},
+			{"tau_start",		  required_argument,NULL,75},
+			{"tau_end",			  required_argument,NULL,76},
 
 			{0,0,0,0}
 	};
@@ -992,6 +994,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		{
 			int tmp = io->num_anneal_stages;
 			io->num_anneal_stages = atoi(optarg);
+			//printf("(cl.c) FOUND io->num_anneal_stages = %s, %d", optarg,  io->num_anneal_stages);
 			if(io->num_anneal_stages < 1) io->num_anneal_stages = tmp;
 			break;
 		}
@@ -1163,19 +1166,20 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			if(io->prob_emig < 0.0) io->prob_emig = tmp;
 			break;
 		}
-		//		{"prob_emig",         required_argument,NULL,74},
-		/**
-		* JSJ: end the functions to modify the mixed branch length model
-		*/
-
-
-
-
-
-
-
-
-
+		case 75:
+		{
+			double tmp = io->tau_start;
+			io->tau_start = atof(optarg);
+			if(io->tau_start < 0.0) io->tau_start = tmp;
+			break;
+		}
+		case 76:
+		{
+			double tmp = io->tau_end;
+			io->tau_end = atof(optarg);
+			if(io->tau_end < 0.0) io->tau_end = tmp;
+			break;
+		}
 
 		case 'u':case 15:
 		{

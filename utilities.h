@@ -7,8 +7,6 @@ Copyright (C) Stephane Guindon. Oct 2003 onward.
 
 All parts of the source except where indicated are distributed under
 the GNU public licence. See http://www.opensource.org for details.
-
-Modified by John St John
 */
 
 #ifndef UTILITIES_H
@@ -26,6 +24,8 @@ Modified by John St John
 #include <time.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
+
+//#define USE_OPENMP 1
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -528,8 +528,6 @@ typedef struct __Model {
 
   char          *modelname;
   char  *custom_mod_string; /* string of characters used to define custom models of substitution */
- // int				   n_l; /* JSJ: holds the number of branch length categories */
- // m3ldbl            *props; /* JSJ: holds the proportion of sites that fall under each bl category */
   int              *rr_num;
   int        *n_rr_per_cat; /* number of rate parameters in each category */
   int            n_diff_rr; /* number of different relative substitution rates in the custom model */

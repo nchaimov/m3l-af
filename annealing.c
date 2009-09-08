@@ -24,7 +24,10 @@ void Set_Anneal(option *io){
 	anneal.iters_per_temp = io->iters_per_stage;
 	anneal.set_back = io->set_back;
 	anneal.start_temp = io->temp_start;
+	anneal.start_tau = io->tau_start;
+	anneal.end_tau = io->tau_end;
 	anneal.num_anneal_stages = io->num_anneal_stages;
+	//printf("(annealing.c) anneal.num_anneal_stages = %d, %d", io->num_anneal_stages, anneal.num_anneal_stages);
 
 	anneal.max_alpha = io->max_alpha;
 
@@ -91,7 +94,7 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 	tree_proposed = copy of tree
 
 	for iter in range(0, iters_per_temp):
-		Get_TA_Neighbor_Proposition(tree_proposed)
+		Get_Neighbor_Proposition(tree_proposed)
 		lnL_proposed = tree_proposed's likelihood
 		if (lnL_proposed > -DBL_MAX):
 			n++
@@ -125,7 +128,7 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 	Copy_Tree(tree,best_tree);
 
 	For(i,anneal.iters_per_temp){
-		Get_TA_Neighbor_Proposition(tree,anneal.start_temp);
+		Get_Neighbor_Proposition(tree,anneal.start_temp);
 		lnL_proposed = tree->c_lnL;
 		if(lnL_proposed > UNLIKELY){
 			n++;
@@ -164,7 +167,7 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 // * alpha (for gamma distributed ASRV)
 // * gamma proportions
 // * mu (evolutionary rate)
-void Get_TA_Neighbor_Proposition(arbre *tree,m3ldbl temp){
+void Get_Neighbor_Proposition(arbre *tree,m3ldbl temp){
 	// For now, we'll always perturb every parameter.
 	// In the future, we'll do something more sophisticated, where the probability of perturbing
 	// any particular parameter will be drawn from a probability distribution.
@@ -208,7 +211,47 @@ void Get_TA_Neighbor_Proposition(arbre *tree,m3ldbl temp){
 	tree->both_sides = 1; // reset to 1
 }
 
-// helper for "Get_TA_Neighbor_Proposition"
+//
+// Returns the absolute geometric distance between last_tree and tree, where
+// distance accounts for changes in parameters: alpha, branch length proportions,
+// prob. invar, kappa, lamda, RR, pi, topology, and branch lengths.
+//
+m3ldbl Get_distance_between_trees(arbre *last_tree, arbre *tree){
+	return 1.0;
+
+	m3ldbl distance = 0.0; // distance is geometric.
+
+	distance += (last_tree->mod->alpha - tree->mod->alpha)*(last_tree->mod->alpha - tree->mod->alpha);
+	int i;
+	for(i = 0; i < tree->n_l; i++){
+		distance += (last_tree->props[i] - tree->props[i])*(last_tree->props[i] - tree->props[i]);
+	}
+	distance += (last_tree->mod->pinvar - tree->mod->pinvar)*(last_tree->mod->pinvar - tree->mod->pinvar);
+	distance += (last_tree->mod->kappa - tree->mod->kappa)*(last_tree->mod->kappa - tree->mod->kappa);
+	distance += (last_tree->mod->lambda - tree->mod->lambda)*(last_tree->mod->lambda - tree->mod->lambda);
+	for(i = 0; i < tree->mod->n_diff_rr; i++){
+		distance += (last_tree->mod->rr_val[i] - tree->mod->rr_val[i])*(last_tree->mod->rr_val[i] - tree->mod->rr_val[i]);
+	}
+	for(i = 0; i < tree->mod->ns; i++){
+		distance += (last_tree->mod->pi_unscaled[i] - tree->mod->pi_unscaled[i])*(last_tree->mod->pi_unscaled[i] - tree->mod->pi_unscaled[i]);
+	}
+	// What about topology distance? and branch length distance?
+	m3ldbl d = Get_distance_between_topologies(last_tree->noeud[0], tree->noeud[0]);
+	distance += d*d;
+
+	return distance;
+}
+
+//
+// This is a helper method for Get_distance_between_trees
+// nodea and nodeb
+//
+//
+m3ldbl Get_distance_between_topologies(node *nodea, node *nodeb){
+	return 0.0;
+}
+
+// helper for "Get_Neighbor_Proposition"
 void Step_Brlen_Proportion(arbre *tree){
 	// For now, do something simple and stupid, like stepping branch lengths by +/- 0.001.
 	// We'll eventually do something more sophisticated, like selected the new branch
@@ -255,7 +298,7 @@ void Step_RR(arbre * tree){
 			((tree->mod->whichmodel == CUSTOM) && (tree->mod->s_opt->opt_rr == 1) && (tree->mod->n_diff_rr > 1)))
 	{
 		int i;
-		m3ldbl tmp;
+		m3ldbl tmp = 0;
 		anneal.no_change = 0;
 		double *alpha = calloc(tree->mod->n_diff_rr,sizeof(double));
 		if(tree->mod->n_diff_rr > 5){
@@ -267,7 +310,7 @@ void Step_RR(arbre * tree){
 		gsl_ran_dirichlet(anneal.rng,tree->mod->n_diff_rr,alpha,tree->mod->rr_val);
 		if(tree->mod->n_diff_rr > 5){
 			tree->mod->rr_val[5] = tmp; //restore this number
-			//not exactly sure why but this is what is done in Optimize_All_Free_Params
+			//JSJ: not exactly sure why but this is what is done in Optimize_All_Free_Params
 		}
 		free(alpha);
 //		int i,j;
@@ -313,7 +356,7 @@ void Step_Lambda(arbre * tree){
 	}
 }
 
-// helper for "Get_TA_Neighbor_Proposition"
+// helper for "Get_Neighbor_Proposition"
 void Step_Gamma(arbre *tree){
 	// For now, do something stupid like incrementing gamma +/- 0.001.
 	// In reality, we'll want to perturb the gamma parameter based on a Gaussian distribution
@@ -345,9 +388,8 @@ void Step_Pi(arbre * tree){
 	}
 }
 
-// helper for "Get_TA_Neighbor_Proposition"
+// helper for "Get_Neighbor_Proposition"
 void Step_Branch_Lengths(arbre *tree, m3ldbl temp){
-	// For now, do something stupid like incrementing lengths by +/- 0.001.
 	if(tree->mod->s_opt->opt_bl == 1){
 		tree->both_sides = 1;
 		anneal.no_change = 0;
@@ -407,7 +449,7 @@ void Step_Branch_Lengths(arbre *tree, m3ldbl temp){
 //}
 
 
-// helper for "Get_TA_Neighbor_Proposition"
+// helper for "Get_Neighbor_Proposition"
 void Step_Topology(arbre *tree){
 	// invoke NNI or SPR to create a new topology.
 	// JSJ: pick a random edge, from that edge find a path connecting 4 nodes
@@ -423,8 +465,9 @@ void Step_Topology(arbre *tree){
 		anneal.no_change = 0;
 		double p = gsl_rng_uniform(anneal.rng);
 		if(p <= anneal.prob_NNI){
-
-			node *a,*b,*c,*d;
+			node *b,*c;
+			node *a = NULL;
+			node *d = NULL;
 			int i,j;
 			int n_edges = (tree->n_otu * 2) - 3;
 			int edge = gsl_rng_uniform_int(anneal.rng,n_edges);
@@ -512,13 +555,13 @@ m3ldbl Boltzmann_P_TA(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl temperature){
 // distance = the distance between the proposed state and the current state
 // tfield = the transverse field value (tau), which is QA's analog to the temperature in TA.
 //
-//m3ldbl Botltzmann_P_QA(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl distance, m3ldbl tfield){
-//	m3ldbl result = 1.0;
-//	if(lnl_new < lnl_curr){
-//		result = exp((lnl_new - lnl_curr)/(anneal.accept_ratio * temperature));
-//	}
-//	return result;
-//}
+m3ldbl Boltzmann_P_QA(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl distance, m3ldbl tfield){
+	m3ldbl result = 1.0;
+	if(lnl_new < lnl_curr){
+		result = exp(distance / (anneal.accept_ratio * tfield));
+	}
+	return result;
+}
 
 // INPUT: a tree structure, where tree->mod->s_opt contains the
 //      parameters which are free to be optimized.
@@ -529,7 +572,7 @@ m3ldbl Boltzmann_P_TA(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl temperature){
 m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 	Set_Anneal(tree->io);
-	m3ldbl result = 1.0;
+	//m3ldbl result = 1.0;
 	tree->mod->update_eigen = 1;
 	tree->both_sides = 1; //search both pre and post order on all subtrees
 	int n_edges = (tree->n_otu * 2) - 3;
@@ -545,7 +588,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	}
 
 	// VHS: do we need this? I think it gets us to a good starting location.
-	Optimiz_All_Free_Param(tree,1);
+	//Optimiz_All_Free_Param(tree,1);
 
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
@@ -571,14 +614,14 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	int steps_tried = 0;
 	int steps_accepted = 0;
 
-	m3ldbl temp_of_best; // VHS: for optimization purposes, let's record the temperature at which we discovered the best tree.
-	m3ldbl iter_of_best;
+	m3ldbl temp_of_best = 0; // VHS: for optimization purposes, let's record the temperature at which we discovered the best tree.
+	m3ldbl iter_of_best = 0;
 
 	PhyML_Printf("\n\n Starting simulated thermal annealing with the following parameters:\n");
 	PhyML_Printf("\t. acceptance ratio = %f\n", anneal.accept_ratio);
 	PhyML_Printf("\t. start temperature = %f\n", anneal.start_temp);
 	PhyML_Printf("\t. end temperature = %f\n", anneal.end_temp);
-	PhyML_Printf("\t. temperature count = %f\n", anneal.num_anneal_stages);
+	PhyML_Printf("\t. temperature count = %d\n", anneal.num_anneal_stages);
 	PhyML_Printf("\t. temperature multiplier = %f\n", tempmult);
 
 	PhyML_Printf("\t. P of adjusting alpha = %f\n", anneal.prob_gamma );
@@ -609,7 +652,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		//recenter the search at each temperature.
 		//make the tree our best tree so far
 		//
-		// VHS: This recentering step might be meretricious.
+		// VHS: This re-centering step might be meretricious.
 		// Let's examine the run without this step.
 		Copy_Tree(best_tree,tree);
 		Record_Model(best_tree->mod,tree->mod);
@@ -625,7 +668,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 		for(iter = 0; iter < anneal.iters_per_temp; iter++){
 			steps_tried++;
 			//get our next proposition.
-			Get_TA_Neighbor_Proposition(tree,temp);
+			Get_Neighbor_Proposition(tree,temp);
 			lnL_proposed = tree->c_lnL;
 
 			now = time(NULL);
@@ -637,6 +680,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
 			PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
 			PhyML_Printf("plot2 %ld %d\n", (long)difftime(now,start), steps_tried);
+			PhyML_Printf("proposed tree = %s\n", Write_Tree(tree) );
 			//}
 
 			//      PhyML_Printf("JSJ: Proposed Likelihood at iter %i: %lf\n",iter,lnL_current);
@@ -720,23 +764,23 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 	Set_Anneal(tree->io);
-	m3ldbl result = 1.0;
+	//m3ldbl result = 1.0;
 	tree->mod->update_eigen = 1;
 	tree->both_sides = 1; //search both pre and post order on all subtrees
 	int n_edges = (tree->n_otu * 2) - 3;
 	if (n_edges <= 3){
 		tree->mod->s_opt->opt_topo = 0; //make sure that opt_topo is false if there are no meaningful branch swaps.
 	}
-	m3ldbl temp = anneal.start_temp;
-	m3ldbl tempmult = exp(log(anneal.end_temp/anneal.start_temp)/(((double)anneal.num_anneal_stages) - 1.0));
+	m3ldbl tau = anneal.start_tau;
+	m3ldbl taumult = exp(log(anneal.end_tau/anneal.start_tau)/(((double)anneal.num_anneal_stages) - 1.0));
 	if(tree->io->acc_ratio < 0.0) anneal.accept_ratio = Scale_Acceptance_Ratio(tree);
 	else{
 		anneal.accept_ratio = tree->io->acc_ratio; //if positive, user input a value, don't estimate.
 		Lk(tree);
 	}
 
-	// VHS: do we need this? I think it gets us to a good starting location.
 	Optimiz_All_Free_Param(tree,1);
+	//printf("(annealing.c 742) anneal.num_anneal_stages = %d", anneal.num_anneal_stages);
 
 	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(best_tree,tree->n_otu, tree->n_l);
@@ -758,19 +802,19 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 	m3ldbl lnL_proposed = tree->c_lnL;
 	m3ldbl acc_prob;
 	double r;
-	int itemp,iter;
+	int itau,iter;
 	int steps_tried = 0;
 	int steps_accepted = 0;
 
-	m3ldbl temp_of_best; // VHS: for optimization purposes, let's record the temperature at which we discovered the best tree.
-	m3ldbl iter_of_best;
+	m3ldbl tau_of_best = 0; // VHS: for optimization purposes, let's record the tau at which we discovered the best tree.
+	m3ldbl iter_of_best = 0;
 
 	PhyML_Printf("\n\n Starting simulated quantum annealing with the following parameters:\n");
 	PhyML_Printf("\t. acceptance ratio = %f\n", anneal.accept_ratio);
-	PhyML_Printf("\t. start temperature = %f\n", anneal.start_temp);
-	PhyML_Printf("\t. end temperature = %f\n", anneal.end_temp);
-	PhyML_Printf("\t. temperature count = %f\n", anneal.num_anneal_stages);
-	PhyML_Printf("\t. temperature multiplier = %f\n", tempmult);
+	PhyML_Printf("\t. starting tau value = %f\n", anneal.start_tau);
+	PhyML_Printf("\t. ending tau value = %f\n", anneal.end_tau);
+	PhyML_Printf("\t. tau count = %d\n", anneal.num_anneal_stages);
+	PhyML_Printf("\t. tau multiplier = %f\n", taumult);
 
 	PhyML_Printf("\t. P of adjusting alpha = %f\n", anneal.prob_gamma );
 	PhyML_Printf("\t. maximum alpha  = %f\n", anneal.max_alpha);
@@ -796,8 +840,8 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 	//m3ldbl  prob_emig;
 
 
-	for(itemp = 0; itemp < anneal.num_anneal_stages; itemp++){
-		//recenter the search at each temperature.
+	for(itau = 0; itau < anneal.num_anneal_stages; itau++){
+		//recenter the search at each tau.
 		//make the tree our best tree so far
 		//
 		// VHS: This recentering step might be meretricious.
@@ -816,16 +860,16 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 		for(iter = 0; iter < anneal.iters_per_temp; iter++){
 			steps_tried++;
 			//get our next proposition.
-			Get_TA_Neighbor_Proposition(tree,temp);
+			Get_Neighbor_Proposition(tree,tau);
 			lnL_proposed = tree->c_lnL;
 
 			now = time(NULL);
 			// Some useful debugging statements:
 			//Print_Tree_Screen(tree);
 			//if(verbose){
-			PhyML_Printf("T: %f iter: %d current lnL = %f proposed lnL = %f\n", temp, iter, lnL_current, lnL_proposed);
-			//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itemp + 1)), lnL_current);
-			//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
+			PhyML_Printf("T: %f iter: %d current lnL = %f proposed lnL = %f\n", tau, iter, lnL_current, lnL_proposed);
+			//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itau + 1)), lnL_current);
+			//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itau + 1)));
 			PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
 			PhyML_Printf("plot2 %ld %d\n", (long)difftime(now,start), steps_tried);
 			//}
@@ -841,12 +885,12 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 
 				lnL_best = lnL_proposed;
 
-				temp_of_best = temp;
+				tau_of_best = tau;
 				iter_of_best = iter;
 
-				// This temperature is yielding good results: let's stay here
+				// This tau is yielding good results: let's stay here
 				// longer, thus increasing our chances of reaching the best ground
-				// state at this temperature.
+				// state at this tau.
 				iter -= anneal.set_back;
 				if(iter < 0) iter = 0; //make sure not set back into negative...
 
@@ -857,7 +901,8 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 				acc_prob = 1.0;
 				r = 0.0;
 			}else{
-				acc_prob = Boltzmann_P_TA(lnL_current, lnL_proposed, temp); // VHS: change this to use QA-based Boltzmann
+				m3ldbl distance = Get_distance_between_trees(last_tree, tree);
+				acc_prob = Boltzmann_P_QA(lnL_current, lnL_proposed, distance, tau); // VHS: change this to use QA-based Boltzmann
 				r = gsl_rng_uniform(anneal.rng);
 			}
 
@@ -881,12 +926,12 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 				}
 			}
 		}//end inner for loop.
-		temp *= tempmult;
+		tau *= taumult;
 
 	}
 	if(verbose){
 		PhyML_Printf("Annealing finished.\n");
-		PhyML_Printf("In temperature range [%f, %f], the best tree was found at %f, iteration %f\n", temp, anneal.start_temp, temp_of_best, iter_of_best);
+		PhyML_Printf("In tau range [%f, %f], the best tree was found at %f, iteration %f\n", tau, anneal.start_tau, tau_of_best, iter_of_best);
 	}
 	Copy_Tree(best_tree,tree);
 	Record_Model(best_tree->mod,tree->mod);
@@ -912,7 +957,7 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 	 *
 	 * for (int itemp = 0; itemp < num_anneal_stages; itemp++): // num_anneal_stages is a global
 	 *
-	 *              // Here we recenter the search at each temperature, using the best values found thus far
+	 *              // Here we recenter the search at each tau, using the best values found thus far
 	 *              tree_current = copy of tree
 	 *              lnL_current = lnL_best
 	 *
@@ -922,12 +967,12 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 	 *              for (int iter = 0; iter < iters_per_temp; iter++):
 	 *                      steps_tried++;
 	 *                      tree_proposed = copy of tree_current
-	 *                      Get_TA_Neighbor_Proposition(tree_proposed)
+	 *                      Get_Neighbor_Proposition(tree_proposed)
 	 *                      lnL_proposed = tree_proposed's likelihood
 	 *                      if lnL_proposed > lnL_best:
 	 *                              lnL_best = lnL_proposed
 	 *                              tree = copy of tree_proposed
-	 *                              iter -= set_back // keep going at this temperature if we are improving the likelihood
+	 *                              iter -= set_back // keep going at this tau if we are improving the likelihood
 	 *                              if (iter < 0):
 	 *                                      iter = 0
 	 *                      acc_prob = Boltzmann_P(lnL_proposed, lnL_current, itemp)
@@ -936,7 +981,7 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 	 *                              lnL_current = lnL_proposed
 	 *                              tree_current = copy of tree_proposed
 	 *
-	 *              temp *= tempmult // reduce the temperature with geometric descent
+	 *              temp *= tempmult // reduce the tau with geometric descent
 	 */
 	return tree->c_lnL;
 

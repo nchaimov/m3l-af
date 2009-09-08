@@ -616,7 +616,6 @@ char *Write_Tree(arbre *tree)
 }
 
 /*********************************************************/
-// JSJ: this method will have to be dealt with...
 void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 {
 	int i,p,j;
@@ -628,7 +627,6 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			strcat(s_tree,fils->name);
 		else
 			sprintf(s_tree+(int)strlen(s_tree),"%d",fils->num+1);
-		//JSJ: temporary change of l
 		if((fils->b) && (fils->b[0]) && (fils->b[0]->l[0] != -1))
 		{
 			if(tree->print_labels)
@@ -5182,9 +5180,11 @@ void Set_Defaults_Input(option* io)
 	io->user_props				   = 0; //JSJ: assume user won't supply proportions...
 	io->user_topo				   = 0; //JSJ: assume user won't supply search algo
 	io->acc_ratio				   = 0.3;
+	io->temp_start				   = 1.0;
 	io->temp_end                   = 0.000001;
 	io->set_back                   = 50;
-	io->temp_start				   = 1.0;
+	io->tau_start				   = 1.0;
+	io->tau_end					   = 0.00001;
 	io->max_alpha 				   = 4.0;
 	io->brlen_sigma 			   = 0.05;
 	io->pinvar_sigma 			   = 0.05;
@@ -5202,8 +5202,8 @@ void Set_Defaults_Input(option* io)
 	io->prob_topology 			   = 0.4;
 	io->prob_pinvar 			   = 0.5;
 	io->prob_emig                  = 0.0;
-	io->num_anneal_stages				   = 2000;
-	io->iters_per_stage				   = 1000;
+	io->num_anneal_stages		   = 2000;
+	io->iters_per_stage			   = 1000;
 	io->tree                       = NULL;
 
 
@@ -7872,6 +7872,10 @@ void Print_Settings(option *io)
 		else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Printf("\n                . Tree topology search : \t\t\t SPRs");
 		else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n                . Tree topology search : \t\t\t Best of NNIs and SPRs");
 
+		if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
+			PhyML_Printf("\n                . Search heuristic : \t\t\t\t simulated thermal annealing");
+		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING)
+			PhyML_Printf("\n                . Tree topology search : \t\t\t simulated quantum annealing");
 
 
 		PhyML_Printf("\n                . Starting tree : \t\t\t\t %s",s);
@@ -7895,8 +7899,8 @@ void Print_Settings(option *io)
 
 	PhyML_Printf("\n                . Optimise substitution model parameters : \t %s", (answer) ? "yes" : "no");
 
-	PhyML_Printf("\n                . Number of branch length categories: \t %i", io->n_l);
-	PhyML_Printf("\n                . Proportion of sites in each branch length category: [");
+	PhyML_Printf("\n                . Number of branch length categories: \t\t %i", io->n_l);
+	PhyML_Printf("\n                . Proportion of sites in each b.l. category: \t [");
 	For(i,io->n_l){
 		if(i+1 == io->n_l){
 			PhyML_Printf(" %lf ]",(double)io->props[i]);
@@ -7904,7 +7908,7 @@ void Print_Settings(option *io)
 			PhyML_Printf(" %lf,",(double)io->props[i]);
 		}
 	}
-	PhyML_Printf("\n                . Optimize proportion of sites in each branch length category: \t %s", (io->fixed_props == 0) ? ("Yes"):("No"));
+	PhyML_Printf("\n                . Optimize proportion of sites in each b.l. category: \t %s", (io->fixed_props == 0) ? ("Yes"):("No"));
 
 	PhyML_Printf("\n                . Run ID : \t\t\t\t\t %s", (io->append_run_ID) ? (io->run_id_string) : ("none"));
 

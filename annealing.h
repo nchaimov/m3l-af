@@ -1,6 +1,10 @@
 void Get_TA_Neighbor_Proposition(arbre *tree,m3ldbl temp);
 void Get_QA_Neighbor_Proposition(arbre *tree);
-m3ldbl Boltzmann_P(m3ldbl e, m3ldbl enew, m3ldbl temperature);
+void Get_Neighbor_Proposition(arbre *tree,m3ldbl temp);
+m3ldbl Get_distance_between_trees(arbre *last_tree, arbre *tree);
+m3ldbl Get_distance_between_topologies(node *nodea, node *nodeb);
+m3ldbl Boltzmann_P_TA(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl temperature);
+m3ldbl Boltzmann_P_QA(m3ldbl lnl_curr, m3ldbl lnl_new, m3ldbl distance, m3ldbl tfield);
 m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose);
 m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose);
 m3ldbl Scale_Acceptance_Ratio(arbre *tree);
@@ -26,6 +30,8 @@ typedef struct __ANNEALING{
 	int 	num_anneal_stages; 	// the number of temperate values to try
 	m3ldbl 	start_temp;	// initial temperature
 	m3ldbl 	end_temp;	// order of magnitude of desired accuracy
+	m3ldbl  start_tau;
+	m3ldbl  end_tau;
 	int 	iters_per_temp;	// number of tries at each temperature
 	int 	set_back;	// number of steps to step back if improving
 	m3ldbl  accept_ratio;	// acceptance ratio

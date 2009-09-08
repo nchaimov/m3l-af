@@ -255,6 +255,13 @@ void Usage()
 	//	{"temp_start",        required_argument,NULL,57},
 	PhyML_Printf("%s\n\t --temp_start %snum%s\n",BOLD,LINE,FLAT);
 	PhyML_Printf("%s\t\t Sets the starting temperature for Simulated Annealing. \n",FLAT);
+
+	PhyML_Printf("%s\n\t --tau_start %snum%s\n",BOLD,LINE,FLAT);
+	PhyML_Printf("%s\t\t Sets the starting value of the kinetic energy coefficient (Tau) for simulated quantum annealing. \n",FLAT);
+
+	PhyML_Printf("%s\n\t --tau_end %snum%s\n",BOLD,LINE,FLAT);
+	PhyML_Printf("%s\t\t Sets the ending value of the kinetic energy coefficient (Tau) for simulated quantum annealing.. \n",FLAT);
+
 	//	{"max_alpha",         required_argument,NULL,58},
 	PhyML_Printf("%s\n\t --max_alpha %snum%s\n",BOLD,LINE,FLAT);
 	PhyML_Printf("%s\t\t Sets the max_alpha for Simulated Annealing. \n",FLAT);

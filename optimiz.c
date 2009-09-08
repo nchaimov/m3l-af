@@ -490,7 +490,7 @@ m3ldbl RRparam_GTR_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 {
 	int i;
-	m3ldbl result;
+	m3ldbl result = 0;
 	m3ldbl max,min;
 	//	m3ldbl max[MAX_BL_SET];
 	//	m3ldbl min[MAX_BL_SET];
@@ -633,7 +633,7 @@ m3ldbl Br_Len_Brent_Iter(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 		edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty)
 {
-	int iter,i,j;
+	int iter,i;
 	m3ldbl fu,fv,fw,fx;
 	m3ldbl a[MAX_BL_SET];
 	m3ldbl b[MAX_BL_SET];
@@ -1368,7 +1368,7 @@ void Round_Optimize(arbre *tree, allseq *data, int n_round_max)
 
 void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *alldata)
 {
-	int i,j,iter;
+	int i,j;
 	//	m3ldbl l_infa[MAX_BL_SET];
 	//	m3ldbl l_max[MAX_BL_SET];
 	//	m3ldbl l_infb[MAX_BL_SET];
