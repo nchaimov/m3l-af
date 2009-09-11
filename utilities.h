@@ -31,6 +31,9 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <omp.h>
 #endif //USE_OPENMP
 
+//#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
+								 // although this optimization can increase runtime, it costs more in memory.
+
 
 #define VERSION "v3.0 (179M)"
 
@@ -201,6 +204,10 @@ typedef struct __Node {
   char                        ***bip_name; /* three lists of tip node names. One list for each direction */
   char                              *name; /* taxon name (if exists) */
 
+#ifdef COMPRESS_SUBALIGNMENTS
+  int								*red; /* VHS: a list of redundant sites.  For examples if red[i] = j, then site j contains the same sub-alignment pattern as site i for this node.*/
+#endif
+
   m3ldbl                           *score; /* score used in BioNJ to determine the best pair of nodes to agglomerate */
   m3ldbl                              l[MAX_BL_SET][3]; /* JSJ: lengths of the (three or one) branch length sets connected this node */
   m3ldbl                     dist_to_root; /* distance to the root node */
@@ -327,8 +334,8 @@ typedef struct __Arbre {
   int                          print_boot_val; /* if print_boot_val=1, the bootstrap values are printed */
   int                          print_alrt_val; /* if print_boot_val=1, the bootstrap values are printed */
   int                              both_sides; /* both_sides=1 -> a pre-order and a post-order tree
-						  traversals are required to compute the likelihood
-						  of every subtree in the phylogeny*/
+												  traversal are required to compute the likelihood
+												  of every subtree in the phylogeny*/
   int               num_curr_branch_available; /*gives the number of the next cell in t_edges that is free to receive a pointer to a branch */
   int                                 **t_dir;
   int                          n_improvements;
@@ -494,7 +501,7 @@ typedef struct __AllSeq {
 				       i display an ambiguous character */
   m3ldbl    obs_pinvar;
   int            n_otu;             /* number of taxa */
-  int        clean_len;             /* uncrunched sequences lenghts without gaps */
+  int        clean_len;             /* uncrunched sequences lengths without gaps */
   int       crunch_len;             /* crunched sequences lengths */
   int         init_len;             /* length of the uncompressed sequences */
   int        *sitepatt;             /* this array maps the position of the patterns in the

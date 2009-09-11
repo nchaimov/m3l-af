@@ -118,6 +118,9 @@ arbre *Read_Tree(char *s_tree)
 	Make_All_Tree_Edges(tree);
 	Make_Tree_Path(tree); //just allocates memory
 	Make_List_Of_Reachable_Tips(tree);
+#ifdef COMPRESS_SUBALIGNMENTS
+	Post_Order_Foo(tree->noeud[0],tree->noeud[0]->v[0],tree);
+#endif
 
 	//JSJ: not sure what this does...
 	tree->noeud[n_otu]->num = n_otu;
@@ -616,6 +619,8 @@ char *Write_Tree(arbre *tree)
 }
 
 /*********************************************************/
+// VHS: by the way, "pere" means father and "fils" means son.
+// This part of the code was obviously written in French.
 void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 {
 	int i,p,j;
@@ -783,8 +788,6 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 }
 
 /*********************************************************/
-//JSJ: No changes yet, but may have to change later to
-// initialize the proportion of sites in each partition
 void Init_Tree(arbre *tree, int n_otu, int n_l)
 {
 	int i;
@@ -1532,6 +1535,7 @@ allseq *Compact_Seq(seq **data, option *io)
 			is_ambigu = 0;
 			For(j,n_otu)
 			{
+				// VHS:09.08.2009
 				if(Is_Ambigu(data[j]->state+site,io->mod->datatype,io->mod->stepsize)) break;
 			}
 			if(j != n_otu)
@@ -2576,6 +2580,9 @@ arbre *Make_Tree_From_Scratch(int n_otu, allseq *data, int n_l)
 		Copy_Tax_Names_To_Tip_Labels(tree,data);
 		tree->data = data;
 	}
+#ifdef COMPRESS_SUBALIGNMENTS
+	Post_Order_Foo(tree->noeud[0],tree->noeud[0]->v[0],tree);
+#endif
 	return tree;
 }
 
@@ -2608,11 +2615,27 @@ void Make_All_Tree_Nodes(arbre *tree)
 	tree->noeud          = (node **)mCalloc(2*tree->n_otu-2,sizeof(node *));
 	/*   tree->t_dead_nodes   = (node **)mCalloc(2*tree->n_otu-2,sizeof(node *)); */
 
+#ifdef COMPRESS_SUBALIGNMENTS
+	int k;
+#endif
+
 	For(i,2*tree->n_otu-2)
 	{
 		tree->noeud[i] = (node *)Make_Node_Light(i, tree->n_l);
 		if(i < tree->n_otu) tree->noeud[i]->tax = 1;
 		else                tree->noeud[i]->tax = 0;
+
+#ifdef COMPRESS_SUBALIGNMENTS
+		// VHS: we allocate memory space for the redundant site array here, instead of inside
+		// Make_Node_Light, because we need to know how many patterns are in the alignment.
+		// An optimization (to-do) would be to leave ->red size 0, thus saving memory space,
+		// and allocate more memory everytime we want to add information to ->red.
+		tree->noeud[i]->red = (int *)mCalloc( tree->n_pattern, sizeof(int) );
+		For(k, tree->n_pattern)
+		{
+			tree->noeud[i]->red[k] = -1; // we initialize all values to -1.
+		}
+#endif
 	}
 }
 
@@ -2627,6 +2650,7 @@ void Make_All_Tree_Edges(arbre *tree)
 
 	For(i,2*tree->n_otu-3) tree->t_edges[i] = (edge *)Make_Edge_Light(NULL,NULL,i,tree->n_l);
 }
+
 
 /*********************************************************/
 
@@ -8337,7 +8361,6 @@ void Randomize_Sequence_Order(allseq *data)
 }
 
 /*********************************************************/
-//JSJ: the first one was n_root->l[0] or n_root->[1] before I modified
 void Update_Root_Pos(arbre *tree)
 {
 	int i;
@@ -9204,11 +9227,17 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		Init_Tree(ori_tree,tree->n_otu, tree->n_l);
 		Make_All_Tree_Nodes(ori_tree);
 		Make_All_Tree_Edges(ori_tree);
+#ifdef COMPRESS_SUBALIGNMENTS
+	Post_Order_Foo(ori_tree->noeud[0],ori_tree->noeud[0]->v[0],ori_tree);
+#endif
 
 		best_tree = Make_Tree(tree->n_otu, tree->n_l);
 		Init_Tree(best_tree,tree->n_otu, tree->n_l);
 		Make_All_Tree_Nodes(best_tree);
 		Make_All_Tree_Edges(best_tree);
+#ifdef COMPRESS_SUBALIGNMENTS
+	Post_Order_Foo(best_tree->noeud[0],best_tree->noeud[0]->v[0],best_tree);
+#endif
 
 		Copy_Tree(tree,ori_tree);
 		Record_Br_Len(ori_bl,tree);

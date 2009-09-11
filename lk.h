@@ -1,7 +1,7 @@
 /*
 
 PHYML :  a program that  computes maximum likelihood  phylogenies from
-DNA or AA homologous sequences 
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -16,8 +16,8 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 void Init_Tips_At_One_Site_Nucleotides_Float(char state, int pos, plkflt *p_lk);
 void Init_Tips_At_One_Site_AA_Float(char aa, int pos, plkflt *p_lk);
-void Get_All_Partial_Lk(arbre *tree,edge *b_fcus,node *a,node *d);
-void Get_All_Partial_Lk_Scale(arbre *tree,edge *b_fcus,node *a,node *d);
+void Get_All_Partial_Lk_Scale(arbre *tree,edge *b_fcus,node *d);
+void Post_Order_Foo(node *a, node *d, arbre *tree);
 void Post_Order_Lk(node *pere, node *fils, arbre *tree);
 void Pre_Order_Lk(node *pere, node *fils, arbre *tree);
 void Lk(arbre *tree);

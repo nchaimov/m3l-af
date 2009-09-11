@@ -208,15 +208,70 @@ void Init_Tips_At_One_Site_AA_Int(char aa, int pos, short int *p_pars)
 }
 
 /*********************************************************/
-
-void Get_All_Partial_Lk_Scale(arbre *tree, edge *b_fcus, node *a, node *d)
+void Get_All_Partial_Lk_Scale(arbre *tree, edge *b_fcus, node *d)
 {
 	if(d->tax) return;
 	else Update_P_Lk(tree,b_fcus,d);
 }
 
-/*********************************************************/
+//
+// VHS:09.10.2009: this method compresses sub-alignments based on the phylogeny
+// see the emails between me and Bryan for more information.
+//
+// at the end of this method, node a will contain a list of compress-able sites
+//
+#ifdef COMPRESS_SUBALIGNMENTS
+void Post_Order_Foo(node *a, node *d, arbre *tree)
+{
+	int i,j,k,site;
+	if(d->tax)
+	{
+		int *state_firstsite; // key = a state number, value = the first site at which that state appears
+		state_firstsite = (int *)mCalloc(tree->mod->ns + 1,sizeof(int));
+		For(j,tree->mod->ns)
+		{
+			state_firstsite[j] = -1;
+		}
 
+		for(site = 0; site < tree->n_pattern; site++)
+		{
+			char this_state = tree->data->c_seq[ d->num ]->state[ site ];
+			int this_state_id = Assign_State(&this_state, tree->mod->datatype, 1);
+			if (state_firstsite[ this_state_id ] == -1)
+			{
+				state_firstsite[ this_state_id ] = site;
+			}
+			else
+			{
+				a->red[ site ] = state_firstsite[ this_state_id ];
+			}
+		}
+		return;
+	}
+	else
+	{
+		For(k,tree->mod->ns)
+		{
+			For(i,3)
+			{
+				if(d->v[i] != a)
+					Post_Order_Foo(d,d->v[i],tree);
+			}
+			// 1. find the union of d->v[j]->redundant_sites and d->v[k]->redundant_sites
+			// where j and k are in the set [0,1,2].
+			//
+			// 2. set a->redundant_sites equal to this union
+		}
+	}
+	if (a->tax)
+	{
+		// find compressable sites for this leaf taxa
+		return;
+	}
+}
+#endif
+
+/*********************************************************/
 void Post_Order_Lk(node *a, node *d, arbre *tree)
 {
 	int i,dir;
@@ -232,12 +287,11 @@ void Post_Order_Lk(node *a, node *d, arbre *tree)
 				Post_Order_Lk(d,d->v[i],tree);
 			else dir = i;
 		}
-		Get_All_Partial_Lk_Scale(tree,d->b[dir],a,d);
+		Get_All_Partial_Lk_Scale(tree,d->b[dir],d);
 	}
 }
 
 /*********************************************************/
-
 void Pre_Order_Lk(node *a, node *d, arbre *tree)
 {
 	int i;
@@ -249,7 +303,7 @@ void Pre_Order_Lk(node *a, node *d, arbre *tree)
 		{
 			if(d->v[i] != a)
 			{
-				Get_All_Partial_Lk_Scale(tree,d->b[i],d->v[i],d);
+				Get_All_Partial_Lk_Scale(tree,d->b[i],d);
 				Pre_Order_Lk(d,d->v[i],tree);
 			}
 		}
@@ -277,7 +331,7 @@ void Lk(arbre *tree)
 	//	chunk = (2*tree->n_otu-3)/omp_get_num_procs();
 	//	printf("chunk: %i total: %i\n",chunk,(2*tree->n_otu-3));
 
-	//#pragma omp parallel for shared(tree,n_patterns,chunk) schedule(static,chunk)
+	// #pragma omp parallel for shared(tree,n_patterns,chunk) schedule(static,chunk)
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
 		if(!tree->t_edges[br]->rght->tax)
@@ -289,11 +343,13 @@ void Lk(arbre *tree)
 		Update_PMat_At_Given_Edge(tree->t_edges[br],tree);
 	}
 
+	// VHS: the post- and pre-order traversals begin at a random node (the 0th node, to be specific).
+	// This random strategy is okay, because the Felsenstein pruning algorithm operates on unrooted trees.
 	Post_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
+	// VHS: I don't think both_sides is ever assigned any value other than 1.
+	// Does the following code really need to be wrapped inside an "if" block?
 	if(tree->both_sides)
-		Pre_Order_Lk(tree->noeud[0],
-				tree->noeud[0]->v[0],
-				tree);
+		Pre_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
 
 	tree->c_lnL     = .0;
 	tree->curr_catg =  0;
@@ -316,7 +372,7 @@ void Lk(arbre *tree)
 	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
 
 	tree->c_lnL = .0;
-	//#pragma omp parallel for default(shared) private(site) schedule(static,chunk)
+	// #pragma omp parallel for default(shared) private(site) schedule(static,chunk)
 	For(site,n_patterns)
 	{
 		if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
@@ -345,8 +401,6 @@ void Site_Lk(arbre *tree, int site)
 }
 
 /*********************************************************/
-// This one gets called pretty frequently
-
 m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 {
 	int n_patterns,site;
@@ -391,7 +445,7 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 }
 
 /*********************************************************/
-// This method calculates the likelihood for the entire tree (we presume) rooted at edge *b,
+// VHS: This method calculates the likelihood for the entire tree (we presume) rooted at edge *b,
 // for the site indicated by site
 m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 {
@@ -421,9 +475,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 
 	ambiguity_check = state = -1;
 	ns = tree->mod->ns; // ns is the number of states in the alphabet.
-
 	scale_left = (b->sum_scale_f_left)? (b->sum_scale_f_left[site]): (0.0);
-
 	scale_right = (b->sum_scale_f_rght)? (b->sum_scale_f_rght[site]): (0.0);
 
 	if((b->rght->tax) && (!tree->mod->s_opt->greedy))
@@ -435,18 +487,11 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 	if(tree->mod->use_m4mod) ambiguity_check = 1;
 
 	For(i,tree->n_l){
-		/**
-		* Private variables (within the scope of each iteration)
-		*/
-
-		//JSJ: variables privite to each iteration through the loop
 		m3ldbl sum;
-
 		site_lk[i] = site_lk_cat[i] = .0;
 		For(catg,tree->mod->n_catg)
 		{
 			site_lk_cat[i] = .0;
-
 			if((b->rght->tax) && (!tree->mod->s_opt->greedy))
 			{
 				if(!ambiguity_check)
@@ -454,8 +499,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 					sum = .0;
 					For(l,ns)
 					{ //JSJ: integrate over branch length sets
-						sum +=
-								b->Pij_rr[i][catg*dim3+state*dim2+l] *
+						sum +=	b->Pij_rr[i][catg*dim3+state*dim2+l] *
 								(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 					}
 					site_lk_cat[i] += sum * tree->mod->pi[state];
@@ -468,9 +512,8 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 						if(b->p_lk_tip_r[site*dim2+k] > .0)
 						{
 							For(l,ns)
-							{//JSJ: integrate over branch length sets
-								sum +=
-										b->Pij_rr[i][catg*dim3+k*dim2+l] *
+							{
+								sum +=	b->Pij_rr[i][catg*dim3+k*dim2+l] *
 										(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 							}
 							site_lk_cat[i] +=
@@ -505,14 +548,11 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 			if(site_lk[i] < 1.E-300) site_lk[i] = 1.E-300;
 		}
 	}
-	//return log_site_lk; //JSJ: don't just return the log_site_lk any more...
-
-	// VHS: At this point: site_lk[i] should contain the likelihood for the edge, given branch length i
+	//return log_site_lk; 	// VHS: instead of returning the log_site_lk, let's combine results over branch length sets.
+							// VHS: At this point: site_lk[i] should contain the likelihood for the edge, given branch length i
 
 	/**
 	* Now deal with returning the likelihood given the set of bls
-	*
-	* JSJ: The following code definitely needs some review for correctness!
 	*/
 	sum_site_lk = 0.0; // is going to contain the overall likelihood for all branch length sets.
 
@@ -534,7 +574,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 
 				sum_site_lk += tree->props[i]*(site_lk[i]*(1.0-tree->mod->pinvar));
 			}
-			sum_site_lk += tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]]; // VHS: this is totally bizarre.  what's happening here?
+			sum_site_lk += tree->mod->pinvar*tree->mod->pi[tree->data->invar[site]];
 			log_site_lk = log(sum_site_lk);
 		}
 		else
@@ -854,17 +894,19 @@ void Unconstraint_Lk(arbre *tree)
 }
 
 /*********************************************************/
-//JSJ: Update_Partial_Likelihood
+// VHS: update partial likelihoods
 void Update_P_Lk(arbre *tree, edge *b, node *d)
 {
 	/*
-           |
-	   |<- b
-	   |
-	   d
-          / \
-       	 /   \
-       	/     \
+				   |
+				   |<- b
+				   |
+				   d
+				  / \
+		 dir1 -> /   \ <- dir2
+				/     \
+			  n_v1    n_v2
+
 	 */
 	//printf("\nJSJ: Calling Update_P_Lk\n");
 	node *n_v1, *n_v2;
@@ -910,6 +952,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	}
 
 	n_patterns = tree->n_pattern;
+	//PhyML_Printf("number of unique patterns = %d", tree->n_pattern);
 
 	dir1=dir2=-1;
 	For(i,3) if(d->b[i] != b) (dir1<0)?(dir1=i):(dir2=i); //VHS: here we set dir1 and dir2 to point to the two
@@ -929,9 +972,10 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	n_v1 = d->v[dir1];
 	n_v2 = d->v[dir2];
 
-	// VHS: the following chain of if/else statements fills the variables sum_scale, sum_scale_v1, and sum_scale_v2.
-	// These three variables are "likelihood scaling factors", according to utilities.h.
-	// What are these scaling factors???
+	// VHS: In the remainder of this method, we work on computing p_lk as the product of p_lk_v1 and p_lk_v2.
+	// However, first we must establish where p_lk_v1 and p_lk_v2 point within our tree.  .
+
+	// p_lk becomes a shortcut pointer to b->p_lk_left OR b->p_lk_right.
 	if(d == b->left)
 	{
 		p_lk = b->p_lk_left;
@@ -943,6 +987,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		sum_scale = b->sum_scale_f_rght;
 	}
 
+	// VHS: p_lk_v1 is the partial likelihood for the subtree attached to branch dir1
 	if(d == d->b[dir1]->left)
 	{
 		p_lk_v1 = d->b[dir1]->p_lk_rght;
@@ -954,6 +999,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		sum_scale_v1 = d->b[dir1]->sum_scale_f_left;
 	}
 
+	// VHS: p_lk_v2 is the partial likelihood for the subtree attached to branch dir2
 	if(d == d->b[dir2]->left)
 	{
 		p_lk_v2 = d->b[dir2]->p_lk_rght;
@@ -964,20 +1010,9 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		p_lk_v2 = d->b[dir2]->p_lk_left;
 		sum_scale_v2 = d->b[dir2]->sum_scale_f_left;
 	}
-	//JSJ: temp fix to Pij_rr
-
-	/*
-	 * JSJ: I think that it might be ok to start iteration here and
-	 * increment the above variables accordingly. However that
-	 * may not be a good idea. I need to take more time to
-	 * figure out what this function is doing before I can be
-	 * sure not to screw anything up...
-	 *
-	 * */
 
 	Pij1 = d->b[dir1]->Pij_rr;
 	Pij2 = d->b[dir2]->Pij_rr;
-
 
 	/**
 	* For each site given all possible site patterns
@@ -996,24 +1031,30 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 				schedule(static,chunk)
 #endif
 	for(site = 0; site < n_patterns; site++)
-
 	{
+
+#ifdef COMPRESS_SUBALIGNMENTS
+		// if d->red[site] contains a value:
+			// then p_lk[site] = p_lk[ d->red[site] ]
+			// and sum_scale[site] = sum_scale[ d->red[site] ]
+			// and then skip ahead to the next site in this for loop
+#endif
+
+
 		//printf("JSJ: In Update_P_Lk iterating over state pattern %i\n",site);
 
 		/**
 		* JSJ: If sum_scale_v1 was assigned a non-null value in the above if/else cascade,
 		* the scale_v1 value is assigned as the site specific sum_scale_v1 from above.
 		*/
-
 		scale_v1 = (sum_scale_v1)?(sum_scale_v1[site]):(0.0);
 		scale_v2 = (sum_scale_v2)?(sum_scale_v2[site]):(0.0);
+
 		/**
 		* JSJ: sum_scale was assigned as a pointer to sum_scale_f_left(or right)
 		* scale_v1 and v2 above are the same but for the neighbor nodes...
 		*/
 		sum_scale[site] = scale_v1 + scale_v2;
-
-
 
 		/**
 		* JSJ: max_p_lk is just a double, no global assignments here...
@@ -1021,7 +1062,6 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		max_p_lk = -MDBL_MAX;
 		state_v1 = state_v2 = -1; //just ints
 		ambiguity_check_v1 = ambiguity_check_v2 = -1;
-
 
 		/**
 		* JSJ: If the model is set to greedy, and the node is terminal,
@@ -1120,6 +1160,14 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 							p2_lk2 += d->b[dir2]->Pij_rr[k][catg*dim3+i*dim2+j] * (m3ldbl)p_lk_v2[site*dim1+catg*dim2+j];
 						} //end for j in alphabet
 					} //JSJ: end else
+
+
+					// VHS: 09.08.2009: Here is where we finally calculate the product of partial likelihoods
+					// for the two descendant branches...
+					// This is where we should begin focusing our efforts to compress sub-alignments
+					// according to the tree.
+					//
+					//
 					//JSJ: if we are at the 0th position, we initialize, otherwise we sum the product of
 					// the proportion
 					if(k == 0){

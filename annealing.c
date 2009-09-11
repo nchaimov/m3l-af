@@ -674,26 +674,19 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			now = time(NULL);
 			// Some useful debugging statements:
 			//Print_Tree_Screen(tree);
-			//if(verbose){
 			PhyML_Printf("T: %f iter: %d current lnL = %f proposed lnL = %f\n", temp, iter, lnL_current, lnL_proposed);
 			//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itemp + 1)), lnL_current);
 			//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
 			PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
 			PhyML_Printf("plot2 %ld %d\n", (long)difftime(now,start), steps_tried);
-			PhyML_Printf("proposed tree = %s\n", Write_Tree(tree) );
-			//}
-
-			//      PhyML_Printf("JSJ: Proposed Likelihood at iter %i: %lf\n",iter,lnL_current);
+			//PhyML_Printf("proposed tree = %s\n", Write_Tree(tree) );
 
 			if(lnL_proposed > lnL_best){
 				//save this tree into best_tree
-
 				//PhyML_Printf("(annealing.c, 465): Found a new best tree with lnL = %f\n", lnL_best);
 				Copy_Tree(tree,best_tree);
 				Record_Model(tree->mod, best_tree->mod);
-
 				lnL_best = lnL_proposed;
-
 				temp_of_best = temp;
 				iter_of_best = iter;
 
@@ -702,7 +695,6 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 				// state at this temperature.
 				iter -= anneal.set_back;
 				if(iter < 0) iter = 0; //make sure not set back into negative...
-
 				acc_prob = 1.0;
 				r = 0.0;
 			}
@@ -713,7 +705,6 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 				acc_prob = Boltzmann_P_TA(lnL_current, lnL_proposed, temp);
 				r = gsl_rng_uniform(anneal.rng);
 			}
-
 
 			if(acc_prob >= r){
 				//save the current tree
@@ -788,6 +779,7 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 	Make_All_Tree_Edges(best_tree);
 	best_tree->mod = Copy_Model(tree->mod);
 	Copy_Tree(tree,best_tree);
+
 	//Speed_Spr_Loop(tree);
 	arbre *last_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(last_tree,tree->n_otu, tree->n_l);

@@ -1,7 +1,7 @@
 /*
 
 PHYML :  a program that  computes maximum likelihood  phylogenies from
-DNA or AA homologous sequences 
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -19,7 +19,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 void Free_All_Nodes_Light(arbre *tree)
 {
   int i;
-  For(i,2*tree->n_otu-2) 
+  For(i,2*tree->n_otu-2)
     Free_Node(tree->noeud[i]);
 }
 
@@ -28,7 +28,7 @@ void Free_All_Nodes_Light(arbre *tree)
 void Free_All_Edges_Light(arbre *tree)
 {
   int i;
-  For(i,2*tree->n_otu-3) 
+  For(i,2*tree->n_otu-3)
     if(tree->t_edges[i])
       Free_Edge(tree->t_edges[i]);
 }
@@ -53,7 +53,7 @@ void Free_Mat(matrix *mat)
   Free(mat->dist);
   Free(mat->name);
   Free(mat->tip_node);
-      
+
   Free(mat->on_off);
   Free(mat);
 }
@@ -148,6 +148,9 @@ void Free_Node(node *n)
   Free(n->v);
   Free(n->score);
   Free(n->name);
+#ifdef COMPRESS_SUBALIGNMENTS
+  Free(n->red);
+#endif
 
   if(n->list_of_reachable_tips)
     {
@@ -164,7 +167,7 @@ void Free_Node(node *n)
 void Free_Cseq(allseq *data)
 {
   int i;
-  
+
   Free(data->invar);
   Free(data->wght);
   Free(data->ambigu);
@@ -173,7 +176,7 @@ void Free_Cseq(allseq *data)
   For(i,data->n_otu)
     {
       Free(data->c_seq[i]->name);
-      if(data->c_seq[i]->state) 
+      if(data->c_seq[i]->state)
 	{
 	  Free(data->c_seq[i]->state);
 	  if(data->c_seq[i]->is_ambigu) Free(data->c_seq[i]->is_ambigu);
@@ -211,7 +214,7 @@ void Free_All(seq **d, allseq *alldata, arbre *tree)
   Free_Cseq(alldata);
   Free_Seq(d,tree->n_otu);
   Free_Tree(tree);
-}      
+}
 
 /*********************************************************/
 void Free_SubTree(edge *b_fcus, node *a, node *d, arbre *tree)
@@ -244,7 +247,7 @@ void Free_Tree_Ins_Tar(arbre *tree)
 void Free_Tree_Pars(arbre *tree)
 {
   int i;
-  
+
   Free(tree->step_mat);
   Free(tree->site_pars);
   For(i,2*tree->n_otu-3)
@@ -259,13 +262,13 @@ void Free_Edge_Pars(edge *b, arbre *tree)
 
   Free(b->pars_l);
   Free(b->pars_r);
-  
+
 /*   For(i,tree->data->crunch_len)  */
 /*     { */
 /*       Free(b->p_pars_l[i]); */
 /*       Free(b->p_pars_r[i]); */
 /*     } */
-  
+
   Free(b->ui_l);
   Free(b->ui_r);
   Free(b->p_pars_l);
@@ -291,10 +294,10 @@ void Free_Tree_Lk(arbre *tree)
 
   For(i,tree->mod->n_catg) Free(tree->log_site_lk_cat[i]);
   Free(tree->log_site_lk_cat);
-				
+
   For(i,2*tree->n_otu-3)
     {
-      b = tree->t_edges[i];      
+      b = tree->t_edges[i];
       Free_Edge_Lk(tree,b);
     }
 }
@@ -332,7 +335,7 @@ void Free_Edge_Lk(arbre *tree, edge *b)
       Free(b->p_lk_rght);
       if(b->sum_scale_f_rght) Free(b->sum_scale_f_rght);
     }
-  
+
   if(b->p_lk_tip_r) Free(b->p_lk_tip_r);
 
   For(i,tree->n_l) if(b->Pij_rr[i]) Free(b->Pij_rr[i]);
@@ -362,7 +365,7 @@ void Free_Model(model *mod)
 
   Free(mod->Pij_rr);
 
-  if(mod->n_rr_branch) 
+  if(mod->n_rr_branch)
     {
       Free(mod->rr_branch);
       Free(mod->p_rr_branch);
@@ -370,7 +373,7 @@ void Free_Model(model *mod)
 
   #ifdef M4
   M4_Free_M4_Model(mod->m4mod);
-  #endif 
+  #endif
   Free(mod);
 }
 
@@ -393,7 +396,7 @@ void Free_Input(option *io)
   Free(io->out_boot_tree_file);
   Free(io->out_boot_stats_file);
   Free(io->out_stats_file);
-  Free(io->out_lk_file); 
+  Free(io->out_lk_file);
   Free(io->out_ps_file);
   Free(io->out_trace_file);
   Free(io->nt_or_cd);
@@ -407,7 +410,7 @@ void Free_St(superarbre *st)
 {
   int i;
 
-  For(i,2*st->tree->n_otu-3) 
+  For(i,2*st->tree->n_otu-3)
     Free(st->tree->t_edges[i]->nni);
 
   For(i,st->n_gt) Free(st->match_st_node_in_gt[i]);
@@ -415,7 +418,7 @@ void Free_St(superarbre *st)
   Free(st->match_st_node_in_gt);
 
   Free_Tree(st->tree);
-  
+
   Free(st);
 }
 
@@ -470,33 +473,33 @@ void Free_Triplet(triplet *t)
   Free(t->pi_cd);
   Free(t->pi_bd);
 
-  For(k,t->mod->n_catg) 
+  For(k,t->mod->n_catg)
     {
-      For(i,t->size) 
+      For(i,t->size)
 	{
-	  For(j,t->size) Free(t->core[k][i][j]);  
+	  For(j,t->size) Free(t->core[k][i][j]);
 	  Free(t->core[k][i]);
 	}
-      Free(t->core[k]);	  
+      Free(t->core[k]);
     }
   Free(t->core);
 
-  For(i,t->size) 
+  For(i,t->size)
     {
-      For(j,t->size) Free(t->p_one_site[i][j]);  
+      For(j,t->size) Free(t->p_one_site[i][j]);
       Free(t->p_one_site[i]);
     }
   Free(t->p_one_site);
 
-  For(i,t->size) 
+  For(i,t->size)
     {
-      For(j,t->size) Free(t->sum_p_one_site[i][j]);  
+      For(j,t->size) Free(t->sum_p_one_site[i][j]);
       Free(t->sum_p_one_site[i]);
     }
   Free(t->sum_p_one_site);
 
   Free_Eigen(t->eigen_struct);
-  
+
   Free(t);
 }
 
@@ -517,7 +520,7 @@ void Free_Actual_CSeq(allseq *data)
 void Free_Prefix_Tree(pnode *n, int size)
 {
   int i;
-  
+
   For(i,size)
     {
       if(n->next[i])
@@ -545,7 +548,7 @@ void Free_Rates(int n_otu, trate *r)
   Free(r->prior_r_mean);
   Free(r->prior_r_cov);
   Free(r->dens);
-  Free(r->br_r);  
+  Free(r->br_r);
   Free(r->triplet);
   Free(r);
 }
