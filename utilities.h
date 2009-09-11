@@ -31,7 +31,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <omp.h>
 #endif //USE_OPENMP
 
-//#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
+#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
 								 // although this optimization can increase runtime, it costs more in memory.
 
 
@@ -955,6 +955,7 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l);
 void Init_Edge_Light(edge *b, int num);
 void Make_Edge_Dirs(edge *b,node *a,node *d);
 void Make_Edge_Lk(edge *b, arbre *tree);
+void Make_Node_Red(arbre *tree); //VHS
 node *Make_Node_Light(int num, int num_bl_set);
 void Make_Node_Lk(node *n);
 seq **Get_Seq(option *input,int rw);

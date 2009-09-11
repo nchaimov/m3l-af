@@ -189,6 +189,7 @@ int main(int argc, char **argv)
 		  tree->both_sides  = 1;
 		  tree->n_pattern   = tree->data->crunch_len/tree->mod->stepsize;
 
+		  PhyML_Printf("\n. Preparing tree for likelihood calculations...\n"); //VHS
 		  Prepare_Tree_For_Lk(tree);
 
 		  if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);

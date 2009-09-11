@@ -118,9 +118,6 @@ arbre *Read_Tree(char *s_tree)
 	Make_All_Tree_Edges(tree);
 	Make_Tree_Path(tree); //just allocates memory
 	Make_List_Of_Reachable_Tips(tree);
-#ifdef COMPRESS_SUBALIGNMENTS
-	Post_Order_Foo(tree->noeud[0],tree->noeud[0]->v[0],tree);
-#endif
 
 	//JSJ: not sure what this does...
 	tree->noeud[n_otu]->num = n_otu;
@@ -2580,9 +2577,6 @@ arbre *Make_Tree_From_Scratch(int n_otu, allseq *data, int n_l)
 		Copy_Tax_Names_To_Tip_Labels(tree,data);
 		tree->data = data;
 	}
-#ifdef COMPRESS_SUBALIGNMENTS
-	Post_Order_Foo(tree->noeud[0],tree->noeud[0]->v[0],tree);
-#endif
 	return tree;
 }
 
@@ -2606,26 +2600,14 @@ void Make_Tree_Path(arbre *tree)
 	tree->curr_path = (node **)mCalloc(tree->n_otu,sizeof(node *));
 }
 
-/*********************************************************/
-
-void Make_All_Tree_Nodes(arbre *tree)
+#ifdef COMPRESS_SUBALIGNMENTS
+void Make_Node_Red(arbre *tree)
 {
 	int i;
-
-	tree->noeud          = (node **)mCalloc(2*tree->n_otu-2,sizeof(node *));
-	/*   tree->t_dead_nodes   = (node **)mCalloc(2*tree->n_otu-2,sizeof(node *)); */
-
-#ifdef COMPRESS_SUBALIGNMENTS
 	int k;
-#endif
 
 	For(i,2*tree->n_otu-2)
 	{
-		tree->noeud[i] = (node *)Make_Node_Light(i, tree->n_l);
-		if(i < tree->n_otu) tree->noeud[i]->tax = 1;
-		else                tree->noeud[i]->tax = 0;
-
-#ifdef COMPRESS_SUBALIGNMENTS
 		// VHS: we allocate memory space for the redundant site array here, instead of inside
 		// Make_Node_Light, because we need to know how many patterns are in the alignment.
 		// An optimization (to-do) would be to leave ->red size 0, thus saving memory space,
@@ -2635,7 +2617,25 @@ void Make_All_Tree_Nodes(arbre *tree)
 		{
 			tree->noeud[i]->red[k] = -1; // we initialize all values to -1.
 		}
+	}
+}
 #endif
+
+/*********************************************************/
+
+void Make_All_Tree_Nodes(arbre *tree)
+{
+	int i;
+
+	tree->noeud          = (node **)mCalloc(2*tree->n_otu-2,sizeof(node *));
+	/*   tree->t_dead_nodes   = (node **)mCalloc(2*tree->n_otu-2,sizeof(node *)); */
+
+	For(i,2*tree->n_otu-2)
+	{
+		tree->noeud[i] = (node *)Make_Node_Light(i, tree->n_l);
+		if(i < tree->n_otu) tree->noeud[i]->tax = 1;
+		else                tree->noeud[i]->tax = 0;
+
 	}
 }
 
@@ -9660,6 +9660,13 @@ void Prepare_Tree_For_Lk(arbre *tree)
 	Br_Len_Not_Involving_Invar(tree);
 	Make_Spr_List(tree);
 	Make_Best_Spr(tree);
+
+#ifdef COMPRESS_SUBALIGNMENTS
+	PhyML_Printf("\n. Compressing sub-alignments based on phylogeny...\n");
+	Make_Node_Red(tree);
+	Post_Order_Foo(tree->noeud[0],tree->noeud[0]->v[0],tree);
+#endif
+
 }
 
 /*********************************************************/
