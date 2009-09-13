@@ -223,44 +223,73 @@ void Get_All_Partial_Lk_Scale(arbre *tree, edge *b_fcus, node *d)
 #ifdef COMPRESS_SUBALIGNMENTS
 void Post_Order_Foo(node *a, node *d, arbre *tree)
 {
-	int i,j,k,site;
+	int i,j,k,site,state;
 	if(d->tax)
 	{
+		//PhyML_Printf("Post_Order_Foo: node %d is a taxon\n", d->num);
 		int *state_firstsite; // key = a state number, value = the first site at which that state appears
-		state_firstsite = (int *)mCalloc(tree->mod->ns + 1,sizeof(int));
-		For(j,tree->mod->ns)
+		state_firstsite = (int *)mCalloc(tree->mod->ns + 1,sizeof(int)); //VHS: I changed this to +1 so as t consider "-" and other ambiguities.
+		for(state = 0; state < tree->mod->ns+1; state++)
 		{
-			state_firstsite[j] = -1;
+			//PhyML_Printf("Post_Order_Foo: state_firstsite[%d] = -1\n", state);
+			state_firstsite[state] = -1;
 		}
 
 		for(site = 0; site < tree->n_pattern; site++)
 		{
+			//PhyML_Printf("considering site %d\n", site);
 			char this_state = tree->data->c_seq[ d->num ]->state[ site ];
-			int this_state_id = Assign_State(&this_state, tree->mod->datatype, 1);
+			int this_state_id = Assign_State_With_Ambiguity(&this_state, tree->mod->datatype, 1);
 			if (state_firstsite[ this_state_id ] == -1)
 			{
+				//PhyML_Printf("this_state_id = %d -> site = %d\n", this_state_id, site);
 				state_firstsite[ this_state_id ] = site;
 			}
 			else
 			{
-				a->red[ site ] = state_firstsite[ this_state_id ];
+				//PhyML_Printf("Post_Order_Foo: for taxon %d, site %d shares the same state as site %d\n", d->num, site, state_firstsite[ this_state_id ]);
+				d->red[ site ] = state_firstsite[ this_state_id ];
 			}
 		}
 		return;
 	}
 	else
 	{
-		For(k,tree->mod->ns)
+		node *child1 = 0;
+		node *child2 = 0;
+
+		For(i,3)
 		{
-			For(i,3)
+			if(d->v[i] != a)
 			{
-				if(d->v[i] != a)
-					Post_Order_Foo(d,d->v[i],tree);
+				if (child1 == 0)
+				{
+					//PhyML_Printf("pointing child1 to node %d\n", d->v[i]->num);
+					child1 = d->v[i];
+				}
+				else if (child2 == 0)
+				{
+					//PhyML_Printf("pointing child2 to node %d\n", d->v[i]->num);
+					child2 = d->v[i];
+				}
+
+				//PhyML_Printf("Post_Order_Foo: traversing from node %d to node %d\n", d->num, d->v[i]->num);
+				Post_Order_Foo(d,d->v[i],tree);
 			}
-			// 1. find the union of d->v[j]->redundant_sites and d->v[k]->redundant_sites
-			// where j and k are in the set [0,1,2].
-			//
-			// 2. set a->redundant_sites equal to this union
+		}
+
+		//PhyML_Printf("Post_Order_Foo: node %d has children %d and %d\n", d->num, child1->num, child2->num);
+
+		for(site = 0; site < tree->n_pattern; site++)
+		{
+			if (child1->red[site] != -1)
+			{
+				if (child1->red[site] == child2->red[site])
+				{
+					//PhyML_Printf("Post_Order_Foo: compressing site %d for node d=%d\n", site, d->num);
+					d->red[site] = child1->red[site];
+				}
+			}
 		}
 	}
 	if (a->tax)

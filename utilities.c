@@ -1525,6 +1525,11 @@ allseq *Compact_Seq(seq **data, option *io)
 	n_ambigu = 0;
 	is_ambigu = 0;
 
+	//PhyML_Printf("io->compress_seq = %d", io->compress_seq);
+	// VHS: io->compress seems to be always == 1
+	//PhyML_Printf("io->rm_ambigu = %d", io->rm_ambigu);
+	// VHS: io->rm_ambigu seems to be always == 0
+
 	Fors(site,data[0]->len,io->mod->stepsize)
 	{
 		if(io->rm_ambigu)
@@ -1533,7 +1538,11 @@ allseq *Compact_Seq(seq **data, option *io)
 			For(j,n_otu)
 			{
 				// VHS:09.08.2009
-				if(Is_Ambigu(data[j]->state+site,io->mod->datatype,io->mod->stepsize)) break;
+				if(Is_Ambigu(data[j]->state+site,io->mod->datatype,io->mod->stepsize))
+				{
+					PhyML_Printf("site %d is ambiguous for otu %d", site, j);
+					break;
+				}
 			}
 			if(j != n_otu)
 			{
@@ -9235,9 +9244,6 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		Init_Tree(best_tree,tree->n_otu, tree->n_l);
 		Make_All_Tree_Nodes(best_tree);
 		Make_All_Tree_Edges(best_tree);
-#ifdef COMPRESS_SUBALIGNMENTS
-	Post_Order_Foo(best_tree->noeud[0],best_tree->noeud[0]->v[0],best_tree);
-#endif
 
 		Copy_Tree(tree,ori_tree);
 		Record_Br_Len(ori_bl,tree);

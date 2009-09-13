@@ -206,7 +206,13 @@ void Get_Neighbor_Proposition(arbre *tree,m3ldbl temp){
 
 
 	// 1. Update the likelihood of tree
-	if(anneal.no_change == 0) Lk(tree);
+	if(anneal.no_change == 0)
+	{
+#ifdef COMPRESS_SUBALIGNMENTS
+		Post_Order_Foo(tree->noeud[0], tree->noeud[0]->v[0], tree);
+#endif
+		Lk(tree);
+	}
 	tree->mod->update_eigen = 0;
 	tree->both_sides = 1; // reset to 1
 }
@@ -596,12 +602,14 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	Make_All_Tree_Edges(best_tree);
 	best_tree->mod = Copy_Model(tree->mod);
 	Copy_Tree(tree,best_tree);
+
 	//Speed_Spr_Loop(tree);
 	arbre *last_tree = Make_Tree(tree->n_otu,tree->n_l);
 	Init_Tree(last_tree,tree->n_otu, tree->n_l);
 	Make_All_Tree_Nodes(last_tree);
 	Make_All_Tree_Edges(last_tree);
 	last_tree->mod = Copy_Model(best_tree->mod);
+
 	time_t start = time(NULL);
 	time_t now;
 
@@ -640,12 +648,6 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	PhyML_Printf("\t. P of using SPR = %f\n", anneal.prob_SPR );
 
 	PhyML_Printf("\t. P of adjusting branch length rate proportions = %f\n", anneal.prob_rate_proportion );
-
-	//m3ldbl  prob_pi;
-	//m3ldbl  prob_kappa;
-	//m3ldbl  prob_lambda;
-	//m3ldbl  prob_rr;
-	//m3ldbl  prob_emig;
 
 
 	for(itemp = 0; itemp < anneal.num_anneal_stages; itemp++){
