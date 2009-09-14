@@ -1,7 +1,7 @@
 /*
 
 PHYML :  a program that  computes maximum likelihood  phylogenies from
-DNA or AA homologous sequences 
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -128,6 +128,9 @@ int Simu(arbre *tree, int n_step_max)
 				For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
 			}
 			tree->both_sides = 1;
+#ifdef COMPRESS_SUBALIGNMENTS
+			Init_All_Nodes_Red(tree);
+#endif
 			Lk(tree);
 		}
 

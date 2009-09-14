@@ -3758,6 +3758,9 @@ void Speed_Spr(arbre *tree, int max_cycles)
 
 			/* Update partial likelihoods */
 			tree->both_sides = 1;
+#ifdef COMPRESS_SUBALIGNMENTS
+			Init_All_Nodes_Red(tree);
+#endif
 			Lk(tree);
 
 			/* Print log-likelihood and parsimony scores */

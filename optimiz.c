@@ -194,6 +194,9 @@ m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		if(fabs(x - xm) <= (tol2 - 0.5 * (b - a)))
 		{
 			*xmin = x;
+#ifdef COMPRESS_SUBALIGNMENTS
+			Init_All_Nodes_Red(tree);
+#endif
 			Lk(tree);
 			if(tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local)
 			{
@@ -1452,7 +1455,6 @@ void Optimiz_Ext_Br(arbre *tree)
 		{
 
 			For(j,tree->n_l){
-				//JSJ: temp fixes...
 				l_init[j] = b->l[j];
 
 				/* 	  Fast_Br_Len(b,tree); */

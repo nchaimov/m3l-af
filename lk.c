@@ -223,6 +223,8 @@ void Get_All_Partial_Lk_Scale(arbre *tree, edge *b_fcus, node *d)
 #ifdef COMPRESS_SUBALIGNMENTS
 void Post_Order_Foo(node *a, node *d, arbre *tree)
 {
+	//PhyML_Printf("entered Post_Order_Foo(node %d, node %d, ...)\n", a->num, d->num);
+
 	int i,j,k,site,state;
 	if(d->tax)
 	{
@@ -303,6 +305,7 @@ void Post_Order_Foo(node *a, node *d, arbre *tree)
 /*********************************************************/
 void Post_Order_Lk(node *a, node *d, arbre *tree)
 {
+	//PhyML_Printf("Post_Order_Lk(a = %d, d = %d)\n", a->num, d->num);
 	int i,dir;
 
 	dir = -1;
@@ -323,6 +326,8 @@ void Post_Order_Lk(node *a, node *d, arbre *tree)
 /*********************************************************/
 void Pre_Order_Lk(node *a, node *d, arbre *tree)
 {
+	//PhyML_Printf("Pre_Order_Lk(a = %d, d = %d)\n", a->num, d->num);
+
 	int i;
 
 	if(d->tax) return;
@@ -375,10 +380,11 @@ void Lk(arbre *tree)
 	// VHS: the post- and pre-order traversals begin at a random node (the 0th node, to be specific).
 	// This random strategy is okay, because the Felsenstein pruning algorithm operates on unrooted trees.
 	Post_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
-	// VHS: I don't think both_sides is ever assigned any value other than 1.
-	// Does the following code really need to be wrapped inside an "if" block?
-	if(tree->both_sides)
-		Pre_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
+
+
+	// VHS:
+	//if(tree->both_sides)
+	//	Pre_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
 
 	tree->c_lnL     = .0;
 	tree->curr_catg =  0;
@@ -527,7 +533,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 				{
 					sum = .0;
 					For(l,ns)
-					{ //JSJ: integrate over branch length sets
+					{
 						sum +=	b->Pij_rr[i][catg*dim3+state*dim2+l] *
 								(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 					}
@@ -923,7 +929,6 @@ void Unconstraint_Lk(arbre *tree)
 }
 
 /*********************************************************/
-// VHS: update partial likelihoods
 void Update_P_Lk(arbre *tree, edge *b, node *d)
 {
 	/*
@@ -937,7 +942,10 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			  n_v1    n_v2
 
 	 */
-	//printf("\nJSJ: Calling Update_P_Lk\n");
+
+	PhyML_Printf("entered Update_P_Lk(..., edge %d, node %d)\n", b->num, d->num);
+	PhyML_Printf("left = %d, right = %d\n", b->left->num, b->rght->num);
+
 	node *n_v1, *n_v2;
 	m3ldbl p1_lk1,p2_lk2;
 	plkflt *p_lk,*p_lk_v1,*p_lk_v2;
@@ -971,7 +979,6 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	ambiguity_check_v1 = ambiguity_check_v2 = -1;
 	scale_v1 = scale_v2 = 0.0;
 	p1_lk1 = p2_lk2 = .0;
-
 
 	if(d->tax)
 	{
@@ -1064,9 +1071,23 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 
 #ifdef COMPRESS_SUBALIGNMENTS
 		// if d->red[site] contains a value:
-			// then p_lk[site] = p_lk[ d->red[site] ]
-			// and sum_scale[site] = sum_scale[ d->red[site] ]
-			// and then skip ahead to the next site in this for loop
+		if (d->red[site] != -1) // i.e. this site is redundant
+		{
+			for(k = 0; k < tree->n_l; k++)
+			{
+				//PhyML_Printf("Update_P_Lk: using saved result for site %d, node %d\n", site, d->num);
+				For(catg,tree->mod->n_catg)
+				{
+					For(i,tree->mod->ns)
+					{
+						//PhyML_Printf("Update_P_Lk: WITH COMP node=%d site=%d bl=%d catg=%d state=%d p_lk=%f\n", d->num, site, k, catg, i, p_lk[site*dim1+catg*dim2+i]);
+						//PhyML_Printf("Update_P_Lk: WITH COMP node=%d site=%d bl=%d catg=%d state=%d sum_scale=%f\n", d->num, site, k, catg, i, sum_scale[ d->red[site] ]);
+					}
+				}
+			}
+			// VHS: turn this back on!
+			//continue;
+		}
 #endif
 
 
@@ -1085,9 +1106,6 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		*/
 		sum_scale[site] = scale_v1 + scale_v2;
 
-		/**
-		* JSJ: max_p_lk is just a double, no global assignments here...
-		*/
 		max_p_lk = -MDBL_MAX;
 		state_v1 = state_v2 = -1; //just ints
 		ambiguity_check_v1 = ambiguity_check_v2 = -1;
@@ -1118,26 +1136,22 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			ambiguity_check_v2 = 1;
 		}
 
-		/**
-		* JSJ: here is a good point to iterate over branch length sets
-		* at this point we are in the loops that do the assignment we
-		* need to modify, and we are also past the variables that will
-		* not need to be changed.
-		*/
+		/*
+		 * VHS: this loop modifies
+		 * 1. p_lk[site*dim1+catg*dim2+i]
+		 * and
+		 * 2. max_p_lk
+		 *
+		 */
 		for(k = 0; k < tree->n_l; k++)
 		{
 			For(catg,tree->mod->n_catg)
 			{
 				For(i,tree->mod->ns)
 				{
-					/**
-					* JSJ: here is a good point to iterate over branch length sets
-					* at this point we are in the loops that do the assignment we
-					* need to modify, and we are also past the variables that will
-					* not need to be changed.
-					*/
 					p1_lk1 = .0;
 
+					// if n_v1 is terminal, then use it's known state...
 					if((n_v1->tax) && (!tree->mod->s_opt->greedy))
 					{
 						if(!ambiguity_check_v1)
@@ -1158,7 +1172,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 							}
 						}
 					}
-					else
+					else // otherwise, n_v1 is non-terminal, so we need to consider all possible states...
 					{
 						For(j,tree->mod->ns)
 						{
@@ -1205,47 +1219,78 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 						p_lk[site*dim1+catg*dim2+i] += (plkflt)(p1_lk1 * p2_lk2 * tree->props[k]);
 					}
 
-					if(p_lk[site*dim1+catg*dim2+i] > max_p_lk) max_p_lk = p_lk[site*dim1+catg*dim2+i];
+					if(p_lk[site*dim1+catg*dim2+i] > max_p_lk)
+					{
+						max_p_lk = p_lk[site*dim1+catg*dim2+i];
+					}
 
 				}//JSJ: end For(i in alphabet)
 			}//JSJ: end For(catg in gama categories)
 		}//JSJ: end For(k,Num Branch Length sets)
 
+
 		if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
 		{
-			For(catg,tree->mod->n_catg)
+			for(k = 0; k < tree->n_l; k++)
 			{
-				For(i,tree->mod->ns)
+				For(catg,tree->mod->n_catg)
 				{
-					/**
-					* mod->ns is the number of states (ex 4 for nucleotides)
-					* mod->n_catg is the number of categories in the
-					* discrete gamma distribution.
-					*/
-					p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
+					For(i,tree->mod->ns)
+					{
+						/**
+						* mod->ns is the number of states (ex 4 for nucleotides)
+						* mod->n_catg is the number of categories in the
+						* discrete gamma distribution.
+						*/
 
-					/* 		  if((p_lk[site][catg][i] > MDBL_MAX) || (p_lk[site][catg][i] < MDBL_MIN)) */
-					/* 		    { */
-					/* 		      PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__); */
-					/* 		      PhyML_Printf("\n. p_lk[%3d][%2d][%3d] = %G max_p_lk = %G",site,catg,i,p_lk[site][catg][i],max_p_lk); */
-					/* 		      PhyML_Printf("\n. alpha=%f pinv=%f",tree->mod->alpha,tree->mod->pinvar); */
-					/* 		      For(i,tree->mod->n_catg) PhyML_Printf("\n. rr[%2d] = %G",i,tree->mod->rr[i]); */
-					/* 		      PhyML_Printf("\n. d->b[dir1]->l = %f, d->b[dir2]->l = %f",d->b[dir1]->l,d->b[dir2]->l); */
-					/* 		      PhyML_Printf("\n. d->v[dir1]->num = %d, d->v[dir2]->num = %d",d->v[dir1]->num,d->v[dir2]->num); */
-					/* 		      if(d->v[dir1]->tax) */
-					/* 			{ */
-					/* 			  PhyML_Printf("\n. Character observed at d->v[dir1] = %d",state_v1); */
-					/* 			} */
-					/* 		      if(d->v[dir2]->tax) */
-					/* 			{ */
-					/* 			  PhyML_Printf("\n. Character observed at d->v[dir2] = %d",state_v2); */
-					/* 			} */
-					/* 		      Warn_And_Exit("\n. Numerical precision problem ! (send me an e-mail : s.guindon@auckland.ac.nz)\n"); */
-					/* 		    } */
-				} //JSJ: end For(i, count of alphabet)
-			}//JSJ: end For(catg in gamma categories...
-			sum_scale[site] += (plkflt)log(max_p_lk);
+						p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
+
+						/* 		  if((p_lk[site][catg][i] > MDBL_MAX) || (p_lk[site][catg][i] < MDBL_MIN)) */
+						/* 		    { */
+						/* 		      PhyML_Printf("\n. Err in file %s at line %d",__FILE__,__LINE__); */
+						/* 		      PhyML_Printf("\n. p_lk[%3d][%2d][%3d] = %G max_p_lk = %G",site,catg,i,p_lk[site][catg][i],max_p_lk); */
+						/* 		      PhyML_Printf("\n. alpha=%f pinv=%f",tree->mod->alpha,tree->mod->pinvar); */
+						/* 		      For(i,tree->mod->n_catg) PhyML_Printf("\n. rr[%2d] = %G",i,tree->mod->rr[i]); */
+						/* 		      PhyML_Printf("\n. d->b[dir1]->l = %f, d->b[dir2]->l = %f",d->b[dir1]->l,d->b[dir2]->l); */
+						/* 		      PhyML_Printf("\n. d->v[dir1]->num = %d, d->v[dir2]->num = %d",d->v[dir1]->num,d->v[dir2]->num); */
+						/* 		      if(d->v[dir1]->tax) */
+						/* 			{ */
+						/* 			  PhyML_Printf("\n. Character observed at d->v[dir1] = %d",state_v1); */
+						/* 			} */
+						/* 		      if(d->v[dir2]->tax) */
+						/* 			{ */
+						/* 			  PhyML_Printf("\n. Character observed at d->v[dir2] = %d",state_v2); */
+						/* 			} */
+						/* 		      Warn_And_Exit("\n. Numerical precision problem ! (send me an e-mail : s.guindon@auckland.ac.nz)\n"); */
+						/* 		    } */
+					} //JSJ: end For(i, count of alphabet)
+				}//JSJ: end For(catg in gamma categories...
+				sum_scale[site] += (plkflt)log(max_p_lk);
+			}
 		}//JSJ: end if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
+
+#ifdef COMPRESS_SUBALIGNMENTS
+		// if d->red[site] contains a value:
+		if (d->red[site] != -1) // i.e. this site is redundant
+		{
+			//PhyML_Printf("node %d, site %d == site %d\n", d->num, site, d->red[site]);
+			// VHS: for debugging
+			for(k = 0; k < tree->n_l; k++)
+			{
+				For(catg,tree->mod->n_catg)
+				{
+					For(i,tree->mod->ns)
+					{
+						if ( p_lk[site*dim1+catg*dim2+i] != p_lk[d->red[site]*dim1+catg*dim2+i] )
+						{
+							PhyML_Printf("Update_P_Lk: disagreement at node=%d site=%d bl=%d catg=%d state=%d p_lk[old_site]=%f p_lk[this_site]=%f\n", d->num, site, k, catg, i, p_lk[d->red[site]*dim1+catg*dim2+i], p_lk[site*dim1+catg*dim2+i]);
+						}
+					}
+				}
+			}
+		}
+#endif
+
 	} //JSJ: end For(site,patterns)
 }
 
@@ -1363,9 +1408,10 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 		else if(b_fcus->l[i] > BL_MAX) b_fcus->l[i] = BL_MAX;
 	}
 
-	For(i,tree->mod->n_catg)
+	For(i,tree->mod->n_catg) // foreach gamma category
 	{
-		For(j,tree->n_l){
+		For(j,tree->n_l) // foreach branch length category
+		{
 			if(b_fcus->has_zero_br_len[j]) len = -1.0;
 			else
 			{

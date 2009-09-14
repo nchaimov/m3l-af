@@ -97,7 +97,7 @@ arbre *Read_Tree(char *s_tree)
 					if(n_l == 0){
 						n_l = tmp_nl;
 					}else if(n_l != tmp_nl){//we have a problem!!
-						printf("JSJ: number of branch length sets not properly counted!\n");
+						PhyML_Printf("Error: The number of branch length sets was not properly counted.\n");
 						exit(1);
 					}
 					break; //done counting this round of branch_length sets
@@ -2596,7 +2596,7 @@ arbre *Make_Tree(int n_otu, int n_l)
 	arbre *tree;
 	int i;
 	tree = (arbre *)mCalloc(1,sizeof(arbre ));
-	tree->t_dir = (int **)mCalloc(2*n_otu-2,sizeof(int *)); //JSJ: not sure what t_dir does!!!
+	tree->t_dir = (int **)mCalloc(2*n_otu-2,sizeof(int *));
 	For(i,2*n_otu-2) tree->t_dir[i] = (int *)mCalloc(2*n_otu-2,sizeof(int));
 	Init_Tree(tree,n_otu, n_l);
 	return tree;
@@ -2609,9 +2609,13 @@ void Make_Tree_Path(arbre *tree)
 	tree->curr_path = (node **)mCalloc(tree->n_otu,sizeof(node *));
 }
 
+/*********************************************************/
+// This method assumes that tree->n_pattern is initiliazed to a real value (not -1).
 #ifdef COMPRESS_SUBALIGNMENTS
 void Make_Node_Red(arbre *tree)
 {
+	PhyML_Printf("allocating memory for red arrays\n");
+
 	int i;
 	int k;
 
@@ -2621,7 +2625,27 @@ void Make_Node_Red(arbre *tree)
 		// Make_Node_Light, because we need to know how many patterns are in the alignment.
 		// An optimization (to-do) would be to leave ->red size 0, thus saving memory space,
 		// and allocate more memory everytime we want to add information to ->red.
+		//PhyML_Printf("Make_Node_Red: calling mCalloc(%d, %d)\n", tree->n_pattern, sizeof(int));
 		tree->noeud[i]->red = (int *)mCalloc( tree->n_pattern, sizeof(int) );
+		For(k, tree->n_pattern)
+		{
+			tree->noeud[i]->red[k] = -1; // we initialize all values to -1.
+		}
+	}
+}
+
+//
+// This method assumes that the memory for red arrays has already been allocated.
+//
+void Init_All_Nodes_Red(arbre *tree)
+{
+	PhyML_Printf("resetting red arrays\n");
+
+	int i;
+	int k;
+
+	For(i,2*tree->n_otu-2)
+	{
 		For(k, tree->n_pattern)
 		{
 			tree->noeud[i]->red[k] = -1; // we initialize all values to -1.
@@ -3201,6 +3225,9 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 			Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
 			For(i,tree->n_l) b_fcus->l[i] = l1[i];
 			tree->both_sides = 1;
+#ifdef COMPRESS_SUBALIGNMENTS
+			Init_All_Nodes_Red(tree);
+#endif
 			Lk(tree);
 		}
 		else
@@ -3209,6 +3236,9 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 			Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
 			For(i,tree->n_l) b_fcus->l[i] = l2[i];
 			tree->both_sides = 1;
+#ifdef COMPRESS_SUBALIGNMENTS
+			Init_All_Nodes_Red(tree);
+#endif
 			Lk(tree);
 		}
 	}
@@ -6418,6 +6448,9 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 				For(m,ori->n_l) cpy->noeud[i]->l[m][j] = ori->noeud[i]->l[m][j];//JSJ: deep copy
 				cpy->noeud[i]->n_l = ori->n_l;
 				cpy->noeud[i]->b[j] = cpy->t_edges[ori->noeud[i]->b[j]->num];
+#ifdef COMPRESS_SUBALIGNMENTS
+				cpy->noeud[i]->red = ori->noeud[i]->red; //VHS
+#endif
 
 			}
 			else
@@ -8959,9 +8992,9 @@ void Subtree_Union(node *n, edge *b_fcus, arbre *tree)
 {
 	/*
            |
-	   |<- b_cus
-	   |
-	   n
+	       |<- b_cus
+	       |
+	       n
           / \
        	 /   \
        	/     \
@@ -9215,7 +9248,10 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 {
 	int i;
 	int n_l = tree->n_l;
-	if(tree->mod->s_opt->random_input_tree) Speed_Spr_Loop(tree); /* Don't do simultaneous NNIs if starting tree is random */
+	if(tree->mod->s_opt->random_input_tree)
+	{
+		Speed_Spr_Loop(tree); /* Don't do simultaneous NNIs if starting tree is random */
+	}
 	else
 	{
 		arbre *ori_tree,*best_tree;
@@ -9229,22 +9265,28 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 			best_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 		}
 
+#ifdef COMPRESS_SUBALIGNMENTS
+		PhyML_Printf("\n. Compressing sub-alignments based on phylogeny...\n");
+		Make_Node_Red(tree);
+		Post_Order_Foo(tree->noeud[0],tree->noeud[0]->v[0],tree);
+#endif
+
 		ori_mod   = Copy_Model(tree->mod);
 		best_mod  = Copy_Model(tree->mod);
 
+		// Build ori_tree
 		ori_tree = Make_Tree(tree->n_otu, tree->n_l);
 		Init_Tree(ori_tree,tree->n_otu, tree->n_l);
 		Make_All_Tree_Nodes(ori_tree);
 		Make_All_Tree_Edges(ori_tree);
-#ifdef COMPRESS_SUBALIGNMENTS
-	Post_Order_Foo(ori_tree->noeud[0],ori_tree->noeud[0]->v[0],ori_tree);
-#endif
 
+		// Build best_tree
 		best_tree = Make_Tree(tree->n_otu, tree->n_l);
 		Init_Tree(best_tree,tree->n_otu, tree->n_l);
 		Make_All_Tree_Nodes(best_tree);
 		Make_All_Tree_Edges(best_tree);
 
+		// ori_tree = tree
 		Copy_Tree(tree,ori_tree);
 		Record_Br_Len(ori_bl,tree);
 
@@ -9255,11 +9297,13 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		Simu_Loop(tree); /* Perform simultaneous NNIs */
 		best_lnL = tree->c_lnL; /* Record the likelihood */
 		nni_lnL = tree->c_lnL;
+		// best_tree = tree
 		Copy_Tree(tree,best_tree); /* Record the tree topology and branch lengths */
 		Record_Br_Len(best_bl,tree);
 		Restore_Br_Len(best_bl,best_tree);
 		Record_Model(tree->mod,best_mod);
 
+		// tree = ori_tree
 		Copy_Tree(ori_tree,tree); /* Back to the original tree topology */
 		Restore_Br_Len(ori_bl,tree); /* Back to the original branch lengths */
 		Record_Model(ori_mod,tree->mod); /* Back to the original model */
@@ -9275,7 +9319,7 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 
 		Speed_Spr_Loop(tree);
 		spr_lnL = tree->c_lnL;
-		if(tree->c_lnL > best_lnL)
+		if(tree->c_lnL > best_lnL) // if the SPR results were better than NNI results....
 		{
 			best_lnL = tree->c_lnL;
 			Copy_Tree(tree,best_tree); /* Record tree topology, branch lengths and model parameters */
