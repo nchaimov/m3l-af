@@ -370,16 +370,6 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 	//Optimize branch lengths and update likelihoods for
 	//the original configuration.
-
-//	/**
-//	 * JSJ: for testing purposes
-//	 */
-//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-//	Print_Tree_Screen(tree);
-//	/**
-//	 * JSJ: end tree test print section
-//	 */
-
 	do
 	{
 		lk0 = lk_temp;
@@ -387,19 +377,11 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		For(i,3)
 		if(b_fcus->left->v[i] != b_fcus->rght)
 		{ //JSJ: fixed l
-			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left,FALSE);
 			For(j,tree->n_l){
 //				l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
 //				l_max[j]   = b_fcus->left->b[i]->l[j];
 //				l_infb[j]  = BL_MIN;
-//				/**
-//				 * JSJ: for testing purposes
-//				 */
-//				PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-//				Print_Tree_Screen(tree);
-//				/**
-//				 * JSJ: end tree test print section
-//				 */
 				lk_temp = Br_Len_Brent_Iter(10.*b_fcus->left->b[i]->l[j],b_fcus->left->b[i]->l[j],BL_MIN,
 						tree->mod->s_opt->min_diff_lk_local,
 						b_fcus->left->b[i],tree,
@@ -411,20 +393,13 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //					tree->mod->s_opt->brent_it_max,0);
 		}
 
-		Update_P_Lk(tree,b_fcus,b_fcus->left);
+		Update_P_Lk(tree,b_fcus,b_fcus->left,FALSE);
 		//JSJ: temp fix to l
 		For(j,tree->n_l){
 //			l_infa[j]  = 10.*b_fcus->l[j];
 //			l_max[j]   = b_fcus->l[j];
 //			l_infb[j]  = BL_MIN;
-//			/**
-//			 * JSJ: for testing purposes
-//			 */
-//			PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-//			Print_Tree_Screen(tree);
-//			/**
-//			 * JSJ: end tree test print section
-//			 */
+
 			lk_temp = Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
@@ -440,7 +415,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		For(i,3)
 		if(b_fcus->rght->v[i] != b_fcus->left)
 		{
-			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght,FALSE);
 			//JSJ: temp fix to l
 			For(j,tree->n_l){
 //				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
@@ -466,18 +441,10 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //					tree->mod->s_opt->brent_it_max,0);
 		}
 
-		Update_P_Lk(tree,b_fcus,b_fcus->rght);
+		Update_P_Lk(tree,b_fcus,b_fcus->rght,FALSE);
 
 		if(lk_temp < lk0 - (tree->mod->s_opt->min_diff_lk_local))
 		{
-//			/**
-//			 * JSJ: for testing purposes
-//			 */
-//			PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-//			Print_Tree_Screen(tree);
-//			/**
-//			 * JSJ: end tree test print section
-//			 */
 //			PhyML_Printf("\n. lk_temp = %f lk0 = %f\n",lk_temp,lk0);
 //			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 //			Warn_And_Exit(""); //JSJ: temporarily comment out this line...
@@ -523,11 +490,11 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 	For(i,3)
 	if(b_fcus->left->v[i] != b_fcus->rght)
-		Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+		Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left,FALSE);
 
 	For(i,3)
 	if(b_fcus->rght->v[i] != b_fcus->left)
-		Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+		Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght,FALSE);
 
 
 	//Optimize branch lengths and update likelihoods
@@ -539,7 +506,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		For(i,3)
 		if(b_fcus->left->v[i] != b_fcus->rght)
 		{
-			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left,FALSE);
 			//JSJ: temporary fixes to l
 			For(j,tree->n_l){
 //				l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
@@ -557,7 +524,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		}
 
 
-		Update_P_Lk(tree,b_fcus,b_fcus->left);
+		Update_P_Lk(tree,b_fcus,b_fcus->left,FALSE);
 		//JSJ: temp fixes to l
 		For(j,tree->n_l){
 //			l_infa[j]  = 10.*b_fcus->l[j];
@@ -578,7 +545,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		For(i,3)
 		if(b_fcus->rght->v[i] != b_fcus->left)
 		{
-			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght,FALSE);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
 //				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
@@ -595,7 +562,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //					tree->mod->s_opt->brent_it_max,0);
 		}
 
-		Update_P_Lk(tree,b_fcus,b_fcus->rght);
+		Update_P_Lk(tree,b_fcus,b_fcus->rght,FALSE);
 
 
 		if(lk_temp < lk1 - (tree->mod->s_opt->min_diff_lk_local))
@@ -653,11 +620,11 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 
 	For(i,3)
 	if(b_fcus->left->v[i] != b_fcus->rght)
-		Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+		Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left,FALSE);
 
 	For(i,3)
 	if(b_fcus->rght->v[i] != b_fcus->left)
-		Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+		Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght,FALSE);
 
 
 	//Optimize branch lengths and update likelihoods
@@ -669,7 +636,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		For(i,3)
 		if(b_fcus->left->v[i] != b_fcus->rght)
 		{
-			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left,FALSE);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
 //				l_infa[j]  = 10.*b_fcus->left->b[i]->l[j];
@@ -687,7 +654,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		}
 
 
-		Update_P_Lk(tree,b_fcus,b_fcus->left);
+		Update_P_Lk(tree,b_fcus,b_fcus->left,FALSE);
 		//JSJ: temp fixes to l
 		For(j,tree->n_l){
 //			l_infa[j]  = 10.*b_fcus->l[j];
@@ -706,7 +673,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 		For(i,3)
 		if(b_fcus->rght->v[i] != b_fcus->left)
 		{
-			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght,FALSE);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
 //				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
@@ -723,7 +690,7 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 //					tree->mod->s_opt->brent_it_max,0);
 		}
 
-		Update_P_Lk(tree,b_fcus,b_fcus->rght);
+		Update_P_Lk(tree,b_fcus,b_fcus->rght,FALSE);
 
 		if(lk_temp < lk2 - (tree->mod->s_opt->min_diff_lk_local))
 		{
@@ -772,16 +739,16 @@ int NNI_Neigh_BL(edge *b_fcus, arbre *tree)
 	Update_PMat_At_Given_Edge(e4,tree);
 	Update_PMat_At_Given_Edge(b_fcus,tree);
 
-	Update_P_Lk(tree,b_fcus,b_fcus->rght);
-	Update_P_Lk(tree,b_fcus,b_fcus->left);
+	Update_P_Lk(tree,b_fcus,b_fcus->rght,FALSE);
+	Update_P_Lk(tree,b_fcus,b_fcus->left,FALSE);
 
 	For(i,3)
 	if(b_fcus->left->v[i] != b_fcus->rght)
-		Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+		Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left,FALSE);
 
 	For(i,3)
 	if(b_fcus->rght->v[i] != b_fcus->left)
-		Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+		Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght,FALSE);
 
 	lk_temp = Lk_At_Given_Edge(b_fcus,tree);
 
@@ -918,11 +885,11 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 
 	For(i,3)
 	if(b_fcus->left->v[i] != b_fcus->rght)
-		Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+		Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left,FALSE);
 
 	For(i,3)
 	if(b_fcus->rght->v[i] != b_fcus->left)
-		Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+		Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght,FALSE);
 
 
 	//Optimize branch lengths and update likelihoods
@@ -934,7 +901,7 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 		For(i,3)
 		if(b_fcus->left->v[i] != b_fcus->rght)
 		{
-			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+			Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left,FALSE);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
 //				l_infa[j] = 10.*b_fcus->left->b[i]->l[j];
@@ -952,7 +919,7 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 		}
 
 
-		Update_P_Lk(tree,b_fcus,b_fcus->left);
+		Update_P_Lk(tree,b_fcus,b_fcus->left,FALSE);
 		//JSJ: temp fixes to l
 		For(j,tree->n_l){
 //			l_infa[j]  = 10.*b_fcus->l[j];
@@ -973,7 +940,7 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 		For(i,3)
 		if(b_fcus->rght->v[i] != b_fcus->left)
 		{
-			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+			Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght,FALSE);
 			//JSJ: temp fixes to l
 			For(j,tree->n_l){
 //				l_infa[j]  = 10.*b_fcus->rght->b[i]->l[j];
@@ -990,7 +957,7 @@ void Make_Target_Swap(arbre *tree, edge *b_fcus, int swaptodo)
 //					tree->mod->s_opt->brent_it_max,0);
 		}
 
-		Update_P_Lk(tree,b_fcus,b_fcus->rght);
+		Update_P_Lk(tree,b_fcus,b_fcus->rght,FALSE);
 
 
 		if(lk_temp < lktodo - tree->mod->s_opt->min_diff_lk_local)
@@ -1390,9 +1357,9 @@ m3ldbl Statistics_To_SH(arbre *tree)
 m3ldbl Update_Lk_At_Given_Edge_Excluding(edge *b_fcus, arbre *tree, node *exclude)
 {
 	if((!b_fcus->left->tax) && (exclude == NULL || exclude != b_fcus->left))
-		Update_P_Lk(tree,b_fcus,b_fcus->left);
+		Update_P_Lk(tree,b_fcus,b_fcus->left,FALSE);
 	if((!b_fcus->rght->tax) && (exclude == NULL || exclude != b_fcus->rght))
-		Update_P_Lk(tree,b_fcus,b_fcus->rght);
+		Update_P_Lk(tree,b_fcus,b_fcus->rght,FALSE);
 
 	tree->c_lnL = Lk_At_Given_Edge(b_fcus,tree);
 

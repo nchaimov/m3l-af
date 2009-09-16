@@ -211,7 +211,8 @@ void Init_Tips_At_One_Site_AA_Int(char aa, int pos, short int *p_pars)
 void Get_All_Partial_Lk_Scale(arbre *tree, edge *b_fcus, node *d)
 {
 	if(d->tax) return;
-	else Update_P_Lk(tree,b_fcus,d);
+	// VHS: pre-conditions for redundancy arrays are taken care of in Lk.
+	else Update_P_Lk(tree,b_fcus,d, TRUE);
 }
 
 //
@@ -221,7 +222,7 @@ void Get_All_Partial_Lk_Scale(arbre *tree, edge *b_fcus, node *d)
 // at the end of this method, node a will contain a list of compress-able sites
 //
 #ifdef COMPRESS_SUBALIGNMENTS
-void Post_Order_Foo(node *a, node *d, arbre *tree)
+void Post_Order_Red(node *a, node *d, arbre *tree)
 {
 	//PhyML_Printf("entered Post_Order_Foo(node %d, node %d, ...)\n", a->num, d->num);
 
@@ -276,7 +277,7 @@ void Post_Order_Foo(node *a, node *d, arbre *tree)
 				}
 
 				//PhyML_Printf("Post_Order_Foo: traversing from node %d to node %d\n", d->num, d->v[i]->num);
-				Post_Order_Foo(d,d->v[i],tree);
+				Post_Order_Red(d,d->v[i],tree);
 			}
 		}
 
@@ -351,10 +352,11 @@ void Lk(arbre *tree)
 	int br,site;
 	int n_patterns;
 
+	//PhyML_Printf("entered Lk(...) with tree:\n");
+	//Print_Tree_Screen(tree);
+
 	n_patterns = tree->n_pattern;
-
 	tree->number_of_lk_calls++;
-
 	Set_Model_Parameters(tree->mod);
 
 #ifdef MC
@@ -377,12 +379,21 @@ void Lk(arbre *tree)
 		Update_PMat_At_Given_Edge(tree->t_edges[br],tree);
 	}
 
+	// VHS: I think I need to replicate the following ifdef block before any calls to Update_P_Lk.
+	// In this instance, the call to Post_Order_Lk will lead to Update_P_Lk, but elsewhere
+	// I think Update_P_Lk is called non-recursively.
+#ifdef COMPRESS_SUBALIGNMENTS
+	//PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
+	Init_All_Nodes_Red(tree);
+	Post_Order_Red(tree->noeud[0], tree->noeud[0]->v[0], tree);
+#endif
+
 	// VHS: the post- and pre-order traversals begin at a random node (the 0th node, to be specific).
 	// This random strategy is okay, because the Felsenstein pruning algorithm operates on unrooted trees.
 	Post_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
 
 
-	// VHS:
+	// VHS: I turned-off Pre_Order_Lk, because I think it's unecessary.  Am I wrong?
 	//if(tree->both_sides)
 	//	Pre_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
 
@@ -929,7 +940,13 @@ void Unconstraint_Lk(arbre *tree)
 }
 
 /*********************************************************/
-void Update_P_Lk(arbre *tree, edge *b, node *d)
+// use_compression: True if you want to use phylogeny-based alignment compression.  Generally,
+//				this is useful only if the current call to Update_P_Lk is within a complete
+//				traversal of the tree (i.e. Post_Order_Lk).  If Update_P_Lk is called
+//				from within SPR or NNI, those algorithms implement their own optimizations
+//				to avoid redundant re-calculation of partial likelihoods, and therefore
+//				using compression can be incorrect in some cases.
+void Update_P_Lk(arbre *tree, edge *b, node *d, int use_compression)
 {
 	/*
 				   |
@@ -943,8 +960,8 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 
 	 */
 
-	PhyML_Printf("entered Update_P_Lk(..., edge %d, node %d)\n", b->num, d->num);
-	PhyML_Printf("left = %d, right = %d\n", b->left->num, b->rght->num);
+	//PhyML_Printf("entered Update_P_Lk(..., edge %d, node %d)\n", b->num, d->num);
+	//PhyML_Printf("left = %d, right = %d\n", b->left->num, b->rght->num);
 
 	node *n_v1, *n_v2;
 	m3ldbl p1_lk1,p2_lk2;
@@ -988,12 +1005,11 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	}
 
 	n_patterns = tree->n_pattern;
-	//PhyML_Printf("number of unique patterns = %d", tree->n_pattern);
 
 	dir1=dir2=-1;
 	For(i,3) if(d->b[i] != b) (dir1<0)?(dir1=i):(dir2=i); //VHS: here we set dir1 and dir2 to point to the two
-	// edges (of three possible edges) which aren't
-	// the edge pointed to by edge *b.
+															// edges (of three possible edges) which aren't
+															// the edge pointed to by edge *b.
 
 	if((dir1 == -1) || (dir2 == -1))
 	{
@@ -1070,23 +1086,16 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	{
 
 #ifdef COMPRESS_SUBALIGNMENTS
-		// if d->red[site] contains a value:
-		if (d->red[site] != -1) // i.e. this site is redundant
+		if (use_compression == 1)
 		{
-			for(k = 0; k < tree->n_l; k++)
+			// if d->red[site] contains a value:
+			if (d->red[site] != -1) // i.e. this site is redundant
 			{
-				//PhyML_Printf("Update_P_Lk: using saved result for site %d, node %d\n", site, d->num);
-				For(catg,tree->mod->n_catg)
-				{
-					For(i,tree->mod->ns)
-					{
-						//PhyML_Printf("Update_P_Lk: WITH COMP node=%d site=%d bl=%d catg=%d state=%d p_lk=%f\n", d->num, site, k, catg, i, p_lk[site*dim1+catg*dim2+i]);
-						//PhyML_Printf("Update_P_Lk: WITH COMP node=%d site=%d bl=%d catg=%d state=%d sum_scale=%f\n", d->num, site, k, catg, i, sum_scale[ d->red[site] ]);
-					}
-				}
+				// something like: p_lk[site] = p_lk[ previous site ]
+
+				// VHS: turn this back on!
+				//continue;
 			}
-			// VHS: turn this back on!
-			//continue;
 		}
 #endif
 
@@ -1243,7 +1252,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 						* discrete gamma distribution.
 						*/
 
-						p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
+						//p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
 
 						/* 		  if((p_lk[site][catg][i] > MDBL_MAX) || (p_lk[site][catg][i] < MDBL_MIN)) */
 						/* 		    { */
@@ -1269,21 +1278,28 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			}
 		}//JSJ: end if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
 
+// for debugging purposes:
 #ifdef COMPRESS_SUBALIGNMENTS
-		// if d->red[site] contains a value:
-		if (d->red[site] != -1) // i.e. this site is redundant
+		if (use_compression == 1)
 		{
-			//PhyML_Printf("node %d, site %d == site %d\n", d->num, site, d->red[site]);
-			// VHS: for debugging
-			for(k = 0; k < tree->n_l; k++)
+			// if d->red[site] contains a value:
+			if (d->red[site] != -1) // i.e. this site is redundant
 			{
-				For(catg,tree->mod->n_catg)
+				//Print_P_Lk(p_lk, site, tree);
+				//Print_P_Lk(p_lk, d->red[site], tree);
+
+				int red_site = d->red[site];
+				// VHS: for debugging
+				for(k = 0; k < tree->n_l; k++)
 				{
-					For(i,tree->mod->ns)
+					For(catg,tree->mod->n_catg)
 					{
-						if ( p_lk[site*dim1+catg*dim2+i] != p_lk[d->red[site]*dim1+catg*dim2+i] )
+						For(i,tree->mod->ns)
 						{
-							PhyML_Printf("Update_P_Lk: disagreement at node=%d site=%d bl=%d catg=%d state=%d p_lk[old_site]=%f p_lk[this_site]=%f\n", d->num, site, k, catg, i, p_lk[d->red[site]*dim1+catg*dim2+i], p_lk[site*dim1+catg*dim2+i]);
+							if ( (plkflt)p_lk[site*dim1+catg*dim2+i] != (plkflt)p_lk[red_site*dim1+catg*dim2+i] )
+							{
+								PhyML_Printf("Update_P_Lk: disagreement at node=%d site=%d bl=%d catg=%d state=%d p_lk[old_site]=%f p_lk[this_site]=%f\n", d->num, site, k, catg, i, p_lk[d->red[site]*dim1+catg*dim2+i], p_lk[site*dim1+catg*dim2+i]);
+							}
 						}
 					}
 				}
@@ -1291,7 +1307,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		}
 #endif
 
-	} //JSJ: end For(site,patterns)
+	} // end For(site,patterns)
 }
 
 /*********************************************************/
@@ -1474,12 +1490,12 @@ void Update_P_Lk_Along_A_Path(node **path, int path_length, arbre *tree)
 		{
 			if(path[i] == path[i]->b[j]->left)
 			{
-				Update_P_Lk(tree,path[i]->b[j],path[i]->b[j]->left);
+				Update_P_Lk(tree,path[i]->b[j],path[i]->b[j]->left,FALSE);
 			}
 
 			else if(path[i] == path[i]->b[j]->rght)
 			{
-				Update_P_Lk(tree,path[i]->b[j],path[i]->b[j]->rght);
+				Update_P_Lk(tree,path[i]->b[j],path[i]->b[j]->rght,FALSE);
 			}
 			else
 			{
@@ -1595,8 +1611,8 @@ m3ldbl Lk_Dist(m3ldbl *F, m3ldbl *dist, model *mod, arbre *tree)
 
 m3ldbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 {
-	if(!b_fcus->left->tax) Update_P_Lk(tree,b_fcus,b_fcus->left);
-	if(!b_fcus->rght->tax) Update_P_Lk(tree,b_fcus,b_fcus->rght);
+	if(!b_fcus->left->tax) Update_P_Lk(tree,b_fcus,b_fcus->left,FALSE);
+	if(!b_fcus->rght->tax) Update_P_Lk(tree,b_fcus,b_fcus->rght,FALSE);
 	tree->c_lnL = Lk_At_Given_Edge(b_fcus,tree);
 	return tree->c_lnL;
 }

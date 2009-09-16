@@ -1550,7 +1550,7 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 					}
 				}
 			}
-			Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
+			Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i], FALSE);
 		}
 		if (v_n == e_regraft->left)
 		{
@@ -1701,7 +1701,7 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 		 ** Calculate the change in likelihood locally. Save it and the estimated edge
 		 ** lengths in the current candidate in the list.
 		 */
-		Update_P_Lk (tree, v_tmp->b[0], v_tmp);
+		Update_P_Lk (tree, v_tmp->b[0], v_tmp,FALSE);
 		new_lk = Lk_At_Given_Edge (v_tmp->b[0],tree);
 		/*     PhyML_Printf("\n. new_lk = %f",new_lk); */
 
@@ -1787,7 +1787,7 @@ int Est_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 					break;
 				}
 			}
-			Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
+			Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i],FALSE);
 		}
 
 		/*
@@ -2123,7 +2123,7 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 					}
 				}
 			}
-			Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
+			Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i],FALSE);
 		}
 		if (v_n == e_regraft->left)
 		{
@@ -2258,7 +2258,7 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 			}
 			Update_PMat_At_Given_Edge (v_tmp->b[i], tree);
 		}
-		Update_P_Lk (tree, v_tmp->b[0], v_tmp);
+		Update_P_Lk (tree, v_tmp->b[0], v_tmp, FALSE);
 
 		/*
 		 ** Calculate the change in likelihood locally. Save it and the estimated edge
@@ -2305,7 +2305,11 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 					break;
 				}
 			}
-			Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
+#ifdef COMPRESS_SUBALIGNMENTS
+			Init_All_Nodes_Red(tree);
+			Post_Order_Red(tree->noeud[0], tree->noeud[0]->v[0], tree);
+#endif
+			Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i],FALSE);
 		}
 	}
 
@@ -2565,8 +2569,7 @@ int Find_Optim_Local (arbre *tree)
 			/* 	  Update_PMat_At_Given_Edge (v_prune->b[0], tree); */
 			/* 	  Update_PMat_At_Given_Edge (v_prune->b[1], tree); */
 			/* 	  Update_PMat_At_Given_Edge (v_prune->b[2], tree); */
-
-			Update_P_Lk (tree, v_prune->b[0], v_prune);
+			Update_P_Lk (tree, v_prune->b[0], v_prune, FALSE);
 			new_lk = Lk_At_Given_Edge (v_prune->b[0],tree);
 
 			/* 	  PhyML_Printf("\n. local new_lk = %f",new_lk); */
@@ -3424,12 +3427,16 @@ int Test_All_Spr_Targets(edge *b_pulled, node *n_link, arbre *tree)
 		Update_PMat_At_Given_Edge(n_link->b[dir2],tree);
 		Update_PMat_At_Given_Edge(b_pulled,tree);
 
+#ifdef COMPRESS_SUBALIGNMENTS
+		Init_All_Nodes_Red(tree);
+		Post_Order_Red(tree->noeud[0], tree->noeud[0]->v[0], tree);
+#endif
 
 		if(tree->mod->s_opt->spr_lnL)
 		{
-			Update_P_Lk(tree,b_pulled,  n_link);
-			Update_P_Lk(tree,b_target,  n_link);
-			Update_P_Lk(tree,b_residual,n_link);
+			Update_P_Lk(tree,b_pulled,  n_link, FALSE);
+			Update_P_Lk(tree,b_target,  n_link, FALSE);
+			Update_P_Lk(tree,b_residual,n_link, FALSE);
 		}
 		else
 		{
@@ -3469,7 +3476,7 @@ void Test_One_Spr_Target_Recur(node *a, node *d, edge *pulled, node *link, edge 
 		{
 			if(d->v[i] != a)
 			{
-				if(tree->mod->s_opt->spr_lnL) Update_P_Lk(tree,d->b[i],d);
+				if(tree->mod->s_opt->spr_lnL) Update_P_Lk(tree,d->b[i],d,FALSE);
 				else                          Update_P_Pars(tree,d->b[i],d);
 
 				tree->depth_curr_path++;
@@ -3520,10 +3527,14 @@ m3ldbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_
 
 	if(tree->mod->s_opt->spr_lnL)
 	{
+#ifdef COMPRESS_SUBALIGNMENTS
+		Init_All_Nodes_Red(tree);
+		Post_Order_Red(tree->noeud[0], tree->noeud[0]->v[0], tree);
+#endif
 		/*       move_lnL = Triple_Dist(n_link,tree,1); */
 		Update_PMat_At_Given_Edge(b_target,tree);
 		Update_PMat_At_Given_Edge(b_arrow,tree);
-		Update_P_Lk(tree,b_residual,n_link);
+		Update_P_Lk(tree,b_residual,n_link,FALSE);
 		move_lnL = Lk_At_Given_Edge(b_residual,tree);
 	}
 	else
@@ -3615,14 +3626,6 @@ void Speed_Spr_Loop(arbre *tree)
 	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 	tree->best_lnL = tree->c_lnL;
 
-	//	/**
-	//	 * JSJ: for testing purposes
-	//	 */
-	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	//	Print_Tree_Screen(tree);
-	//	/**
-	//	 * JSJ: end tree test print section
-	//	 */
 	/*****************************/
 	lk_old = UNLIKELY;
 	tree->mod->s_opt->max_depth_path = 2*tree->n_otu-3;
@@ -3637,14 +3640,6 @@ void Speed_Spr_Loop(arbre *tree)
 	while(1);
 	/*****************************/
 
-	//	/**
-	//	 * JSJ: for testing purposes
-	//	 */
-	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	//	Print_Tree_Screen(tree);
-	//	/**
-	//	 * JSJ: end tree test print section
-	//	 */
 
 	/*****************************/
 	if(tree->mod->datatype == NT)
@@ -3662,14 +3657,6 @@ void Speed_Spr_Loop(arbre *tree)
 		while(1);
 	}
 	/*****************************/
-	//	/**
-	//	 * JSJ: for testing purposes
-	//	 */
-	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	//	Print_Tree_Screen(tree);
-	//	/**
-	//	 * JSJ: end tree test print section
-	//	 */
 
 
 	/*****************************/
@@ -3682,28 +3669,14 @@ void Speed_Spr_Loop(arbre *tree)
 	}
 	while(fabs(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_global);
 	/*****************************/
-	//	/**
-	//	 * JSJ: for testing purposes
-	//	 */
-	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	//	Print_Tree_Screen(tree);
-	//	/**
-	//	 * JSJ: end tree test print section
-	//	 */
+
 	/*****************************/
 	do
 	{
 		if(!Check_NNI_Five_Branches(tree)) break;
 	}while(1);
 	/*****************************/
-	//	/**
-	//	 * JSJ: for testing purposes
-	//	 */
-	//	PhyML_Printf("\n. Printing tree from file %s at line %d\n",__FILE__,__LINE__);
-	//	Print_Tree_Screen(tree);
-	//	/**
-	//	 * JSJ: end tree test print section
-	//	 */
+
 	if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n");
 
 }
@@ -3734,7 +3707,7 @@ void Speed_Spr(arbre *tree, int max_cycles)
 	old_pars                        = tree->c_pars;
 	step                            = 0;
 
-	//JSJ: there is a bug somewhere between here...
+
 	do
 	{
 		++step;
@@ -3745,7 +3718,7 @@ void Speed_Spr(arbre *tree, int max_cycles)
 		tree->n_improvements         = 0;
 		tree->perform_spr_right_away = 1;
 		Spr(UNLIKELY,tree);
-		//JSJ: And here..... so it is probably in SPR...
+
 		if(!tree->mod->s_opt->spr_pars)
 		{
 
@@ -3758,9 +3731,6 @@ void Speed_Spr(arbre *tree, int max_cycles)
 
 			/* Update partial likelihoods */
 			tree->both_sides = 1;
-#ifdef COMPRESS_SUBALIGNMENTS
-			Init_All_Nodes_Red(tree);
-#endif
 			Lk(tree);
 
 			/* Print log-likelihood and parsimony scores */
@@ -4007,7 +3977,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(spr **spr_list, int list_size, arbre *tr
 		if(move->b_target)
 		{
 			For(j,3) Update_PMat_At_Given_Edge(move->n_link->b[j],tree);
-			For(j,3) Update_P_Lk(tree,move->n_link->b[j],move->n_link);
+			For(j,3) Update_P_Lk(tree,move->n_link->b[j],move->n_link, FALSE);
 
 			/* TO DO : we don't need to update all these partial likelihoods here.
 	     Would need to record only those that were along the paths examined

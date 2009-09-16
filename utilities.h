@@ -25,6 +25,10 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
 
+
+#define FALSE 0
+#define TRUE 1
+
 //#define USE_OPENMP 1
 
 #ifdef USE_OPENMP
@@ -955,7 +959,10 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l);
 void Init_Edge_Light(edge *b, int num);
 void Make_Edge_Dirs(edge *b,node *a,node *d);
 void Make_Edge_Lk(edge *b, arbre *tree);
-void Make_Node_Red(arbre *tree); //VHS
+#ifdef COMPRESS_SUBALIGNMENTS
+void Make_All_Nodes_Red(arbre *tree); //VHS
+void Init_All_Nodes_Red(arbre *tree);
+#endif
 node *Make_Node_Light(int num, int num_bl_set);
 void Make_Node_Lk(node *n);
 seq **Get_Seq(option *input,int rw);
@@ -975,6 +982,7 @@ void *mRealloc(void *p,int nb,size_t size);
 /* arbre *Make_Light_Tree_Struct(int n_otu); */
 int Sort_Phydbl_Decrease(const void *a, const void *b);
 void Qksort(m3ldbl *A, m3ldbl *B, int ilo,int ihi);
+void Print_P_Lk(plkflt *p_lk, int site, arbre *tree);
 void Print_Site(allseq *alldata,int num,int n_otu,char *sep,int stepsize);
 void Print_Seq(seq **data,int n_otu);
 void Print_CSeq(FILE *fp,allseq *alldata);

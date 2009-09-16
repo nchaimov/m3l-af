@@ -111,21 +111,18 @@ arbre *Read_Tree(char *s_tree)
 	n_l +=1;
 
 
-	//JSJ: Initialize memory and/or put in default values
-	tree = (arbre *)Make_Tree(n_otu, n_l); //JSJ: Init_Tree called once here...
-	Init_Tree(tree,tree->n_otu, tree->n_l); //JSJ: this is called twice... why??
+	tree = (arbre *)Make_Tree(n_otu, n_l);
+	Init_Tree(tree,tree->n_otu, tree->n_l);
 	Make_All_Tree_Nodes(tree);
 	Make_All_Tree_Edges(tree);
 	Make_Tree_Path(tree); //just allocates memory
 	Make_List_Of_Reachable_Tips(tree);
 
-	//JSJ: not sure what this does...
 	tree->noeud[n_otu]->num = n_otu;
 	tree->noeud[n_otu]->tax = 0;
-	//JSJ: added initialization of n_l
 	tree->noeud[n_otu]->n_l = n_l;
 
-	subs = Sub_Trees(s_tree,&degree); //degree is currently uninitialized
+	subs = Sub_Trees(s_tree,&degree);
 	Clean_Multifurcation(subs,degree,3);
 	if(degree == 2) Unroot_Tree(subs);
 	degree = 3;
@@ -2300,6 +2297,30 @@ void Qksort_Matrix(m3ldbl **A, int col, int ilo, int ihi)
 	Qksort_Matrix(A, col, uhi + 1, ihi);
 }
 
+// VHS: I added this method
+void Print_P_Lk(plkflt *p_lk, int site, arbre *tree)
+{
+	int dim1 = tree->mod->n_catg * tree->mod->ns;
+	int dim2 = tree->mod->ns;
+
+	int i, k, catg;
+
+	printf("-> Partial likelihood at site %d:\n", site);
+	for(k = 0; k < tree->n_l; k++)
+	{
+		printf("    BL set #%d:\n", k);
+		For(catg,tree->mod->n_catg)
+		{
+			printf("    gamma set #%d: [", catg);
+			For(i,tree->mod->ns)
+			{
+				printf( " %f ", (plkflt)p_lk[site*dim1+catg*dim2+i] );
+			}
+			printf("]\n");
+		}
+	}
+}
+
 /********************************************************/
 
 void Print_Site(allseq *alldata, int num, int n_otu, char *sep, int stepsize)
@@ -2586,6 +2607,9 @@ arbre *Make_Tree_From_Scratch(int n_otu, allseq *data, int n_l)
 		Copy_Tax_Names_To_Tip_Labels(tree,data);
 		tree->data = data;
 	}
+#ifdef COMPRESS_SUBALIGNMENTS
+	Make_All_Nodes_Red(tree);
+#endif
 	return tree;
 }
 
@@ -2611,8 +2635,10 @@ void Make_Tree_Path(arbre *tree)
 
 /*********************************************************/
 // This method assumes that tree->n_pattern is initiliazed to a real value (not -1).
+//
+// This method allocates memory for red arrays AND fills all the arrays with values -1.
 #ifdef COMPRESS_SUBALIGNMENTS
-void Make_Node_Red(arbre *tree)
+void Make_All_Nodes_Red(arbre *tree)
 {
 	PhyML_Printf("allocating memory for red arrays\n");
 
@@ -2636,10 +2662,11 @@ void Make_Node_Red(arbre *tree)
 
 //
 // This method assumes that the memory for red arrays has already been allocated.
+// This method fills all (pre-allocated) red arrays with the value -1.
 //
 void Init_All_Nodes_Red(arbre *tree)
 {
-	PhyML_Printf("resetting red arrays\n");
+	//PhyML_Printf(". Resetting red arrays\n");
 
 	int i;
 	int k;
@@ -3225,9 +3252,6 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 			Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
 			For(i,tree->n_l) b_fcus->l[i] = l1[i];
 			tree->both_sides = 1;
-#ifdef COMPRESS_SUBALIGNMENTS
-			Init_All_Nodes_Red(tree);
-#endif
 			Lk(tree);
 		}
 		else
@@ -3236,9 +3260,6 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 			Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
 			For(i,tree->n_l) b_fcus->l[i] = l2[i];
 			tree->both_sides = 1;
-#ifdef COMPRESS_SUBALIGNMENTS
-			Init_All_Nodes_Red(tree);
-#endif
 			Lk(tree);
 		}
 	}
@@ -3490,7 +3511,7 @@ void Update_SubTree_Partial_Lk(edge *b_fcus, node *a, node *d, arbre *tree)
 {
 	int i;
 
-	Update_P_Lk(tree,b_fcus,a);
+	Update_P_Lk(tree,b_fcus,a,FALSE);
 	if(d->tax) return;
 	else For(i,3) if(d->v[i] != a)
 		Update_SubTree_Partial_Lk(d->b[i],d,d->v[i],tree);
@@ -7354,22 +7375,22 @@ m3ldbl Triple_Dist(node *a, arbre *tree, int approx)
 		Update_PMat_At_Given_Edge(a->b[1],tree);
 		Update_PMat_At_Given_Edge(a->b[2],tree);
 
-		Update_P_Lk(tree,a->b[0],a);
+		Update_P_Lk(tree,a->b[0],a,FALSE);
 		Fast_Br_Len(a->b[0],tree,approx);
 		/*       Br_Len_Brent (BL_MAX, a->b[0]->l,BL_MIN, 1.e-10,a->b[0],tree,50,0); */
 
 
-		Update_P_Lk(tree,a->b[1],a);
+		Update_P_Lk(tree,a->b[1],a,FALSE);
 		Fast_Br_Len(a->b[1],tree,approx);
 		/*       Br_Len_Brent (BL_MAX, a->b[1]->l,BL_MIN, 1.e-10,a->b[1],tree,50,0); */
 
 
-		Update_P_Lk(tree,a->b[2],a);
+		Update_P_Lk(tree,a->b[2],a,FALSE);
 		Fast_Br_Len(a->b[2],tree,approx);
 		/*       Br_Len_Brent (BL_MAX, a->b[2]->l,BL_MIN, 1.e-10,a->b[2],tree,50,0); */
 
-		Update_P_Lk(tree,a->b[1],a);
-		Update_P_Lk(tree,a->b[0],a);
+		Update_P_Lk(tree,a->b[1],a,FALSE);
+		Update_P_Lk(tree,a->b[0],a,FALSE);
 	}
 
 	return tree->c_lnL;
@@ -9265,12 +9286,6 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 			best_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 		}
 
-#ifdef COMPRESS_SUBALIGNMENTS
-		PhyML_Printf("\n. Compressing sub-alignments based on phylogeny...\n");
-		Make_Node_Red(tree);
-		Post_Order_Foo(tree->noeud[0],tree->noeud[0]->v[0],tree);
-#endif
-
 		ori_mod   = Copy_Model(tree->mod);
 		best_mod  = Copy_Model(tree->mod);
 
@@ -9712,9 +9727,7 @@ void Prepare_Tree_For_Lk(arbre *tree)
 	Make_Best_Spr(tree);
 
 #ifdef COMPRESS_SUBALIGNMENTS
-	PhyML_Printf("\n. Compressing sub-alignments based on phylogeny...\n");
-	Make_Node_Red(tree);
-	Post_Order_Foo(tree->noeud[0],tree->noeud[0]->v[0],tree);
+	Make_All_Nodes_Red(tree);
 #endif
 
 }

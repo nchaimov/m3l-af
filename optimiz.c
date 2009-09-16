@@ -194,9 +194,7 @@ m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		if(fabs(x - xm) <= (tol2 - 0.5 * (b - a)))
 		{
 			*xmin = x;
-#ifdef COMPRESS_SUBALIGNMENTS
-			Init_All_Nodes_Red(tree);
-#endif
+
 			Lk(tree);
 			if(tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local)
 			{
@@ -1424,10 +1422,10 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 	if(d->tax) return;
 	else For(i,3) if(d->v[i] != a)
 	{
-		Update_P_Lk(tree,d->b[i],d);
+		Update_P_Lk(tree,d->b[i],d,FALSE);
 		Optimize_Br_Len_Serie(d,d->v[i],d->b[i],tree,alldata);
 	}
-	For(i,3) if((d->v[i] == a) && !(d->v[i]->tax)) Update_P_Lk(tree,d->b[i],d);
+	For(i,3) if((d->v[i] == a) && !(d->v[i]->tax)) Update_P_Lk(tree,d->b[i],d,FALSE);
 
 }
 

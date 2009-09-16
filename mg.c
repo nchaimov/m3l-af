@@ -1,7 +1,7 @@
 /*
 
 PHYML :  a program that  computes maximum likelihood  phylogenies from
-DNA or AA homologous sequences 
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -135,7 +135,7 @@ int MG_main(int argc, char **argv)
 	}
 
       Mg_Check_Extra_Taxa(st);
-	
+
       st->tree->c_lnL = .0;
       For(set,io->n_gt)
 	{
@@ -159,7 +159,7 @@ int MG_main(int argc, char **argv)
 	     Mg_Lk(st),
 	     Mg_Pars(st));
 
-      
+
 /*       int n_iter=0; */
 /*       do */
 /* 	{ */
@@ -186,7 +186,7 @@ int MG_main(int argc, char **argv)
 /* 	    } */
 /* 	} */
 
-      
+
 /*       if(io->mod->s_opt->topo_search == NNI_MOVE) */
       Mg_Simu(st);
 /*       else */
@@ -288,7 +288,7 @@ void Mg_Print_Nodes(node *a, node *d, superarbre *st)
 /* 	      printf("%s ", */
 /* 		     st->list_of_reachable_tips[st->num_data_of_interest][d->num][i][j]->name); */
 /* 	    } */
-	  
+
 	  printf("\n");
 	}
     }
@@ -322,9 +322,9 @@ void Mg_Make_Superarbre_Full(superarbre *st, option *io, allseq **data)
     {
       printf("\n. Reading user tree...\n");
       rewind(io->fp_in_tree);
-      
+
       st->tree = Read_Tree_File(io->fp_in_tree);
-      
+
       if(!st->tree->has_branch_lengths)
 	{
 	  printf("\n. Branch lengths are all set to 0.1...\n");
@@ -343,10 +343,10 @@ void Mg_Make_Superarbre_Full(superarbre *st, option *io, allseq **data)
   st->lock_br_len   = 0;
 
   st->map_st_node_in_gt = (node *****)mCalloc(st->n_gt,sizeof(node ****));
-  For(i,st->n_gt) 
+  For(i,st->n_gt)
     {
       st->map_st_node_in_gt[i] = (node ****)mCalloc(2*st->tree->n_otu-2,sizeof(node ***));
-      For(j,2*st->tree->n_otu-2) 
+      For(j,2*st->tree->n_otu-2)
 	{
 	  st->map_st_node_in_gt[i][j] = (node ***)mCalloc(3,sizeof(node **));
 	  For(k,3) st->map_st_node_in_gt[i][j][k] = (node **)mCalloc(2,sizeof(node *));
@@ -435,11 +435,11 @@ void Mg_Prune_St_Topo(arbre *tree, allseq *data, superarbre *st)
 		  n_pruned_nodes++;
 		  not_found = 0;
 		  break;
-		}	      
+		}
 	    }
 
 
-	  if(not_found)	    
+	  if(not_found)
 	    {
 	      printf("\n. Taxon '%s'",st->tree->noeud[i]->name);
 	      printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -453,7 +453,7 @@ void Mg_Prune_St_Topo(arbre *tree, allseq *data, superarbre *st)
   tree->n_otu -= n_pruned_nodes;
 
   curr_ext_node = 0;
-  curr_int_node = tree->n_otu;  
+  curr_int_node = tree->n_otu;
   curr_br = 0;
   For(i,st->tree->n_otu)
     {
@@ -464,18 +464,18 @@ void Mg_Prune_St_Topo(arbre *tree, allseq *data, superarbre *st)
 	}
       if(j == n_pruned_nodes) /* That node still belongs to the tree */
 	{
-	  Reassign_Node_Nums(tree->noeud[i],tree->noeud[i]->v[0], 
+	  Reassign_Node_Nums(tree->noeud[i],tree->noeud[i]->v[0],
 			     &curr_ext_node, &curr_int_node,tree);
 	  break;
 	}
     }
-  
+
   Reassign_Edge_Nums(tree->noeud[0],tree->noeud[0]->v[0],&curr_br,tree);
 
   tree->t_dir = (int **)mCalloc(2*tree->n_otu-2,sizeof(int *));
   For(i,2*tree->n_otu-2) tree->t_dir[i] = (int *)mCalloc(2*tree->n_otu-2,sizeof(int));
 
-  For(i,n_pruned_nodes) 
+  For(i,n_pruned_nodes)
     {
       Free_Edge(residual_edges[i]);
       Free_Edge(pruned_nodes[i]->b[0]);
@@ -541,13 +541,13 @@ void Mg_Match_St_Nodes_In_Gt(arbre *gt, superarbre *st)
 	  break;
 	}
     }
-  
+
 
 
 #ifdef DEBUG
   /* Checking that the results are correct */
   n_matches = 0;
-  For(i,2*st->tree->n_otu-2) 
+  For(i,2*st->tree->n_otu-2)
     if(st->match_st_node_in_gt[gt->dp][st->tree->noeud[i]->num])
 	n_matches++;
 
@@ -558,7 +558,7 @@ void Mg_Match_St_Nodes_In_Gt(arbre *gt, superarbre *st)
       printf("\n. n_matches = %d 2*gt->n_otu-2 = %d\n",n_matches,2*gt->n_otu-2);
       For(j,2*gt->n_otu-2)
 	{
-	  For(i,2*st->tree->n_otu-2) 
+	  For(i,2*st->tree->n_otu-2)
 	    if(st->match_st_node_in_gt[gt->dp][i] == gt->noeud[j])
 	      break;
 
@@ -609,7 +609,7 @@ void Mg_Match_St_Nodes_In_Gt_Recurr(node *a_gt, node *d_gt, node *a_st, node *d_
   else
     {
       score_d_st = (int *)mCalloc(3,sizeof(int));
-      
+
       For(i,3)
 	{
 	  For(j,3)
@@ -652,7 +652,7 @@ void Mg_Match_St_Nodes_In_Gt_Recurr(node *a_gt, node *d_gt, node *a_st, node *d_
 	    if(d_st->v[i] != a_st)
 	      Mg_Match_St_Nodes_In_Gt_Recurr(a_gt,d_gt,d_st,d_st->v[i],gt,st);
 	}
-      Free(score_d_st);	
+      Free(score_d_st);
     }
 }
 
@@ -662,13 +662,13 @@ void Mg_Match_St_Edges_In_Gt(arbre *gt, superarbre *st)
 {
   int i;
 
-  For(i,2*st->tree->n_otu-3) 
+  For(i,2*st->tree->n_otu-3)
     {
-      st->match_st_edge_in_gt[gt->dp][i] = NULL; 
+      st->match_st_edge_in_gt[gt->dp][i] = NULL;
       st->match_gt_edge_in_st[gt->dp][i] = NULL;
     }
 
-  For(i,st->tree->n_otu) 
+  For(i,st->tree->n_otu)
     if(st->match_st_node_in_gt[gt->dp][i])
       {
 	Mg_Match_St_Edges_In_Gt_Recurr(st->match_st_node_in_gt[gt->dp][i],
@@ -760,14 +760,14 @@ void Mg_Simu(superarbre *st)
   lambda              = .75;
   n_tested            = 0;
   n_without_swap      = 0;
-  old_loglk           = UNLIKELY; 
+  old_loglk           = UNLIKELY;
   it_lim_without_swap = 2;
-  st_b                = NULL; 
+  st_b                = NULL;
   do
     {
       For(i,st->n_gt) Check_Dirs(st->treelist->tree[i]);
 
-      ++step;      
+      ++step;
       each--;
 
       Mg_Print_Bl(st);
@@ -783,36 +783,36 @@ void Mg_Simu(superarbre *st)
 	     (int)(st->tree->t_current-st->tree->t_beg),
 	     st->tree->c_lnL,n_tested);
 /*       For(i,st->n_gt) printf("\n[gt %3d lnL=%15.5f]",i,st->treelist->tree[i]->c_lnL); */
-      
-      if((fabs(old_loglk-st->tree->c_lnL) < st->tree->mod->s_opt->min_diff_lk_global) || 
+
+      if((fabs(old_loglk-st->tree->c_lnL) < st->tree->mod->s_opt->min_diff_lk_global) ||
 	 (n_without_swap > it_lim_without_swap)) break;
 
       if(st->tree->c_lnL < old_loglk)
 	{
 	  printf("\n. Moving backward (topology + branch lengths) \n");
-	  
+
 	  if(!Mg_Mov_Backward_Topo_Bl(st,old_loglk,tested_b,n_tested))
 	    Warn_And_Exit("\n. Err: mov_back failed\n");
 
 	  if(!st->tree->n_swap) n_neg = 0;
-	    
+
 	  Mg_Record_Br_Len(st);
 	  For(i,st->n_gt) Optimiz_All_Free_Param(st->treelist->tree[i],0);
 	}
-      else 
+      else
 	{
 	  if(!each)
 	    {
 	      each = 4;
 	      /* Markov model parameters are free to vary across data partitions */
-	      For(i,st->n_gt) Optimiz_All_Free_Param(st->treelist->tree[i],0);	      
+	      For(i,st->n_gt) Optimiz_All_Free_Param(st->treelist->tree[i],0);
 	      For(i,st->n_gt) st->treelist->tree[i]->both_sides = 1;
 	      st->tree->c_lnL  = Mg_Lk(st);
 	      st->tree->c_pars = Mg_Pars(st);
 	    }
-	  
+
 	  old_loglk = st->tree->c_lnL;
-	  
+
 
 	  For(i,2*st->tree->n_otu-3) Init_NNI(st->tree->t_edges[i]->nni);
 
@@ -822,7 +822,7 @@ void Mg_Simu(superarbre *st)
 	      st_b = st->tree->t_edges[i];
 	      if((!st_b->left->tax) && (!st_b->rght->tax)) Mg_NNI(st_b,st);
 	    }
-	  
+
 	  /* Optimise external branch lengths */
 	  For(i,2*st->tree->n_otu-3)
 	    {
@@ -842,7 +842,7 @@ void Mg_Simu(superarbre *st)
 	  /* Select and sort swaps */
 	  n_neg = 0;
 	  Select_Edges_To_Swap(st->tree,sorted_b,&n_neg);
-	  Sort_Edges_NNI_Score(st->tree,sorted_b,n_neg);	  
+	  Sort_Edges_NNI_Score(st->tree,sorted_b,n_neg);
 
 	  n_tested = 0;
 	  For(i,(int)ceil((m3ldbl)n_neg*(lambda)))
@@ -852,7 +852,7 @@ void Mg_Simu(superarbre *st)
 	  else             n_without_swap++;
 
 	  Mg_Record_Br_Len(st);
-	  
+
 	  /* Apply swaps */
 	  Mg_Make_N_Swap(tested_b,0,n_tested,st);
 
@@ -860,11 +860,11 @@ void Mg_Simu(superarbre *st)
 	  Mg_Update_Bl(lambda,st);
 	  Mg_Update_Bl_Swaped(tested_b,n_tested,st);
 
-	    
+
 	}
     }
   while(1);
-  
+
   printf("\n\n. End of Mg_Simu \n");
   Free(sorted_b);
   Free(tested_b);
@@ -899,12 +899,12 @@ int Mg_Mov_Backward_Topo_Bl(superarbre *st, m3ldbl lk_old, edge **tested_b, int 
 	{
 	  For(j,st->n_gt)
 	    {
-	      st->bl[st->bl_partition[j]][i] = st->bl_cpy[st->bl_partition[j]][i] + 
+	      st->bl[st->bl_partition[j]][i] = st->bl_cpy[st->bl_partition[j]][i] +
 		(1./step) * (l_init[st->bl_partition[j]][i] - st->bl_cpy[st->bl_partition[j]][i]);
 /* 	      st->bl[st->bl_partition[j]][i] = st->bl_cpy[st->bl_partition[j]][i]; */
 	    }
 	}
-      
+
       beg = (int)floor((m3ldbl)n_tested/(step-1));
       end = 0;
       st_b = NULL;
@@ -936,7 +936,7 @@ int Mg_Mov_Backward_Topo_Bl(superarbre *st, m3ldbl lk_old, edge **tested_b, int 
       for(i=beg;i<end;i++)
 	{
 	  st_b = tested_b[i];
-	  
+
 	  Mg_Swap(st_b->nni->swap_node_v2->v[st->tree->t_dir[st_b->nni->swap_node_v2->num][st_b->nni->swap_node_v1->num]],
 		  st_b->nni->swap_node_v2,
 		  st_b->nni->swap_node_v3,
@@ -952,8 +952,8 @@ int Mg_Mov_Backward_Topo_Bl(superarbre *st, m3ldbl lk_old, edge **tested_b, int 
 	  Mg_Do_Mapping(st);
 
 	}
-     
-      if(!end) st->tree->n_swap = 0;      
+
+      if(!end) st->tree->n_swap = 0;
 
       Mg_Lk(st);
 
@@ -969,7 +969,7 @@ int Mg_Mov_Backward_Topo_Bl(superarbre *st, m3ldbl lk_old, edge **tested_b, int 
     }
 
   st->tree->n_swap = 0;
-  For(i,2*st->tree->n_otu-3) 
+  For(i,2*st->tree->n_otu-3)
     {
       if(st->tree->t_edges[i]->nni->score < 0.0) st->tree->n_swap++;
       st->tree->t_edges[i]->nni->score = +1.0;
@@ -999,7 +999,7 @@ void Mg_Check_Extra_Taxa(superarbre *st)
     {
       For(j,st->n_gt)
 	{
-	  For(k,st->treelist->tree[j]->n_otu) 
+	  For(k,st->treelist->tree[j]->n_otu)
 	    if(!strcmp(st->treelist->tree[j]->noeud[k]->name,st->tree->noeud[i]->name)) break;
 	  if(k != st->treelist->tree[j]->n_otu) { st_taxa[i] = 1; break; }
 	}
@@ -1007,7 +1007,7 @@ void Mg_Check_Extra_Taxa(superarbre *st)
 
   sum = 0;
   For(i,st->tree->n_otu) if(st_taxa[i]) sum++;
-  if(sum != st->tree->n_otu) 
+  if(sum != st->tree->n_otu)
     {
       printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
@@ -1020,7 +1020,7 @@ void Mg_Check_Extra_Taxa(superarbre *st)
 int Mg_Get_Species_Found_In_St(superarbre *st, allseq *data)
 {
   int i,j;
-  
+
   For(i,data->n_otu)
     {
       For(j,st->tree->n_otu)
@@ -1053,7 +1053,7 @@ void Mg_Map_St_Nodes_In_Gt(arbre *gt, superarbre *st)
       st->map_st_node_in_gt[gt->dp][i][2][1] = NULL;
     }
 
-  
+
   /* Root */
   Mg_Map_St_Nodes_In_Gt_One_Edge(st->tree->noeud[0]->v[0],
 				 st->tree->noeud[0],
@@ -1063,13 +1063,13 @@ void Mg_Map_St_Nodes_In_Gt(arbre *gt, superarbre *st)
   /* Internal nodes */
   Mg_Map_St_Nodes_In_Gt_Post(st->tree->noeud[0],st->tree->noeud[0]->v[0],gt,st);
   Mg_Map_St_Nodes_In_Gt_Pre (st->tree->noeud[0],st->tree->noeud[0]->v[0],gt,st);
-  
+
   /* Root */
   Mg_Map_St_Nodes_In_Gt_One_Edge(st->tree->noeud[0],
 				 st->tree->noeud[0]->v[0],
 				 st->tree->noeud[0]->b[0],
 				 gt,st);
-  
+
 }
 
 /*********************************************************/
@@ -1086,7 +1086,7 @@ void Mg_Map_St_Nodes_In_Gt_Post(node *a_st, node *d_st, arbre *gt, superarbre *s
       For(i,3)
 	if(d_st->v[i] != a_st)
 	  Mg_Map_St_Nodes_In_Gt_Post(d_st,d_st->v[i],gt,st);
-      
+
       For(i,3)
 	if(d_st->v[i] != a_st)
 	  {
@@ -1107,7 +1107,7 @@ void Mg_Map_St_Nodes_In_Gt_Pre(node *a_st, node *d_st, arbre *gt, superarbre *st
       For(i,3)
 	{
 	  if(d_st->v[i] != a_st)
-	    {	      
+	    {
 	      Mg_Map_St_Nodes_In_Gt_One_Edge(d_st->v[i],d_st,d_st->b[i],gt,st);
 	      Mg_Map_St_Nodes_In_Gt_Pre(d_st,d_st->v[i],gt,st);
 	    }
@@ -1128,7 +1128,7 @@ void Mg_Map_St_Nodes_In_Gt_One_Edge(node *a_st, node *d_st, edge *b_st, arbre *g
 	  Warn_And_Exit("");
 	}
 #endif
-      
+
       st->map_st_node_in_gt[gt->dp][d_st->num][0][0] = st->match_st_node_in_gt[gt->dp][d_st->num];
     }
   else
@@ -1142,21 +1142,21 @@ void Mg_Map_St_Nodes_In_Gt_One_Edge(node *a_st, node *d_st, edge *b_st, arbre *g
       list_of_nodes_v2 = NULL;
 
       dir1 = dir2 = -1;
-      For(i,3) 
+      For(i,3)
 	{
 	  if(d_st->v[i] != a_st) (dir1 < 0)?(dir1 = i):(dir2 = i);
 	  else list_of_nodes_d = st->map_st_node_in_gt[gt->dp][d_st->num][i];
 	}
 
-      For(i,3) 
-	if((d_st->v[dir1]->v[i]) && (d_st->v[dir1]->v[i] == d_st)) 
+      For(i,3)
+	if((d_st->v[dir1]->v[i]) && (d_st->v[dir1]->v[i] == d_st))
 	  {
 	    list_of_nodes_v1 = st->map_st_node_in_gt[gt->dp][d_st->v[dir1]->num][i];
 	    break;
 	  }
 
-      For(i,3) 
-	if((d_st->v[dir2]->v[i]) && (d_st->v[dir2]->v[i] == d_st)) 
+      For(i,3)
+	if((d_st->v[dir2]->v[i]) && (d_st->v[dir2]->v[i] == d_st))
 	  {
 	    list_of_nodes_v2 = st->map_st_node_in_gt[gt->dp][d_st->v[dir2]->num][i];
 	    break;
@@ -1171,7 +1171,7 @@ void Mg_Map_St_Nodes_In_Gt_One_Edge(node *a_st, node *d_st, edge *b_st, arbre *g
       else
 	{
 	  /* list_of_nodes = union of  list_of_nodes_v1  &  list_of_nodes_v2 */
-	  
+
 	  if(!list_of_nodes_v1[0])
 	    {
 	      list_of_nodes_d[0] = list_of_nodes_v2[0];
@@ -1192,14 +1192,14 @@ void Mg_Map_St_Nodes_In_Gt_One_Edge(node *a_st, node *d_st, edge *b_st, arbre *g
 		  Print_Node(st->tree->noeud[0],
 			     st->tree->noeud[0]->v[0],
 			     st->tree);
-		  
+
 		  printf("\n\n--------------------------\n\n");
 		  Print_Node(gt->noeud[0],
 			     gt->noeud[0]->v[0],
 			     gt);
 
 		  printf("\n\n--------------------------\n\n");
-		  
+
 		  printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 		  Warn_And_Exit("");
 		}
@@ -1215,7 +1215,7 @@ void Mg_Map_St_Edges_In_Gt(arbre *gt, superarbre *st)
   int i,j;
   edge *st_b;
   node *gt_a, *gt_d;
-  
+
   gt_a = NULL;
   gt_d = NULL;
 
@@ -1254,7 +1254,7 @@ void Mg_Map_St_Edges_In_Gt(arbre *gt, superarbre *st)
 	    }
 	}
       else
-	{	  
+	{
 	  gt_a = st->map_st_node_in_gt[gt->dp][st_b->left->num][st_b->l_r][0];
 	  gt_d = st->map_st_node_in_gt[gt->dp][st_b->rght->num][st_b->r_l][0];
 
@@ -1284,7 +1284,7 @@ void Mg_Map_Gt_Edges_In_St(arbre *gt, superarbre *st)
 {
   int i;
   edge *st_b, *gt_b;
-  
+
   For(i,2*st->tree->n_otu-3) st->size_map_gt_edge_in_st[gt->dp][i] = 0;
 
   st_b = NULL;
@@ -1307,11 +1307,11 @@ void Mg_Map_Gt_Edges_In_St(arbre *gt, superarbre *st)
 int Mg_Pars(superarbre *st)
 {
   int i;
-  
+
   st->tree->c_pars = 0;
-  For(i,st->n_gt) 
+  For(i,st->n_gt)
     {
-      st->treelist->tree[i]->both_sides = 1;	  
+      st->treelist->tree[i]->both_sides = 1;
       Pars(st->treelist->tree[i]);
 /*       printf("\n. Tree %3d pars = %d",i+1,st->treelist->tree[i]->c_pars); */
       st->tree->c_pars += st->treelist->tree[i]->c_pars;
@@ -1346,7 +1346,7 @@ int Mg_Spr(m3ldbl init_lnL, superarbre *st)
 
       Reset_Spr_List(st->tree);
       For(gt,st->n_gt) Reset_Spr_List(st->treelist->tree[gt]);
-      
+
       if(!pruned->rght->tax)
 	{
 	  For(gt,st->n_gt)
@@ -1368,7 +1368,7 @@ int Mg_Spr(m3ldbl init_lnL, superarbre *st)
 	{
 	  For(gt,st->n_gt)
 	    {
-	      /* Check constraints at prune site on gt tree */	      
+	      /* Check constraints at prune site on gt tree */
  	      gt_a = st->map_st_node_in_gt[gt][pruned->rght->num][pruned->r_l][0];
  	      gt_d = st->map_st_node_in_gt[gt][pruned->left->num][pruned->l_r][0];
 
@@ -1381,19 +1381,19 @@ int Mg_Spr(m3ldbl init_lnL, superarbre *st)
 	    }
 	}
 
-      
+
       if(!pruned->left->tax)
 	{
 	  Mg_Test_All_Spr_Targets(st->tree->t_edges[i],
 				  st->tree->t_edges[i]->left,
-				  st);      
+				  st);
 	}
-      
+
       if(!pruned->rght->tax)
 	{
 	  Mg_Test_All_Spr_Targets(st->tree->t_edges[i],
 				  st->tree->t_edges[i]->rght,
-				  st);      
+				  st);
 	}
 
 
@@ -1401,8 +1401,8 @@ int Mg_Spr(m3ldbl init_lnL, superarbre *st)
 	{
 	  best_move = Mg_Test_List_Of_Regraft_Pos(st->tree->spr_list,
 						  (int)ceil(0.1*(st->tree->n_moves)),
-						  st);	  
-	  
+						  st);
+
 	  if(st->tree->spr_list[best_move]->lnL > init_lnL)
 	    {
 	      Mg_Try_One_Spr_Move(st->tree->spr_list[best_move],st);
@@ -1411,7 +1411,7 @@ int Mg_Spr(m3ldbl init_lnL, superarbre *st)
 	    {
 	      st->tree->both_sides = 1;
 	      st->tree->c_lnL      = Mg_Lk(st);
-	      st->tree->c_pars     = Mg_Pars(st);	      
+	      st->tree->c_pars     = Mg_Pars(st);
 	    }
 	}
     }
@@ -1429,16 +1429,16 @@ void Mg_Speed_Spr(superarbre *st)
   Make_Spr_List(st->tree);
   For(gt,st->n_gt) Make_Spr_List(st->treelist->tree[gt]);
 
-  st->tree->both_sides = 1; 
-  For(gt,st->n_gt) 
+  st->tree->both_sides = 1;
+  For(gt,st->n_gt)
     {
       st->treelist->tree[gt]->both_sides = 1;
       Record_Br_Len(st->treelist->tree[gt]);
     }
-  
+
   st->tree->c_pars = Mg_Pars(st);
   st->tree->c_lnL  = Mg_Lk(st);
-  
+
 
   st->tree->best_lnL = st->tree->c_lnL;
   old_lnL            = st->tree->c_lnL;
@@ -1455,8 +1455,8 @@ void Mg_Speed_Spr(superarbre *st)
       st->tree->perform_spr_right_away = 1;
       Mg_Spr(UNLIKELY,st);
 
- 
-      time(&(st->tree->t_current));      
+
+      time(&(st->tree->t_current));
       printf("\n. (%5d sec) [00] [%10.2f] [%5d]\n",
 	     (int)(st->tree->t_current-st->tree->t_beg),
 	     Mg_Lk(st),Mg_Pars(st));
@@ -1465,7 +1465,7 @@ void Mg_Speed_Spr(superarbre *st)
       For(gt,st->n_gt) Optimiz_All_Free_Param(st->treelist->tree[gt],
 					      st->treelist->tree[gt]->mod->s_opt->print);
 
-      time(&(st->tree->t_current));      
+      time(&(st->tree->t_current));
       printf("\n. (%5d sec) [ 0] [%10.2f] [%5d]\n",
 	     (int)(st->tree->t_current-st->tree->t_beg),
 	     Mg_Lk(st),Mg_Pars(st));
@@ -1482,12 +1482,12 @@ void Mg_Speed_Spr(superarbre *st)
 
 
       /* Update partial likelihoods & parsimony */
-      st->tree->both_sides = 1; 
+      st->tree->both_sides = 1;
       st->tree->c_pars = Mg_Pars(st);
       st->tree->c_lnL  = Mg_Lk(st);
-      
-      
-      time(&(st->tree->t_current));      
+
+
+      time(&(st->tree->t_current));
       printf("\n. (%5d sec) [**] [%10.2f] [%5d]\n",
 	     (int)(st->tree->t_current-st->tree->t_beg),
 	     st->tree->c_lnL,st->tree->c_pars);
@@ -1497,7 +1497,7 @@ void Mg_Speed_Spr(superarbre *st)
 
       if(st->tree->c_lnL < old_lnL)
 	{
-	  printf("\n. old_lnL = %f c_lnL = %f\n",old_lnL,st->tree->c_lnL); 
+	  printf("\n. old_lnL = %f c_lnL = %f\n",old_lnL,st->tree->c_lnL);
 	  printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
@@ -1506,11 +1506,11 @@ void Mg_Speed_Spr(superarbre *st)
       For(gt,st->n_gt) Record_Br_Len(st->treelist->tree[gt]);
 
       /* Exit if no improvements after complete optimization */
-      if((!st->tree->n_improvements) || 
+      if((!st->tree->n_improvements) ||
 	 (fabs(old_lnL-st->tree->c_lnL) < st->tree->mod->s_opt->min_diff_lk_global)) break;
-            
+
     }while(1);
-  
+
 }
 
 /*********************************************************/
@@ -1557,7 +1557,7 @@ void Mg_Test_One_Spr_Target_Recur(node *a, node *d, edge *target, edge *pruned, 
 
 /*********************************************************/
 
-void Mg_Test_One_Spr_Target(edge *st_p, edge *st_t, node *n_link, superarbre *st) 
+void Mg_Test_One_Spr_Target(edge *st_p, edge *st_t, node *n_link, superarbre *st)
 {
   int gt, move;
 
@@ -1571,7 +1571,7 @@ void Mg_Test_One_Spr_Target(edge *st_p, edge *st_t, node *n_link, superarbre *st
   For(gt,st->n_gt)
     {
       move = Map_Spr_Move(st_p,st_t,n_link,st->treelist->tree[gt],st);
-      
+
       if(move > -1)
 	st->tree->spr_list[st->tree->size_spr_list]->pars += st->treelist->tree[gt]->spr_list[move]->pars;
       else if(move == -1 || move == -2)
@@ -1606,13 +1606,13 @@ int Map_Spr_Move(edge *st_pruned, edge *st_target, node *st_link, arbre *gt, sup
     {
       /* which gt nodes matches st_link ? */
       gt_link = (st_pruned->left == st_link)?(gt_a):(gt_d);
-      
+
       if(gt_link->tax) return -1;
       else
 	{
 	  gt_pruned = st->map_st_edge_in_gt[gt->dp][st_pruned->num];
 	  gt_target = st->map_st_edge_in_gt[gt->dp][st_target->num];
-	   
+
 	  if((gt_pruned->left == gt_target->left) ||
 	     (gt_pruned->left == gt_target->rght) ||
 	     (gt_pruned->rght == gt_target->left) ||
@@ -1642,7 +1642,7 @@ int Mg_Test_List_Of_Regraft_Pos(spr **st_spr_list, int list_size, superarbre *st
   int dir_v0, dir_v1, dir_v2;
   int gt;
   int move_num;
-  
+
 
   best_lnL = UNLIKELY;
   init_target = b_residual = NULL;
@@ -1653,17 +1653,17 @@ int Mg_Test_List_Of_Regraft_Pos(spr **st_spr_list, int list_size, superarbre *st
     {
       printf("\n\n. List size is 0 !");
       printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit(""); 
+      Warn_And_Exit("");
     }
 #endif
-  
+
   init_lnL = UNLIKELY;
 
   For(i,list_size)
     {
       st->tree->spr_list[i]->lnL = .0;
 
-      For(gt,st->n_gt) 
+      For(gt,st->n_gt)
 	{
 	  move_num = Map_Spr_Move(st->tree->spr_list[i]->b_opp_to_link,
 				  st->tree->spr_list[i]->b_target,
@@ -1680,44 +1680,45 @@ int Mg_Test_List_Of_Regraft_Pos(spr **st_spr_list, int list_size, superarbre *st
 
 		  /* Record edge lengths */
 		  Record_Br_Len(st->treelist->tree[gt]);
-		  
+
 		  /* Prune subtree */
 		  Prune_Subtree(move->n_link,
-				move->n_opp_to_link,			    
+				move->n_opp_to_link,
 				&init_target,
 				&b_residual,
 				st->treelist->tree[gt]);
 
 		  /* Rough optimisation of the branch length */
 		  Fast_Br_Len(init_target,st->treelist->tree[gt]);
-		  
+
 		  /* Update the change proba matrix at prune position */
 		  Update_PMat_At_Given_Edge(init_target,st->treelist->tree[gt]);
-	      
+
 		  /* Update partial likelihood along the path from the prune to
 		     the regraft position */
 		  Update_P_Lk_Along_A_Path(move->path,move->depth_path,st->treelist->tree[gt]);
 
 		  /* Regraft subtree */
 		  Graft_Subtree(move->b_target,move->n_link,b_residual,st->treelist->tree[gt]);
-	      
+
 		  /* Estimate the three edge lengths at the regraft site */
 		  Triple_Dist(move->n_link,st->treelist->tree[gt]);
-	      
-		  /* Update the transition proba matrices along edges defining 
+
+		  /* Update the transition proba matrices along edges defining
 		     the regraft site */
 		  For(j,3)
 		    if(move->n_link->v[j] != move->n_opp_to_link)
 		      Update_PMat_At_Given_Edge(move->n_link->b[j],st->treelist->tree[gt]);
-	      
+
 		  /* Compute the likelihood */
 		  Update_P_Lk(st->treelist->tree[gt],
 			      move->b_opp_to_link,
-			      move->n_link);
-		  
+			      move->n_link,
+			      false);
+
 		  move->lnL = Lk_At_Given_Edge(move->b_opp_to_link,st->treelist->tree[gt]);
 
-		  
+
 		  st->tree->spr_list[i]->lnL += move->lnL;
 
 		  /* Record branch lengths */
@@ -1728,9 +1729,9 @@ int Mg_Test_List_Of_Regraft_Pos(spr **st_spr_list, int list_size, superarbre *st
 		      else if(dir_v1 < 0)                           dir_v1 = j;
 		      else                                          dir_v2 = j;
 		    }
-		  
+
 		  move->l0 = move->n_link->b[dir_v0]->l;
-		  
+
 		  if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 		    {
 		      move->l1 = move->n_link->b[dir_v2]->l;
@@ -1741,29 +1742,29 @@ int Mg_Test_List_Of_Regraft_Pos(spr **st_spr_list, int list_size, superarbre *st
 		      move->l1 = move->n_link->b[dir_v1]->l;
 		      move->l2 = move->n_link->b[dir_v2]->l;
 		    }
-		  	  
+
 		  /* Regraft the subtree at its original position */
 		  Prune_Subtree(move->n_link,
 				move->n_opp_to_link,
 				&move->b_target,
 				&b_residual,
 				st->treelist->tree[gt]);
-		  
+
 		  Graft_Subtree(init_target,
 				move->n_link,
 				b_residual,
 				st->treelist->tree[gt]);
-		  
+
 		  /* Restore branch lengths */
 		  Restore_Br_Len(st->treelist->tree[gt]);
-	      
+
 		  /* Update relevant change proba matrices */
 		  Update_PMat_At_Given_Edge(move->b_target,st->treelist->tree[gt]);
 		  For(j,3) Update_PMat_At_Given_Edge(move->n_link->b[j],st->treelist->tree[gt]);
-		  
+
 		  /* Update relevant partial likelihoods */
 		  For(j,3) Update_P_Lk(st->treelist->tree[gt],move->n_link->b[j],move->n_link);
-		  
+
 		  st->treelist->tree[gt]->c_lnL = init_lnL;
 		}
 	    }
@@ -1780,7 +1781,7 @@ int Mg_Test_List_Of_Regraft_Pos(spr **st_spr_list, int list_size, superarbre *st
 	}
     }
 
-  return best_move;  
+  return best_move;
 
 }
 
@@ -1797,26 +1798,26 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
   int gt_move_num;
   int n_moves;
 
-  
+
   init_target = (edge **)mCalloc(st->n_gt,sizeof(edge *));
   b_residual  = (edge **)mCalloc(st->n_gt,sizeof(edge *));
   gt_move     = (spr **)mCalloc(st->n_gt,sizeof(spr *));
 
 
   n_moves = 0;
-  For(gt,st->n_gt) 
+  For(gt,st->n_gt)
     {
       gt_move_num = Map_Spr_Move(st_move->b_opp_to_link,
 				 st_move->b_target,
 				 st_move->n_link,
 				 st->treelist->tree[gt],st);
-      
+
       if(gt_move_num > -1)
 	{
 	  n_moves++;
 
 	  gt_move[gt] = st->treelist->tree[gt]->spr_list[gt_move_num];
-	  
+
 	  if(gt_move[gt]->b_target)
 	    {
 	      /* Record edge lengths */
@@ -1828,20 +1829,20 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 			    &(init_target[gt]),
 			    &(b_residual[gt]),
 			    st->treelist->tree[gt]);
-	      
+
 	      /* Rough optimisation of the branch length */
 	      Fast_Br_Len(init_target[gt],st->treelist->tree[gt]);
-	      
+
 	      /* Update the change proba matrix at prune position */
 	      Update_PMat_At_Given_Edge(init_target[gt],st->treelist->tree[gt]); /* TO DO : NECESSARY ?? */
-	      
+
 	      /* Update partial likelihood along the path from the prune to
 		 the regraft position */
 	      Update_P_Lk_Along_A_Path(gt_move[gt]->path,gt_move[gt]->depth_path,st->treelist->tree[gt]); /* TO DO : NECESSARY ?? */
-	      
+
 	      /* Regraft subtree */
 	      Graft_Subtree(gt_move[gt]->b_target,gt_move[gt]->n_link,b_residual[gt],st->treelist->tree[gt]);
-	      
+
 	      dir_v1 = dir_v2 = dir_v0 = -1;
 	      For(j,3)
 		{
@@ -1849,9 +1850,9 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 		  else if(dir_v1 < 0)                                         dir_v1 = j;
 		  else                                                        dir_v2 = j;
 		}
-	      
+
 	      gt_move[gt]->n_link->b[dir_v0]->l = gt_move[gt]->l0;
-		  
+
 	      if(gt_move[gt]->n_link->v[dir_v1]->num > gt_move[gt]->n_link->v[dir_v2]->num)
 		{
 		  gt_move[gt]->n_link->b[dir_v2]->l = gt_move[gt]->l1;
@@ -1865,7 +1866,7 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 	    }
 	}
     }
-  
+
 
   if(n_moves)
     {
@@ -1879,24 +1880,24 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 			&st_target,
 			&st_residual,
 			st->tree);
-	  
+
 	  Graft_Subtree(st_move->b_target,
 			st_move->n_link,
 			st_residual,
 			st->tree);
-	  
-	  	  
+
+
 	  /* Map gt and st nodes and edges */
 	  Mg_Do_Mapping(st);
 
 	  time(&(st->tree->t_current));
 	  st->tree->both_sides = 1;
-	  
+
 	  st->tree->both_sides = 1;
 	  st->tree->c_lnL      = Mg_Lk(st);
 	  st->tree->c_pars     = Mg_Pars(st);
-	  
-	  
+
+
 	  if(fabs(st->tree->c_lnL - st_move->lnL) > st->tree->mod->s_opt->min_diff_lk_local)
 	    {
 	      printf("\n. st->tree->c_lnL = %f st_move->lnL = %f\n",
@@ -1909,28 +1910,28 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 			 gt_move[gt] ? gt_move[gt]->lnL : -1.);
 		}
 	    }
-	  
+
 	  printf("\n. (%5d sec) [+ ] [%10.2f] [%5d] -- ",
 		 (int)(st->tree->t_current - st->tree->t_beg),
-		 st->tree->c_lnL,st->tree->c_pars);	  
-	  
+		 st->tree->c_lnL,st->tree->c_pars);
+
 	  For(gt,st->n_gt)
 	    printf("[%10.2f] ",st->treelist->tree[gt]->c_lnL);
-	  
-	  
+
+
 	  st->tree->n_improvements++;
 	  st->tree->best_lnL = st->tree->c_lnL;
 	  For(gt,st->n_gt) Record_Br_Len(st->treelist->tree[gt]);
-	  
+
 	  Free(init_target);
 	  Free(b_residual);
 	  Free(gt_move);
-	  
+
 	  return 1;
 	}
       else
 	{
-	  For(gt,st->n_gt) 
+	  For(gt,st->n_gt)
 	    {
 	      if(gt_move[gt])
 		{
@@ -1941,28 +1942,28 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 				    st->treelist->tree[gt]);
 		}
 	    }
-	  
+
 	  time(&(st->tree->t_current));
 	  st->tree->both_sides = 1;
 	  st->tree->c_lnL      = Mg_Lk(st);
-	  
+
 	  if(st->tree->c_lnL > st->tree->best_lnL)
 	    {
 	      edge *st_target, *st_residual;
-	      
+
 	      /* Apply the move on the super-tree */
 	      Prune_Subtree(st_move->n_link,
-			    st_move->n_opp_to_link,			    
+			    st_move->n_opp_to_link,
 			    &st_target,
 			    &st_residual,
 			    st->tree);
-	      
+
 	      Graft_Subtree(st_move->b_target,
 			    st_move->n_link,
 			    st_residual,
 			    st->tree);
-	      
-	      
+
+
 	      /* Map gt and st nodes and edges */
 	      Mg_Do_Mapping(st);
 
@@ -1974,7 +1975,7 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 		     st->tree->c_pars);
 	      For(gt,st->n_gt)
 		printf("[%10.2f] ",st->treelist->tree[gt]->c_lnL);
-	      
+
 	      st->tree->n_improvements++;
 	      st->tree->best_lnL = st->tree->c_lnL;
 	      For(gt,st->n_gt) Record_Br_Len(st->treelist->tree[gt]);
@@ -1987,11 +1988,11 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 	    }
 	}
     }
-  
-  For(gt,st->n_gt) 
+
+  For(gt,st->n_gt)
     {
       if(gt_move[gt])
-	{	  
+	{
 	  /* Regraft the subtree at its original position */
 	  Prune_Subtree(gt_move[gt]->n_link,
 			gt_move[gt]->n_opp_to_link,
@@ -2002,23 +2003,23 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 	  Graft_Subtree(init_target[gt],
 			gt_move[gt]->n_link,
 			b_residual[gt],
-			st->treelist->tree[gt]);	  
+			st->treelist->tree[gt]);
 
 	  /* Restore branch lengths */
 	  Restore_Br_Len(st->treelist->tree[gt]);
 	}
     }
-  
+
   st->tree->both_sides = 1;
   st->tree->c_lnL      = Mg_Lk(st);
   st->tree->c_pars     = Mg_Pars(st);
 
   time(&(st->tree->t_current));
-  
+
   printf("\n. (%5d sec) [--] [%10.2f] [%5d] -- ",
 	 (int)(st->tree->t_current - st->tree->t_beg),
-	 st->tree->c_lnL,st->tree->c_pars);	  
-  
+	 st->tree->c_lnL,st->tree->c_pars);
+
   For(gt,st->n_gt) printf("[%10.2f] ",st->treelist->tree[gt]->c_lnL);
 
   Free(init_target);
@@ -2032,7 +2033,7 @@ int Mg_Try_One_Spr_Move(spr *st_move, superarbre *st)
 /*********************************************************/
 
 void Mg_NNI(edge *st_b, superarbre *st)
-{  
+{
   node *v1, *v2, *v3, *v4;
   m3ldbl lk_init;
   m3ldbl lk0_init, lk1_init, lk2_init;
@@ -2070,7 +2071,7 @@ void Mg_NNI(edge *st_b, superarbre *st)
     }
 
   lk_init = st->tree->c_lnL;
-  
+
 /*   printf("oooooooo\n"); */
 /*   Print_Node(st->tree->noeud[0], */
 /* 	     st->tree->noeud[0]->v[0], */
@@ -2084,7 +2085,7 @@ void Mg_NNI(edge *st_b, superarbre *st)
 /*       printf("<<<<<<<\n"); */
 /*     } */
 
-  
+
   Mg_Record_Br_Len(st);
 
   For(i,st->n_gt) map_edge_bef_swap[i] = NULL;
@@ -2100,20 +2101,22 @@ void Mg_NNI(edge *st_b, superarbre *st)
   For(i,st->n_gt) if(st->map_st_edge_in_gt[i][st_b->num]) map_edge_aft_swap[i] = st->map_st_edge_in_gt[i][st_b->num];
   For(i,st->n_gt) if(map_edge_bef_swap[i]) Update_PMat_At_Given_Edge(map_edge_bef_swap[i],st->treelist->tree[i]);
   For(i,st->n_gt) if(map_edge_aft_swap[i]) Update_PMat_At_Given_Edge(map_edge_aft_swap[i],st->treelist->tree[i]);
-  For(i,st->n_gt) if(map_edge_bef_swap[i] && map_edge_aft_swap[i]) 
+  For(i,st->n_gt) if(map_edge_bef_swap[i] && map_edge_aft_swap[i])
     {
-      For(j,3) if((map_edge_aft_swap[i]->left->v[j]) && 
+      For(j,3) if((map_edge_aft_swap[i]->left->v[j]) &&
 		  (map_edge_aft_swap[i]->left->b[j] == map_edge_bef_swap[i]) &&
-		  (map_edge_aft_swap[i] != map_edge_bef_swap[i])) 
+		  (map_edge_aft_swap[i] != map_edge_bef_swap[i]))
 	Update_P_Lk(st->treelist->tree[i],
 		    map_edge_aft_swap[i],
-		    map_edge_aft_swap[i]->left);
-      For(j,3) if((map_edge_aft_swap[i]->rght->v[j]) && 
+		    map_edge_aft_swap[i]->left,
+		    false);
+      For(j,3) if((map_edge_aft_swap[i]->rght->v[j]) &&
 		  (map_edge_aft_swap[i]->rght->b[j] == map_edge_bef_swap[i]) &&
-		  (map_edge_aft_swap[i] != map_edge_bef_swap[i])) 
+		  (map_edge_aft_swap[i] != map_edge_bef_swap[i]))
 	Update_P_Lk(st->treelist->tree[i],
 		    map_edge_aft_swap[i],
-		    map_edge_aft_swap[i]->rght);
+		    map_edge_aft_swap[i]->rght,
+		    false);
     }
   lk1_init = Mg_Update_Lk_At_Given_Edge(st_b,st);
   lk1_opt  = Mg_Br_Len_Brent(st_b,st);
@@ -2126,17 +2129,17 @@ void Mg_NNI(edge *st_b, superarbre *st)
   Mg_Set_Bl(st->bl,st);
   For(i,st->n_gt) if(map_edge_bef_swap[i]) Update_PMat_At_Given_Edge(map_edge_bef_swap[i],st->treelist->tree[i]);
   For(i,st->n_gt) if(map_edge_aft_swap[i]) Update_PMat_At_Given_Edge(map_edge_aft_swap[i],st->treelist->tree[i]);
-  For(i,st->n_gt) if(map_edge_bef_swap[i] && map_edge_aft_swap[i]) 
+  For(i,st->n_gt) if(map_edge_bef_swap[i] && map_edge_aft_swap[i])
     {
-      For(j,3) if((map_edge_aft_swap[i]->left->v[j]) && 
+      For(j,3) if((map_edge_aft_swap[i]->left->v[j]) &&
 		  (map_edge_aft_swap[i]->left->b[j] == map_edge_bef_swap[i]) &&
-		  (map_edge_aft_swap[i] != map_edge_bef_swap[i])) 
+		  (map_edge_aft_swap[i] != map_edge_bef_swap[i]))
 	Update_P_Lk(st->treelist->tree[i],
 		    map_edge_aft_swap[i],
 		    map_edge_aft_swap[i]->left);
-      For(j,3) if((map_edge_aft_swap[i]->rght->v[j]) && 
+      For(j,3) if((map_edge_aft_swap[i]->rght->v[j]) &&
 		  (map_edge_aft_swap[i]->rght->b[j] == map_edge_bef_swap[i]) &&
-		  (map_edge_aft_swap[i] != map_edge_bef_swap[i])) 
+		  (map_edge_aft_swap[i] != map_edge_bef_swap[i]))
 	Update_P_Lk(st->treelist->tree[i],
 		    map_edge_aft_swap[i],
 		    map_edge_aft_swap[i]->rght);
@@ -2155,17 +2158,17 @@ void Mg_NNI(edge *st_b, superarbre *st)
   For(i,st->n_gt) if(st->map_st_edge_in_gt[i][st_b->num]) map_edge_aft_swap[i] = st->map_st_edge_in_gt[i][st_b->num];
   For(i,st->n_gt) if(map_edge_bef_swap[i]) Update_PMat_At_Given_Edge(map_edge_bef_swap[i],st->treelist->tree[i]);
   For(i,st->n_gt) if(map_edge_aft_swap[i]) Update_PMat_At_Given_Edge(map_edge_aft_swap[i],st->treelist->tree[i]);
-  For(i,st->n_gt) if(map_edge_bef_swap[i] && map_edge_aft_swap[i]) 
+  For(i,st->n_gt) if(map_edge_bef_swap[i] && map_edge_aft_swap[i])
     {
-      For(j,3) if((map_edge_aft_swap[i]->left->v[j]) && 
+      For(j,3) if((map_edge_aft_swap[i]->left->v[j]) &&
 		  (map_edge_aft_swap[i]->left->b[j] == map_edge_bef_swap[i]) &&
-		  (map_edge_aft_swap[i] != map_edge_bef_swap[i])) 
+		  (map_edge_aft_swap[i] != map_edge_bef_swap[i]))
 	Update_P_Lk(st->treelist->tree[i],
 		    map_edge_aft_swap[i],
 		    map_edge_aft_swap[i]->left);
-      For(j,3) if((map_edge_aft_swap[i]->rght->v[j]) && 
+      For(j,3) if((map_edge_aft_swap[i]->rght->v[j]) &&
 		  (map_edge_aft_swap[i]->rght->b[j] == map_edge_bef_swap[i]) &&
-		  (map_edge_aft_swap[i] != map_edge_bef_swap[i])) 
+		  (map_edge_aft_swap[i] != map_edge_bef_swap[i]))
 	Update_P_Lk(st->treelist->tree[i],
 		    map_edge_aft_swap[i],
 		    map_edge_aft_swap[i]->rght);
@@ -2183,24 +2186,24 @@ void Mg_NNI(edge *st_b, superarbre *st)
   Mg_Set_Bl(st->bl,st);
   For(i,st->n_gt) if(map_edge_bef_swap[i]) Update_PMat_At_Given_Edge(map_edge_bef_swap[i],st->treelist->tree[i]);
   For(i,st->n_gt) if(map_edge_aft_swap[i]) Update_PMat_At_Given_Edge(map_edge_aft_swap[i],st->treelist->tree[i]);
-  For(i,st->n_gt) if(map_edge_bef_swap[i] && map_edge_aft_swap[i]) 
+  For(i,st->n_gt) if(map_edge_bef_swap[i] && map_edge_aft_swap[i])
     {
-      For(j,3) if((map_edge_aft_swap[i]->left->v[j]) && 
+      For(j,3) if((map_edge_aft_swap[i]->left->v[j]) &&
 		  (map_edge_aft_swap[i]->left->b[j] == map_edge_bef_swap[i]) &&
-		  (map_edge_aft_swap[i] != map_edge_bef_swap[i])) 
+		  (map_edge_aft_swap[i] != map_edge_bef_swap[i]))
 	Update_P_Lk(st->treelist->tree[i],
 		    map_edge_aft_swap[i],
 		    map_edge_aft_swap[i]->left);
-      For(j,3) if((map_edge_aft_swap[i]->rght->v[j]) && 
+      For(j,3) if((map_edge_aft_swap[i]->rght->v[j]) &&
 		  (map_edge_aft_swap[i]->rght->b[j] == map_edge_bef_swap[i]) &&
-		  (map_edge_aft_swap[i] != map_edge_bef_swap[i])) 
+		  (map_edge_aft_swap[i] != map_edge_bef_swap[i]))
 	Update_P_Lk(st->treelist->tree[i],
 		    map_edge_aft_swap[i],
 		    map_edge_aft_swap[i]->rght);
     }
 
 
-  /* Back to the initial topological configuration 
+  /* Back to the initial topological configuration
    * and branch lengths.
    */
   Mg_Do_Mapping(st);
@@ -2294,7 +2297,7 @@ void Mg_NNI(edge *st_b, superarbre *st)
       st_b->nni->swap_node_v3 = NULL;
       st_b->nni->swap_node_v4 = NULL;
     }
-  
+
   Free(init_bl);
   Free(map_edge_aft_swap);
   Free(map_edge_bef_swap);
@@ -2324,14 +2327,14 @@ void Mg_Swap(node *st_a, node *st_b, node *st_c, node *st_d, superarbre *st)
     }
 
   gt_a = gt_b = gt_c = gt_d = NULL;
-  
+
   For(i,st->n_gt)
     {
       gt_b = st->match_st_node_in_gt[i][st_b->num];
       gt_c = st->match_st_node_in_gt[i][st_c->num];
-      
+
       if(gt_b && gt_c) /* The st edge with st_b and st_c at its extremities
-			* matches an edge in gt 
+			* matches an edge in gt
 		        */
 	{
 #ifdef DEBUG
@@ -2357,8 +2360,8 @@ void Mg_Set_Bl(double **bl, superarbre *st)
   edge *gt_b;
 
   gt_b = NULL;
-						
-  /* Set all the actual branch lengths to 0.0 
+
+  /* Set all the actual branch lengths to 0.0
    */
   For(i,st->n_gt)
     {
@@ -2369,14 +2372,14 @@ void Mg_Set_Bl(double **bl, superarbre *st)
 	}
     }
 
-  /* Update every branch length 
-   */  
+  /* Update every branch length
+   */
   For(i,2*st->tree->n_otu-3)
     {
       For(j,st->n_gt)
 	{
-	  gt_b = st->map_st_edge_in_gt[j][i];	
-	  
+	  gt_b = st->map_st_edge_in_gt[j][i];
+
 	  /* Need to make sure that st->tree->t_edges[i] is on an existing path in gt */
 	  if((st->map_st_node_in_gt[j][st->tree->t_edges[i]->left->num][st->tree->t_edges[i]->l_r][0]) &&
 	     (st->map_st_node_in_gt[j][st->tree->t_edges[i]->rght->num][st->tree->t_edges[i]->r_l][0]))
@@ -2410,12 +2413,12 @@ m3ldbl Mg_Lk(superarbre *st)
   int i;
 
   Mg_Do_Mapping(st);
-  Mg_Set_Bl(st->bl,st);  
+  Mg_Set_Bl(st->bl,st);
 
   st->tree->c_lnL = .0;
-  For(i,st->n_gt) 
+  For(i,st->n_gt)
     {
-      st->treelist->tree[i]->both_sides = 1;	  
+      st->treelist->tree[i]->both_sides = 1;
       Lk(st->treelist->tree[i]);
 /*       printf("\n. Tree %3d lnL = %f",i+1,st->treelist->tree[i]->c_lnL); */
       st->tree->c_lnL += st->treelist->tree[i]->c_lnL;
@@ -2437,7 +2440,7 @@ m3ldbl Mg_Lk_At_Given_Edge(edge *st_b, superarbre *st)
   st->tree->c_lnL = .0;
   lnL = .0;
   For(i,st->n_gt)
-    {      
+    {
       gt_b = st->map_st_edge_in_gt[i][st_b->num];
       lnL = Lk_At_Given_Edge(gt_b,st->treelist->tree[i]);
       st->tree->c_lnL += lnL;
@@ -2454,7 +2457,7 @@ m3ldbl Mg_Update_Lk_At_Given_Edge(edge *st_b, superarbre *st)
   edge *gt_b;
 
   Mg_Set_Bl(st->bl,st);
-  
+
   gt_b = NULL;
   st->tree->c_lnL = .0;
   For(i,st->n_gt)
@@ -2501,7 +2504,7 @@ void Mg_Fill_Model_Partitions_Table(superarbre *st)
 
       printf("\n. (%c-%2d)> ",abc[lig],col+1);
       Getstring_Stdin(c);
-      
+
       switch(lig)
 	{
 	case 0 :
@@ -2523,22 +2526,22 @@ void Mg_Fill_Model_Partitions_Table(superarbre *st)
 	  lig++;
 	}
     }
-    
+
   n_groups = 0;
-  For(i,st->n_gt) 
+  For(i,st->n_gt)
     {
       For(j,n_groups)
 	if(encountered_vals[j] == st->bl_partition[i])
 	  break;
 
-      if(j == n_groups) 
+      if(j == n_groups)
 	{
 	  encountered_vals[n_groups] = st->bl_partition[i];
 	  n_groups++;
 	}
       st->bl_partition[i] = j;
     }
-  
+
   st->n_bl_partition = n_groups;
 
   Free(encountered_vals);
@@ -2578,21 +2581,21 @@ m3ldbl Mg_Br_Len_Brent(edge *st_b, superarbre *st)
       (*param) = fabs(bx);
       fw=fv=fx=fu=-Mg_Lk_At_Given_Edge(st_b,st);
       init_lnL = -fw;
-      
+
       for(iter=1;iter<=BRENT_ITMAX;iter++)
 	{
 	  xm=0.5*(a+b);
 	  tol2=2.0*(tol1=tol*fabs(x)+BRENT_ZEPS);
 	  if(
-	     ((fabs(st->tree->c_lnL-old_lnL) < tol) && 
-	      (st->tree->c_lnL > init_lnL - tol)) ||	 
+	     ((fabs(st->tree->c_lnL-old_lnL) < tol) &&
+	      (st->tree->c_lnL > init_lnL - tol)) ||
 	     (iter > n_iter_max - 1))
 	    {
 	      (*param)=x;
 	      Mg_Lk_At_Given_Edge(st_b,st);
 	      break;
 	    }
-      
+
 	  if(fabs(e) > tol1)
 	    {
 	      r=(x-w)*(fx-fv);
@@ -2622,7 +2625,7 @@ m3ldbl Mg_Br_Len_Brent(edge *st_b, superarbre *st)
 	  (*param)=fabs(u);
 	  old_lnL = st->tree->c_lnL;
 	  fu=-Mg_Lk_At_Given_Edge(st_b,st);
-	  
+
 	  /*       printf("\n. BRENT edge %3d l=%f lnL=%20f iter=%3d",b_fcus->num,(*param),fu,iter); */
 
 	  if(fu <= fx)
@@ -2641,7 +2644,7 @@ m3ldbl Mg_Br_Len_Brent(edge *st_b, superarbre *st)
 		  fv=fw;
 		  fw=fu;
 		}
-	      else if (fu <= fv || v == x || v == w) 
+	      else if (fu <= fv || v == x || v == w)
 		{
 		  v=u;
 		  fv=fu;
@@ -2660,7 +2663,7 @@ m3ldbl Mg_Br_Len_Brent(edge *st_b, superarbre *st)
 void Mg_Initialise_Bl_Partition(superarbre *st)
 {
   int i,j;
-  
+
   For(i,st->n_bl_partition)
     {
       For(j,2*st->tree->n_otu-3)
@@ -2678,16 +2681,16 @@ void Mg_Optimize_Br_Len_Serie(node *st_a, node *st_d, edge *st_b, superarbre *st
   int i;
 
   lk_init = st->tree->c_lnL;
-  
+
   Mg_Br_Len_Brent(st_b,st);
 
   if(st->tree->c_lnL < lk_init - st->tree->mod->s_opt->min_diff_lk_local)
-    { 
+    {
       printf("\n. %f -- %f",lk_init,st->tree->c_lnL);
       printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-    
+
   if(st_d->tax) return;
   else For(i,3) if(st_d->v[i] != st_a)
     {
@@ -2707,7 +2710,7 @@ void Mg_Update_P_Lk(edge *st_b, node *st_n, superarbre *st)
 
   dir = -1;
   For(i,3) if((st_n->b[i]) && (st_n->b[i] == st_b)) {dir = i; break;}
-  
+
   if(dir < 0)
     {
       printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -2717,10 +2720,11 @@ void Mg_Update_P_Lk(edge *st_b, node *st_n, superarbre *st)
   For(i,st->n_gt)
     {
       if((st->map_st_node_in_gt[i][st_n->num][dir][0]) && (!st->map_st_node_in_gt[i][st_n->num][dir][0]->tax))
-	{	  
+	{
 	  Update_P_Lk(st->treelist->tree[i],
 		      st->map_st_edge_in_gt[i][st_b->num],
-		      st->map_st_node_in_gt[i][st_n->num][dir][0]);
+		      st->map_st_node_in_gt[i][st_n->num][dir][0],
+		      false);
 	}
     }
 }
@@ -2740,7 +2744,7 @@ void Mg_Make_N_Swap(edge **st_b, int beg, int end, superarbre *st)
 	  printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
-      
+
       Mg_Swap(st_b[i]->nni->swap_node_v2->v[st->tree->t_dir[st_b[i]->nni->swap_node_v2->num][st_b[i]->nni->swap_node_v1->num]],
 	      st_b[i]->nni->swap_node_v2,
 	      st_b[i]->nni->swap_node_v3,
@@ -2764,12 +2768,12 @@ void Mg_Make_N_Swap(edge **st_b, int beg, int end, superarbre *st)
 void Mg_Update_Bl(m3ldbl fact, superarbre *st)
 {
   int i,j;
-  
+
   For(i,2*st->tree->n_otu-3)
     {
       For(j,st->n_gt)
-	st->bl[st->bl_partition[j]][i] = 
-	st->bl_cpy[st->bl_partition[j]][i] + 
+	st->bl[st->bl_partition[j]][i] =
+	st->bl_cpy[st->bl_partition[j]][i] +
 	(st->bl0[st->bl_partition[j]][i] - st->bl_cpy[st->bl_partition[j]][i]) * fact;
     }
   Mg_Set_Bl(st->bl,st);
@@ -2780,12 +2784,12 @@ void Mg_Update_Bl(m3ldbl fact, superarbre *st)
 void Mg_Update_Bl_Swaped(edge **st_b, int n, superarbre *st)
 {
   int i,j;
-  
+
   For(i,n)
     {
       For(j,st->n_gt)
 	{
-	  st->bl[st->bl_partition[j]][st_b[i]->num] = 
+	  st->bl[st->bl_partition[j]][st_b[i]->num] =
 	    (st_b[i]->nni->best_conf == 1)?
 	    (st->bl1[st->bl_partition[j]][st_b[i]->num]):
 	    (st->bl2[st->bl_partition[j]][st_b[i]->num]);
@@ -2804,8 +2808,8 @@ void Mg_Do_Mapping(superarbre *st)
   For(k,st->n_gt)
     {
       Fill_Dir_Table(st->treelist->tree[k]);
-      Mg_Match_St_Nodes_In_Gt(st->treelist->tree[k],st);	      
-      Mg_Match_St_Edges_In_Gt(st->treelist->tree[k],st);	      
+      Mg_Match_St_Nodes_In_Gt(st->treelist->tree[k],st);
+      Mg_Match_St_Edges_In_Gt(st->treelist->tree[k],st);
       Mg_Map_St_Nodes_In_Gt(st->treelist->tree[k],st);
       Mg_Map_St_Edges_In_Gt(st->treelist->tree[k],st);
       Mg_Map_Gt_Edges_In_St(st->treelist->tree[k],st);
@@ -2817,9 +2821,9 @@ void Mg_Do_Mapping(superarbre *st)
 void Mg_Print_Bl(superarbre *st)
 {
   int i,j;
-  
+
   For(j,2*st->tree->n_otu-3)
-    { 
+    {
       printf("\n. edge %4d ",j);
       For(i,st->n_bl_partition)
 	{

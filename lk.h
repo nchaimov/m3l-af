@@ -18,7 +18,7 @@ void Init_Tips_At_One_Site_Nucleotides_Float(char state, int pos, plkflt *p_lk);
 void Init_Tips_At_One_Site_AA_Float(char aa, int pos, plkflt *p_lk);
 void Get_All_Partial_Lk_Scale(arbre *tree,edge *b_fcus,node *d);
 #ifdef COMPRESS_SUBALIGNMENTS
-void Post_Order_Foo(node *a, node *d, arbre *tree);
+void Post_Order_Red(node *a, node *d, arbre *tree);
 #endif
 void Post_Order_Lk(node *pere, node *fils, arbre *tree);
 void Pre_Order_Lk(node *pere, node *fils, arbre *tree);
@@ -30,7 +30,7 @@ m3ldbl Return_Abs_Lk(arbre *tree);
 matrix *ML_Dist(allseq *data,model *mod);
 m3ldbl Lk_Given_Two_Seq(allseq *data,int numseq1,int numseq2,m3ldbl dist,model *mod,m3ldbl *loglk);
 void Unconstraint_Lk(arbre *tree);
-void Update_P_Lk(arbre *tree,edge *b_fcus,node *n);
+void Update_P_Lk(arbre *tree,edge *b_fcus,node *n, int use_compression);
 void Make_Tree_4_Lk(arbre *tree,allseq *alldata,int n_site);
 void Init_P_Lk_Tips_Double(arbre *tree);
 void Init_P_Lk_Tips_Int(arbre *tree);

@@ -208,11 +208,6 @@ void Get_Neighbor_Proposition(arbre *tree,m3ldbl temp){
 	// 1. Update the likelihood of tree
 	if(anneal.no_change == 0)
 	{
-#ifdef COMPRESS_SUBALIGNMENTS
-		PhyML_Printf("\n. Compressing sub-alignments based on phylogeny...\n");
-		Make_Node_Red(tree);
-		Post_Order_Foo(tree->noeud[0], tree->noeud[0]->v[0], tree);
-#endif
 		Lk(tree);
 	}
 	tree->mod->update_eigen = 0;

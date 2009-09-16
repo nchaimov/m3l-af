@@ -24,7 +24,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 double Uni()
 {
-  double r; 
+  double r;
   r=rand();
   r/=RAND_MAX;
   return r;
@@ -64,28 +64,28 @@ int Rand_Int(int min, int max)
 * Apply (3) for Gamma(k,1)
 * Apply Ahrens-Dieter algorithm for Gamma(delta,1)
 */
- 
+
 double Ahrensdietergamma(double alpha)
 {
   double x = 0.;
 
-  if (alpha>0.) 
+  if (alpha>0.)
     {
       double y = 0.;
       double b = (alpha+exp(1.))/exp(1.);
       double p = 1./alpha;
       int go = 0;
-      while (go==0) 
+      while (go==0)
 	{
 	  double u = Uni();
 	  double w = Uni();
 	  double v = b*u;
-	  if (v<=1.) 
+	  if (v<=1.)
 	    {
 	      x = pow(v,p);
 	      y = exp(-x);
 	    }
-	  else 
+	  else
 	    {
 	      x = -log(p*(b-v));
 	      y = pow(x,alpha-1.);
@@ -103,7 +103,7 @@ double Rgamma(double shape, double scale)
   int i;
   double x1 = 0.;
   double delta = shape;
-  if (shape>=1.) 
+  if (shape>=1.)
     {
       int k = (int) floor(shape);
       delta = shape - k;
@@ -132,7 +132,7 @@ m3ldbl Rnorm(m3ldbl mean, m3ldbl sd)
 
   u1=(m3ldbl)rand()/(RAND_MAX);
   u2=(m3ldbl)rand()/(RAND_MAX);
- 
+
   u1 = sqrt(-2*log(u1))*cos(2*PI*u2);
 
   return u1*sd+mean;
@@ -144,7 +144,7 @@ m3ldbl *Rnorm_Multid(m3ldbl *mu, m3ldbl *cov, int dim)
 {
   m3ldbl *L,*x,*y;
   int i,j;
-  
+
   x = (m3ldbl *)mCalloc(dim,sizeof(m3ldbl));
   y = (m3ldbl *)mCalloc(dim,sizeof(m3ldbl));
 
@@ -168,7 +168,7 @@ m3ldbl Rnorm_Trunc(m3ldbl mean, m3ldbl sd, m3ldbl min, m3ldbl max)
 {
   m3ldbl cdf_min, cdf_max, u;
   cdf_min = CDF_Normal(min,mean,sd);
-  cdf_max = CDF_Normal(max,mean,sd);  
+  cdf_max = CDF_Normal(max,mean,sd);
   u = cdf_min + (cdf_max-cdf_min) * Uni();
   return(sd*PointNormal(u)+mean);
 }
@@ -180,12 +180,12 @@ m3ldbl *Rnorm_Multid_Trunc(m3ldbl *mean, m3ldbl *cov, m3ldbl *min, m3ldbl *max, 
   int i,j;
   m3ldbl *L,*x, *u;
   m3ldbl up, low, rec;
-  
-  u = (m3ldbl *)mCalloc(dim,sizeof(dim)); 
+
+  u = (m3ldbl *)mCalloc(dim,sizeof(dim));
   x = (m3ldbl *)mCalloc(dim,sizeof(dim));
- 
+
   L = Cholesky_Decomp(cov,dim);
-  
+
 
   low = (min[0]-mean[0])/L[0*dim+0];
   up  = (max[0]-mean[0])/L[0*dim+0];
@@ -217,7 +217,7 @@ m3ldbl *Rnorm_Multid_Trunc(m3ldbl *mean, m3ldbl *cov, m3ldbl *min, m3ldbl *max, 
 /*   For(i,dim) printf("%f ",u[i]); */
 /*   printf("\n"); */
 
-  
+
 /*   printf("\n"); */
 /*   For(i,dim) */
 /*     { */
@@ -233,7 +233,7 @@ m3ldbl *Rnorm_Multid_Trunc(m3ldbl *mean, m3ldbl *cov, m3ldbl *min, m3ldbl *max, 
 
   Free(L);
   Free(u);
-  
+
   return x;
 }
 
@@ -291,7 +291,7 @@ m3ldbl Bivariate_Normal_Density(m3ldbl x, m3ldbl y, m3ldbl mux, m3ldbl muy, m3ld
 
   dens = 1./(2*pi*sdx*sdy*sqrt(1.-rho2));
   dens *= exp((-1./(2.*(1.-rho2)))*(cx*cx/(sdx*sdx)+cy*cy/(sdy*sdy)+2*rho*cx*cy/(sdx*sdy)));
-	      
+
   return dens;
 }
 
@@ -301,16 +301,16 @@ m3ldbl Dgamma_Moments(m3ldbl x, m3ldbl mean, m3ldbl var)
 {
   m3ldbl shape, scale;
 
-  if(var  < 1.E-20) 
+  if(var  < 1.E-20)
     {
 /*       var  = 1.E-20;  */
       PhyML_Printf("\n. var=%f mean=%f",var,mean);
       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");      
+      Exit("\n");
     }
 
-  if(mean < 1.E-20) 
-    { 
+  if(mean < 1.E-20)
+    {
 /*       mean = 1.E-20;  */
       PhyML_Printf("\n. var=%f mean=%f",var,mean);
       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -320,7 +320,7 @@ m3ldbl Dgamma_Moments(m3ldbl x, m3ldbl mean, m3ldbl var)
 
   shape = mean * mean / var;
   scale = var / mean;
-  
+
 
   return(Dgamma(x,shape,scale));
 }
@@ -331,7 +331,7 @@ m3ldbl Dgamma(m3ldbl x, m3ldbl shape, m3ldbl scale)
 {
   m3ldbl v;
 
-  if(x == INFINITY) 
+  if(x == INFINITY)
     {
       PhyML_Printf("\n. WARNING: huge value of x -> x = %G",x);
       x = 1.E+10;
@@ -369,7 +369,7 @@ m3ldbl Dgamma(m3ldbl x, m3ldbl shape, m3ldbl scale)
       Exit("\n");
     }
 
-	 
+
   return v;
 }
 
@@ -385,7 +385,7 @@ m3ldbl Dpois(m3ldbl x, m3ldbl param)
 {
   m3ldbl v;
 
-  if(x < 0) 
+  if(x < 0)
     {
       printf("\n. x = %f",x);
       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -403,13 +403,13 @@ m3ldbl Dpois(m3ldbl x, m3ldbl param)
       PhyML_Printf("\n. WARNING v=%f x=%f param=%f",v,x,param);
       v = exp(500);
     }
-  
+
 /*   PhyML_Printf("\n. Poi %f %f (x=%f param=%f)", */
 /* 	 v, */
 /* 	 pow(param,x) * exp(-param) / exp(LnGamma(x+1)), */
 /* 	 x,param); */
 /*   return pow(param,x) * exp(-param) / exp(LnGamma(x+1)); */
-  
+
   return v;
 }
 
@@ -429,16 +429,16 @@ m3ldbl CDF_Normal(m3ldbl x, m3ldbl mean, m3ldbl sd)
   const double b5 =  1.330274429;
   const double p  =  0.2316419;
   const double c  =  0.39894228;
-  
+
   x = (x-mean)/sd;
-  
-  if(x >= 0.0) 
+
+  if(x >= 0.0)
     {
       double t = 1.0 / ( 1.0 + p * x );
       return (1.0 - c * exp( -x * x / 2.0 ) * t *
 	      ( t *( t * ( t * ( t * b5 + b4 ) + b3 ) + b2 ) + b1 ));
     }
-  else 
+  else
     {
       double t = 1.0 / ( 1.0 - p * x );
       return ( c * exp( -x * x / 2.0 ) * t *
@@ -459,7 +459,7 @@ m3ldbl CDF_Gamma(m3ldbl x, m3ldbl shape, m3ldbl scale)
 m3ldbl CDF_Pois(m3ldbl x, m3ldbl param)
 {
   /* Press et al. (1990) approximation of the CDF for the Poisson distribution */
-  if(param < MDBL_MIN || x < 0.0) 
+  if(param < MDBL_MIN || x < 0.0)
     {
       printf("\n. param = %G x=%G",param,x);
       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -577,7 +577,7 @@ m3ldbl Bico(int n, int k)
 m3ldbl Factln(int n)
 {
   static m3ldbl a[101];
-  
+
   if (n < 0)    { Warn_And_Exit("\n. Err: negative factorial in routine FACTLN"); }
   if (n <= 1)     return 0.0;
   if (n <= 100)   return a[n] ? a[n] : (a[n]=Gammln(n+1.0));
@@ -592,12 +592,12 @@ m3ldbl Gammln(m3ldbl xx)
   static m3ldbl cof[6]={76.18009173,-86.50532033,24.01409822,
 			-1.231739516,0.120858003e-2,-0.536382e-5};
   int j;
-  
+
   x=xx-1.0;
   tmp=x+5.5;
   tmp -= (x+0.5)*(m3ldbl)log(tmp);
   ser=1.0;
-  for (j=0;j<=5;j++) 
+  for (j=0;j<=5;j++)
     {
       x += 1.0;
       ser += cof[j]/x;
@@ -703,7 +703,7 @@ int DiscreteGamma (m3ldbl freqK[], m3ldbl rK[],
   /* discretization of gamma distribution with equal proportions in each
      category
   */
-   
+
   int i;
   m3ldbl gap05=1.0/(2.0*K), t, factor=alfa/beta*K, lnga1;
 
@@ -714,7 +714,7 @@ int DiscreteGamma (m3ldbl freqK[], m3ldbl rK[],
       return 0;
     }
 
-   if (median) 
+   if (median)
      {
        for (i=0; i<K; i++)     rK[i]=PointGamma((i*2.0+1)*gap05, alfa, beta);
        for (i=0,t=0; i<K; i++) t+=rK[i];
@@ -745,7 +745,7 @@ m3ldbl LnFact(int n)
 
   res = 0;
   for(i=2;i<=n;i++) res += log(i);
-  
+
   return(res);
 }
 
@@ -782,7 +782,7 @@ m3ldbl *Covariance_Matrix(arbre *tree)
   mean     = (m3ldbl *)mCalloc(    dim,sizeof(m3ldbl));
   ori_wght = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   site_num = (int *)mCalloc(tree->data->init_len,sizeof(int));
-  
+
   var_min = 1./pow(tree->data->init_len,2);
 
   For(i,tree->data->crunch_len) ori_wght[i] = tree->data->wght[i];
@@ -794,7 +794,7 @@ m3ldbl *Covariance_Matrix(arbre *tree)
       n_site++;
     }
 
-  		  
+
   tree->mod->s_opt->print = 0;
   For(replicate,sample_size)
     { //JSJ: temp fixes of l
@@ -809,7 +809,7 @@ m3ldbl *Covariance_Matrix(arbre *tree)
 	}
 
       Round_Optimize(tree,tree->data,ROUND_MAX);
-      
+
       For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] += tree->t_edges[i]->l[0] * tree->t_edges[j]->l[0];
       For(i,2*tree->n_otu-3) mean[i] += tree->t_edges[i]->l[0];
 
@@ -831,11 +831,11 @@ m3ldbl *Covariance_Matrix(arbre *tree)
    }
 
   For(i,2*tree->n_otu-3) mean[i] /= (m3ldbl)sample_size;
-  
+
   For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] /= (m3ldbl)sample_size;
   For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] -= mean[i]*mean[j];
   For(i,2*tree->n_otu-3) if(cov[i*dim+i] < var_min) cov[i*dim+i] = var_min;
-  
+
 
 /*   printf("\n"); */
 /*   For(i,2*tree->n_otu-3) printf("%f %f\n",mean[i],tree->t_edges[i]->l); */
@@ -889,12 +889,12 @@ m3ldbl *Hessian(arbre *tree)
   Lk(tree);
 //JSJ: temp fixes of l
   For(i,dim) ori_bl[i] = tree->t_edges[i]->l[0];
-  
-  /* zero zero */  
+
+  /* zero zero */
   zero_zero = tree->c_lnL;
 
-  /* plus zero */  
-  For(i,dim) 
+  /* plus zero */
+  For(i,dim)
     {
       tree->t_edges[i]->l[0] += eps * tree->t_edges[i]->l[0];
       lk = Lk_At_Given_Edge(tree->t_edges[i],tree);
@@ -903,8 +903,8 @@ m3ldbl *Hessian(arbre *tree)
     }
 
 
-  /* minus zero */  
-  For(i,dim) 
+  /* minus zero */
+  For(i,dim)
     {
       tree->t_edges[i]->l[0] -= eps * tree->t_edges[i]->l[0];
       tree->t_edges[i]->l[0] = fabs(tree->t_edges[i]->l[0]);
@@ -915,7 +915,7 @@ m3ldbl *Hessian(arbre *tree)
 
   For(i,dim) Update_PMat_At_Given_Edge(tree->t_edges[i],tree);
 
-  /* plus plus  */  
+  /* plus plus  */
   For(i,dim)
     {
       tree->t_edges[i]->l[0] += eps * tree->t_edges[i]->l[0];
@@ -934,7 +934,7 @@ m3ldbl *Hessian(arbre *tree)
     }
 
 
-  /* plus minus */  
+  /* plus minus */
   For(i,dim)
     {
       tree->t_edges[i]->l[0] += eps * tree->t_edges[i]->l[0];
@@ -954,7 +954,7 @@ m3ldbl *Hessian(arbre *tree)
 
 
 
-  /* minus minus */  
+  /* minus minus */
   For(i,dim)
     { //JSJ: temp fixes of l
       tree->t_edges[i]->l[0] -= eps * tree->t_edges[i]->l[0];
@@ -969,34 +969,34 @@ m3ldbl *Hessian(arbre *tree)
       For(j,3)
 	if((!tree->t_edges[i]->rght->tax) && (tree->t_edges[i]->rght->v[j] != tree->t_edges[i]->left))
 	  Recurr_Hessian(tree->t_edges[i]->rght,tree->t_edges[i]->rght->v[j],-1,eps,minus_minus+i*dim,tree);
-      
+
       tree->t_edges[i]->l[0] = ori_bl[i];
       Lk(tree);
     }
 
-  
+
   For(i,dim)
     { //JSJ: temp fixes of l
       hessian[i*dim+i] = (plus_zero[i]-2*zero_zero+minus_zero[i])/(pow(eps*tree->t_edges[i]->l[0],2));
 
       for(j=i+1;j<dim;j++)
 	{
-	  hessian[i*dim+j] = 
+	  hessian[i*dim+j] =
 	    (plus_plus[i*dim+j]-plus_minus[i*dim+j]-plus_minus[j*dim+i]+minus_minus[i*dim+j])/
 	    (4*eps*tree->t_edges[i]->l[0]*eps*tree->t_edges[j]->l[0]);
 	  hessian[j*dim+i] = hessian[i*dim+j];
 	}
     }
-  
+
   Matinv(hessian, dim, dim, plus_plus);
-      
+
   Free(ori_bl);
   Free(plus_plus);
   Free(minus_minus);
   Free(plus_zero);
   Free(minus_zero);
   Free(plus_minus);
-    
+
   return hessian;
 
 }
@@ -1011,7 +1011,7 @@ void Recurr_Hessian(node *a, node *d, int plus_minus, m3ldbl eps, m3ldbl *res, a
   For(i,3)
     if(a->v[i] == d)
       {
-	Update_P_Lk(tree,a->b[i],a);
+	Update_P_Lk(tree,a->b[i],a,FALSE);
 //JSJ: Temp fixes of l
 	ori_l = a->b[i]->l[0];
 	if(plus_minus > 0) a->b[i]->l[0] += eps * a->b[i]->l[0];
@@ -1026,9 +1026,9 @@ void Recurr_Hessian(node *a, node *d, int plus_minus, m3ldbl eps, m3ldbl *res, a
       }
 
   if(d->tax) return;
-  else 
-    For(i,3) 
-      if(d->v[i] != a) 
+  else
+    For(i,3)
+      if(d->v[i] != a)
 	Recurr_Hessian(d,d->v[i],plus_minus,eps,res,tree);
 }
 
