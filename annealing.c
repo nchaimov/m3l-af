@@ -588,6 +588,9 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	else{
 		anneal.accept_ratio = tree->io->acc_ratio; //if positive, user input a value, don't estimate.
 		Lk(tree);
+#ifdef MEASURE
+		Count_Mean_Compressability(tree);
+#endif
 	}
 
 	// VHS: do we need this? I think it gets us to a good starting location.
@@ -669,6 +672,9 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			//get our next proposition.
 			Get_Neighbor_Proposition(tree,temp);
 			lnL_proposed = tree->c_lnL;
+#ifdef MEASURE
+			Count_Mean_Compressability(tree);
+#endif
 
 			now = time(NULL);
 			// Some useful debugging statements:

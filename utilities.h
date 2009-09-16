@@ -35,7 +35,9 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <omp.h>
 #endif //USE_OPENMP
 
-//#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
+//#define MEASURE 1 // for timing and speedup measurements
+
+#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
 								 // although this optimization can increase runtime, it costs more in memory.
 
 
@@ -1000,6 +1002,10 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap);
 void Swap(node *a,node *b,node *c,node *d,arbre *tree);
 void Update_All_Partial_Lk(edge *b_fcus,arbre *tree);
 void Update_SubTree_Partial_Lk(edge *b_fcus,node *a,node *d,arbre *tree);
+#ifdef MEASURE
+void Count_Mean_Compressability(arbre *tree);
+int Post_Order_Count_Compressability(node *a, node *d, arbre *tree, int site);
+#endif MEASURE
 allseq *Make_Cseq(int n_otu, int crunch_len, int init_len, char **sp_names);
 allseq *Copy_Cseq(allseq *ori, int len, int ns);
 optimiz *Alloc_Optimiz();

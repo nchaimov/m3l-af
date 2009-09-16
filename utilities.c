@@ -26,6 +26,10 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "rates.h"
 #include "numeric.h"
 
+#ifdef MEASURE
+#include "math.h"
+#endif
+
 #ifdef MPI
 #include "mpi_boot.h"
 #endif
@@ -3391,7 +3395,6 @@ void Swap(node *a, node *b, node *c, node *d, arbre *tree)
 	 * nodes b and c are not necessarily on the same branch
 	 */
 
-
 #ifdef DEBUG
 	if(!a || !b || !c || !d)
 	{
@@ -3514,6 +3517,66 @@ void Update_SubTree_Partial_Lk(edge *b_fcus, node *a, node *d, arbre *tree)
 		Update_SubTree_Partial_Lk(d->b[i],d,d->v[i],tree);
 }
 
+
+#ifdef MEASURE
+void Count_Mean_Compressability(arbre *tree)
+{
+	int site;
+	int *site_ci; // array, where index = site, value = the number of edges avoided due to tree-based subalignment compression
+	site_ci = (int *)mCalloc(tree->n_pattern, sizeof(int));
+	int sum = 0;
+	int sum_sqr = 0.0;
+	for(site = 0; site < tree->n_pattern; site++)
+	{
+		site_ci[site] = Post_Order_Count_Compressability(tree->noeud[0], tree->noeud[0]->v[0], tree, site);
+		sum += site_ci[site];
+		sum_sqr += sum * sum;
+	}
+
+	m3ldbl mean = (m3ldbl)sum / (m3ldbl)tree->n_pattern;
+	m3ldbl sdev = sqrt(sum_sqr / tree->n_pattern);
+	m3ldbl serr = sdev / sqrt( tree->n_pattern);
+	PhyML_Printf("The mean ci = %f, with s.err = %f\n", mean, serr);
+}
+
+// returns the number of edges that ARE visited during a post-order traversal with tree-based compression
+int Post_Order_Count_Compressability(node *a, node *d, arbre *tree, int site)
+{
+	int i;
+	if(d->tax)
+	{
+		return 1;
+	}
+	else if (d->red[site] != -1)
+	{
+		return 1;
+	}
+	//else
+	node *child1 = 0;
+	node *child2 = 0;
+
+	For(i,3)
+	{
+		if(d->v[i] != a)
+		{
+			if (child1 == 0)
+			{
+				//PhyML_Printf("pointing child1 to node %d\n", d->v[i]->num);
+				child1 = d->v[i];
+			}
+			else if (child2 == 0)
+			{
+				//PhyML_Printf("pointing child2 to node %d\n", d->v[i]->num);
+				child2 = d->v[i];
+			}
+		}
+	}
+	int x = Post_Order_Count_Compressability(d, child1, tree, site);
+	int y = Post_Order_Count_Compressability(d, child2, tree, site);
+	return x + y + 1;
+}
+#endif
+
 /*********************************************************/
 
 allseq *Make_Cseq(int n_otu, int crunch_len, int init_len, char **sp_names)
@@ -3558,6 +3621,8 @@ arbrelist *Make_Treelist(int list_size)
 
 	return tlist;
 }
+
+
 
 
 /*********************************************************/
