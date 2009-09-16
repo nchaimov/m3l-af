@@ -2607,9 +2607,6 @@ arbre *Make_Tree_From_Scratch(int n_otu, allseq *data, int n_l)
 		Copy_Tax_Names_To_Tip_Labels(tree,data);
 		tree->data = data;
 	}
-#ifdef COMPRESS_SUBALIGNMENTS
-	Make_All_Nodes_Red(tree);
-#endif
 	return tree;
 }
 
@@ -2640,7 +2637,7 @@ void Make_Tree_Path(arbre *tree)
 #ifdef COMPRESS_SUBALIGNMENTS
 void Make_All_Nodes_Red(arbre *tree)
 {
-	PhyML_Printf("allocating memory for red arrays\n");
+	PhyML_Printf(". Allocating memory for red. arrays. . .\n");
 
 	int i;
 	int k;
@@ -9504,6 +9501,8 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 	if(!io->quiet) PhyML_Printf("\n. Building BioNJ tree...\n");
 	// JSJ: !!!!!!! need to get n_l from io
 	// for now just use a temp n_l
+	//
+	// VHS: this must be fixed immediately!
 	int n_l = 2;
 	mat->tree = Make_Tree_From_Scratch(alldata->n_otu,alldata,n_l);
 	Bionj(mat);

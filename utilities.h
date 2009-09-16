@@ -35,7 +35,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <omp.h>
 #endif //USE_OPENMP
 
-#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
+//#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
 								 // although this optimization can increase runtime, it costs more in memory.
 
 

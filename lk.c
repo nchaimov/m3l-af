@@ -1086,15 +1086,27 @@ void Update_P_Lk(arbre *tree, edge *b, node *d, int use_compression)
 	{
 
 #ifdef COMPRESS_SUBALIGNMENTS
+		// something like: p_lk[site] = p_lk[ previous site ]
 		if (use_compression == 1)
 		{
 			// if d->red[site] contains a value:
 			if (d->red[site] != -1) // i.e. this site is redundant
 			{
-				// something like: p_lk[site] = p_lk[ previous site ]
-
+				int red_site = d->red[site];
+				// VHS: for debugging
+				for(k = 0; k < tree->n_l; k++)
+				{
+					For(catg,tree->mod->n_catg)
+					{
+						For(i,tree->mod->ns)
+						{
+							// assign the partial likelihood for this site to the partial likelihood of the red. site:
+							p_lk[site*dim1+catg*dim2+i] = p_lk[red_site*dim1+catg*dim2+i];
+						}
+					}
+				}
 				// VHS: turn this back on!
-				//continue;
+				continue;
 			}
 		}
 #endif
