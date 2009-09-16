@@ -1093,7 +1093,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d, int use_compression)
 			if (d->red[site] != -1) // i.e. this site is redundant
 			{
 				int red_site = d->red[site];
-				// VHS: for debugging
+
 				for(k = 0; k < tree->n_l; k++)
 				{
 					For(catg,tree->mod->n_catg)
@@ -1290,34 +1290,34 @@ void Update_P_Lk(arbre *tree, edge *b, node *d, int use_compression)
 			}
 		}//JSJ: end if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
 
-// for debugging purposes:
-#ifdef COMPRESS_SUBALIGNMENTS
-		if (use_compression == 1)
-		{
-			// if d->red[site] contains a value:
-			if (d->red[site] != -1) // i.e. this site is redundant
-			{
-				//Print_P_Lk(p_lk, site, tree);
-				//Print_P_Lk(p_lk, d->red[site], tree);
-
-				int red_site = d->red[site];
-				// VHS: for debugging
-				for(k = 0; k < tree->n_l; k++)
-				{
-					For(catg,tree->mod->n_catg)
-					{
-						For(i,tree->mod->ns)
-						{
-							if ( (plkflt)p_lk[site*dim1+catg*dim2+i] != (plkflt)p_lk[red_site*dim1+catg*dim2+i] )
-							{
-								PhyML_Printf("Update_P_Lk: disagreement at node=%d site=%d bl=%d catg=%d state=%d p_lk[old_site]=%f p_lk[this_site]=%f\n", d->num, site, k, catg, i, p_lk[d->red[site]*dim1+catg*dim2+i], p_lk[site*dim1+catg*dim2+i]);
-							}
-						}
-					}
-				}
-			}
-		}
-#endif
+//// for debugging purposes:
+//#ifdef COMPRESS_SUBALIGNMENTS
+//		if (use_compression == 1)
+//		{
+//			// if d->red[site] contains a value:
+//			if (d->red[site] != -1) // i.e. this site is redundant
+//			{
+//				//Print_P_Lk(p_lk, site, tree);
+//				//Print_P_Lk(p_lk, d->red[site], tree);
+//
+//				int red_site = d->red[site];
+//				// VHS: for debugging
+//				for(k = 0; k < tree->n_l; k++)
+//				{
+//					For(catg,tree->mod->n_catg)
+//					{
+//						For(i,tree->mod->ns)
+//						{
+//							if ( (plkflt)p_lk[site*dim1+catg*dim2+i] != (plkflt)p_lk[red_site*dim1+catg*dim2+i] )
+//							{
+//								PhyML_Printf("Update_P_Lk: disagreement at node=%d site=%d bl=%d catg=%d state=%d p_lk[old_site]=%f p_lk[this_site]=%f\n", d->num, site, k, catg, i, p_lk[d->red[site]*dim1+catg*dim2+i], p_lk[site*dim1+catg*dim2+i]);
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//#endif
 
 	} // end For(site,patterns)
 }
