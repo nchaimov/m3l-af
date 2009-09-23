@@ -1,17 +1,3 @@
-/*
- *
- * Hello World!!!-John St John
-
-PhyML:  a program that  computes maximum likelihood phylogenies from
-DNA or AA homologous sequences.
-
-Copyright (C) Stephane Guindon. Oct 2003 onward.
-
-All parts of the source except where indicated are distributed under
-the GNU public licence. See http://www.opensource.org for details.
-
-*/
-
 #include "spr.h"
 #include "utilities.h"
 #include "lk.h"
@@ -25,20 +11,73 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "pars.h"
 #include "alrt.h"
 #include "annealing.h"
-#include "unittests.h"
 
 #ifdef MPI
 #include "mpi_boot.h"
 #endif
 
-#ifdef PHYML
-int main(int argc, char **argv)
-{
-#ifdef RUN_TESTS
-	Run_tests(argc, argv);
-	exit(1);
+#ifdef COMPRESS_SUBALIGNMENTS
+#include "compress.h"
 #endif
 
+
+// s=(char *)mCalloc(T_MAX_LINE,sizeof(char));
+// append = 0 = no append
+// append = 1 = yes append
+void Write_File(char *filename, char *s, int append)
+{
+	FILE *file;
+	if (append == 0)
+	{
+		file = fopen(filename,"w+");
+	}
+	else{
+		file = fopen(filename, "a+");
+	}
+	fprintf(file, "%s", s); /*writes*/
+	fclose(file); /*done!*/
+}
+
+void Test_alignment_read(option *io, seq **data, int testid)
+{
+	PhyML_Printf("Test #%d: alignment read\n", testid);
+	if (testid == 1)
+	{
+		if (data[0]->len != 10)
+		{
+			PhyML_Printf("Test %d failed, the alignment should be 10 sites long.\n", testid);
+			exit(1);
+		}
+		else
+		{
+			PhyML_Printf("OK. Alignment length = %d sites.\n", data[0]->len);
+		}
+		int j;
+		For(j,io->mod->n_otu)
+		{
+			if (!data[j])
+			{
+				PhyML_Printf("Test %d failed, I cannot find taxon #%d of %d.\n", testid, j, io->mod->n_otu);
+				exit(1);
+			}
+		}
+		PhyML_Printf("OK. Alignment contains %d taxa.\n", io->mod->n_otu);
+	}
+}
+
+void Run_tests(int argc, char **argv)
+{
+	/*
+	 * Test case #1:
+	 */
+	char align[] = " 4 10\nta\nAAAAAAAAAA\ntb\nDDDDDDDDDD\nta\nEEEEEEEEEE\nta\nLLLLLLLLLL\n";
+	Write_File("align.phy", align, 0);
+	int x = Test_main(argc, argv, 1);
+}
+
+// This is a faux main for unit tests.
+int Test_main(int argc, char **argv, int testid)
+{
   seq **data;
   allseq *alldata;
   option *io;
@@ -100,6 +139,9 @@ int main(int argc, char **argv)
 	  best_lnL = UNLIKELY;
 	  data = Get_Seq(io,0);
 
+	  //
+	  Test_alignment_read(io, data, testid);
+
 	  if(data)
 	{
 	  if(io->n_data_sets > 1) PhyML_Printf("\n. Data set [#%d]\n",num_data_set+1);
@@ -127,8 +169,6 @@ int main(int argc, char **argv)
 		  }
 
 // VHS: this is code from JSJ, which I think we can scrap:
-
-
 
 			//JSJ: Make sure that the user hasn't defined starting
 				//parameters that we need to copy into the tree.
@@ -188,10 +228,10 @@ int main(int argc, char **argv)
 				  Best_Of_NNI_And_SPR(tree);
 				  break;
 			  case SIMULATED_THERMAL_ANNEALING:
-				  Thermal_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0));//JSJ: 0 for verbose...
+				  Thermal_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0));
 				  break;
 			  case SIMULATED_QUANTUM_ANNEALING:
-				  Quantum_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0)); //JSJ: 0 for verbose...
+				  Quantum_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0));
 				  break;
 			  default:
 				  PhyML_Printf("\n The topology search option was not recognized...");
@@ -199,10 +239,6 @@ int main(int argc, char **argv)
 				  Warn_And_Exit("\n");
 			  }
 
-//		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
-//		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
-//		      else if(tree->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) Best_Of_NNI_And_SPR(tree);
-//		      else if
 		  }
 		  else
 		  {
@@ -230,6 +266,7 @@ int main(int argc, char **argv)
 			  fflush(NULL);
 		  }
 
+		  /* Record the most likely tree in a string of characters */
 		  if(tree->c_lnL > best_lnL)
 		  {
 			  best_lnL = tree->c_lnL;
@@ -237,6 +274,8 @@ int main(int argc, char **argv)
 			  most_likely_tree = Write_Tree(tree);
 			  most_likely_size = Get_Tree_Size(tree);
 		  }
+
+/* 		  JF(tree); */
 
 		  time(&t_end);
 		  Print_Fp_Out(io->fp_out_stats,t_beg,t_end,tree,
@@ -302,8 +341,6 @@ int main(int argc, char **argv)
 
   if(io->mod->s_opt->n_rand_starts > 1) PhyML_Printf("\n\n. Best log likelihood : %f\n",best_lnL);
 
-  /* OK, we're done.  Now cleanup. . . */
-
   Free_Model(mod);
 
   if(io->fp_in_seq)     fclose(io->fp_in_seq);
@@ -324,5 +361,3 @@ int main(int argc, char **argv)
 
   return 0;
 }
-
-#endif

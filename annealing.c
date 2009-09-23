@@ -120,10 +120,10 @@ m3ldbl Scale_Acceptance_Ratio(arbre *tree){
 	int n = 0;
 	int i;
 	//Optimiz_All_Free_Param(tree,0);
-	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
-	Init_Tree(best_tree,tree->n_otu, tree->n_l);
-	Make_All_Tree_Nodes(best_tree);
-	Make_All_Tree_Edges(best_tree);
+	arbre *best_tree = Make_Tree(tree->n_otu);
+	Init_Tree(best_tree,tree->n_otu);
+	Make_All_Tree_Nodes(best_tree, tree->mod->n_l);
+	Make_All_Tree_Edges(best_tree, tree->mod->n_l);
 	best_tree->mod = Copy_Model(tree->mod);
 	Copy_Tree(tree,best_tree);
 
@@ -226,8 +226,8 @@ m3ldbl Get_distance_between_trees(arbre *last_tree, arbre *tree){
 
 	distance += (last_tree->mod->alpha - tree->mod->alpha)*(last_tree->mod->alpha - tree->mod->alpha);
 	int i;
-	for(i = 0; i < tree->n_l; i++){
-		distance += (last_tree->props[i] - tree->props[i])*(last_tree->props[i] - tree->props[i]);
+	for(i = 0; i < tree->mod->n_l; i++){
+		distance += (last_tree->mod->bl_props[i] - tree->mod->bl_props[i])*(last_tree->mod->bl_props[i] - tree->mod->bl_props[i]);
 	}
 	distance += (last_tree->mod->pinvar - tree->mod->pinvar)*(last_tree->mod->pinvar - tree->mod->pinvar);
 	distance += (last_tree->mod->kappa - tree->mod->kappa)*(last_tree->mod->kappa - tree->mod->kappa);
@@ -265,9 +265,9 @@ void Step_Brlen_Proportion(arbre *tree){
 		anneal.no_change = 0;
 		//		int i,j;
 		//		double r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
-		//		int prange = (int)(Rand_Int(1,(tree->n_l)) * r);
+		//		int prange = (int)(Rand_Int(1,(tree->mod->n_l)) * r);
 		//		For(i,prange){
-		//			j = Rand_Int(0,(tree->n_l - 1));
+		//			j = Rand_Int(0,(tree->mod->n_l - 1));
 		//			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
 		//			tree->props[j] += r;
 		//			if(tree->props[j] > 1.0) tree->props[j] = 1.0;
@@ -275,11 +275,11 @@ void Step_Brlen_Proportion(arbre *tree){
 		//		}
 		double alpha[MAX_BL_SET];
 		int i;
-		For(i,tree->n_l){
+		For(i,tree->mod->n_l){
 			alpha[i] = anneal.max_alpha;
 			PhyML_Printf("(annealing.c 201) alpha[%d] = %f", i, alpha[i]);
 		}
-		gsl_ran_dirichlet(anneal.rng,tree->n_l,alpha,tree->props);
+		gsl_ran_dirichlet(anneal.rng,tree->mod->n_l,alpha,tree->mod->bl_props);
 		Normalize_Props(tree);
 		//JSJ: recalculate the likelihood of the tree
 	}
@@ -412,7 +412,7 @@ void Step_Branch_Lengths(arbre *tree, m3ldbl temp){
 		edge_range = gsl_rng_uniform_int(anneal.rng,max);
 		if(edge_range < 1) edge_range = 1;
 
-		max = (tree->n_l + 1) * temp;
+		max = (tree->mod->n_l + 1) * temp;
 		if(max < 1) max = 1;
 		set_range = gsl_rng_uniform_int(anneal.rng,max);
 		if(set_range < 1) set_range = 1;
@@ -420,7 +420,7 @@ void Step_Branch_Lengths(arbre *tree, m3ldbl temp){
 			j = gsl_rng_uniform_int(anneal.rng,n_edges);
 			For(m,set_range){
 				rand_gauss = gsl_ran_gaussian(anneal.rng,anneal.brlen_sigma);
-				n = gsl_rng_uniform_int(anneal.rng,tree->n_l);
+				n = gsl_rng_uniform_int(anneal.rng,tree->mod->n_l);
 				tree->t_edges[j]->l[n] += rand_gauss;
 				if(tree->t_edges[j]->l[n] < BL_MIN) tree->t_edges[j]->l[n] = BL_MIN;
 				else if(tree->t_edges[j]->l[n] > BL_MAX) tree->t_edges[j]->l[n] = BL_MAX;
@@ -596,18 +596,18 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	// VHS: do we need this? I think it gets us to a good starting location.
 	//Optimiz_All_Free_Param(tree,1);
 
-	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
-	Init_Tree(best_tree,tree->n_otu, tree->n_l);
-	Make_All_Tree_Nodes(best_tree);
-	Make_All_Tree_Edges(best_tree);
+	arbre *best_tree = Make_Tree(tree->n_otu);
+	Init_Tree(best_tree,tree->n_otu);
+	Make_All_Tree_Nodes(best_tree, tree->mod->n_l);
+	Make_All_Tree_Edges(best_tree, tree->mod->n_l);
 	best_tree->mod = Copy_Model(tree->mod);
 	Copy_Tree(tree,best_tree);
 
 	//Speed_Spr_Loop(tree);
-	arbre *last_tree = Make_Tree(tree->n_otu,tree->n_l);
-	Init_Tree(last_tree,tree->n_otu, tree->n_l);
-	Make_All_Tree_Nodes(last_tree);
-	Make_All_Tree_Edges(last_tree);
+	arbre *last_tree = Make_Tree(tree->n_otu);
+	Init_Tree(last_tree,tree->n_otu);
+	Make_All_Tree_Nodes(last_tree, tree->mod->n_l);
+	Make_All_Tree_Edges(last_tree, tree->mod->n_l);
 	last_tree->mod = Copy_Model(best_tree->mod);
 
 	time_t start = time(NULL);
@@ -778,18 +778,18 @@ m3ldbl Quantum_Anneal_All_Free_Params(arbre *tree, int verbose){
 	Optimiz_All_Free_Param(tree,1);
 	//printf("(annealing.c 742) anneal.num_anneal_stages = %d", anneal.num_anneal_stages);
 
-	arbre *best_tree = Make_Tree(tree->n_otu,tree->n_l);
-	Init_Tree(best_tree,tree->n_otu, tree->n_l);
-	Make_All_Tree_Nodes(best_tree);
-	Make_All_Tree_Edges(best_tree);
+	arbre *best_tree = Make_Tree(tree->n_otu);
+	Init_Tree(best_tree,tree->n_otu);
+	Make_All_Tree_Nodes(best_tree, tree->mod->n_l);
+	Make_All_Tree_Edges(best_tree, tree->mod->n_l);
 	best_tree->mod = Copy_Model(tree->mod);
 	Copy_Tree(tree,best_tree);
 
 	//Speed_Spr_Loop(tree);
-	arbre *last_tree = Make_Tree(tree->n_otu,tree->n_l);
-	Init_Tree(last_tree,tree->n_otu, tree->n_l);
-	Make_All_Tree_Nodes(last_tree);
-	Make_All_Tree_Edges(last_tree);
+	arbre *last_tree = Make_Tree(tree->n_otu);
+	Init_Tree(last_tree,tree->n_otu);
+	Make_All_Tree_Nodes(last_tree, tree->mod->n_l);
+	Make_All_Tree_Edges(last_tree, tree->mod->n_l);
 	last_tree->mod = Copy_Model(best_tree->mod);
 	time_t start = time(NULL);
 	time_t now;

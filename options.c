@@ -357,7 +357,6 @@ void Usage()
 
 option *Get_Input(int argc, char **argv)
 {
-
 	option *io;
 
 	io = (option *)Make_Input();
@@ -383,10 +382,7 @@ option *Get_Input(int argc, char **argv)
 	default:
 		Read_Command_Line(io,argc,argv);
 	}
-
-	Normalize_Props_IO(io); //double check that the proportions are normalized...
-
-	//  Print_Settings(io); //JSJ: move this line to main.c after the user tree is read in.
+	Normalize_Props_IO(io);
 	return io;
 }
 

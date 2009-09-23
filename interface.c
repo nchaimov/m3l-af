@@ -222,14 +222,14 @@ void Launch_Interface_MBL_Model(option *io)
 	PhyML_Printf("\n");
 	PhyML_Printf("                [N] "
 			"............. Number of Branch lengths per edge:  "
-			" %i \n", io->n_l);
+			" %i \n", io->mod->n_l);
 	PhyML_Printf("                [P] "
 			"Initial props in branch length set: [");
-	For(i,io->n_l){
-		if(i+1 != io->n_l){
-			PhyML_Printf(" %lf,",io->props[i]);
+	For(i,io->mod->n_l){
+		if(i+1 != io->mod->n_l){
+			PhyML_Printf(" %lf,",io->mod->bl_props[i]);
 		}else{
-			PhyML_Printf(" %lf ",io->props[i]);
+			PhyML_Printf(" %lf ",io->mod->bl_props[i]);
 		}
 	}
 	PhyML_Printf("]\n");
@@ -294,28 +294,34 @@ void Launch_Interface_MBL_Model(option *io)
 			PhyML_Printf("\n. Enter a new value between 1 and %i > ",MAX_BL_SET);
 			Getstring_Stdin(n_branches);
 		}
-		int tmp = io->n_l;
-		io->n_l = atoi(n_branches);
-		//JSJ: update default branch length proportions, if the user entered a new number
-		if(io->n_l != tmp){
+		int tmp = io->mod->n_l;
+		io->mod->n_l = atoi(n_branches);
+		//if(io->mod->n_l != tmp)
+		//{
 			Update_Default_Props(io);
-			if(io->n_l == 1){ //if one branch length category, make sure props are fixed
+			if(io->mod->n_l == 1)
+			{   //if one branch length category, then fix the branch length proportions (i.e. 100% for 0th branch length class)
 				io->fixed_props = 1;
 				io->mod->s_opt->opt_props = io->fixed_props;
-			}else if(tmp == 1){
+			}
+			else if(tmp == 1)
+			{
 				io->fixed_props = 0;
 				io->mod->s_opt->opt_props = io->fixed_props;
 				io->mod->s_opt->opt_five_branch = 0;
 				//Default to Simulated Thermal Annealing if there is more than 1 branch length category
-				if(io->user_topo == 0) io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
+				if(io->user_topo == 0)
+				{
+					io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
+				}
 			}
-		}
+		//}
 		Free(n_branches);
 		break;
 	}
 	case 'F':
 	{
-		if(io->n_l == 1){
+		if(io->mod->n_l == 1){
 			io->fixed_props = 1;
 			io->mod->s_opt->opt_props = io->fixed_props;
 		} else {
@@ -327,7 +333,7 @@ void Launch_Interface_MBL_Model(option *io)
 	case 'P':
 	{
 		int i;
-		int n_l = io->n_l;
+		int n_l = io->mod->n_l;
 
 		For(i,n_l){
 			Clear();
@@ -339,7 +345,7 @@ void Launch_Interface_MBL_Model(option *io)
 			PhyML_Printf("                       ...................................                                           \n");
 
 			PhyML_Printf("\n\n");
-			PhyML_Printf("Old proportion for set %i: %lf \n",i,io->props[i]);
+			PhyML_Printf("Old proportion for set %i: %lf \n",i,io->mod->bl_props[i]);
 			PhyML_Printf("Enter a new proportion between 0.0 and 1.0 for set %i > ",i);
 			n_branches = (char *)mCalloc(10000,sizeof(char));
 			Getstring_Stdin(n_branches);
@@ -351,7 +357,7 @@ void Launch_Interface_MBL_Model(option *io)
 				PhyML_Printf("\n. Enter a new proportion for branch length set number %i > ",i);
 				Getstring_Stdin(n_branches);
 			}
-			io->props[i] = atof(n_branches);
+			io->mod->bl_props[i] = atof(n_branches);
 			Free(n_branches);
 		}
 		//JSJ: correct for floating point error
@@ -1742,7 +1748,8 @@ void Launch_Interface_Topo_Search(option *io)
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
 		}
-		else if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING){
+		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING){
+
 			io->mod->s_opt->topo_search         = NNI_MOVE;
 			io->mod->s_opt->n_rand_starts       = 1;
 			io->user_topo 						= 1;

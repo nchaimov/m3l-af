@@ -6,6 +6,7 @@
 # This version does not use OpenMP:
 AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math -L./libs
 
+# the GNU Scientific Library (GSL) is necessary for sampling from probability distributions (Poisson, Dirichlet, Binomial, etc.).
 AM_LDFLAGS=-lm -lgsl
 
 INCLUDES = -I./libs
@@ -29,9 +30,9 @@ PROG = PHYML
 
 
 phyml_SOURCES = main.c utilities.c optimiz.c annealing.c emig.c lk.c bionj.c models.c free.c\
-options.c simu.c eigen.c pars.c alrt.c interface.c cl.c spr.c  draw.c mpi_boot.c numeric.c
+options.c simu.c eigen.c pars.c alrt.c interface.c cl.c spr.c  draw.c mpi_boot.c numeric.c compress.c unittests.c
 phyml_LDADD = main.o utilities.o optimiz.o annealing.o lk.o emig.o bionj.o models.o free.o\
-options.o simu.o eigen.o pars.o alrt.o interface.o cl.o spr.o draw.o mpi_boot.o numeric.o
+options.o simu.o eigen.o pars.o alrt.o interface.o cl.o spr.o draw.o mpi_boot.o numeric.o compress.o unittests.o
 
 
 SCOMPILE = $(CC) $(SDEFS) $(DEFS) $(INCLUDES) $(AM_CFLAGS) $(SCFLAGS)
@@ -123,3 +124,9 @@ mpi_boot.o: mpi_boot.c mpi_boot.h
 
 numeric.o: numeric.c numeric.h
 	$(SCOMPILE) -c numeric.c
+
+compress.o: compress.c compress.h
+	$(SCOMPILE) -c compress.c
+
+unittests.o: unittests.c unittests.h
+	$(SCOMPILE) -c unittests.c

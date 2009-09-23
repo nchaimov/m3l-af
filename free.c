@@ -315,7 +315,6 @@ void Free_Node_Lk(node *n)
 
 void Free_Edge_Lk(arbre *tree, edge *b)
 {
-  int i;
   Free(b->nni);
 
   Free(b->div_post_pred_left);
@@ -338,7 +337,6 @@ void Free_Edge_Lk(arbre *tree, edge *b)
 
   if(b->p_lk_tip_r) Free(b->p_lk_tip_r);
 
-  For(i,tree->n_l) if(b->Pij_rr[i]) Free(b->Pij_rr[i]);
   Free(b->Pij_rr);
 }
 

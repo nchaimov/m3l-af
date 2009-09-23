@@ -496,13 +496,13 @@ m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 	//	m3ldbl max[MAX_BL_SET];
 	//	m3ldbl min[MAX_BL_SET];
 	//
-	//	For(i, tree->n_l){
+	//	For(i, tree->mod->n_l){
 	//		max[i] = b_fcus->l[i];
 	//		min[i] = b_fcus->l[i];
 	//		max[i] *= 10.0;
 	//		min[i] *= 0.1;
 	//	}
-	For(i,tree->n_l){
+	For(i,tree->mod->n_l){
 		max = b_fcus->l[i] * 10.0;
 		min = b_fcus->l[i] * 0.1;
 		result = Br_Len_Brent_Iter(max,b_fcus->l[i],min,tree->mod->s_opt->min_diff_lk_local,b_fcus,tree,1000,0,i);
@@ -664,7 +664,7 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 	/**
 	* JSJ: Set up edge info
 	*/
-	For(i, tree->n_l)
+	For(i, tree->mod->n_l)
 	{
 		e[i]=d[i]=0.0;
 		a[i]=((ax[i] < cx[i]) ? ax[i] : cx[i]);
@@ -676,7 +676,7 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 
 	for(iter=1;iter<=BRENT_ITMAX;iter++)
 	{	//JSJ: perform the next two lines in a loop over the bl set
-		For(i,tree->n_l)
+		For(i,tree->mod->n_l)
 		{
 			xm[i]=0.5*(a[i]+b[i]);
 			tol2[i]=2.0*(tol1[i]=tol*fabs(x[i])+BRENT_ZEPS); //JSJ: note the sneaky assignment...
@@ -685,7 +685,7 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 
 		if((tree->c_lnL > init_lnL + tol) && (quickdirty))
 		{
-			For(i,tree->n_l) b_fcus->l[i] = x[i]; //JSJ: need to iteratively assingn
+			For(i,tree->mod->n_l) b_fcus->l[i] = x[i]; //JSJ: need to iteratively assingn
 
 			Lk_At_Given_Edge(b_fcus,tree);
 			/* 	  PhyML_Printf("\n> iter=%3d max=%3d v=%f lnL=%f init_lnL=%f tol=%f",iter,n_iter_max,(*xmin),tree->c_lnL,init_lnL,tol); */
@@ -697,7 +697,7 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 				(tree->c_lnL > init_lnL - tol)) ||
 				(iter > n_iter_max - 1))
 		{
-			For(i,tree->n_l) b_fcus->l[i]=x[i]; //JSJ: need to iteratively assign
+			For(i,tree->mod->n_l) b_fcus->l[i]=x[i]; //JSJ: need to iteratively assign
 			Lk_At_Given_Edge(b_fcus,tree);
 
 			/* 	  PhyML_Printf("\n. iter=%3d max=%3d l=%f lnL=%f init_lnL=%f",iter,n_iter_max,b_fcus->l,tree->c_lnL,init_lnL); */
@@ -708,7 +708,7 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 		* Wont mess with return statement.
 		*
 		*/
-		For(i, tree->n_l)
+		For(i, tree->mod->n_l)
 		{
 			if(fabs(e[i]) > tol1[i])
 			{
@@ -748,7 +748,7 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 
 		if(fu <= fx)
 		{
-			For(i,tree->n_l){
+			For(i,tree->mod->n_l){
 				if(u[i] >= x[i]) a[i]=x[i]; else b[i]=x[i];
 				/**
 				* JSJ: the shift macro below shifts values over one position from left
@@ -761,7 +761,7 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 		}
 		else
 		{
-			For(i,tree->n_l){
+			For(i,tree->mod->n_l){
 				if (u[i] < x[i]){
 					a[i]=u[i];
 				} else {
@@ -777,7 +777,7 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 			*/
 			int count1 = 0;
 			int count2 = 0;
-			For(i,tree->n_l){
+			For(i,tree->mod->n_l){
 				if (tmpfu <= tmpfw || w[i] == x[i])
 				{
 					v[i]=w[i];
@@ -1376,7 +1376,7 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 	//	m3ldbl lk_init;
 	//
 	//	lk_init = tree->c_lnL;
-	//	For(j,tree->n_l){
+	//	For(j,tree->mod->n_l){
 	//		l_infa[j] = l_max[j]  = l_infb[j] = BL_MIN;
 	//		//JSJ: temp fixes to l
 	//		l_infa[j] = 10.*b_fcus->l[j];
@@ -1401,7 +1401,7 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 	// VHS: actually, if Brent can't find a better tree on it's first try,
 	// additional attempts are unlikely to do better.
 
-		For(j,tree->n_l){
+		For(j,tree->mod->n_l){
 			//PhyML_Printf("Calling Br_Len_Brent_Iter (in Opt_Br_Len_Ser) lk: %lf \n",tree->c_lnL);
 			Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
@@ -1413,7 +1413,7 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 
 	if(tree->c_lnL < lk_init - (tree->mod->s_opt->min_diff_lk_local))
 	{//JSJ: We hit this error when running SPR...
-//		For(j,tree->n_l) PhyML_Printf("\n.Bl Set# %i: %lf %lf %lf %lf",j,(double)10.*b_fcus->l[j],(double)b_fcus->l[j],(double)BL_MIN,(double)b_fcus->l[j]);
+//		For(j,tree->mod->n_l) PhyML_Printf("\n.Bl Set# %i: %lf %lf %lf %lf",j,(double)10.*b_fcus->l[j],(double)b_fcus->l[j],(double)BL_MIN,(double)b_fcus->l[j]);
 
 //		PhyML_Printf("\n. %f -- %f",lk_init,tree->c_lnL);
 	//	Warn_And_Exit("\n. Err. in Optimize_Br_Len_Serie\n");
@@ -1422,10 +1422,10 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 	if(d->tax) return;
 	else For(i,3) if(d->v[i] != a)
 	{
-		Update_P_Lk(tree,d->b[i],d,FALSE);
+		Update_P_Lk(tree,d->b[i],d);
 		Optimize_Br_Len_Serie(d,d->v[i],d->b[i],tree,alldata);
 	}
-	For(i,3) if((d->v[i] == a) && !(d->v[i]->tax)) Update_P_Lk(tree,d->b[i],d,FALSE);
+	For(i,3) if((d->v[i] == a) && !(d->v[i]->tax)) Update_P_Lk(tree,d->b[i],d);
 
 }
 
@@ -1452,7 +1452,7 @@ void Optimiz_Ext_Br(arbre *tree)
 		if((b->left->tax) || (b->rght->tax))
 		{
 
-			For(j,tree->n_l){
+			For(j,tree->mod->n_l){
 				l_init[j] = b->l[j];
 
 				/* 	  Fast_Br_Len(b,tree); */
@@ -1469,7 +1469,7 @@ void Optimiz_Ext_Br(arbre *tree)
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty);
 			//JSJ: temp fixes to l
-			For(j,tree->n_l){
+			For(j,tree->mod->n_l){
 				b->nni->best_l[j]    = b->l[j];
 				b->nni->l0[j]        = b->l[j];
 				b->l[j]              = l_init[j];
@@ -2317,7 +2317,7 @@ m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_m
 	/**
 	* JSJ: initialize brent values
 	*/
-	For(i,tree->n_l){
+	For(i,tree->mod->n_l){
 		e[i]=d[i]=0.0;
 		a[i]=((ax[i] < cx[i]) ? ax[i] : cx[i]);
 		b[i]=((ax[i] > cx[i]) ? ax[i] : cx[i]);
@@ -2336,7 +2336,7 @@ m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_m
 		/**
 		* JSJ: iterate over set of following vars
 		*/
-		For(i,tree->n_l){
+		For(i,tree->mod->n_l){
 			xm[i]=0.5*(a[i]+b[i]);
 			tol2[i]=2.0*(tol1[i]=tol*fabs(x[i])+BRENT_ZEPS);
 		}
@@ -2347,14 +2347,14 @@ m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_m
 						(iter > n_iter_max - 1)
 		)
 		{
-			For(i,tree->n_l) param[i] = x[i];
+			For(i,tree->mod->n_l) param[i] = x[i];
 			//JSJ: return summation of distance based likelihoods multiplied by prop of sites
 			// accounted for by that branch length?
 			curr_lnL = Lk_Dist(F,param,mod,tree);
 
 			return -curr_lnL;
 		}
-		For(i,tree->n_l){
+		For(i,tree->mod->n_l){
 			if(fabs(e[i]) > tol1[i])
 			{
 				r[i]=(x[i]-w[i])*(fx-fv);
@@ -2391,12 +2391,12 @@ m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_m
 		}
 		old_lnL = curr_lnL;
 
-		For(i,tree->n_l)temp[i] = fabs(u[i]);
+		For(i,tree->mod->n_l)temp[i] = fabs(u[i]);
 		fu = -Lk_Dist(F,temp,mod,tree);
 		curr_lnL = -fu;
 		/*       PhyML_Printf("param=%f loglk=%f\n",*param,fu); */
 
-		For(i,tree->n_l){
+		For(i,tree->mod->n_l){
 			if(fu <= fx)
 			{
 				if(iter > n_iter_max) return -fu;
@@ -2554,7 +2554,7 @@ void Opt_Dist_F(m3ldbl *dist, m3ldbl *F, model *mod, arbre *tree)
 	m3ldbl bx[MAX_BL_SET];
 	m3ldbl cx[MAX_BL_SET];
 
-	For(i,tree->n_l){
+	For(i,tree->mod->n_l){
 		if(dist[i] < BL_MIN) dist[i] = BL_MIN;
 
 		ax[i] = BL_MIN;

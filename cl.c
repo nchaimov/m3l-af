@@ -32,10 +32,9 @@ void Read_Command_Line(option *io, int argc, char **argv)
 	int open_ps_file;
 	int use_gamma;
 	int writemode;
-	int fixed_props, proportions, numcatg;
+	int fixed_props, proportions;
 	fixed_props = 0;
 	proportions = 0;
-	numcatg = 0;
 
 	struct option longopts[] =
 	{
@@ -91,8 +90,8 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"blprops",           required_argument,NULL,49},
 			{"fixblprops",        no_argument,NULL,50},
 			{"blclasses",         required_argument,NULL,51},
-			{"iters_per_stage",         required_argument,NULL,52},
-			{"num_anneal_stages",        required_argument,NULL,53},
+			{"iters_per_stage",   required_argument,NULL,52},
+			{"num_anneal_stages", required_argument,NULL,53},
 			{"acc_ratio",         required_argument,NULL,54},
 			{"temp_end",          required_argument,NULL,55},
 			{"set_back",          required_argument,NULL,56},
@@ -946,7 +945,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 				}else{
 					aprop[j+1] = '\0'; // end the string
 					j = 0; //start j over
-					io->props[proportions] = atof(aprop);
+					io->mod->bl_props[proportions] = atof(aprop);
 					proportions++; //increment the props by one
 				}
 			}
@@ -961,21 +960,20 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		}
 		case 'l': case 51: //JSJ: number branch length categories "blclasses"
 		{
-			io->n_l = atoi(optarg);
-			numcatg = io->n_l;
-			if(io->n_l > 1 && io->user_topo == 0){
+			io->mod->n_l = atoi(optarg);
+			if(io->mod->n_l > 1 && io->user_topo == 0){
 				io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
 			}
-			if(fixed_props == 0 && io->n_l > 1){ //if the fprops option hasn't been flagged, and more than one catg, default to optimize
+			if(fixed_props == 0 && io->mod->n_l > 1){ //if the fprops option hasn't been flagged, and more than one catg, default to optimize
 				io->fixed_props = 0;
 				io->mod->s_opt->opt_props = io->fixed_props;
 			}
-			if(io->n_l < 1 || io->n_l > MAX_BL_SET){
+			if(io->mod->n_l < 1 || io->mod->n_l > MAX_BL_SET){
 				PhyML_Printf("\n. The number of branch length categories (--nclasses or -l) must be at least 1 and no more than %i",MAX_BL_SET);
 				PhyML_Printf("\n. Type any key to exit.\n");
 				Exit("\n");
 			}
-			if(io->n_l > 1){
+			if(io->mod->n_l > 1){
 				io->mod->s_opt->opt_five_branch = 0;
 				if(proportions == 0){
 					Update_Default_Props(io);

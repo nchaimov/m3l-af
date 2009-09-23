@@ -1,7 +1,7 @@
 /*
 
 PHYML :  a program that  computes maximum likelihood  phylogenies from
-DNA or AA homologous sequences 
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -44,7 +44,7 @@ int Pars(arbre *tree)
 
   Post_Order_Pars(tree->noeud[0],tree->noeud[0]->v[0],tree);
   if(tree->both_sides) Pre_Order_Pars(tree->noeud[0],tree->noeud[0]->v[0],tree);
-  
+
   tree->c_pars = 0;
   For(site,n_patterns)
     {
@@ -124,7 +124,7 @@ void Init_P_Pars_Tips(arbre *tree)
   dim1 = tree->mod->ns;
 
   state_v = (short int *)mCalloc(tree->mod->ns,sizeof(short int));
-  
+
   Fors(curr_site,tree->data->crunch_len,tree->mod->stepsize)
     {
       For(i,tree->n_otu)
@@ -134,10 +134,10 @@ void Init_P_Pars_Tips(arbre *tree)
 	      if(tree->noeud[i]->b[0]->rght->tax != 1)
 		{
 		  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-		  Warn_And_Exit("\n");	    
+		  Warn_And_Exit("\n");
 		}
 
-	      Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site],0,state_v);	      
+	      Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site],0,state_v);
 	      For(j,tree->mod->ns) tree->noeud[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
 	      For(j,tree->mod->ns) if(state_v[j] > 0.5) tree->noeud[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
 	    }
@@ -155,12 +155,12 @@ void Init_P_Pars_Tips(arbre *tree)
 /*********************************************************/
 
 void Init_Ui_Tips(arbre *tree)
-{  
+{
   int curr_site,i,j,br;
   short int *state_v;
 
   state_v = (short int *)mCalloc(tree->mod->ns,sizeof(short int));
-  
+
   Fors(curr_site,tree->data->crunch_len,tree->mod->stepsize)
     {
       For(i,tree->n_otu)
@@ -170,10 +170,10 @@ void Init_Ui_Tips(arbre *tree)
 	      if(tree->noeud[i]->b[0]->rght->tax != 1)
 		{
 		  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-		  Warn_And_Exit("\n");	    
+		  Warn_And_Exit("\n");
 		}
 
-	      Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site],0,state_v);	      
+	      Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site],0,state_v);
 	      tree->noeud[i]->b[0]->ui_r[curr_site] = 0;
 	      For(j,tree->mod->ns) tree->noeud[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * pow(2,j));
 	    }
@@ -204,11 +204,11 @@ void Init_Ui_Tips(arbre *tree)
 
 void Update_P_Pars(arbre *tree, edge *b_fcus, node *n)
 {
-/*  
+/*
            |
-	   |<- b_cus
-	   |
-	   n
+	       |<- b_cus
+	       |
+	       n
           / \
        	 /   \
        	/     \
@@ -233,38 +233,38 @@ void Update_P_Pars(arbre *tree, edge *b_fcus, node *n)
   n_patterns = tree->n_pattern;
 
   if(n == b_fcus->left)
-    {	     
+    {
       ui = b_fcus->ui_l;
 
       pars = b_fcus->pars_l;
       p_pars = b_fcus->p_pars_l;
 
-      ui_v1 = 
+      ui_v1 =
       (n == n->b[b_fcus->l_v1]->left)?
       (n->b[b_fcus->l_v1]->ui_r):
       (n->b[b_fcus->l_v1]->ui_l);
 
-      ui_v2 = 
+      ui_v2 =
       (n == n->b[b_fcus->l_v2]->left)?
       (n->b[b_fcus->l_v2]->ui_r):
       (n->b[b_fcus->l_v2]->ui_l);
 
-      p_pars_v1 = 
+      p_pars_v1 =
       (n == n->b[b_fcus->l_v1]->left)?
       (n->b[b_fcus->l_v1]->p_pars_r):
       (n->b[b_fcus->l_v1]->p_pars_l);
 
-      p_pars_v2 = 
+      p_pars_v2 =
       (n == n->b[b_fcus->l_v2]->left)?
       (n->b[b_fcus->l_v2]->p_pars_r):
       (n->b[b_fcus->l_v2]->p_pars_l);
 
-      pars_v1 = 
+      pars_v1 =
       (n == n->b[b_fcus->l_v1]->left)?
       (n->b[b_fcus->l_v1]->pars_r):
       (n->b[b_fcus->l_v1]->pars_l);
 
-      pars_v2 = 
+      pars_v2 =
       (n == n->b[b_fcus->l_v2]->left)?
       (n->b[b_fcus->l_v2]->pars_r):
       (n->b[b_fcus->l_v2]->pars_l);
@@ -272,36 +272,36 @@ void Update_P_Pars(arbre *tree, edge *b_fcus, node *n)
   else
     {
       ui = b_fcus->ui_r;
-      
+
       pars = b_fcus->pars_r;
       p_pars = b_fcus->p_pars_r;
 
-      ui_v1 = 
+      ui_v1 =
       (n == n->b[b_fcus->r_v1]->left)?
       (n->b[b_fcus->r_v1]->ui_r):
       (n->b[b_fcus->r_v1]->ui_l);
 
-      ui_v2 = 
+      ui_v2 =
       (n == n->b[b_fcus->r_v2]->left)?
       (n->b[b_fcus->r_v2]->ui_r):
       (n->b[b_fcus->r_v2]->ui_l);
 
-      p_pars_v1 = 
+      p_pars_v1 =
       (n == n->b[b_fcus->r_v1]->left)?
       (n->b[b_fcus->r_v1]->p_pars_r):
       (n->b[b_fcus->r_v1]->p_pars_l);
 
-      p_pars_v2 = 
+      p_pars_v2 =
       (n == n->b[b_fcus->r_v2]->left)?
       (n->b[b_fcus->r_v2]->p_pars_r):
       (n->b[b_fcus->r_v2]->p_pars_l);
 
-      pars_v1 = 
+      pars_v1 =
       (n == n->b[b_fcus->r_v1]->left)?
       (n->b[b_fcus->r_v1]->pars_r):
       (n->b[b_fcus->r_v1]->pars_l);
 
-      pars_v2 = 
+      pars_v2 =
       (n == n->b[b_fcus->r_v2]->left)?
       (n->b[b_fcus->r_v2]->pars_r):
       (n->b[b_fcus->r_v2]->pars_l);
@@ -317,18 +317,18 @@ void Update_P_Pars(arbre *tree, edge *b_fcus, node *n)
 	      min_v1 = MAX_PARS;
 	      For(j,tree->mod->ns)
 		{
-		  v = p_pars_v1[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j]; 
+		  v = p_pars_v1[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
 		  if(v < min_v1) min_v1 = v;
 		}
-	      
+
 	      min_v2 = MAX_PARS;
 	      For(j,tree->mod->ns)
 		{
-		  v = p_pars_v2[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j]; 
+		  v = p_pars_v2[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
 		  if(v < min_v2) min_v2 = v;
-		}	      
+		}
 	      p_pars[site*dim1+i] = min_v1 + min_v2;
-	    }	  
+	    }
 	}
     }
   else
@@ -371,23 +371,23 @@ int Pars_Core(edge *b, arbre *tree)
 	  min_l = MAX_PARS;
 	  For(j,tree->mod->ns)
 	    {
-	      v = b->p_pars_l[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j]; 
+	      v = b->p_pars_l[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
 	      if(v < min_l) min_l = v;
 	    }
 
 	  min_r = MAX_PARS;
 	  For(j,tree->mod->ns)
 	    {
-	      v = b->p_pars_r[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j]; 
+	      v = b->p_pars_r[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
 	      if(v < min_r) min_r = v;
 	    }
-	  
+
 	  if((min_l + min_r) < site_pars) site_pars = min_l + min_r;
 	}
     }
   else
     {
-      site_pars = b->pars_l[site] + b->pars_r[site];      
+      site_pars = b->pars_l[site] + b->pars_r[site];
       if(!(b->ui_l[site] & b->ui_r[site])) site_pars++;
     }
 
@@ -395,7 +395,7 @@ int Pars_Core(edge *b, arbre *tree)
 }
 
 /*********************************************************/
-/* Is there one or more parsimoniy step(s) along this edge ? 
+/* Is there one or more parsimoniy step(s) along this edge ?
    0 -> NO; 1 -> YES
 */
 int One_Pars_Step(edge *b,arbre *tree)
@@ -404,7 +404,7 @@ int One_Pars_Step(edge *b,arbre *tree)
   int init_general_pars;
 
   init_general_pars = tree->mod->s_opt->general_pars;
-  
+
   tree->mod->s_opt->general_pars = 0;
   tree->both_sides   = 1;
   Pars(tree);
@@ -415,8 +415,8 @@ int One_Pars_Step(edge *b,arbre *tree)
     }
   tree->mod->s_opt->general_pars = init_general_pars;
   if(site == tree->n_pattern) return 0;
-  else                        
-    {  
+  else
+    {
       PhyML_Printf("\n. One parsimony step ocurred at site %4d",site);
       return 1;
     }
@@ -426,7 +426,7 @@ int One_Pars_Step(edge *b,arbre *tree)
 int Pars_At_Given_Edge(edge *b, arbre *tree)
 {
   int site,n_patterns;
-  
+
 /*   n_patterns = (int)floor(tree->n_pattern*tree->prop_of_sites_to_consider); */
   n_patterns = tree->n_pattern;
 
@@ -903,7 +903,7 @@ void Get_Step_Mat(arbre *tree)
 /*       tree->step_mat[3*tree->mod->ns+3] = 0; */
 
     }
-  
+
   For(i,tree->mod->ns) tree->step_mat[i*tree->mod->ns+i] = 0;
 }
 

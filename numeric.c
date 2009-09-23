@@ -1011,7 +1011,7 @@ void Recurr_Hessian(node *a, node *d, int plus_minus, m3ldbl eps, m3ldbl *res, a
   For(i,3)
     if(a->v[i] == d)
       {
-	Update_P_Lk(tree,a->b[i],a,FALSE);
+	Update_P_Lk(tree,a->b[i],a);
 //JSJ: Temp fixes of l
 	ori_l = a->b[i]->l[0];
 	if(plus_minus > 0) a->b[i]->l[0] += eps * a->b[i]->l[0];

@@ -81,15 +81,14 @@ void Make_All_Edges_Lk(node *a, node *d, arbre *tree)
 
 arbre *Read_Tree(char *s_tree)
 {
+
 	char **subs;
 	int i,n_ext,n_int,n_otu, n_l;
 	arbre *tree;
 	int degree;
 
-	//JSJ: not good! need to modify so that commas are taxa or bl set deliniators
 	n_l = 0;
 	n_otu=0;
-	//For(i,(int)strlen(s_tree)) if(s_tree[i] == ',') n_otu++;
 	For(i,(int)strlen(s_tree)){
 		if(s_tree[i] == '['){
 			int tmp_nl = 0;
@@ -100,7 +99,7 @@ arbre *Read_Tree(char *s_tree)
 				} else if(s_tree[i] == ']'){
 					if(n_l == 0){
 						n_l = tmp_nl;
-					}else if(n_l != tmp_nl){//we have a problem!!
+					}else if(n_l != tmp_nl){
 						PhyML_Printf("Error: The number of branch length sets was not properly counted.\n");
 						exit(1);
 					}
@@ -114,17 +113,15 @@ arbre *Read_Tree(char *s_tree)
 	n_otu+=1;
 	n_l +=1;
 
-
 	tree = (arbre *)Make_Tree(n_otu, n_l);
-	Init_Tree(tree,tree->n_otu, tree->n_l);
-	Make_All_Tree_Nodes(tree);
-	Make_All_Tree_Edges(tree);
+	Init_Tree(tree,tree->n_otu);
+	Make_All_Tree_Nodes(tree, n_l);
+	Make_All_Tree_Edges(tree, n_l);
 	Make_Tree_Path(tree); //just allocates memory
 	Make_List_Of_Reachable_Tips(tree);
 
 	tree->noeud[n_otu]->num = n_otu;
 	tree->noeud[n_otu]->tax = 0;
-	tree->noeud[n_otu]->n_l = n_l;
 
 	subs = Sub_Trees(s_tree,&degree);
 	Clean_Multifurcation(subs,degree,3);
@@ -163,21 +160,23 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 		d      = tree->noeud[n_otu+*n_int];
 		d->num = n_otu+*n_int;
 		d->tax = 0;
-		d->n_l = tree->n_l;
+
 
 		Read_Branch_Label(s_tree_d,s_tree_a,tree->t_edges[tree->num_curr_branch_available]);
+
 		Read_Branch_Lengths(s_tree_d,s_tree_a,tree);
-		//JSJ: works now
+
+		int n_l = tree->t_edges[0]->n_l;
+
 		For(i,3)
 		{
 			if(!a->v[i])
 			{
-				//printf("JSJ: Entered utilities.c line 174\n");
-				a->v[i]=d;
-				For(j,tree->n_l){
-					d->l[j][0]=tree->t_edges[tree->num_curr_branch_available]->l[j];
-					a->l[j][i]=tree->t_edges[tree->num_curr_branch_available]->l[j];
-					//printf("JSJ: The branch length here is: %f\n",tree->t_edges[tree->num_curr_branch_available]->l[j]);
+				a->v[i]=d; //a is now connected to d
+				// we need to consider other branch length categories OUTSIDE this method
+				For(j,n_l){
+					//d->l[0] = a->l[i] = tree->t_edges[tree->num_curr_branch_available]->l[0];
+					d->l[j*n_l] = a->l[j*n_l + i] = tree->t_edges[tree->num_curr_branch_available]->l[j];
 				}
 				break;
 			}
@@ -197,25 +196,26 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 
 	else
 	{
-		int i,j;
+		int i;
 
 		d      = tree->noeud[*n_ext];
 		d->tax = 1;
-		d->n_l = tree->n_l;
 
 		Read_Branch_Label(s_tree_d,s_tree_a,tree->t_edges[tree->num_curr_branch_available]);
 		Read_Branch_Lengths(s_tree_d,s_tree_a,tree);
 		Read_Node_Name(d,s_tree_d,tree);
 
+		int n_l = tree->t_edges[0]->n_l;
+
 		For(i,3)
 		{
 			if(!a->v[i])
 			{
-				For(j,tree->n_l){
+				a->v[i]=d;
+				For(j,n_l){
 					//printf("JSJ: Entered utilities.c line 214\n");
-					a->v[i]=d;
-					d->l[j][0]=tree->t_edges[tree->num_curr_branch_available]->l[j];
-					a->l[j][i]=tree->t_edges[tree->num_curr_branch_available]->l[j];
+					//d->l[0] = a->l[i] = tree->t_edges[tree->num_curr_branch_available]->l[0];
+					d->l[j*n_l] = a->l[j*n_l + i] = tree->t_edges[tree->num_curr_branch_available]->l[j];
 					//printf("JSJ: The branch length here is: %f\n",tree->t_edges[tree->num_curr_branch_available]->l[j]);
 				}
 				break;
@@ -232,7 +232,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 }
 
 /*********************************************************/
-
 void Read_Branch_Label(char *s_d, char *s_a, edge *b)
 {
 	char *sub_tp;
@@ -289,8 +288,9 @@ void Read_Branch_Label(char *s_d, char *s_a, edge *b)
 }
 
 /*********************************************************/
-// JSJ: Modified so that it searches for the first open bracket as the beginning of the
-// branch length set
+//
+// Modifies the branch lengths for the edge named tree->t_edges[tree->num_curr_branch_available]
+//
 void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 {
 	char *sub_tp;
@@ -301,7 +301,7 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 	int i,j;
 	brac = strstr(s_a,"[");
 	b = tree->t_edges[tree->num_curr_branch_available];
-	b->n_l = tree->n_l; //not sure, but just in case...
+	//b->n_l = tree->mod->n_l; //not sure, but just in case...
 
 	sub_tp = (char *)mCalloc(T_MAX_LINE,sizeof(char));
 
@@ -326,21 +326,29 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 	{
 		if(!brac){
 			b->l[0] = atof((char *)p+(int)strlen(sub_tp));
-		}else{
+		}
+		else
+		{
 			//now we need to grab the string up until ',' and do it n_l times
 			int glob = strlen(sub_tp);
-			For(i,tree->n_l){
-				char tmp[100];
-				j = 0;
+			//For(i,tree->mod->n_l)
+			//{
+			i = 0;
+			while ( p[glob] != ']' )
+			{
+				char tmp[100]; // tmp will hold the branch length
+				j = 0; // the char index of this token
 				glob++;//JSJ: increment glob past '[' and ','
-				while ((p[glob] != ']') &&
-						(p[glob] != ',')){
+				while ((p[glob] != ']') && (p[glob] != ','))
+				{
 					tmp[j] = p[glob];
 					j++;
 					glob++;
 				}
 				tmp[j]='\0'; //JSJ: end the string
 				b->l[i] = atof(tmp);
+				i++;
+				b->n_l = i;
 			}
 		}
 		//JSJ: Print all of the bls read in
@@ -643,12 +651,12 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			strcat(s_tree,":");
 
 			if(pere != tree->n_root){
-				if(tree->n_l == 1){
+				if(tree->mod->n_l == 1){
 					sprintf(s_tree+(int)strlen(s_tree),"%.10f",fils->b[0]->l[0]);
 				}else{
 					sprintf(s_tree+(int)strlen(s_tree),"[");
-					For(j,tree->n_l){
-						if(j+1 == tree->n_l){
+					For(j,tree->mod->n_l){
+						if(j+1 == tree->mod->n_l){
 							sprintf(s_tree+(int)strlen(s_tree),"%.10f]",fils->b[0]->l[j]);
 						}else{
 							sprintf(s_tree+(int)strlen(s_tree),"%.10f,",fils->b[0]->l[j]);
@@ -660,30 +668,30 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			{
 				if(tree->n_root->v[0] == fils)
 				{
-					if(tree->n_l == 1){
-						sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[0][0]);
+					if(tree->mod->n_l == 1){
+						sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[0]);
 					}else{
 						sprintf(s_tree+(int)strlen(s_tree),"[");
-						For(j,tree->n_l){
-							if(j+1 == tree->n_l){
-								sprintf(s_tree+(int)strlen(s_tree),"%.10f]",tree->n_root->l[j][0]);
+						For(j,tree->mod->n_l){
+							if(j+1 == tree->mod->n_l){
+								sprintf(s_tree+(int)strlen(s_tree),"%.10f]",tree->n_root->l[j*tree->mod->n_l]);
 							}else{
-								sprintf(s_tree+(int)strlen(s_tree),"%.10f,",tree->n_root->l[j][0]);
+								sprintf(s_tree+(int)strlen(s_tree),"%.10f,",tree->n_root->l[j*tree->mod->n_l]);
 							}
 						}
 					}
 				}
 				else
 				{
-					if(tree->n_l == 1){
-						sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[0][1]);
+					if(tree->mod->n_l == 1){
+						sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[1]);
 					}else{
 						sprintf(s_tree+(int)strlen(s_tree),"[");
-						For(j,tree->n_l){
-							if(j+1 == tree->n_l){
-								sprintf(s_tree+(int)strlen(s_tree),"%.10f]",tree->n_root->l[j][1]);
+						For(j,tree->mod->n_l){
+							if(j+1 == tree->mod->n_l){
+								sprintf(s_tree+(int)strlen(s_tree),"%.10f]",tree->n_root->l[j*tree->mod->n_l + 1]);
 							}else{
-								sprintf(s_tree+(int)strlen(s_tree),"%.10f,",tree->n_root->l[j][1]);
+								sprintf(s_tree+(int)strlen(s_tree),"%.10f,",tree->n_root->l[j*tree->mod->n_l + 1]);
 							}
 						}
 					}
@@ -734,12 +742,12 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			strcat(s_tree,":");
 
 			if(pere != tree->n_root){
-				if(tree->n_l == 1){
+				if(tree->mod->n_l == 1){
 					sprintf(s_tree+(int)strlen(s_tree),"%.10f",fils->b[p]->l[0]);
 				}else{
 					sprintf(s_tree+(int)strlen(s_tree),"[");
-					For(j,tree->n_l){
-						if(j+1 == tree->n_l){
+					For(j,tree->mod->n_l){
+						if(j+1 == tree->mod->n_l){
 							sprintf(s_tree+(int)strlen(s_tree),"%.10f]",fils->b[p]->l[j]);
 						}else{
 							sprintf(s_tree+(int)strlen(s_tree),"%.10f,",fils->b[p]->l[j]);
@@ -751,30 +759,30 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			{
 				if(tree->n_root->v[0] == fils)
 				{
-					if(tree->n_l == 1){
-						sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[0][0]);
+					if(tree->mod->n_l == 1){
+						sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[0]);
 					}else{
 						sprintf(s_tree+(int)strlen(s_tree),"[");
-						For(j,tree->n_l){
-							if(j+1 == tree->n_l){
-								sprintf(s_tree+(int)strlen(s_tree),"%.10f]",tree->n_root->l[j][0]);
+						For(j,tree->mod->n_l){
+							if(j+1 == tree->mod->n_l){
+								sprintf(s_tree+(int)strlen(s_tree),"%.10f]",tree->n_root->l[j*tree->mod->n_l]);
 							}else{
-								sprintf(s_tree+(int)strlen(s_tree),"%.10f,",tree->n_root->l[j][0]);
+								sprintf(s_tree+(int)strlen(s_tree),"%.10f,",tree->n_root->l[j*tree->mod->n_l]);
 							}
 						}
 					}
 				}
 				else
 				{
-					if(tree->n_l == 1){
-						sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[0][1]);
+					if(tree->mod->n_l == 1){
+						sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[1]);
 					}else{
 						sprintf(s_tree+(int)strlen(s_tree),"[");
-						For(j,tree->n_l){
-							if(j+1 == tree->n_l){
-								sprintf(s_tree+(int)strlen(s_tree),"%.10f]",tree->n_root->l[j][1]);
+						For(j,tree->mod->n_l){
+							if(j+1 == tree->mod->n_l){
+								sprintf(s_tree+(int)strlen(s_tree),"%.10f]",tree->n_root->l[j*tree->mod->n_l+1]);
 							}else{
-								sprintf(s_tree+(int)strlen(s_tree),"%.10f,",tree->n_root->l[j][1]);
+								sprintf(s_tree+(int)strlen(s_tree),"%.10f,",tree->n_root->l[j*tree->mod->n_l+1]);
 							}
 						}
 					}
@@ -786,12 +794,9 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 }
 
 /*********************************************************/
-void Init_Tree(arbre *tree, int n_otu, int n_l)
+void Init_Tree(arbre *tree, int n_otu)
 {
-	int i;
-	For(i,n_l) tree->props[i]       = 1.0/n_l; //JSJ: initialize with equal proportions of sites in each set
 	tree->n_otu                     = n_otu;
-	tree->n_l					    = n_l;
 	tree->best_tree                 = NULL;
 	tree->old_tree                  = NULL;
 	tree->mat                       = NULL;
@@ -822,25 +827,21 @@ void Init_Tree(arbre *tree, int n_otu, int n_l)
 	tree->print_boot_val            = 0;
 	tree->print_alrt_val            = 0;
 	tree->num_curr_branch_available = 0;
-	Normalize_Props(tree); //JSJ: Correct for floating point rounding error in props
 }
 
 /*********************************************************/
-//JSJ: Function to normalize the site proportions of a tree to 1
-//     This does a slight fudge to correct for floating point rounding error.
 void Normalize_Props(arbre *tree){
 	int i;
 	m3ldbl sum = 0.;
-	For(i,tree->n_l)sum           += tree->props[i]; //get the sum of props to normalize
-	For(i,tree->n_l)tree->props[i] = tree->props[i] / sum; //normalize proportions to correct for float round error
+	For(i,tree->mod->n_l)sum           += tree->mod->bl_props[i]; //get the sum of props to normalize
+	For(i,tree->mod->n_l)tree->mod->bl_props[i] = tree->mod->bl_props[i] / sum; //normalize proportions to correct for float round error
 }
-//JSJ: Function to normalize the site proportions of an option struct to 1
-//     This does a slight fudge to correct for floating point rounding error.
+
 void Normalize_Props_IO(option *io){
 	int i;
 	m3ldbl sum = 0.;
-	For(i,io->n_l)sum           += io->props[i]; //get the sum of props to normalize
-	For(i,io->n_l)io->props[i] = io->props[i] / sum; //normalize proportions to correct for float round error
+	For(i,io->mod->n_l)sum           += io->mod->bl_props[i]; //get the sum of props to normalize
+	For(i,io->mod->n_l)io->mod->bl_props[i] = io->mod->bl_props[i] / sum; //normalize proportions to correct for float round error
 }
 
 /*********************************************************/
@@ -869,9 +870,12 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 	edge *b;
 	int i;
 	b = (edge *)mCalloc(1,sizeof(edge));
-	b->n_l = n_l;
-
 	Init_Edge_Light(b,num);
+	b->n_l = n_l;
+	b->l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	b->l_old = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	b->best_l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+
 
 	if(a && b)
 	{
@@ -882,13 +886,13 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 		(b->left == a)?
 				(Make_Edge_Dirs(b,a,d)):
 					(Make_Edge_Dirs(b,d,a));
-				For(i,n_l){
-					b->l[i]                    = a->l[i][b->l_r];
-					if(a->tax) b->l[i]         = a->l[i][b->r_l];
-					if(b->l[i] < BL_MIN)  b->l[i] = BL_MIN;
-					else if(b->l[i] > BL_MAX) b->l[i] = BL_MAX;
-					b->l_old[i]                = b->l[i];
-				}
+		For(i,n_l){
+			b->l[i]                    = a->l[i*n_l + b->l_r];
+			if(a->tax) b->l[i]         = a->l[i*n_l + b->r_l];
+			if(b->l[i] < BL_MIN)  b->l[i] = BL_MIN;
+			else if(b->l[i] > BL_MAX) b->l[i] = BL_MAX;
+			b->l_old[i]                = b->l[i];
+		}
 	}
 	else
 	{
@@ -1004,14 +1008,13 @@ void Make_Edge_Pars(edge *b, arbre *tree)
 void Make_Edge_Lk(edge *b, arbre *tree)
 {
 	int i;
-	For(i,tree->n_l){
+	For(i,tree->mod->n_l){
 		b->l_old[i] = b->l[i];
 	}
 
 	b->div_post_pred_left = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
 	b->div_post_pred_rght = (short int *)mCalloc((tree->mod->datatype == NT)?(4):(20),sizeof(short int));
-	b->Pij_rr             = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
-	For(i,tree->n_l) b->Pij_rr[i] = (m3ldbl *)mCalloc(tree->mod->n_catg*tree->mod->ns*tree->mod->ns,sizeof(m3ldbl));
+	b->Pij_rr   = (m3ldbl *)mCalloc(tree->mod->n_catg*tree->mod->n_l*tree->mod->ns*tree->mod->ns,sizeof(m3ldbl));
 
 	b->scale_left = b->scale_rght = 0;
 
@@ -1118,16 +1121,15 @@ void Init_NNI(nni *a_nni, int n_l)
 
 /*********************************************************/
 //JSJ: use this function if the number of bl sets is known
-node *Make_Node_Light(int num, int num_bl_set)
+node *Make_Node_Light(int num, int n_l)
 {
-//	int i;
 	node *n;
 	n        = (node *)mCalloc(1,sizeof(node));
 	n->v     = (node **)mCalloc(3,sizeof(node *));
+	n->l     = (m3ldbl *)mCalloc(3*n_l, sizeof(m3ldbl));
 	n->b     = (edge **)mCalloc(3,sizeof(edge *));
 	n->name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 	n->score = (m3ldbl *)mCalloc(3,sizeof(m3ldbl));
-	n->n_l = num_bl_set;
 	Init_Node_Light(n,num);
 	return n;
 }
@@ -1981,6 +1983,8 @@ void Get_AA_Freqs(allseq *data)
 
 arbre *Read_Tree_File(FILE *fp_input_tree)
 {
+
+
 	char *line;
 	arbre *tree;
 	int i;
@@ -2057,16 +2061,19 @@ void Connect_One_Edge_To_Two_Nodes(node *a, node *d, edge *b, arbre *tree)
 	/* a tip is necessary on the right hand side of the edge */
 
 	(b->left == a)?
-			(Make_Edge_Dirs(b,a,d)):
-				(Make_Edge_Dirs(b,d,a));
-			For(i,tree->n_l){ //JSJ: modified to add multiple lengths
-				b->l[i]                    = a->l[i][b->l_r];
-				if(a->tax) b->l[i]         = a->l[i][b->r_l];
-				if(b->l[i] < BL_MIN)  b->l[i] = BL_MIN;
-				else if(b->l[i] > BL_MAX) b->l[i] = BL_MAX;
-				b->l_old[i]                = b->l[i];
-				//printf("JSJ: Connecting node %s to node %s with an edge of length %f \n",a->name, d->name, b->l[i]);
-			}
+		(Make_Edge_Dirs(b,a,d)):
+		(Make_Edge_Dirs(b,d,a));
+
+	int n_l = b->n_l;
+
+	For(i,b->n_l){ //JSJ: modified to add multiple lengths
+		b->l[i]                    				= a->l[i*n_l + b->l_r];
+		if(a->tax) b->l[i]         				= a->l[i*n_l + b->r_l];
+		if(b->l[i] < BL_MIN)  b->l[i] 			= BL_MIN;
+		else if(b->l[i] > BL_MAX) b->l[i] 		= BL_MAX;
+		b->l_old[i]                				= b->l[i];
+		//printf("JSJ: Connecting node %s to node %s with an edge of length %f \n",a->name, d->name, b->l[i]);
+	}
 }
 
 /*********************************************************/
@@ -2310,7 +2317,7 @@ void Print_P_Lk(plkflt *p_lk, int site, arbre *tree)
 	int i, k, catg;
 
 	printf("-> Partial likelihood at site %d:\n", site);
-	for(k = 0; k < tree->n_l; k++)
+	for(k = 0; k < tree->mod->n_l; k++)
 	{
 		printf("    BL set #%d:\n", k);
 		For(catg,tree->mod->n_catg)
@@ -2601,9 +2608,9 @@ arbre *Make_Tree_From_Scratch(int n_otu, allseq *data, int n_l)
 {
 	arbre *tree;
 
-	tree = Make_Tree(n_otu,n_l);
-	Make_All_Tree_Nodes(tree);
-	Make_All_Tree_Edges(tree);
+	tree = Make_Tree(n_otu);
+	Make_All_Tree_Nodes(tree, n_l);
+	Make_All_Tree_Edges(tree, n_l);
 	Make_Tree_Path(tree);
 	Make_List_Of_Reachable_Tips(tree);
 	if(data)
@@ -2616,14 +2623,14 @@ arbre *Make_Tree_From_Scratch(int n_otu, allseq *data, int n_l)
 
 /*********************************************************/
 
-arbre *Make_Tree(int n_otu, int n_l)
+arbre *Make_Tree(int n_otu)
 {
 	arbre *tree;
 	int i;
 	tree = (arbre *)mCalloc(1,sizeof(arbre ));
 	tree->t_dir = (int **)mCalloc(2*n_otu-2,sizeof(int *));
 	For(i,2*n_otu-2) tree->t_dir[i] = (int *)mCalloc(2*n_otu-2,sizeof(int));
-	Init_Tree(tree,n_otu, n_l);
+	Init_Tree(tree,n_otu);
 	return tree;
 }
 
@@ -2684,7 +2691,7 @@ void Init_All_Nodes_Red(arbre *tree)
 
 /*********************************************************/
 
-void Make_All_Tree_Nodes(arbre *tree)
+void Make_All_Tree_Nodes(arbre *tree, int n_l)
 {
 	int i;
 
@@ -2693,7 +2700,7 @@ void Make_All_Tree_Nodes(arbre *tree)
 
 	For(i,2*tree->n_otu-2)
 	{
-		tree->noeud[i] = (node *)Make_Node_Light(i, tree->n_l);
+		tree->noeud[i] = (node *)Make_Node_Light(i, n_l);
 		if(i < tree->n_otu) tree->noeud[i]->tax = 1;
 		else                tree->noeud[i]->tax = 0;
 
@@ -2702,14 +2709,14 @@ void Make_All_Tree_Nodes(arbre *tree)
 
 /*********************************************************/
 
-void Make_All_Tree_Edges(arbre *tree)
+void Make_All_Tree_Edges(arbre *tree, int n_l)
 {
 	int i;
 
 	tree->t_edges      = (edge **)mCalloc(2*tree->n_otu-3,sizeof(edge *));
 	/*   tree->t_dead_edges = (edge **)mCalloc(2*tree->n_otu-3,sizeof(edge *)); */
 
-	For(i,2*tree->n_otu-3) tree->t_edges[i] = (edge *)Make_Edge_Light(NULL,NULL,i,tree->n_l);
+	For(i,2*tree->n_otu-3) tree->t_edges[i] = (edge *)Make_Edge_Light(NULL,NULL,i, n_l);
 }
 
 
@@ -2773,7 +2780,7 @@ void Print_Node(node *a, node *d, arbre *tree)
 
 void Share_Lk_Struct(arbre *t_full, arbre *t_empt)
 {
-	int i,j,k,n_otu;
+	int i,j,n_otu;
 	edge *b_e,*b_f;
 	node *n_e, *n_f;
 
@@ -2790,11 +2797,7 @@ void Share_Lk_Struct(arbre *t_full, arbre *t_empt)
 	{
 		b_f = t_full->t_edges[i];
 		b_e = t_empt->t_edges[i];
-
-		For(k,t_full->n_l){
-			b_e->Pij_rr[k] = b_f->Pij_rr[k];
-		}
-
+		b_e->Pij_rr = b_f->Pij_rr;
 		b_e->nni = b_f->nni;
 	}
 
@@ -3012,7 +3015,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 
 	lk_init                = tree->c_lnL;
-	For(i,tree->n_l){
+	For(i,tree->mod->n_l){
 		bl_init[i]                = b_fcus->l[i];
 		b_fcus->nni->init_l[i]    = b_fcus->l[i]; //JSJ: Fixed!
 	}
@@ -3047,7 +3050,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		Warn_And_Exit("");
 	}
 
-	For(i,tree->n_l) l0[i] = l1[i] = l2[i] = -1.;
+	For(i,tree->mod->n_l) l0[i] = l1[i] = l2[i] = -1.;
 
 
 	/***********/
@@ -3055,7 +3058,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	tree->both_sides = 1;
 
 	lk1_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-	//	For(i,tree->n_l){
+	//	For(i,tree->mod->n_l){
 	//		l_infa[i] = 10.*b_fcus->l[i]; //JSJ: Changed so it compiles
 	//		l_max[i]  = b_fcus->l[i]; //JSJ: Changed so it compiles
 	//		l_infb[i] = BL_MIN;
@@ -3068,7 +3071,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 	else
 	{
-		For(i,tree->n_l){
+		For(i,tree->mod->n_l){
 		//	PhyML_Printf("Tree lnL (line 2983 of utilities.c): %lf \n",tree->c_lnL);
 			lk1 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
@@ -3085,18 +3088,18 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		PhyML_Printf("\n. Err. in NNI (1)\n");
 	}
 
-	For(i,tree->n_l) l1[i]  = b_fcus->l[i];
+	For(i,tree->mod->n_l) l1[i]  = b_fcus->l[i];
 	Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
 	/***********/
 
 
 	/***********/
 	Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
-	For(i,tree->n_l) b_fcus->l[i] = bl_init[i];
+	For(i,tree->mod->n_l) b_fcus->l[i] = bl_init[i];
 	tree->both_sides = 1;
 
 	lk2_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-	//	For(i,tree->n_l){
+	//	For(i,tree->mod->n_l){
 	//		l_infa[i] = 10.*b_fcus->l[i];
 	//		l_max[i]  = b_fcus->l[i];
 	//		l_infb[i] = BL_MIN;
@@ -3109,7 +3112,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 	else
 	{
-		For(i,tree->n_l){
+		For(i,tree->mod->n_l){
 		//	PhyML_Printf("Tree lnL (line 3024 of utilities.c): %lf \n",tree->c_lnL);
 			lk2 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
@@ -3126,14 +3129,14 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		PhyML_Printf("\n. Err. in NNI (2)\n");
 	}
 
-	For(i,tree->n_l) l2[i]  = b_fcus->l[i];
+	For(i,tree->mod->n_l) l2[i]  = b_fcus->l[i];
 	Swap(v4,b_fcus->left,b_fcus->rght,v2,tree);
 	/***********/
 
 
 
 	/***********/
-	For(i,tree->n_l) b_fcus->l[i] = bl_init[i];
+	For(i,tree->mod->n_l) b_fcus->l[i] = bl_init[i];
 	tree->both_sides = 1;
 
 	lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
@@ -3148,7 +3151,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 //		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
 //		//Warn_And_Exit("\n. Err. in NNI (3)\n");
 //	}
-	//	For(i,tree->n_l){
+	//	For(i,tree->mod->n_l){
 	//		l_infa[i] = 10.*b_fcus->l[i];
 	//		l_max[i]  = b_fcus->l[i];
 	//		l_infb[i] = BL_MIN;
@@ -3161,7 +3164,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 	else
 	{
-		For(i,tree->n_l){
+		For(i,tree->mod->n_l){
 		//	PhyML_Printf("Tree lnL (line 3076 of utilities.c): %lf \n",tree->c_lnL);
 			lk0 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
@@ -3186,7 +3189,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	b_fcus->nni->lk1 = lk1;
 	b_fcus->nni->lk2 = lk2;
 	//JSJ: do over array...
-	For(i,tree->n_l){
+	For(i,tree->mod->n_l){
 		l0[i]  = b_fcus->l[i];
 		b_fcus->nni->l0[i]  = l0[i];
 		b_fcus->nni->l1[i]  = l1[i];
@@ -3207,7 +3210,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	if(lk0 > MAX(lk1,lk2))
 	{
 		b_fcus->nni->best_conf    = 0;
-		For(i,tree->n_l) b_fcus->nni->best_l[i]       = l0[i]; //JSJ: fixed
+		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l0[i]; //JSJ: fixed
 		b_fcus->nni->swap_node_v1 = NULL;
 		b_fcus->nni->swap_node_v2 = NULL;
 		b_fcus->nni->swap_node_v3 = NULL;
@@ -3216,7 +3219,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else if(lk1 > MAX(lk0,lk2))
 	{
 		b_fcus->nni->best_conf    = 1;
-		For(i,tree->n_l) b_fcus->nni->best_l[i]       = l1[i]; //JSJ: fixed
+		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l1[i]; //JSJ: fixed
 		b_fcus->nni->swap_node_v1 = v2;
 		b_fcus->nni->swap_node_v2 = b_fcus->left;
 		b_fcus->nni->swap_node_v3 = b_fcus->rght;
@@ -3225,7 +3228,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else if(lk2 > MAX(lk0,lk1))
 	{
 		b_fcus->nni->best_conf    = 2;
-		For(i,tree->n_l) b_fcus->nni->best_l[i]       = l2[i]; //JSJ: fixed
+		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l2[i]; //JSJ: fixed
 		b_fcus->nni->swap_node_v1 = v2;
 		b_fcus->nni->swap_node_v2 = b_fcus->left;
 		b_fcus->nni->swap_node_v3 = b_fcus->rght;
@@ -3235,7 +3238,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	{
 		b_fcus->nni->score        = +1.0;
 		b_fcus->nni->best_conf    = 0;
-		For(i,tree->n_l) b_fcus->nni->best_l[i]       = l0[i]; //JSJ: fixed
+		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l0[i]; //JSJ: fixed
 		b_fcus->nni->swap_node_v1 = NULL;
 		b_fcus->nni->swap_node_v2 = NULL;
 		b_fcus->nni->swap_node_v3 = NULL;
@@ -3251,7 +3254,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		{
 			tree->best_lnL = lk1;
 			Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
-			For(i,tree->n_l) b_fcus->l[i] = l1[i];
+			For(i,tree->mod->n_l) b_fcus->l[i] = l1[i];
 			tree->both_sides = 1;
 			Lk(tree);
 		}
@@ -3259,14 +3262,14 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		{
 			tree->best_lnL = lk2;
 			Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
-			For(i,tree->n_l) b_fcus->l[i] = l2[i];
+			For(i,tree->mod->n_l) b_fcus->l[i] = l2[i];
 			tree->both_sides = 1;
 			Lk(tree);
 		}
 	}
 	else
 	{
-		For(i,tree->n_l) b_fcus->l[i] = bl_init[i];
+		For(i,tree->mod->n_l) b_fcus->l[i] = bl_init[i];
 		Update_PMat_At_Given_Edge(b_fcus,tree);
 		tree->c_lnL = lk_init;
 	}
@@ -3511,7 +3514,7 @@ void Update_SubTree_Partial_Lk(edge *b_fcus, node *a, node *d, arbre *tree)
 {
 	int i;
 
-	Update_P_Lk(tree,b_fcus,a,FALSE);
+	Update_P_Lk(tree,b_fcus,a);
 	if(d->tax) return;
 	else For(i,3) if(d->v[i] != a)
 		Update_SubTree_Partial_Lk(d->b[i],d,d->v[i],tree);
@@ -4801,7 +4804,7 @@ void Bootstrap(arbre *tree)
 				else
 				{
 					boot_mat = ML_Dist(boot_data,boot_mod);
-					boot_mat->tree = Make_Tree_From_Scratch(boot_data->n_otu,boot_data, tree->n_l);
+					boot_mat->tree = Make_Tree_From_Scratch(boot_data->n_otu,boot_data,tree->mod->n_l);
 					Fill_Missing_Dist(boot_mat);
 					Bionj(boot_mat);
 					boot_tree = boot_mat->tree;
@@ -4912,7 +4915,7 @@ void Bootstrap(arbre *tree)
 void Br_Len_Involving_Invar(arbre *tree)
 {
 	int i,k;
-	For(k,tree->n_l){
+	For(k,tree->mod->n_l){
 		For(i,2*tree->n_otu-3) tree->t_edges[i]->l[k] *= (1.0-tree->mod->pinvar);
 	}
 }
@@ -4922,7 +4925,7 @@ void Br_Len_Involving_Invar(arbre *tree)
 void Br_Len_Not_Involving_Invar(arbre *tree)
 {
 	int i,k;
-	For(k,tree->n_l){
+	For(k,tree->mod->n_l){
 		For(i,2*tree->n_otu-3) tree->t_edges[i]->l[k] /= (1.0-tree->mod->pinvar);
 	}
 }
@@ -5142,7 +5145,7 @@ model *Make_Model_Basic()
 	mod->modelname          = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 	mod->custom_mod_string  = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
 	mod->user_b_freq        = (m3ldbl *)mCalloc(T_MAX_OPTION,sizeof(m3ldbl));
-
+	mod->bl_props			= (m3ldbl *)mCalloc(MAX_BL_SET,sizeof(m3ldbl));
 	mod->rr                 = (m3ldbl *)mCalloc(6,sizeof(m3ldbl));
 	mod->rr_val             = (m3ldbl *)mCalloc(6,sizeof(m3ldbl));
 	mod->rr_num             = (int *)mCalloc(6,sizeof(int *));
@@ -5162,7 +5165,7 @@ void Make_Model_Complete(model *mod)
 	mod->gamma_rr       = (m3ldbl *)mCalloc(mod->n_catg,sizeof(m3ldbl));
 	mod->pi_unscaled    = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl));
 
-	mod->Pij_rr   = (double *)mCalloc(mod->n_catg*mod->ns*mod->ns,sizeof(double));
+	mod->Pij_rr   = (double *)mCalloc(mod->n_catg*mod->n_l*mod->ns*mod->ns,sizeof(double));
 
 	mod->qmat      = (double *)mCalloc(mod->ns*mod->ns,sizeof(double));
 	mod->qmat_buff = (double *)mCalloc(mod->ns*mod->ns,sizeof(double));
@@ -5303,10 +5306,10 @@ option *Make_Input()
  *
  */
 void Update_Default_Props(option *io){
-	int n_l = io->n_l;
+	int n_l = io->mod->n_l;
 	int i;
 	For(i,n_l){
-		io->props[i] = 1.0/n_l;
+		io->mod->bl_props[i] = 1.0/n_l;
 	}
 	Normalize_Props_IO(io);
 }
@@ -5320,8 +5323,6 @@ void Set_Defaults_Input(option* io)
 	io->fp_out_boot_tree           = NULL;
 	io->fp_out_boot_stats          = NULL;
 	io->fp_out_stats               = NULL;
-	io->n_l 					   = 1; //JSJ: initialize to 1 branch length set
-	io->props[0]				   = 1.0; //JSJ: initialize to all sites falling under the one set
 	io->fixed_props                = 1; //JSJ: don't optimize props on single branch length
 	io->user_props				   = 0; //JSJ: assume user won't supply proportions...
 	io->user_topo				   = 0; //JSJ: assume user won't supply search algo
@@ -5410,6 +5411,8 @@ void Set_Defaults_Model(model *mod)
 	mod->n_rr_branch             = 0;
 	mod->rr_branch_alpha         = 0.1;
 	mod->gamma_median            = 0;
+	mod->n_l 				   = 1; //JSJ: initialize to 1 branch length set
+	mod->bl_props[0]		   = 1.0; //JSJ: initialize to all sites falling under the one set
 }
 
 /*********************************************************/
@@ -6513,12 +6516,11 @@ void Hide_Ambiguities(allseq *data)
 
 void Copy_Tree(arbre *ori, arbre *cpy)
 {
-	int i,j,m;
-	cpy->n_l = ori->n_l;
+	int i,j;
+	cpy->mod->n_l = ori->mod->n_l;
 
-	//JSJ: copy rate proportions
-	For(i,ori->n_l){
-		cpy->props[i] = ori->props[i];
+	For(i,ori->mod->n_l){
+		cpy->mod->bl_props[i] = ori->mod->bl_props[i]; // props are branch-length proportions
 	}
 
 	For(i,2*ori->n_otu-2)
@@ -6528,8 +6530,7 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 			if(ori->noeud[i]->v[j])
 			{
 				cpy->noeud[i]->v[j] = cpy->noeud[ori->noeud[i]->v[j]->num];
-				For(m,ori->n_l) cpy->noeud[i]->l[m][j] = ori->noeud[i]->l[m][j];//JSJ: deep copy
-				cpy->noeud[i]->n_l = ori->n_l;
+				cpy->noeud[i]->l[j] = ori->noeud[i]->l[j];
 				cpy->noeud[i]->b[j] = cpy->t_edges[ori->noeud[i]->b[j]->num];
 #ifdef COMPRESS_SUBALIGNMENTS
 				cpy->noeud[i]->red = ori->noeud[i]->red; //VHS
@@ -6546,12 +6547,9 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 
 	For(i,2*ori->n_otu-3)
 	{
-		For(j,ori->n_l){
-			cpy->t_edges[i]->l[j]    = ori->t_edges[i]->l[j];//JSJ: deep copy
-			cpy->t_edges[i]->best_l[j] = ori->t_edges[i]->best_l[j];
-			cpy->t_edges[i]->l_old[j] = ori->t_edges[i]->l_old[j];
-			cpy->t_edges[i]->has_zero_br_len[j] = ori->t_edges[i]->has_zero_br_len[j];
-		}
+		cpy->t_edges[i]->l    	= ori->t_edges[i]->l;
+		cpy->t_edges[i]->best_l = ori->t_edges[i]->best_l;
+		cpy->t_edges[i]->l_old  = ori->t_edges[i]->l_old;
 		cpy->t_edges[i]->left = cpy->noeud[ori->t_edges[i]->left->num];
 		cpy->t_edges[i]->rght = cpy->noeud[ori->t_edges[i]->rght->num];
 		cpy->t_edges[i]->l_v1 = ori->t_edges[i]->l_v1;
@@ -6772,7 +6770,7 @@ void Prune_Subtree(node *a, node *d, edge **target, edge **residual, arbre *tree
 	}
 #endif
 	//JSJ: do for array of bls
-	For(i,tree->n_l){
+	For(i,tree->mod->n_l){
 		b1->l[i] += b2->l[i];
 	}
 
@@ -6906,7 +6904,7 @@ void Graft_Subtree(edge *target, node *link, edge *residual, arbre *tree)
 		break;
 	}
 	//JSJ: operate on array of edge lengths
-	For(i,tree->n_l){
+	For(i,tree->mod->n_l){
 		target->l[i] /= 2.;
 		residual->l[i] = target->l[i];
 	}
@@ -7263,16 +7261,23 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 {
 	m3ldbl sum;
 	m3ldbl *prob, *F;
-	int i, j, k, m, site;
+	int i, j, k, l, m, site;
 	m3ldbl v_rght;
-	int dim1,dim2,dim3;
+	//int dim1,dim2,dim3;
 	//m3ldbl eps_bl,old_l,new_l;
 	int n_iter;
 
 	n_iter = 0;
-	dim1   = tree->mod->ns * tree->mod->n_catg;
-	dim2   = tree->mod->ns ;
-	dim3   = tree->mod->ns * tree->mod->ns;
+//	dim1   = tree->mod->ns * tree->mod->n_catg;
+//	dim2   = tree->mod->ns ;
+//	dim3   = tree->mod->ns * tree->mod->ns;
+
+	int dima, dimb, dimc, dimd, dimaa;
+	dima = tree->mod->ns;
+	dimb = dima * tree->mod->n_l;
+	dimc = dimb * tree->mod->n_catg;
+	dimd = dimb * dima;
+	dimaa = dima * dima;
 	//eps_bl = BL_MIN;
 
 	F    = tree->triplet_struct->F_bc;
@@ -7280,7 +7285,7 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 
 	Update_PMat_At_Given_Edge(b,tree);
 
-	For(i,dim1*dim2) F[i] = .0;
+	For(i, dimc*dima) F[i] = .0;
 
 	For(site,tree->n_pattern)
 	{
@@ -7291,16 +7296,27 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 			For(j,tree->mod->ns)
 			{
 				For(k,tree->mod->n_catg)
-				{ //JSJ: temp fix of Pij_rr
-					v_rght = (b->rght->tax)?((m3ldbl)(b->p_lk_tip_r[site*dim2+j])):(b->p_lk_rght[site*dim1+k*dim2+j]);
-					For(m,tree->n_l){ //JSJ: made the summed probability include a mixed model
-						prob[dim3*k+dim2*i+j]              +=
-								tree->mod->gamma_r_proba[k]      *
-								tree->mod->pi[i]                 *
-								b->Pij_rr[m][k*dim3+i*dim2+j]    *
-								b->p_lk_left[site*dim1+k*dim2+i] *
-								v_rght							 *
-								tree->props[m];
+				{
+					For(l, tree->mod->n_l)
+					{
+						v_rght = (b->rght->tax)?((m3ldbl)(b->p_lk_tip_r[site*dima+j])):(b->p_lk_rght[site*dimc + k*dimb + l*dima + j]);
+
+						prob[k*dimd + l*dimaa + i*dima + j] 				+=
+							tree->mod->gamma_r_proba[k]      				*
+							tree->mod->pi[i]                 				*
+							tree->mod->bl_props[l]				 					*
+							b->Pij_rr[k*dimd + l*dimaa + i*dima + j]    	*
+							b->p_lk_left[site*dimc + k*dimb + l*dima + i] 	*
+							v_rght;
+
+						// the old way, without mixed BL sets:
+//						prob[dim3*k+dim2*i+j] +=
+//								tree->mod->gamma_r_proba[k]      *
+//								tree->mod->pi[i]                 *
+//								b->Pij_rr[m][k*dim3+i*dim2+j]    *
+//								b->p_lk_left[site*dim1+k*dim2+i] *
+//								v_rght							 *
+//								tree->props[m];
 					}
 				}
 			}
@@ -7308,23 +7324,42 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 
 		/* Scaling */
 		sum = .0;
-		For(k,tree->mod->n_catg) For(i,tree->mod->ns) For(j,tree->mod->ns) sum += prob[dim3*k+dim2*i+j];
-		For(k,tree->mod->n_catg) For(i,tree->mod->ns) For(j,tree->mod->ns) prob[dim3*k+dim2*i+j] /= sum;
+		For(k,tree->mod->n_catg)
+		{	For(l, tree->mod->n_l)
+			{	For(i,tree->mod->ns)
+				{	For(j,tree->mod->ns)
+					{	sum += prob[k*dimd + l*dimaa + i*dima + j];
+					}
+				}
+			}
+		}
+		For(k,tree->mod->n_catg)
+		{	For(l, tree->mod->n_l)
+			{	For(i,tree->mod->ns)
+				{	For(j,tree->mod->ns)
+					{	prob[k*dimd + l*dimaa + i*dima + j] /= sum;
+					}
+				}
+			}
+		}
 
 		/* Expected number of each pair of states */
-		For(i,tree->mod->ns) For(j,tree->mod->ns) For(k,tree->mod->n_catg)
-		F[dim3*k+dim2*i+j] += tree->data->wght[site] * prob[dim3*k+dim2*i+j];
+		For(k,tree->mod->n_catg)
+		{	For(l, tree->mod->n_l)
+			{	For(i,tree->mod->ns)
+				{	For(j,tree->mod->ns)
+					{	F[k*dimd + l*dimaa + i*dima + j] += tree->data->wght[site] * prob[k*dimd + l*dimaa + i*dima + j];
+					}
+				}
+			}
+		}
 	}
-	//JSJ: More temp fixes...
-	//old_l = b->l[0];
-	/**
-	* Figure out how to fix the following function so that it works with a set of bls!
-	*/
+
 	Opt_Dist_F(b->l,F,tree->mod,tree); //JSJ: decide how to get array of bls to this fxn, one at a time, or simult
 	//new_l = b->l[0];
 	n_iter++;
 
-	For(m,tree->n_l){
+	For(m,tree->mod->n_l){
 		if(b->l[m] < BL_MIN)      b->l[m] = BL_MIN;
 		else if(b->l[m] > BL_MAX) b->l[m] = BL_MAX;
 	}
@@ -7334,13 +7369,13 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 		//		m3ldbl min[MAX_BL_SET];
 		//		m3ldbl max[MAX_BL_SET];
 		//
-		//		For(m,tree->n_l){
+		//		For(m,tree->mod->n_l){
 		//			min[m] = b->l[m];
 		//			max[m] = b->l[m];
 		//			min[m] *= 0.02;
 		//			max[m] *= 50.0;
 		//		}
-		For(m,tree->n_l){
+		For(m,tree->mod->n_l){
 			min = max = b->l[m];
 			min *= 0.02;
 			max *= 50.0;
@@ -7437,22 +7472,22 @@ m3ldbl Triple_Dist(node *a, arbre *tree, int approx)
 		Update_PMat_At_Given_Edge(a->b[1],tree);
 		Update_PMat_At_Given_Edge(a->b[2],tree);
 
-		Update_P_Lk(tree,a->b[0],a,FALSE);
+		Update_P_Lk(tree,a->b[0],a);
 		Fast_Br_Len(a->b[0],tree,approx);
 		/*       Br_Len_Brent (BL_MAX, a->b[0]->l,BL_MIN, 1.e-10,a->b[0],tree,50,0); */
 
 
-		Update_P_Lk(tree,a->b[1],a,FALSE);
+		Update_P_Lk(tree,a->b[1],a);
 		Fast_Br_Len(a->b[1],tree,approx);
 		/*       Br_Len_Brent (BL_MAX, a->b[1]->l,BL_MIN, 1.e-10,a->b[1],tree,50,0); */
 
 
-		Update_P_Lk(tree,a->b[2],a,FALSE);
+		Update_P_Lk(tree,a->b[2],a);
 		Fast_Br_Len(a->b[2],tree,approx);
 		/*       Br_Len_Brent (BL_MAX, a->b[2]->l,BL_MIN, 1.e-10,a->b[2],tree,50,0); */
 
-		Update_P_Lk(tree,a->b[1],a,FALSE);
-		Update_P_Lk(tree,a->b[0],a,FALSE);
+		Update_P_Lk(tree,a->b[1],a);
+		Update_P_Lk(tree,a->b[0],a);
 	}
 
 	return tree->c_lnL;
@@ -7595,7 +7630,7 @@ void Fix_All(arbre *tree)
 	tree->mod->alpha_old  = tree->mod->alpha;
 	tree->mod->kappa_old  = tree->mod->kappa;
 	tree->mod->lambda_old = tree->mod->lambda;
-	For(j,tree->n_l){
+	For(j,tree->mod->n_l){
 		for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
 		{
 			tree->noeud[i]->b[0]->l_old[j] = tree->noeud[i]->b[0]->l[j];
@@ -7613,7 +7648,7 @@ void Record_Br_Len(m3ldbl **where, arbre *tree)
 
 	if(!where)
 	{
-		For(j,tree->n_l){
+		For(j,tree->mod->n_l){
 			For(i,2*tree->n_otu-3){
 				tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
 			}
@@ -7621,7 +7656,7 @@ void Record_Br_Len(m3ldbl **where, arbre *tree)
 	}
 	else
 	{
-		For(j,tree->n_l){
+		For(j,tree->mod->n_l){
 			For(i,2*tree->n_otu-3){
 				where[j][i] = tree->t_edges[i]->l[j];
 			}
@@ -7638,7 +7673,7 @@ void Restore_Br_Len(m3ldbl **from, arbre *tree)
 	if(!from)
 	{
 		For(i,2*tree->n_otu-3){
-			For(j,tree->n_l){
+			For(j,tree->mod->n_l){
 				tree->t_edges[i]->l[j] = tree->t_edges[i]->l_old[j];
 			}
 		}
@@ -7646,7 +7681,7 @@ void Restore_Br_Len(m3ldbl **from, arbre *tree)
 	else
 	{
 		For(i,2*tree->n_otu-3){
-			For(j,tree->n_l) {
+			For(j,tree->mod->n_l) {
 				tree->t_edges[i]->l[j] = from[j][i];
 			}
 		}
@@ -7683,7 +7718,7 @@ void Get_Dist_Btw_Edges(node *a, node *d, arbre *tree)
 void Detect_Polytomies(edge *b, m3ldbl l_thresh, arbre *tree)
 {
 	int i;
-	For(i,tree->n_l){
+	For(i,tree->mod->n_l){
 		if((b->l[i] < l_thresh) && (!b->left->tax) && (!b->rght->tax))
 		{
 			b->l[i]               = 0.0;
@@ -8048,13 +8083,13 @@ void Print_Settings(option *io)
 
 	PhyML_Printf("\n                . Optimise substitution model parameters : \t %s", (answer) ? "yes" : "no");
 
-	PhyML_Printf("\n                . Number of branch length categories: \t\t %i", io->n_l);
+	PhyML_Printf("\n                . Number of branch length categories: \t\t %i", io->mod->n_l);
 	PhyML_Printf("\n                . Proportion of sites in each b.l. category: \t [");
-	For(i,io->n_l){
-		if(i+1 == io->n_l){
-			PhyML_Printf(" %lf ]",(double)io->props[i]);
+	For(i,io->mod->n_l){
+		if(i+1 == io->mod->n_l){
+			PhyML_Printf(" %lf ]",(double)io->mod->bl_props[i]);
 		}else{
-			PhyML_Printf(" %lf,",(double)io->props[i]);
+			PhyML_Printf(" %lf,",(double)io->mod->bl_props[i]);
 		}
 	}
 	PhyML_Printf("\n                . Optimize proportion of sites in each b.l. category: \t %s", (io->fixed_props == 0) ? ("Yes"):("No"));
@@ -8250,7 +8285,7 @@ void Check_Memory_Amount(arbre *tree)
 
 
 	/* Pmat JSJ: an array of them...*/
-	nbytes += (2*mod->n_otu-3) * tree->n_l * mod->n_catg * mod->ns * mod->ns * sizeof(m3ldbl);
+	nbytes += (2*mod->n_otu-3) * tree->mod->n_l * mod->n_catg * mod->ns * mod->ns * sizeof(m3ldbl);
 
 	/* Partial Lk */
 	nbytes += ((2*mod->n_otu-3) * 2 - tree->n_otu) * tree->n_pattern * mod->n_catg * mod->ns * sizeof(m3ldbl);
@@ -8489,16 +8524,16 @@ void Randomize_Sequence_Order(allseq *data)
 void Update_Root_Pos(arbre *tree)
 {
 	int i;
-	For(i, tree->n_l){
+	For(i, tree->mod->n_l){
 		if(tree->n_root_pos > -1.0)
 		{
-			tree->n_root->l[i][0] = tree->e_root->l[i] * tree->n_root_pos;
-			tree->n_root->l[i][1] = tree->e_root->l[i] * (1.-tree->n_root_pos);
+			tree->n_root->l[i*tree->mod->n_l] = tree->e_root->l[i] * tree->n_root_pos;
+			tree->n_root->l[i*tree->mod->n_l + 1] = tree->e_root->l[i] * (1.-tree->n_root_pos);
 		}
 		else
 		{
-			tree->n_root->l[i][0] = tree->e_root->l[i] / 2.;
-			tree->n_root->l[i][1] = tree->e_root->l[i] / 2.;
+			tree->n_root->l[i*tree->mod->n_l] = tree->e_root->l[i] / 2.;
+			tree->n_root->l[i*tree->mod->n_l + 1] = tree->e_root->l[i] / 2.;
 		}
 	}
 }
@@ -8514,7 +8549,7 @@ void Add_Root(edge *target, arbre *tree)
 	/* Create the root node if it does not exist yet */
 	if((!tree->n_root) || (tree->n_root->num != 2*tree->n_otu-2))
 	{
-		tree->n_root = (node *)Make_Node_Light(2*tree->n_otu-2, tree->n_l);
+		tree->n_root = (node *)Make_Node_Light(2*tree->n_otu-2,tree->mod->n_l);
 	}
 
 	tree->n_root->tax = 0;
@@ -8525,7 +8560,7 @@ void Add_Root(edge *target, arbre *tree)
 
 	tree->n_root->b[0] = tree->e_root;
 	tree->n_root->b[1] = tree->e_root;
-	For(i,tree->n_l){ //JSJ: iterate over set and do below for each member of set
+	For(i,tree->mod->n_l){ //JSJ: iterate over set and do below for each member of set
 		if(tree->n_root_pos > -1.0)
 		{
 			if(tree->n_root_pos < 1.E-6 &&  tree->n_root_pos > -1.E-6)
@@ -8534,13 +8569,13 @@ void Add_Root(edge *target, arbre *tree)
 			/*       tree->n_root->l[0] = tree->e_root->l * (tree->n_root_pos/(1.+tree->n_root_pos)); */
 			/*       tree->n_root->l[1] = tree->e_root->l - tree->n_root->l[0]; */
 			//JSJ: simmilar compilation fix
-			tree->n_root->l[i][0] = tree->e_root->l[i] * tree->n_root_pos;
-			tree->n_root->l[i][1] = tree->e_root->l[i] * (1. - tree->n_root_pos);
+			tree->n_root->l[i*tree->mod->n_l] = tree->e_root->l[i*tree->mod->n_l] * tree->n_root_pos;
+			tree->n_root->l[i*tree->mod->n_l + 1] = tree->e_root->l[i*tree->mod->n_l] * (1. - tree->n_root_pos);
 		}
 		else
 		{
-			tree->n_root->l[i][0] = tree->e_root->l[i] / 2.;
-			tree->n_root->l[i][1] = tree->e_root->l[i] / 2.;
+			tree->n_root->l[i*tree->mod->n_l] = tree->e_root->l[i*tree->mod->n_l] / 2.;
+			tree->n_root->l[i*tree->mod->n_l + 1] = tree->e_root->l[i*tree->mod->n_l] / 2.;
 			tree->n_root_pos = 0.5;
 		}
 	}
@@ -8809,7 +8844,7 @@ void Random_Lineage_Rates(node *a, node *d, edge *b, m3ldbl stick_prob, m3ldbl *
 		{
 			new_rate = curr_rate;
 		}
-		For(k,tree->n_l){
+		For(k,tree->mod->n_l){
 			For(i,3)
 			if(a->v[i] == d)
 			{//JSJ: compilation fix
@@ -8875,47 +8910,51 @@ void Print_Square_Matrix_Generic(int n, m3ldbl *mat)
 }
 
 /*********************************************************/
+//
+// VHS: I think this method is depricated.
+//
+//void Evolve(allseq *data, model *mod, arbre *tree)
+//{
+//	int root_state, root_rate_class;
+//	int site,i;
+//
+//	if(mod->use_m4mod) tree->print_labels = 1;
+//
+//	/* Get the change probability matrices */
+//	Set_Model_Parameters(mod);
+//	For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->t_edges[i],tree);
+//
+//
+//	For(site,data->init_len)
+//	{
+//		root_state = root_rate_class = -1;
+//
+//		/* Pick the root nucleotide/aa */
+//		root_state = Pick_State(mod->ns,mod->pi);
+//		data->c_seq[0]->state[site] = Reciproc_Assign_State(root_state,mod->datatype);
+//
+//		/* Pick the rate class */
+//		root_rate_class = Pick_State(mod->n_catg,mod->gamma_r_proba);
+//
+//		/* tree->noeud[0] is considered as the root node */
+//		Evolve_Recur(tree->noeud[0],
+//				tree->noeud[0]->v[0],
+//				tree->noeud[0]->b[0],
+//				root_state,
+//				root_rate_class,
+//				site,
+//				data,
+//				mod,
+//				tree);
+//
+//		/*       PhyML_Printf("%s\n",Write_Tree(tree)); */
+//
+//		data->wght[site] = 1;
+//	}
+//	data->crunch_len = data->init_len;
+//}
 
-void Evolve(allseq *data, model *mod, arbre *tree)
-{
-	int root_state, root_rate_class;
-	int site,i;
 
-	if(mod->use_m4mod) tree->print_labels = 1;
-
-	/* Get the change probability matrices */
-	Set_Model_Parameters(mod);
-	For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->t_edges[i],tree);
-
-
-	For(site,data->init_len)
-	{
-		root_state = root_rate_class = -1;
-
-		/* Pick the root nucleotide/aa */
-		root_state = Pick_State(mod->ns,mod->pi);
-		data->c_seq[0]->state[site] = Reciproc_Assign_State(root_state,mod->datatype);
-
-		/* Pick the rate class */
-		root_rate_class = Pick_State(mod->n_catg,mod->gamma_r_proba);
-
-		/* tree->noeud[0] is considered as the root node */
-		Evolve_Recur(tree->noeud[0],
-				tree->noeud[0]->v[0],
-				tree->noeud[0]->b[0],
-				root_state,
-				root_rate_class,
-				site,
-				data,
-				mod,
-				tree);
-
-		/*       PhyML_Printf("%s\n",Write_Tree(tree)); */
-
-		data->wght[site] = 1;
-	}
-	data->crunch_len = data->init_len;
-}
 
 /*********************************************************/
 
@@ -8938,45 +8977,47 @@ int Pick_State(int n, m3ldbl *prob)
 }
 
 /*********************************************************/
-
-void Evolve_Recur(node *a, node *d, edge *b, int a_state, int r_class, int site_num, allseq *gen_data, model *mod, arbre *tree)
-{
-	int d_state;
-	int dim1,dim2;
-
-	dim1 = tree->mod->ns * tree->mod->ns;
-	dim2 = tree->mod->ns;
-	//JSJ: temp fix of Pij_rr
-	d_state = Pick_State(mod->ns,b->Pij_rr[0]+r_class*dim1+a_state*dim2);
-
-	/*   PhyML_Printf("\n>> %c (%d,%d)",Reciproc_Assign_State(d_state,mod->datatype),d_state,(int)d_state/mod->m4mod->n_o); */
-
-	if(mod->use_m4mod)
-	{
-		m3ldbl rrate; /* relative rate of substitutions */
-
-		rrate = mod->m4mod->multipl[(int)d_state/mod->m4mod->n_o];
-		if(!(b->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(b);
-		if(rrate > 1.0) strcpy(b->labels[b->n_labels],"FASTER");
-		else strcpy(b->labels[b->n_labels],"SLOWER");
-		b->n_labels++;
-	}
-
-	if(d->tax)
-	{
-		gen_data->c_seq[d->num]->state[site_num] = Reciproc_Assign_State(d_state,mod->datatype);
-		return;
-	}
-	else
-	{
-		int i;
-		For(i,3)
-		if(d->v[i] != a)
-			Evolve_Recur(d,d->v[i],d->b[i],
-					d_state,r_class,site_num,gen_data,
-					mod,tree);
-	}
-}
+//
+// VHS: I think this method is depricated.
+//
+//void Evolve_Recur(node *a, node *d, edge *b, int a_state, int r_class, int site_num, allseq *gen_data, model *mod, arbre *tree)
+//{
+//	int d_state;
+//	int dim1,dim2;
+//
+//	dim1 = tree->mod->ns * tree->mod->ns;
+//	dim2 = tree->mod->ns;
+//	//JSJ: temp fix of Pij_rr
+//	d_state = Pick_State(mod->ns, b->Pij_rr[0]+r_class*dim1+a_state*dim2);
+//
+//	/*   PhyML_Printf("\n>> %c (%d,%d)",Reciproc_Assign_State(d_state,mod->datatype),d_state,(int)d_state/mod->m4mod->n_o); */
+//
+//	if(mod->use_m4mod)
+//	{
+//		m3ldbl rrate; /* relative rate of substitutions */
+//
+//		rrate = mod->m4mod->multipl[(int)d_state/mod->m4mod->n_o];
+//		if(!(b->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(b);
+//		if(rrate > 1.0) strcpy(b->labels[b->n_labels],"FASTER");
+//		else strcpy(b->labels[b->n_labels],"SLOWER");
+//		b->n_labels++;
+//	}
+//
+//	if(d->tax)
+//	{
+//		gen_data->c_seq[d->num]->state[site_num] = Reciproc_Assign_State(d_state,mod->datatype);
+//		return;
+//	}
+//	else
+//	{
+//		int i;
+//		For(i,3)
+//		if(d->v[i] != a)
+//			Evolve_Recur(d,d->v[i],d->b[i],
+//					d_state,r_class,site_num,gen_data,
+//					mod,tree);
+//	}
+//}
 
 /*********************************************************/
 
@@ -9330,7 +9371,7 @@ m3ldbl Mean(m3ldbl *x, int n)
 void Best_Of_NNI_And_SPR(arbre *tree)
 {
 	int i;
-	int n_l = tree->n_l;
+	int n_l = tree->mod->n_l;
 	if(tree->mod->s_opt->random_input_tree)
 	{
 		Speed_Spr_Loop(tree); /* Don't do simultaneous NNIs if starting tree is random */
@@ -9341,9 +9382,9 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		model *ori_mod,*best_mod;
 		m3ldbl **ori_bl,**best_bl;
 		m3ldbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
-		ori_bl = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
-		best_bl = (m3ldbl **)mCalloc(tree->n_l,sizeof(m3ldbl *));
-		For(i,tree->n_l){ // VHS: I think John added this loop?
+		ori_bl = (m3ldbl **)mCalloc(tree->mod->n_l,sizeof(m3ldbl *));
+		best_bl = (m3ldbl **)mCalloc(tree->mod->n_l,sizeof(m3ldbl *));
+		For(i,tree->mod->n_l){ // VHS: I think John added this loop?
 			ori_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 			best_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 		}
@@ -9352,16 +9393,16 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		best_mod  = Copy_Model(tree->mod);
 
 		// Build ori_tree
-		ori_tree = Make_Tree(tree->n_otu, tree->n_l);
-		Init_Tree(ori_tree,tree->n_otu, tree->n_l);
-		Make_All_Tree_Nodes(ori_tree);
-		Make_All_Tree_Edges(ori_tree);
+		ori_tree = Make_Tree(tree->n_otu);
+		Init_Tree(ori_tree,tree->n_otu);
+		Make_All_Tree_Nodes(ori_tree, tree->mod->n_l);
+		Make_All_Tree_Edges(ori_tree, tree->mod->n_l);
 
 		// Build best_tree
-		best_tree = Make_Tree(tree->n_otu, tree->n_l);
-		Init_Tree(best_tree,tree->n_otu, tree->n_l);
-		Make_All_Tree_Nodes(best_tree);
-		Make_All_Tree_Edges(best_tree);
+		best_tree = Make_Tree(tree->n_otu);
+		Init_Tree(best_tree,tree->n_otu);
+		Make_All_Tree_Nodes(best_tree, tree->mod->n_l);
+		Make_All_Tree_Edges(best_tree, tree->mod->n_l);
 
 		// ori_tree = tree
 		Copy_Tree(tree,ori_tree);
@@ -9564,17 +9605,12 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 	Fill_Missing_Dist(mat);
 
 	if(!io->quiet) PhyML_Printf("\n. Building BioNJ tree...\n");
-	// JSJ: !!!!!!! need to get n_l from io
-	// for now just use a temp n_l
-	//
-	// VHS: this must be fixed immediately!
-	int n_l = 2;
-	mat->tree = Make_Tree_From_Scratch(alldata->n_otu,alldata,n_l);
+
+	mat->tree = Make_Tree_From_Scratch(alldata->n_otu, alldata, io->mod->n_l);
+
 	Bionj(mat);
 	tree      = mat->tree;
 	tree->mat = mat;
-
-	Fix_Tree_From_IO(tree,io);
 
 	return tree;
 }
@@ -9582,36 +9618,19 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 /*********************************************************/
 
 void Fix_Tree_From_IO(arbre *tree, option *io){
+
 	int i,j,k;
 	int num_node = 2*tree->n_otu-2; //node
 	int num_edge = 2*tree->n_otu-3; //edge
 	//	int num_path = 2*tree->n_otu; //path
-	//JSJ: now copy the branch lengths from this tree into all members of the set
-	tree->n_l = io->n_l;
-	tree->props[io->n_l - 1] = io->props[io->n_l - 1];//since it doesn't get to last element, fill in here
-	for(i = 1; i < tree->n_l; i++){
-		tree->props[i-1] = io->props[i-1];
-		//		For(j,num_path){
-		//			tree->curr_path[j]->n_l = io->n_l;
-		//			For(k,3){
-		//				tree->curr_path[j]->l[i][k] = tree->curr_path[j]->l[0][k];
-		//				tree->curr_path[j]->b[k]->best_l[i] = tree->curr_path[j]->b[k]->best_l[0];
-		//				tree->curr_path[j]->b[k]->l[i] = tree->curr_path[j]->b[k]->l[0];
-		//				tree->curr_path[j]->b[k]->l_old[i] =  tree->curr_path[j]->b[k]->l_old[0];
-		//				tree->curr_path[j]->b[k]->has_zero_br_len[i] =  tree->curr_path[j]->b[k]->has_zero_br_len[0];
-		//				tree->curr_path[j]->b[k]->n_l = io->n_l;
-		//			}
-		//		}
+
+
+	for(i = 0; i < io->mod->n_l; i++){
+		tree->mod->bl_props[i] = io->mod->bl_props[i];
 
 		For(j,num_node){
-			tree->noeud[j]->n_l = io->n_l;
 			For(k,3){
-				tree->noeud[j]->l[i][k] = tree->noeud[j]->l[0][k];
-				//				tree->noeud[j]->b[k]->best_l[i] = tree->noeud[j]->b[k]->best_l[0];
-				//				tree->noeud[j]->b[k]->n_l = io->n_l;
-				//				tree->noeud[j]->b[k]->has_zero_br_len[i] = tree->noeud[j]->b[k]->has_zero_br_len[0];
-				//				tree->noeud[j]->b[k]->l[i] = tree->noeud[j]->b[k]->l[0];
-				//				tree->noeud[j]->b[k]->l_old[i] = tree->noeud[j]->b[k]->l_old[0];
+				tree->noeud[j]->l[i*io->mod->n_l+k] = tree->noeud[j]->l[io->mod->n_l+k];
 			}
 		}
 
@@ -9619,11 +9638,14 @@ void Fix_Tree_From_IO(arbre *tree, option *io){
 			tree->t_edges[j]->l[i] = tree->t_edges[j]->l[0];
 			tree->t_edges[j]->l_old[i] = tree->t_edges[j]->l_old[0];
 			tree->t_edges[j]->best_l[i] = tree->t_edges[j]->best_l[0];
-			tree->t_edges[j]->n_l = io->n_l;
+			tree->t_edges[j]->n_l = io->mod->n_l;
 			tree->t_edges[j]->has_zero_br_len[i] = tree->t_edges[j]->has_zero_br_len[0];
 		}
 	}
-
+	// VHS: I don't think this is necessary anymore, because tree->mod is copied from
+	// io->mod; the BL props are previously normalized on io->mod when we call the method
+	// Normalize_Props_IO in Get_Input
+	//Normalize_Props(tree);
 }
 
 
@@ -9640,8 +9662,6 @@ void Add_BioNJ_Branch_Lengths(arbre *tree, allseq *alldata, model *mod, option *
 	mat->method = 0;
 	Bionj_Br_Length(mat);
 
-	Fix_Tree_From_IO(tree, io); //JSJ: coppy over branch lengths
-
 	Free_Mat(mat);
 }
 
@@ -9650,7 +9670,6 @@ void Add_BioNJ_Branch_Lengths(arbre *tree, allseq *alldata, model *mod, option *
 arbre *Read_User_Tree(allseq *alldata, model *mod, option *io)
 {
 	arbre *tree;
-
 
 	PhyML_Printf("\n. Reading tree...\n"); fflush(NULL);
 	if(io->n_trees == 1) rewind(io->fp_in_tree);
@@ -9872,8 +9891,8 @@ m3ldbl Get_Tree_Size(arbre *tree)
 
 	tree_size = 0.0;
 	//JSJ: temporary compilation fix
-	For(k,tree->n_l){
-		For(i,2*tree->n_otu-3) tree_size += (tree->t_edges[i]->l[k] * tree->props[k]);
+	For(k,tree->mod->n_l){
+		For(i,2*tree->n_otu-3) tree_size += (tree->t_edges[i]->l[k] * tree->mod->bl_props[k]);
 	}
 
 	tree->size = tree_size;
@@ -9931,8 +9950,8 @@ void Dist_To_Root_Pre(node *a, node *d, edge *b, arbre *tree)
 	int i,k;
 
 	if(b) {
-		For(k,tree->n_l){
-			d->dist_to_root = a->dist_to_root + (b->l[k] * tree->props[k]);
+		For(k,tree->mod->n_l){
+			d->dist_to_root = a->dist_to_root + (b->l[k] * tree->mod->bl_props[k]);
 		}
 	}
 
@@ -9946,15 +9965,15 @@ void Dist_To_Root_Pre(node *a, node *d, edge *b, arbre *tree)
 }
 
 /*********************************************************/
-//JSJ: compilation fix, returns weighted distance to root
+//JSJ: compilation fix, returns weighted averaage distance to root
 void Dist_To_Root(node *n_root, arbre *tree)
 {
 	int k;
-	n_root->v[0]->dist_to_root = tree->n_root->l[0][0];
-	n_root->v[1]->dist_to_root = tree->n_root->l[0][1];
-	for(k=1;k<tree->n_l;k++){
-		n_root->v[0]->dist_to_root += (tree->n_root->l[k][0] * tree->props[k]);
-		n_root->v[1]->dist_to_root += (tree->n_root->l[k][1] * tree->props[k]);
+	n_root->v[0]->dist_to_root = tree->n_root->l[0];
+	n_root->v[1]->dist_to_root = tree->n_root->l[tree->mod->n_l + 1];
+	for(k=1;k<tree->mod->n_l;k++){
+		n_root->v[0]->dist_to_root += (tree->n_root->l[k*tree->mod->n_l] * tree->mod->bl_props[k]);
+		n_root->v[1]->dist_to_root += (tree->n_root->l[k*tree->mod->n_l+1] * tree->mod->bl_props[k]);
 	}
 	Dist_To_Root_Pre(n_root,n_root->v[0],NULL,tree);
 	Dist_To_Root_Pre(n_root,n_root->v[1],NULL,tree);

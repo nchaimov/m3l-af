@@ -103,7 +103,7 @@ int Simu(arbre *tree, int n_step_max)
 			if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested))
 				Exit("\n. Err: mov_back failed\n");
 			if(!tree->n_swap) n_neg = 0;
-			For(j,tree->n_l){
+			For(j,tree->mod->n_l){
 				For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
 			}
 			tree->both_sides = 1;
@@ -288,7 +288,7 @@ void Update_Bl(arbre *tree, m3ldbl fact)
 	int i,j;
 	edge *b;
 	//JSJ: temporary fixes to l
-	For(j,tree->n_l){
+	For(j,tree->mod->n_l){
 		For(i,2*tree->n_otu-3)
 		{
 			b = tree->t_edges[i];
@@ -314,7 +314,7 @@ void Make_N_Swap(arbre *tree,edge **b, int beg, int end)
 				b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 				tree);
 		//JSJ: temporary fix to l
-		For(k,tree->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
+		For(k,tree->mod->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
 
 		tree->n_swap++;
 	}
@@ -352,7 +352,7 @@ int Make_Best_Swap(arbre *tree)
 				tree);
 
 		//JSJ: temp fix to l
-		For(k,tree->n_l) b->l[k] = b->nni->best_l[k];
+		For(k,tree->mod->n_l) b->l[k] = b->nni->best_l[k];
 
 		/*       (b->nni->best_conf == 1)? */
 		/* 	(Swap(b->left->v[b->l_v2],b->left,b->rght,b->rght->v[b->r_v1],tree)): */
@@ -381,7 +381,7 @@ int Mov_Backward_Topo_Bl(arbre *tree, m3ldbl lk_old, edge **tested_b, int n_test
 	edge *b;
 
 
-	For(k,tree->n_l) {
+	For(k,tree->mod->n_l) {
 		l_init[k] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 
 		//JSJ: temp fix to l
@@ -395,7 +395,7 @@ int Mov_Backward_Topo_Bl(arbre *tree, m3ldbl lk_old, edge **tested_b, int n_test
 		For(i,2*tree->n_otu-3)
 		{
 			b = tree->t_edges[i]; //JSJ: temp fix to l and  l_old
-			For(k,tree->n_l){
+			For(k,tree->mod->n_l){
 				b->l[k] = b->l_old[k] + (1./step) * (l_init[k][i] - b->l_old[k]);
 			}
 		}
@@ -424,14 +424,14 @@ int Mov_Backward_Topo_Bl(arbre *tree, m3ldbl lk_old, edge **tested_b, int n_test
 		For(i,2*tree->n_otu-3)
 		{
 			b = tree->t_edges[i];
-			For(k,tree->n_l) b->l[k] = b->l_old[k]; //JSJ: Temporary fix
+			For(k,tree->mod->n_l) b->l[k] = b->l_old[k]; //JSJ: Temporary fix
 		}
 
 		tree->both_sides = 0;
 		Lk(tree);
 	}
 
-	For(k,tree->n_l)Free(l_init[k]);
+	For(k,tree->mod->n_l)Free(l_init[k]);
 
 	tree->n_swap = 0;
 	For(i,2*tree->n_otu-3)
@@ -527,7 +527,7 @@ void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 			/* 	    (Swap(b[i]->left->v[b[i]->l_v2],b[i]->left,b[i]->rght,b[i]->rght->v[b[i]->r_v1],tree)): */
 			/* 	    (Swap(b[i]->left->v[b[i]->l_v2],b[i]->left,b[i]->rght,b[i]->rght->v[b[i]->r_v2],tree)); */
 			//JSJ: Temporary fix
-			For(k,tree->n_l) b[i]->l[k] = b[i]->l_old[k];
+			For(k,tree->mod->n_l) b[i]->l[k] = b[i]->l_old[k];
 		}
 	}
 	else
@@ -540,7 +540,7 @@ void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 					b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 					tree);
 			//JSJ: Temporary Fix
-			For(k,tree->n_l) b[i]->l[k] = b[i]->l_old[k];
+			For(k,tree->mod->n_l) b[i]->l[k] = b[i]->l_old[k];
 		}
 	}
 }
@@ -562,7 +562,7 @@ void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 					tree);
 
 			//JSJ: temp fix to l
-			For(k,tree->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
+			For(k,tree->mod->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
 
 		}
 	}
@@ -577,7 +577,7 @@ void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 					tree);
 			//JSJ: temp fix to l
 
-			For(k,tree->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
+			For(k,tree->mod->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
 		}
 	}
 }
