@@ -169,6 +169,7 @@ void Init_Tips_At_One_Site_AA_Float(char aa, int pos, plkflt *p_lk)
 
 void Init_Tips_At_One_Site_AA_Int(char aa, int pos, short int *p_pars)
 {
+
 	int i;
 
 	For(i,20) p_pars[pos+i] = .0;
@@ -538,7 +539,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 	} // end for gamma
 
 	if(!tree->mod->invar)
-	{ // if there is no +I model option....
+	{
 		log_site_lk = (m3ldbl)log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
 	}
 	else

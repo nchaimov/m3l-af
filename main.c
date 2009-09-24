@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 
 		  switch(io->in_tree)
 		  {
-			case 0 : case 1 : { tree = Dist_And_BioNJ(alldata,mod,io);    break; }
+			case 0 : case 1 : { tree = Dist_And_BioNJ(alldata,mod,io); break; }
 			case 2 : { 	tree = Read_User_Tree(alldata,mod,io); break; }
 		  }
 
@@ -164,6 +164,7 @@ int main(int argc, char **argv)
 		  tree->both_sides  = 1;
 		  tree->n_pattern   = tree->data->crunch_len/tree->mod->stepsize;
 
+		  PhyML_Printf(" . debug: main.c calling Prepare_Tree_For_Lk\n");
 		  Prepare_Tree_For_Lk(tree);
 
 		  if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);

@@ -30,7 +30,6 @@ void Make_Tree_4_Pars(arbre *tree, allseq *alldata, int n_site)
 
   Init_Ui_Tips(tree);
   Init_P_Pars_Tips(tree); /* Must be called after Init_Ui_Tips is called */
-
   Get_Step_Mat(tree);
 }
 
@@ -161,40 +160,55 @@ void Init_Ui_Tips(arbre *tree)
 
   state_v = (short int *)mCalloc(tree->mod->ns,sizeof(short int));
 
-  Fors(curr_site,tree->data->crunch_len,tree->mod->stepsize)
-    {
+  Fors(curr_site, tree->data->crunch_len, tree->mod->stepsize)
+  {
       For(i,tree->n_otu)
-	{
-	  if(tree->mod->datatype == NT)
-	    {
-	      if(tree->noeud[i]->b[0]->rght->tax != 1)
-		{
-		  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-		  Warn_And_Exit("\n");
-		}
+      {
+		  //PhyML_Printf(" . debug: For node i = %d\n", i);
+		  //PhyML_Printf(" . debug: this should work:\n");
+		  //PhyML_Printf(" . debug: node[%d]->b[0] = %d\n",i, tree->noeud[i]->b[0]);
+		  //PhyML_Printf(" . debug: but this should fail:\n");
+		  //PhyML_Printf(" . debug: node[%d]->b[0]->l_r = %d\n",i, tree->noeud[i]->b[0]->l_r);
+		  //PhyML_Printf(" . debug: node[%d]->b[0]->r_l = %d\n",i, tree->noeud[i]->b[0]->r_l);
 
-	      Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site],0,state_v);
-	      tree->noeud[i]->b[0]->ui_r[curr_site] = 0;
-	      For(j,tree->mod->ns) tree->noeud[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * pow(2,j));
-	    }
-	  else
-	    {
-	      Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site],0,state_v);
-	      tree->noeud[i]->b[0]->ui_r[curr_site] = 0;
-	      For(j,tree->mod->ns) tree->noeud[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * pow(2,j));
-	    }
-	}
-    }
+    	  if(tree->mod->datatype == NT)
+		  {
+    		  if(tree->noeud[i]->b[0]->rght->tax != 1)
+    		  {
+    			  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+    			  Warn_And_Exit("\n");
+    		  }
+    		  Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site],0,state_v);
 
+    		  tree->noeud[i]->b[0]->ui_r[curr_site] = 0;
+    		  For(j,tree->mod->ns){
+    			  tree->noeud[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * pow(2,j));
+    		  }
+		  }
+    	  else
+    	  {
+    		  Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site],0,state_v);
+
+    		  //
+    		  // VHS: debugging remark: At this point, the b vectors are not correctly created?
+    		  //
+    		  tree->noeud[i]->b[0]->ui_r[curr_site] = 0;
+    		  For(j,tree->mod->ns) tree->noeud[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * pow(2,j));
+
+    	  }
+      }
+  }
+
+  //PhyML_Printf(" . debug: in Init_Ui_Tips, line 206\n");
 
   For(br,2*tree->n_otu-3)
-    {
+  {
       For(curr_site,tree->data->crunch_len)
-	{
-	  tree->t_edges[br]->pars_r[curr_site] = 0;
-	  tree->t_edges[br]->pars_l[curr_site] = 0;
-	}
-    }
+      {
+    	  tree->t_edges[br]->pars_r[curr_site] = 0;
+    	  tree->t_edges[br]->pars_l[curr_site] = 0;
+      }
+  }
 
 
   Free(state_v);

@@ -2220,7 +2220,12 @@ void Init_Model(allseq *data, model *mod)
   m3ldbl sum,aux;
   int result;
   double *dr, *di, *space;
-  mod->bl_props = (m3ldbl *)mCalloc(mod->n_l,sizeof(m3ldbl));
+
+  if (!mod->bl_props) // Has mod->bl_props been made?
+  {	mod->bl_props			= (m3ldbl *)mCalloc(mod->n_l,sizeof(m3ldbl));
+  }
+
+  Normalize_Props(mod);
 
   if(data)
   {
@@ -2228,13 +2233,13 @@ void Init_Model(allseq *data, model *mod)
   }
 
   if(!mod->invar)
-    {
+  {
       For(i,data->crunch_len) data->invar[i] = 0;
-    }
+  }
   else
-    {
+  {
 /*       if(mod->s_opt->opt_pinvar) mod->pinvar = data->obs_pinvar; */
-    }
+  }
 
 
   ns = mod->ns;
@@ -2244,45 +2249,45 @@ void Init_Model(allseq *data, model *mod)
   space   = (double *)mCalloc(2*ns,sizeof(double));
 
   For(i,ns)
-    {
+  {
       mod->pi[i] = data->b_frq[i];
       mod->pi_unscaled[i] = mod->pi[i] * 100.;
-    }
+  }
 
 
   if(mod->datatype == NT)
-    {
+  {
       /* Set the substitution parameters to their default values
 	 when they are not fixed by the user */
-      if(mod->s_opt->opt_kappa)
-	{
-	  mod->kappa  = 4.0;
-	  mod->lambda = 1.0;
-	}
+	  if(mod->s_opt->opt_kappa)
+	  {
+		  mod->kappa  = 4.0;
+		  mod->lambda = 1.0;
+	  }
       if(mod->s_opt->opt_rr)
-	{
-	  int i;
+      {
+    	  int i;
 
-	  For(i,6)
-	    {
-	      mod->rr[i]     = 1.0;
-	      mod->rr_val[i] = 1.0;
-	    }
-	}
-    }
+    	  For(i,6)
+    	  {
+    		  mod->rr[i]     = 1.0;
+    		  mod->rr_val[i] = 1.0;
+    	  }
+      }
+  }
 
   if(mod->s_opt->opt_alpha)
-    {
+  {
       mod->alpha = 1.0;
-    }
+  }
   if(mod->s_opt->opt_pinvar)
-    {
+  {
       mod->alpha = 0.2;
-    }
+  }
 
 
   if(mod->datatype == NT) /* Nucleotides */
-    {
+  {
       /* init for nucleotides */
       mod->update_eigen = 1;
       mod->lambda       = 1.;

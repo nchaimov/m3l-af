@@ -1195,7 +1195,6 @@ void Reset_Model_Parameters(model *mod);
 void Print_Banner_Small(FILE *fp);
 void JF(arbre *tree);
 arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io);
-void Fix_Tree_From_IO(arbre *tree, option *io);
 void Add_BioNJ_Branch_Lengths(arbre *tree, allseq *alldata, model *mod, option *io);
 arbre *Read_User_Tree(allseq *alldata, model *mod, option *io);
 void Print_Time_Info(time_t t_beg, time_t t_end);
@@ -1227,8 +1226,7 @@ m3ldbl Rnorm(m3ldbl mean, m3ldbl sd);
 m3ldbl *Rnorm_Multid(m3ldbl *mu, m3ldbl *cov, int dim);
 m3ldbl *Matrix_Mult(m3ldbl *A, m3ldbl *B, int nra, int nca, int nrb, int ncb);
 m3ldbl *Matrix_Transpose(m3ldbl *A, int dim);
-void Normalize_Props(arbre *tree);
-void Normalize_Props_IO(option *io);
+void Normalize_Props(model *mod);
 void Update_Default_Props(option *io);
 void Print_Tree_Screen(arbre *tree);
 

@@ -32,9 +32,10 @@ void Read_Command_Line(option *io, int argc, char **argv)
 	int open_ps_file;
 	int use_gamma;
 	int writemode;
-	int fixed_props, proportions;
-	fixed_props = 0;
-	proportions = 0;
+	int fixed_props, proportions, nbl;
+	fixed_props = 0; // use fixed BL proportions?
+	proportions = 0; // how many BL proportions did the user specify? 0 = no specs given at CLI
+	nbl = 0;		 // how many BL categories did the user specify? 0 = no specs given at CLI
 
 	struct option longopts[] =
 	{
@@ -911,24 +912,15 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			break;
 		}
 
-
-
-
-
-
-
-
-
-
 		/**
 		* The next three cases are for obtaining information about the mixed branch
 		* length model.
 		*/
-		case 'w': case 49: //JSJ: proportions "blprops"
+		case 'w': case 49: //JSJ: proportions "--blprops"
 		{
-			proportions = 0; // use this as the counter for the numbr of props read in.
-			// doubles to let one know if any props have been read in...
 			io->user_props = 1;
+
+			// 1. Sanity check:
 			if(optarg[0] != '['){
 				char choix;
 				PhyML_Printf ("\n. The proportions must be in the form [NUM1,NUM2,...,NUMN] with no spaces and surrounded by '[' and ']'.");
@@ -936,49 +928,99 @@ void Read_Command_Line(option *io, int argc, char **argv)
 				if(!scanf("%c",&choix)) Exit("\n");
 				Exit("\n");
 			}
-			int i,j = 0;
+
+			// 2. determine how many BL categories are implied
+			// (Although its tempting to just lookup io->mod->n_l, that parameter
+			// is not guaranteed to have been parsed from the CLI yet).
+			proportions = 0; // use this as the counter for the numbr of props read in.
+			int i = 0;
+			for(i=1; i < strlen(optarg); i++)
+			{
+				if (optarg[i] == ',')
+				{
+					proportions++;
+				}
+				if (optarg[i] == ']')
+				{
+					proportions++;
+					break;
+				}
+			}
+
+			// 2b. If the number of BL proportions != the specified number of branch length
+			// categories, then something is wrong.
+			// Sanity check:
+			if (nbl > 0)
+			{
+				if (proportions != nbl)
+				{
+					PhyML_Printf("\n. You specified %d branch length proportions using --blprops, but you also specified %d branch length categories using --blclasses.  Please ensure these values are equal!\n", proportions, nbl);
+					PhyML_Printf("\n. Type any key to exit.\n");
+					Exit("\n");
+				}
+			}
+
+			// 3. allocate memory for 'proportions' number of BL sets
+			io->mod->bl_props = (m3ldbl *)mCalloc(proportions, sizeof(m3ldbl));
+
+			// 4. finally, parse the BL proportions as floating-point values...
+			proportions = 0; // reset counter
+			i = 0;			 // reset counter
+			int j = 0;
 			char aprop[100];
-			for(i=1; i < strlen(optarg); i++){
-				if(optarg[i] != ',' && optarg[i] != ']'){
+			for(i=1; i < strlen(optarg); i++)
+			{
+				if(optarg[i] != ',' && optarg[i] != ']')
+				{
 					aprop[j] = optarg[i];
 					j++;
-				}else{
+				}
+				else
+				{
 					aprop[j+1] = '\0'; // end the string
-					j = 0; //start j over
+					j = 0; //reset j
 					io->mod->bl_props[proportions] = atof(aprop);
-					proportions++; //increment the props by one
+					proportions++;
 				}
 			}
 			break;
 		}
-		case 'z': case 50: //JSJ: fixed proportions "fixblprops"
+		case 'z': case 50: //fixed BL proportions "--fixblprops"
 		{
-			fixed_props = 1; //set the flag to let other functions know that this has been set
-			io->fixed_props = 1;
+			io->fixed_props = 1; // yes, fix the proportions
 			io->mod->s_opt->opt_props = io->fixed_props;
 			break;
 		}
-		case 'l': case 51: //JSJ: number branch length categories "blclasses"
+		case 'l': case 51: //number of BL categories "--blclasses"
 		{
 			io->mod->n_l = atoi(optarg);
 			if(io->mod->n_l > 1 && io->user_topo == 0){
 				io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
 			}
-			if(fixed_props == 0 && io->mod->n_l > 1){ //if the fprops option hasn't been flagged, and more than one catg, default to optimize
-				io->fixed_props = 0;
-				io->mod->s_opt->opt_props = io->fixed_props;
+			if(io->fixed_props == 0 && io->mod->n_l > 1){
+				io->fixed_props = 1;
+				io->mod->s_opt->opt_props = 1; // yes, optimize proportions
 			}
-			if(io->mod->n_l < 1 || io->mod->n_l > MAX_BL_SET){
-				PhyML_Printf("\n. The number of branch length categories (--nclasses or -l) must be at least 1 and no more than %i",MAX_BL_SET);
+			if(io->mod->n_l < 1){
+				PhyML_Printf("\n. The number of branch length categories (--nclasses or -l) must be at least 1.");
 				PhyML_Printf("\n. Type any key to exit.\n");
 				Exit("\n");
 			}
-			if(io->mod->n_l > 1){
-				io->mod->s_opt->opt_five_branch = 0;
-				if(proportions == 0){
-					Update_Default_Props(io);
+			io->mod->s_opt->opt_five_branch = 0;
+
+			nbl = io->mod->n_l;
+
+			// Sanity check:
+			if (proportions > 0)
+			{
+				if (proportions != nbl)
+				{
+					PhyML_Printf("\n. You specified %d branch length proportions using --blprops, but you also specified %d branch length categories using --blclasses.  Please ensure these values are equal!\n", proportions, nbl);
+					PhyML_Printf("\n. Type any key to exit.\n");
+					Exit("\n");
 				}
 			}
+
 			break;
 		}
 		case 52: //JSJ: iters_per_stage

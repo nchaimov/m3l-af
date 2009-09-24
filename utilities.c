@@ -830,19 +830,31 @@ void Init_Tree(arbre *tree, int n_otu)
 }
 
 /*********************************************************/
-void Normalize_Props(arbre *tree){
+// Ensure that branch length proportions sum to 1.0
+void Normalize_Props(model *mod){
 	int i;
-	m3ldbl sum = 0.;
-	For(i,tree->mod->n_l)sum           += tree->mod->bl_props[i]; //get the sum of props to normalize
-	For(i,tree->mod->n_l)tree->mod->bl_props[i] = tree->mod->bl_props[i] / sum; //normalize proportions to correct for float round error
+	m3ldbl sum = 0.0;
+
+	For(i,mod->n_l)
+	{
+		sum += mod->bl_props[i];
+	}
+
+	if (sum == 0.0) // In this rare case, all the proportions are zero (why?), so we set all the BL props to be equal
+	{
+		For(i, mod->n_l)
+		{
+			mod->bl_props[i] = 1.0 / mod->n_l;
+			sum += mod->bl_props[i];
+		}
+	}
+
+	For(i,mod->n_l)
+	{
+		mod->bl_props[i] = mod->bl_props[i] / sum;
+	}
 }
 
-void Normalize_Props_IO(option *io){
-	int i;
-	m3ldbl sum = 0.;
-	For(i,io->mod->n_l)sum           += io->mod->bl_props[i]; //get the sum of props to normalize
-	For(i,io->mod->n_l)io->mod->bl_props[i] = io->mod->bl_props[i] / sum; //normalize proportions to correct for float round error
-}
 
 /*********************************************************/
 
@@ -864,7 +876,6 @@ void Make_New_Edge_Label(edge *b)
 }
 
 /*********************************************************/
-//JSJ: Just modified so that it also takes the n_l as an argument
 edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 {
 	edge *b;
@@ -1120,7 +1131,6 @@ void Init_NNI(nni *a_nni, int n_l)
 //}
 
 /*********************************************************/
-//JSJ: use this function if the number of bl sets is known
 node *Make_Node_Light(int num, int n_l)
 {
 	node *n;
@@ -2053,27 +2063,48 @@ void Connect_One_Edge_To_Two_Nodes(node *a, node *d, edge *b, arbre *tree)
 	}
 
 
+	//PhyML_Printf(" . debug: a->b[%d] = b\n", dir_a_d);
 	a->b[dir_a_d] = b;
+	//PhyML_Printf(" . debug: b->num        = %d\n", tree->num_curr_branch_available);
 	b->num        = tree->num_curr_branch_available;
+	//PhyML_Printf(" . debug: b->left = %d\n", a);
 	b->left       = a;
+	//PhyML_Printf(" . debug: b->rght = %d\n", d);
 	b->rght       = d;
-	if(a->tax) {b->rght = a; b->left = d;} /* root */
-	/* a tip is necessary on the right hand side of the edge */
+	if(a->tax) {
+		//PhyML_Printf(" . debug: b->rght = %d\n", a);
+		b->rght = a;
+		//PhyML_Printf(" . debug: b->left = %d\n", d);
+		b->left = d;
+	} /* root */
 
+	/* a tip is necessary on the right hand side of the edge */
 	(b->left == a)?
 		(Make_Edge_Dirs(b,a,d)):
 		(Make_Edge_Dirs(b,d,a));
 
-	int n_l = b->n_l;
+//	//PhyML_Printf(" . debug: b->n_l = %d\n", b->n_l);
+//	int n_l = b->n_l;
+//
+//	i = 0;
+//	For(i,n_l){
+//		//PhyML_Printf(" . debug: b->l[%d] = a->l[%d]\n",i, i*n_l + b->l_r);
+//		b->l[i]                    				= a->l[i*n_l + b->l_r];
+//		if(a->tax){
+//			//PhyML_Printf(" . debug: a->l[%d] = a->l[%d]\n",i, i*n_l + b->r_l);
+//			b->l[i]         				= a->l[i*n_l + b->r_l];
+//		}
+//		if(b->l[i] < BL_MIN)  b->l[i] 			= BL_MIN;
+//		else if(b->l[i] > BL_MAX) b->l[i] 		= BL_MAX;
+//		b->l_old[i]                				= b->l[i];
+//		//PhyML_Printf(" . Connecting node %d to node %d with an edge of length %f \n",a->num, d->num, b->l[i]);
+//	}
+		  b->l[0]                    = a->l[b->l_r];
+		  if(a->tax) b->l[0]         = a->l[b->r_l];
+		  if(b->l[0] < BL_MIN)  b->l[0] = BL_MIN;
+		  else if(b->l[0] > BL_MAX) b->l[0] = BL_MAX;
+		  b->l_old[0]                = b->l[0];
 
-	For(i,b->n_l){ //JSJ: modified to add multiple lengths
-		b->l[i]                    				= a->l[i*n_l + b->l_r];
-		if(a->tax) b->l[i]         				= a->l[i*n_l + b->r_l];
-		if(b->l[i] < BL_MIN)  b->l[i] 			= BL_MIN;
-		else if(b->l[i] > BL_MAX) b->l[i] 		= BL_MAX;
-		b->l_old[i]                				= b->l[i];
-		//printf("JSJ: Connecting node %s to node %s with an edge of length %f \n",a->name, d->name, b->l[i]);
-	}
 }
 
 /*********************************************************/
@@ -5145,7 +5176,6 @@ model *Make_Model_Basic()
 	mod->modelname          = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 	mod->custom_mod_string  = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
 	mod->user_b_freq        = (m3ldbl *)mCalloc(T_MAX_OPTION,sizeof(m3ldbl));
-	mod->bl_props			= (m3ldbl *)mCalloc(MAX_BL_SET,sizeof(m3ldbl));
 	mod->rr                 = (m3ldbl *)mCalloc(6,sizeof(m3ldbl));
 	mod->rr_val             = (m3ldbl *)mCalloc(6,sizeof(m3ldbl));
 	mod->rr_num             = (int *)mCalloc(6,sizeof(int *));
@@ -5176,6 +5206,10 @@ void Make_Model_Complete(model *mod)
 		mod->rr_branch   = (m3ldbl *)mCalloc(mod->n_rr_branch,sizeof(m3ldbl));
 		mod->p_rr_branch = (m3ldbl *)mCalloc(mod->n_rr_branch,sizeof(m3ldbl));
 	}
+
+	if (!mod->bl_props)
+	{	mod->bl_props			= (m3ldbl *)mCalloc(mod->n_l,sizeof(m3ldbl));
+	}
 }
 
 /*********************************************************/
@@ -5190,17 +5224,22 @@ void Copy_Dist(m3ldbl **cpy, m3ldbl **orig, int n)
 
 model *Copy_Model(model *ori)
 {
+	// 1. Create the new model
 	model *cpy;
-
 	cpy = Make_Model_Basic();
 
+	// 2. Copy the mod->s_opt structure
 	Copy_Optimiz(ori->s_opt,cpy->s_opt);
 
+	// 3. Copy some random values that are necessary for Make_Model_Complete
 	cpy->ns      = ori->ns;
 	cpy->n_catg  = ori->n_catg;
+	cpy->n_l	 = ori->n_l;
 
+	// 4. Finish creating the new model: allocate space for arrays
 	Make_Model_Complete(cpy);
 
+	// 5. Copy everything else
 	Record_Model(ori,cpy);
 
 #ifdef M4
@@ -5211,7 +5250,7 @@ model *Copy_Model(model *ori)
 }
 
 /*********************************************************/
-
+// POSTCONDITION: 'ori' will be a copy of 'cpy'
 void Record_Model(model *ori, model *cpy)
 {
 	int i;
@@ -5259,6 +5298,11 @@ void Record_Model(model *ori, model *cpy)
 		cpy->gamma_rr[i]      = ori->gamma_rr[i];
 	}
 
+	For(i, cpy->n_l)
+	{
+		cpy->bl_props[i] = ori->bl_props[i];
+	}
+
 #ifndef PHYML
 	cpy->use_m4mod = ori->use_m4mod;
 #endif
@@ -5299,20 +5343,7 @@ option *Make_Input()
 }
 
 /*********************************************************/
-/*
- * JSJ: takes the number of branch lengths per set from io
- * 	and reallocates memory to the props, and resets the default
- * 	value of proportions (equal props).
- *
- */
-void Update_Default_Props(option *io){
-	int n_l = io->mod->n_l;
-	int i;
-	For(i,n_l){
-		io->mod->bl_props[i] = 1.0/n_l;
-	}
-	Normalize_Props_IO(io);
-}
+
 
 void Set_Defaults_Input(option* io)
 {
@@ -5323,9 +5354,9 @@ void Set_Defaults_Input(option* io)
 	io->fp_out_boot_tree           = NULL;
 	io->fp_out_boot_stats          = NULL;
 	io->fp_out_stats               = NULL;
-	io->fixed_props                = 1; //JSJ: don't optimize props on single branch length
-	io->user_props				   = 0; //JSJ: assume user won't supply proportions...
-	io->user_topo				   = 0; //JSJ: assume user won't supply search algo
+	io->fixed_props                = 0;
+	io->user_props				   = 0;
+	io->user_topo				   = 0;
 	io->acc_ratio				   = 0.3;
 	io->temp_start				   = 1.0;
 	io->temp_end                   = 0.000001;
@@ -5411,8 +5442,8 @@ void Set_Defaults_Model(model *mod)
 	mod->n_rr_branch             = 0;
 	mod->rr_branch_alpha         = 0.1;
 	mod->gamma_median            = 0;
-	mod->n_l 				   = 1; //JSJ: initialize to 1 branch length set
-	mod->bl_props[0]		   = 1.0; //JSJ: initialize to all sites falling under the one set
+	mod->n_l 				   = 1;
+	//mod->bl_props[0]		   = 1.0; //JSJ: initialize to all sites falling under the one set
 }
 
 /*********************************************************/
@@ -5444,7 +5475,7 @@ void Set_Defaults_Optimiz(optimiz *s_opt)
 	s_opt->opt_alpha            = 1;
 	s_opt->opt_kappa            = 1;
 	s_opt->opt_bl               = 1;
-	s_opt->opt_props			= 0; //JSJ: defaults to 0 because optimizing 1 proportion (default) makes no sense...
+	s_opt->opt_props			= 1; //JSJ: defaults to 0 because optimizing 1 proportion (default) makes no sense...
 	s_opt->opt_lambda           = 0;
 	s_opt->opt_pinvar           = 0;
 	s_opt->opt_num_param        = 0;
@@ -6513,15 +6544,10 @@ void Hide_Ambiguities(allseq *data)
 }
 
 /*********************************************************/
-
+// This method copies the topology, nodes, and edges, but DOES NOT copy tree->mod!
 void Copy_Tree(arbre *ori, arbre *cpy)
 {
 	int i,j;
-	cpy->mod->n_l = ori->mod->n_l;
-
-	For(i,ori->mod->n_l){
-		cpy->mod->bl_props[i] = ori->mod->bl_props[i]; // props are branch-length proportions
-	}
 
 	For(i,2*ori->n_otu-2)
 	{
@@ -7001,8 +7027,7 @@ void Make_List_Of_Reachable_Tips(arbre *tree)
 	{
 		tree->noeud[i]->list_of_reachable_tips = (node ***)mCalloc(3,sizeof(node **));
 		tree->noeud[i]->n_of_reachable_tips    = (int *)mCalloc(3,sizeof(int));
-		For(j,3)
-		tree->noeud[i]->list_of_reachable_tips[j] = (node **)mCalloc(tree->n_otu,sizeof(node *));
+		For(j,3) tree->noeud[i]->list_of_reachable_tips[j] = (node **)mCalloc(tree->n_otu,sizeof(node *));
 	}
 }
 
@@ -7028,9 +7053,10 @@ void Get_List_Of_Reachable_Tips(arbre *tree)
 	Get_List_Of_Reachable_Tips_Post(tree->noeud[0],
 			tree->noeud[0]->v[0],
 			tree);
-	Get_List_Of_Reachable_Tips_Pre(tree->noeud[0],
-			tree->noeud[0]->v[0],
-			tree);
+
+	//Get_List_Of_Reachable_Tips_Pre(tree->noeud[0],tree->noeud[0]->v[0],tree);
+
+	PhyML_Printf(" . debug: leaving Get_List_Of_Reachable_Tips\n");
 }
 
 /*********************************************************/
@@ -7084,10 +7110,14 @@ void Get_List_Of_Reachable_Tips_Post(node *a, node *d, arbre *tree)
 
 void Get_List_Of_Reachable_Tips_Pre(node *a, node *d, arbre *tree)
 {
+	PhyML_Printf(" . debug: in Get_List_Of_Reachable_Tips_Pre, a->num = %d, d->num=%d\n", a->num, d->num);
+
 	int i,j,k,cpt;
 
 	For(i,3)
 	{
+		PhyML_Printf(" . debug: in Get_List_Of_Reachable_Tips_Pre line 7103, i = %d\n", i);
+		//PhyML_Printf(" . debug: in Get_List_Of_Reachable_Tips_Pre, i = %d, d->v[i]->num = %d\n", i, d->v[i]->num);
 		if(d->v[i] == a)
 		{
 			if(a->tax)
@@ -7116,12 +7146,18 @@ void Get_List_Of_Reachable_Tips_Pre(node *a, node *d, arbre *tree)
 		}
 	}
 
-	if(d->tax) return;
+	if(d->tax)
+	{
+		return;
+	}
 	else
 	{
 		For(i,3)
 		if(d->v[i] != a)
+		{
 			Get_List_Of_Reachable_Tips_Pre(d,d->v[i],tree);
+		}
+
 
 	}
 }
@@ -7196,6 +7232,7 @@ void Fill_Dir_Table(arbre *tree)
 {
 	int i,j,k,l;
 	int found;
+
 
 	Get_List_Of_Reachable_Tips(tree);
 
@@ -7304,7 +7341,7 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 						prob[k*dimd + l*dimaa + i*dima + j] 				+=
 							tree->mod->gamma_r_proba[k]      				*
 							tree->mod->pi[i]                 				*
-							tree->mod->bl_props[l]				 					*
+							tree->mod->bl_props[l]				 			*
 							b->Pij_rr[k*dimd + l*dimaa + i*dima + j]    	*
 							b->p_lk_left[site*dimc + k*dimb + l*dima + i] 	*
 							v_rght;
@@ -9596,8 +9633,6 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 {
 	arbre *tree;
 	matrix *mat;
-//	int i;
-
 
 	if(!io->quiet) PhyML_Printf("\n. Computing pairwise distances...\n");
 
@@ -9616,40 +9651,6 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 }
 
 /*********************************************************/
-
-void Fix_Tree_From_IO(arbre *tree, option *io){
-
-	int i,j,k;
-	int num_node = 2*tree->n_otu-2; //node
-	int num_edge = 2*tree->n_otu-3; //edge
-	//	int num_path = 2*tree->n_otu; //path
-
-
-	for(i = 0; i < io->mod->n_l; i++){
-		tree->mod->bl_props[i] = io->mod->bl_props[i];
-
-		For(j,num_node){
-			For(k,3){
-				tree->noeud[j]->l[i*io->mod->n_l+k] = tree->noeud[j]->l[io->mod->n_l+k];
-			}
-		}
-
-		For(j,num_edge){
-			tree->t_edges[j]->l[i] = tree->t_edges[j]->l[0];
-			tree->t_edges[j]->l_old[i] = tree->t_edges[j]->l_old[0];
-			tree->t_edges[j]->best_l[i] = tree->t_edges[j]->best_l[0];
-			tree->t_edges[j]->n_l = io->mod->n_l;
-			tree->t_edges[j]->has_zero_br_len[i] = tree->t_edges[j]->has_zero_br_len[0];
-		}
-	}
-	// VHS: I don't think this is necessary anymore, because tree->mod is copied from
-	// io->mod; the BL props are previously normalized on io->mod when we call the method
-	// Normalize_Props_IO in Get_Input
-	//Normalize_Props(tree);
-}
-
-
-
 void Add_BioNJ_Branch_Lengths(arbre *tree, allseq *alldata, model *mod, option *io)
 {
 	matrix *mat;
@@ -9798,20 +9799,55 @@ char *aLRT_From_String(char *s_tree, allseq *alldata, model *mod, option *io)
 
 void Prepare_Tree_For_Lk(arbre *tree)
 {
+
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk\n");
+
 	Order_Tree_CSeq(tree,tree->data);
-	if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
+
+	if(tree->mod->s_opt->random_input_tree){
+		PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 0\n");
+		Random_Tree(tree);
+	}
+
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 1 \n");
+
 	Fill_Dir_Table(tree);
+
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 2\n");
+
 	Update_Dirs(tree);
+
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 3\n");
+
 	Make_Tree_4_Pars(tree,tree->data,tree->data->init_len);
+
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 4\n");
+
 	Make_Tree_4_Lk(tree,tree->data,tree->data->init_len);
+
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 5\n");
+
 	tree->triplet_struct = Make_Triplet_Struct(tree->mod);
+
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 6\n");
+
 	Br_Len_Not_Involving_Invar(tree);
+
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 7\n");
+
 	Make_Spr_List(tree);
+
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 8\n");
+
 	Make_Best_Spr(tree);
 
 #ifdef COMPRESS_SUBALIGNMENTS
+	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 9\n");
+
 	Make_All_Nodes_Red(tree);
 #endif
+
+	PhyML_Printf(" . debug: leaving Prepare_Tree_For_Lk\n");
 
 }
 
@@ -9965,7 +10001,6 @@ void Dist_To_Root_Pre(node *a, node *d, edge *b, arbre *tree)
 }
 
 /*********************************************************/
-//JSJ: compilation fix, returns weighted averaage distance to root
 void Dist_To_Root(node *n_root, arbre *tree)
 {
 	int k;

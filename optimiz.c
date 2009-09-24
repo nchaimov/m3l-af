@@ -487,7 +487,6 @@ m3ldbl RRparam_GTR_Golden(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 //}
 
 /*********************************************************/
-//JSJ: fixed so it sends the default array of branch lengths
 m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 {
 	int i;
@@ -505,7 +504,15 @@ m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 	For(i,tree->mod->n_l){
 		max = b_fcus->l[i] * 10.0;
 		min = b_fcus->l[i] * 0.1;
-		result = Br_Len_Brent_Iter(max,b_fcus->l[i],min,tree->mod->s_opt->min_diff_lk_local,b_fcus,tree,1000,0,i);
+		result = Br_Len_Brent_Iter(max,
+				b_fcus->l[i],
+				min,
+				tree->mod->s_opt->min_diff_lk_local,
+				b_fcus,
+				tree,
+				1000,
+				0,
+				i);
 	}
 
 	return result;
@@ -630,7 +637,6 @@ m3ldbl Br_Len_Brent_Iter(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 }
 
 /*********************************************************/
-//JSJ: lots of temp fixes in below function to l
 m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 		edge *b_fcus, arbre *tree, int n_iter_max, int quickdirty)
 {

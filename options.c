@@ -382,7 +382,6 @@ option *Get_Input(int argc, char **argv)
 	default:
 		Read_Command_Line(io,argc,argv);
 	}
-	Normalize_Props_IO(io);
 	return io;
 }
 

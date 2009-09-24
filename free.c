@@ -363,6 +363,8 @@ void Free_Model(model *mod)
 
   Free(mod->Pij_rr);
 
+  Free(mod->bl_props);
+
   if(mod->n_rr_branch)
     {
       Free(mod->rr_branch);

@@ -283,39 +283,34 @@ void Launch_Interface_MBL_Model(option *io)
 		PhyML_Printf("\n\n");
 
 
-		PhyML_Printf("Number of Branch Length Sets between 1 and %i > ",MAX_BL_SET);
+		PhyML_Printf("Number of Branch Length Sets > ");
 		n_branches = (char *)mCalloc(10000,sizeof(char));
 		Getstring_Stdin(n_branches);
 		n_trial = 0;
-		while((!atoi(n_branches)) || (atoi(n_branches) < 0)|| (atoi(n_branches) > MAX_BL_SET))
+		while((!atoi(n_branches)) || (atoi(n_branches) < 0))
 		{
-			if(++n_trial > 10) Exit("\n. Err : the number of branch length sets must be a positive integer and less than the maximum value");
-			PhyML_Printf("\n. The number of branch length sets must be a positive integer less than %i",MAX_BL_SET);
-			PhyML_Printf("\n. Enter a new value between 1 and %i > ",MAX_BL_SET);
+			if(++n_trial > 10) Exit("\n. Err : the number of branch length sets must be a positive integer.");
+			PhyML_Printf("\n. The number of branch length sets must be a positive integer.");
+			PhyML_Printf("\n. Enter a new value > ");
 			Getstring_Stdin(n_branches);
 		}
-		int tmp = io->mod->n_l;
 		io->mod->n_l = atoi(n_branches);
-		//if(io->mod->n_l != tmp)
-		//{
-			Update_Default_Props(io);
-			if(io->mod->n_l == 1)
-			{   //if one branch length category, then fix the branch length proportions (i.e. 100% for 0th branch length class)
-				io->fixed_props = 1;
-				io->mod->s_opt->opt_props = io->fixed_props;
-			}
-			else if(tmp == 1)
+		if(io->mod->n_l == 1)
+		{   //if one branch length category, then fix the branch length proportions (i.e. 100% for 0th branch length class)
+			io->fixed_props = 1;
+			io->mod->s_opt->opt_props = io->fixed_props;
+		}
+		else
+		{
+			io->fixed_props = 0;
+			io->mod->s_opt->opt_props = io->fixed_props;
+			io->mod->s_opt->opt_five_branch = 0;
+			//Default to Simulated Thermal Annealing if there is more than 1 branch length category
+			if(io->user_topo == 0)
 			{
-				io->fixed_props = 0;
-				io->mod->s_opt->opt_props = io->fixed_props;
-				io->mod->s_opt->opt_five_branch = 0;
-				//Default to Simulated Thermal Annealing if there is more than 1 branch length category
-				if(io->user_topo == 0)
-				{
-					io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
-				}
+				io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
 			}
-		//}
+		}
 		Free(n_branches);
 		break;
 	}
@@ -360,8 +355,6 @@ void Launch_Interface_MBL_Model(option *io)
 			io->mod->bl_props[i] = atof(n_branches);
 			Free(n_branches);
 		}
-		//JSJ: correct for floating point error
-		Normalize_Props_IO(io);
 		io->user_props = 1;
 
 		break;

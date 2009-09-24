@@ -219,6 +219,8 @@ void Get_Neighbor_Proposition(arbre *tree,m3ldbl temp){
 // distance accounts for changes in parameters: alpha, branch length proportions,
 // prob. invar, kappa, lamda, RR, pi, topology, and branch lengths.
 //
+// This method is useful for traversing multi-parametric space.
+//
 m3ldbl Get_distance_between_trees(arbre *last_tree, arbre *tree){
 	return 1.0;
 
@@ -273,15 +275,17 @@ void Step_Brlen_Proportion(arbre *tree){
 		//			if(tree->props[j] > 1.0) tree->props[j] = 1.0;
 		//			else if(tree->props[j] < 0.0) tree->props[j] = 0.0;
 		//		}
-		double alpha[MAX_BL_SET];
+		double *alpha;
+		alpha = (m3ldbl *)mCalloc(tree->mod->n_l, sizeof(m3ldbl));
 		int i;
 		For(i,tree->mod->n_l){
 			alpha[i] = anneal.max_alpha;
 			PhyML_Printf("(annealing.c 201) alpha[%d] = %f", i, alpha[i]);
 		}
 		gsl_ran_dirichlet(anneal.rng,tree->mod->n_l,alpha,tree->mod->bl_props);
-		Normalize_Props(tree);
-		//JSJ: recalculate the likelihood of the tree
+		Normalize_Props(tree->mod);
+
+		Free(alpha);
 	}
 }
 
