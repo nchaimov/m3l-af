@@ -29,7 +29,7 @@ on a simple model of sequence data." (1997) O. Gascuel. Mol Biol Evol.
 void Bionj(matrix *mat)
 {
 
-  int x,y,i,j;
+  int x,y,i;
   m3ldbl vxy,lx,ly,lamda,score;
 
   Clean_Tree_Connections(mat->tree);
@@ -40,8 +40,6 @@ void Bionj(matrix *mat)
 
   while(mat->r > 3)
   {
-	  //PhyML_Printf(" . debug: in Bionj: mat = \n");
-	  //Print_Mat(mat);
 
 	  x = y =  0;
       vxy   = .0;
@@ -57,27 +55,6 @@ void Bionj(matrix *mat)
       Update_Tree(mat,x,y,lx,ly,score);
   }
   Finish(mat);
-
-  //
-  // Here is where I copy branch lengths:
-  //
-//  int n_l = mat->tree->t_edges[0]->n_l;
-//  For(i, n_l)
-//  {
-//	  PhyML_Printf("bionj 76: i = %d\n", i);
-//	  if (i == 0) continue;
-//	  For(j, mat->tree->n_otu)
-//	  {
-//		  mat->tree->noeud[j]->l[i*n_l] = mat->tree->noeud[j]->l[0];
-//		  mat->tree->noeud[j]->l[i*n_l + 1] = mat->tree->noeud[j]->l[1];
-//		  mat->tree->noeud[j]->l[i*n_l + 2] = mat->tree->noeud[j]->l[2];
-//	  }
-//	  For(j, 2*mat->tree->n_otu-3)
-//	  {
-//		  mat->tree->t_edges[j]->l[i] = mat->tree->t_edges[j]->l[0];
-//	  }
-//  }
-
 }
 
 /*********************************************************/
@@ -111,7 +88,6 @@ void Finish(matrix *mat)
   ny = mat->tip_node[y];
   nz = mat->tip_node[z];
 
-
   new = mat->tree->noeud[mat->curr_int];
   new->num = mat->curr_int;
   new->v[0] = nx;
@@ -122,30 +98,14 @@ void Finish(matrix *mat)
   ny->v[0] = new;
   nz->v[0] = new;
 
-  //PhyML_Printf(" . debug: connect node %d to new node %d via edge %d\n", nx->num, new->num, mat->tree->num_curr_branch_available);
   Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->t_edges[mat->tree->num_curr_branch_available],mat->tree);
   mat->tree->num_curr_branch_available++;
 
-  //PhyML_Printf(" . debug: connect node %d to new node %d via edge %d\n", ny->num, new->num, mat->tree->num_curr_branch_available);
   Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->t_edges[mat->tree->num_curr_branch_available],mat->tree);
   mat->tree->num_curr_branch_available++;
 
-  //PhyML_Printf(" . debug: connect node %d to new node %d via edge %d\n", nz->num, new->num, mat->tree->num_curr_branch_available);
   Connect_One_Edge_To_Two_Nodes(new,nz,mat->tree->t_edges[mat->tree->num_curr_branch_available],mat->tree);
   mat->tree->num_curr_branch_available++;
-
-
-//  int k;
-//  For(k, nx->b[0]->n_l)
-//  {
-//	  nx->b[0]->l[k] = .5*(dxy-dyz+dxz);
-//	  ny->b[0]->l[k] = .5*(dyz-dxz+dxy);
-//	  nz->b[0]->l[k] = .5*(dxz-dxy+dyz);
-//
-//	  new->b[0]->l[k] = nx->b[0]->l[k];
-//	  new->b[1]->l[k] = ny->b[0]->l[k];
-//	  new->b[2]->l[k] = nz->b[0]->l[k];
-//  }
 
   nx->b[0]->l[0] = .5*(dxy-dyz+dxz);
   ny->b[0]->l[0] = .5*(dyz-dxz+dxy);
@@ -207,15 +167,6 @@ void Update_Tree(matrix *mat, int x, int y, m3ldbl lx, m3ldbl ly, m3ldbl score)
   Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->t_edges[mat->tree->num_curr_branch_available],mat->tree);
   mat->tree->num_curr_branch_available++;
 
-
-//  For(k, n_l)
-//  {
-//	  nx->b[0]->l[k]   = lx;
-//	  ny->b[0]->l[k]   = ly;
-//
-//	  new->b[1]->l[k]  = lx;
-//	  new->b[2]->l[k]  = ly;
-//  }
   nx->b[0]->l[0]   = lx;
   ny->b[0]->l[0]   = ly;
 
@@ -223,15 +174,6 @@ void Update_Tree(matrix *mat, int x, int y, m3ldbl lx, m3ldbl ly, m3ldbl score)
   new->b[2]->l[0]  = ly;
   new->score[0] = score;
 
-
-//  For(k, n_l)
-//  {
-//	  nx->l[k*n_l]      = lx;
-//	  ny->l[k*n_l]      = ly;
-//
-//	  new->l[k*n_l + 1]     = lx;
-//	  new->l[k*n_l + 2]     = ly;
-//  }
   nx->l[0]      = lx;
   ny->l[0]      = ly;
 

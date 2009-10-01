@@ -608,8 +608,11 @@ char *Write_Tree(arbre *tree)
 				(!tree->noeud[tree->n_otu+i]->v[1]) ||
 				(!tree->noeud[tree->n_otu+i]->v[2])) i++;
 
+		//PhyML_Printf(" . debug: calling R_wtree with parent num = %d, child num = %d\n", tree->noeud[tree->n_otu+i]->num, tree->noeud[tree->n_otu+i]->v[0]->num);
 		R_wtree(tree->noeud[tree->n_otu+i],tree->noeud[tree->n_otu+i]->v[0],s,tree);
+		//PhyML_Printf(" . debug: calling R_wtree with parent num = %d, child num = %d\n", tree->noeud[tree->n_otu+i]->num, tree->noeud[tree->n_otu+i]->v[1]->num);
 		R_wtree(tree->noeud[tree->n_otu+i],tree->noeud[tree->n_otu+i]->v[1],s,tree);
+		//PhyML_Printf(" . debug: calling R_wtree with parent num = %d, child num = %d\n", tree->noeud[tree->n_otu+i]->num, tree->noeud[tree->n_otu+i]->v[2]->num);
 		R_wtree(tree->noeud[tree->n_otu+i],tree->noeud[tree->n_otu+i]->v[2],s,tree);
 	}
 	else
@@ -624,12 +627,116 @@ char *Write_Tree(arbre *tree)
 	return s;
 }
 
-/*********************************************************/
+/*
+void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
+{
+  int i,p;
+
+  p = -1;
+  if(fils->tax)
+    {
+      if(OUTPUT_TREE_FORMAT == 0)
+	strcat(s_tree,fils->name);
+      else
+	sprintf(s_tree+(int)strlen(s_tree),"%d",fils->num+1);
+
+      if((fils->b) && (fils->b[0]) && (fils->b[0]->l[0] != -1))
+	{
+	  if(tree->print_labels)
+	    {
+	      if(fils->b[0]->n_labels < 10)
+		For(i,fils->b[0]->n_labels) sprintf(s_tree+(int)strlen(s_tree),"#%s",fils->b[0]->labels[i]);
+	      else
+		sprintf(s_tree+(int)strlen(s_tree),"#%d_labels",fils->b[0]->n_labels);
+	    }
+
+	  strcat(s_tree,":");
+
+	  if(pere != tree->n_root)
+	    sprintf(s_tree+(int)strlen(s_tree),"%.10f",fils->b[0]->l[0]);
+	  else
+	    {
+	      if(tree->n_root->v[0] == fils)
+		{
+		  sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[0]);
+		}
+	      else
+		{
+		  sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[1]);
+		}
+	    }
+	}
+      sprintf(s_tree+(int)strlen(s_tree),",");
+   }
+  else
+    {
+      s_tree[(int)strlen(s_tree)]='(';
+
+      if(tree->n_root)
+	{
+	  For(i,3)
+	    {
+	      if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
+		R_wtree(fils,fils->v[i],s_tree,tree);
+	      else p=i;
+	    }
+	}
+      else
+	{
+	  For(i,3)
+	    {
+	      if(fils->v[i] != pere)
+		R_wtree(fils,fils->v[i],s_tree,tree);
+	      else p=i;
+	    }
+	}
+
+      s_tree[(int)strlen(s_tree)-1]=')';
+      if((fils->b) && (fils->b[0]->l[0] != -1))
+	{
+	  if(tree->print_boot_val)
+	    sprintf(s_tree+(int)strlen(s_tree),"%d",fils->b[p]->bip_score);
+	  else if(tree->print_alrt_val)
+	    sprintf(s_tree+(int)strlen(s_tree),"%.10f",fils->b[p]->ratio_test);
+
+	  if(tree->print_labels)
+	    {
+	      if(fils->b[p]->n_labels < 10)
+		For(i,fils->b[p]->n_labels) sprintf(s_tree+(int)strlen(s_tree),"#%s",fils->b[p]->labels[i]);
+	      else
+		sprintf(s_tree+(int)strlen(s_tree),"#%d_labels",fils->b[p]->n_labels);
+	    }
+
+	  strcat(s_tree,":");
+
+	  if(pere != tree->n_root)
+	    sprintf(s_tree+(int)strlen(s_tree),"%.10f",fils->b[p]->l[0]);
+	  else
+	    {
+	      if(tree->n_root->v[0] == fils)
+		{
+		  sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[0]);
+		}
+	      else
+		{
+		  sprintf(s_tree+(int)strlen(s_tree),"%.10f",tree->n_root->l[1]);
+		}
+	    }
+	}
+      strcat(s_tree,",");
+    }
+}
+*/
+
+
 // VHS: by the way, "pere" means father and "fils" means son.
 // This part of the code was obviously written in French.
+
 void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 {
 	int i,p,j;
+
+	//PhyML_Printf(" . debug: entered R_wtree, s_tree = %s\n", s_tree);
 
 	p = -1;
 	if(fils->tax)
@@ -638,6 +745,18 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			strcat(s_tree,fils->name);
 		else
 			sprintf(s_tree+(int)strlen(s_tree),"%d",fils->num+1);
+
+		/*
+		PhyML_Printf(" fils->num =");
+		PhyML_Printf("%d\n", fils->num);
+		PhyML_Printf(" fils->b =");
+		PhyML_Printf("%d\n", fils->b);
+		PhyML_Printf(" fils->b[0] =");
+		PhyML_Printf("%d\n", fils->b[0]);
+		PhyML_Printf(" fils->b[0]->l[0] =");
+		PhyML_Printf("%f\n", fils->b[0]->l[0]);
+		*/
+
 		if((fils->b) && (fils->b[0]) && (fils->b[0]->l[0] != -1))
 		{
 			if(tree->print_labels)
@@ -649,13 +768,19 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			}
 
 			strcat(s_tree,":");
+			//debug:
+			//PhyML_Printf("%s\n", s_tree);
 
 			if(pere != tree->n_root){
 				if(tree->mod->n_l == 1){
 					sprintf(s_tree+(int)strlen(s_tree),"%.10f",fils->b[0]->l[0]);
+					//debug:
+					//PhyML_Printf("%s\n", s_tree);
 				}else{
 					sprintf(s_tree+(int)strlen(s_tree),"[");
 					For(j,tree->mod->n_l){
+						//debug:
+						//PhyML_Printf("%s\n", s_tree);
 						if(j+1 == tree->mod->n_l){
 							sprintf(s_tree+(int)strlen(s_tree),"%.10f]",fils->b[0]->l[j]);
 						}else{
@@ -793,6 +918,8 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 	}
 }
 
+
+
 /*********************************************************/
 void Init_Tree(arbre *tree, int n_otu)
 {
@@ -879,8 +1006,8 @@ void Make_New_Edge_Label(edge *b)
 edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 {
 	edge *b;
-	int i;
 	b = (edge *)mCalloc(1,sizeof(edge));
+	b->l = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
 	Init_Edge_Light(b,num);
 	b->n_l = n_l;
 	b->l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
@@ -894,16 +1021,23 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 		if(a->tax) {b->rght = a; b->left = d;} /* root */
 		/* a tip is necessary on the right side of the edge */
 
-		(b->left == a)?
-				(Make_Edge_Dirs(b,a,d)):
-					(Make_Edge_Dirs(b,d,a));
-		For(i,n_l){
-			b->l[i]                    = a->l[i*n_l + b->l_r];
-			if(a->tax) b->l[i]         = a->l[i*n_l + b->r_l];
-			if(b->l[i] < BL_MIN)  b->l[i] = BL_MIN;
-			else if(b->l[i] > BL_MAX) b->l[i] = BL_MAX;
-			b->l_old[i]                = b->l[i];
-		}
+		(b->left == a)? (Make_Edge_Dirs(b,a,d)):(Make_Edge_Dirs(b,d,a));
+
+// this is the version sans m3l:
+		  b->l[0]                    = a->l[b->l_r];
+		  if(a->tax) b->l[0]         = a->l[b->r_l];
+		  if(b->l[0] < BL_MIN)  b->l[0] = BL_MIN;
+		  else if(b->l[0] > BL_MAX) b->l[0] = BL_MAX;
+		  b->l_old[0]                = b->l[0];
+
+// VHS:09.27.2009: moving all multiple branch configurations until AFTER the BioNJ algorithm.
+//		For(i,n_l){
+//			b->l[i]                    = a->l[i*n_l + b->l_r];
+//			if(a->tax) b->l[i]         = a->l[i*n_l + b->r_l];
+//			if(b->l[i] < BL_MIN)  b->l[i] = BL_MIN;
+//			else if(b->l[i] > BL_MAX) b->l[i] = BL_MAX;
+//			b->l_old[i]                = b->l[i];
+//		}
 	}
 	else
 	{
@@ -924,7 +1058,11 @@ void Init_Edge_Light(edge *b, int num)
 	b->bip_score            = 0;
 	b->dist_btw_edges       = .0;
 	b->topo_dist_btw_edges  = 0;
-	For(i,b->n_l) b->has_zero_br_len[i] = 0;
+	For(i,b->n_l)
+	{
+		b->l[i]				= -1; // VHS: by default, all branch lengths are -1
+		b->has_zero_br_len[i] = 0;
+	}
 	b->is_p_lk_l_u2d        = 0;
 	b->is_p_lk_r_u2d        = 0;
 	b->n_jumps              = 0;
@@ -1042,7 +1180,7 @@ void Make_Edge_Lk(edge *b, arbre *tree)
 
 	if((!b->left->tax) || (tree->mod->s_opt->greedy))
 	{
-		b->p_lk_left = (plkflt *)mCalloc(tree->data->crunch_len*tree->mod->n_catg*tree->mod->ns,sizeof(plkflt));
+		b->p_lk_left = (plkflt *)mCalloc(tree->data->crunch_len*tree->mod->n_catg*tree->mod->n_l*tree->mod->ns,sizeof(plkflt));
 		b->p_lk_tip_l = NULL;
 	}
 	else if(b->left->tax)
@@ -1053,7 +1191,7 @@ void Make_Edge_Lk(edge *b, arbre *tree)
 
 	if((!b->rght->tax) || (tree->mod->s_opt->greedy))
 	{
-		b->p_lk_rght = (plkflt *)mCalloc(tree->data->crunch_len*tree->mod->n_catg*tree->mod->ns,sizeof(plkflt));
+		b->p_lk_rght = (plkflt *)mCalloc(tree->data->crunch_len*tree->mod->n_catg*tree->mod->n_l*tree->mod->ns,sizeof(plkflt));
 		b->p_lk_tip_r = NULL;
 	}
 	else if(b->rght->tax)
@@ -2052,6 +2190,8 @@ void Connect_Edges_To_Nodes_Recur(node *a, node *d, arbre *tree)
 
 void Connect_One_Edge_To_Two_Nodes(node *a, node *d, edge *b, arbre *tree)
 {
+	//PhyML_Printf(" . debug: in Connect_One_Edge_To_Two_Nodes, a->num=%d, d->num=%d\n", a->num, d->num);
+
 	int i,dir_a_d;
 	dir_a_d = -1;
 	For(i,3) if(a->v[i] == d) {dir_a_d = i; break;}
@@ -2062,19 +2202,13 @@ void Connect_One_Edge_To_Two_Nodes(node *a, node *d, edge *b, arbre *tree)
 		Warn_And_Exit("");
 	}
 
-
-	//PhyML_Printf(" . debug: a->b[%d] = b\n", dir_a_d);
+	//PhyML_Printf(" . debug: a->b[%d]        = %d\n",dir_a_d,b);
 	a->b[dir_a_d] = b;
-	//PhyML_Printf(" . debug: b->num        = %d\n", tree->num_curr_branch_available);
 	b->num        = tree->num_curr_branch_available;
-	//PhyML_Printf(" . debug: b->left = %d\n", a);
 	b->left       = a;
-	//PhyML_Printf(" . debug: b->rght = %d\n", d);
 	b->rght       = d;
 	if(a->tax) {
-		//PhyML_Printf(" . debug: b->rght = %d\n", a);
 		b->rght = a;
-		//PhyML_Printf(" . debug: b->left = %d\n", d);
 		b->left = d;
 	} /* root */
 
@@ -2083,27 +2217,23 @@ void Connect_One_Edge_To_Two_Nodes(node *a, node *d, edge *b, arbre *tree)
 		(Make_Edge_Dirs(b,a,d)):
 		(Make_Edge_Dirs(b,d,a));
 
-//	//PhyML_Printf(" . debug: b->n_l = %d\n", b->n_l);
-//	int n_l = b->n_l;
-//
-//	i = 0;
-//	For(i,n_l){
-//		//PhyML_Printf(" . debug: b->l[%d] = a->l[%d]\n",i, i*n_l + b->l_r);
-//		b->l[i]                    				= a->l[i*n_l + b->l_r];
-//		if(a->tax){
-//			//PhyML_Printf(" . debug: a->l[%d] = a->l[%d]\n",i, i*n_l + b->r_l);
-//			b->l[i]         				= a->l[i*n_l + b->r_l];
-//		}
-//		if(b->l[i] < BL_MIN)  b->l[i] 			= BL_MIN;
-//		else if(b->l[i] > BL_MAX) b->l[i] 		= BL_MAX;
-//		b->l_old[i]                				= b->l[i];
-//		//PhyML_Printf(" . Connecting node %d to node %d with an edge of length %f \n",a->num, d->num, b->l[i]);
-//	}
-		  b->l[0]                    = a->l[b->l_r];
-		  if(a->tax) b->l[0]         = a->l[b->r_l];
-		  if(b->l[0] < BL_MIN)  b->l[0] = BL_MIN;
-		  else if(b->l[0] > BL_MAX) b->l[0] = BL_MAX;
-		  b->l_old[0]                = b->l[0];
+		  b->l[0] = a->l[b->l_r];
+		  if(a->tax)
+		  {
+			  b->l[0]         = a->l[b->r_l];
+		  }
+		  if(b->l[0] < BL_MIN)
+			  {
+				  b->l[0] = BL_MIN;
+			  }
+		  else if(b->l[0] > BL_MAX)
+			  {
+				  b->l[0] = BL_MAX;
+			  }
+		  b->l_old[0] = b->l[0];
+
+		  // debug:
+		  //PhyML_Printf(" . debug: node %d is connected to node %d via edge %d\n", a->num, d->num, b->num);
 
 }
 
@@ -2339,7 +2469,8 @@ void Qksort_Matrix(m3ldbl **A, int col, int ilo, int ihi)
 	Qksort_Matrix(A, col, uhi + 1, ihi);
 }
 
-// VHS: I added this method
+// VHS: I used this method long ago, but let's depricate it now.
+// Use Print_Plk instead!
 void Print_P_Lk(plkflt *p_lk, int site, arbre *tree)
 {
 	int dim1 = tree->mod->n_catg * tree->mod->ns;
@@ -2640,12 +2771,18 @@ arbre *Make_Tree_From_Scratch(int n_otu, allseq *data, int n_l)
 	arbre *tree;
 
 	tree = Make_Tree(n_otu);
+	//PhyML_Printf(". debug: calling Make_All_Tree_Nodes\n");
 	Make_All_Tree_Nodes(tree, n_l);
+	//PhyML_Printf(". debug: calling Make_All_Tree_Edges\n");
 	Make_All_Tree_Edges(tree, n_l);
+
+	//PhyML_Printf(". debug: calling Make_Tree_Path\n");
 	Make_Tree_Path(tree);
+	//PhyML_Printf(". debug: calling Make_List_Of_Reachable_Tips\n");
 	Make_List_Of_Reachable_Tips(tree);
 	if(data)
 	{
+		//PhyML_Printf(". debug: calling Copy_Tax_Names_To_Tip_Labels\n");
 		Copy_Tax_Names_To_Tip_Labels(tree,data);
 		tree->data = data;
 	}
@@ -2731,6 +2868,7 @@ void Make_All_Tree_Nodes(arbre *tree, int n_l)
 
 	For(i,2*tree->n_otu-2)
 	{
+		//PhyML_Printf(". debug: making node %d\n", i);
 		tree->noeud[i] = (node *)Make_Node_Light(i, n_l);
 		if(i < tree->n_otu) tree->noeud[i]->tax = 1;
 		else                tree->noeud[i]->tax = 0;
@@ -2747,7 +2885,10 @@ void Make_All_Tree_Edges(arbre *tree, int n_l)
 	tree->t_edges      = (edge **)mCalloc(2*tree->n_otu-3,sizeof(edge *));
 	/*   tree->t_dead_edges = (edge **)mCalloc(2*tree->n_otu-3,sizeof(edge *)); */
 
-	For(i,2*tree->n_otu-3) tree->t_edges[i] = (edge *)Make_Edge_Light(NULL,NULL,i, n_l);
+	For(i,2*tree->n_otu-3)
+	{
+		tree->t_edges[i] = (edge *)Make_Edge_Light(NULL,NULL,i, n_l);
+	}
 }
 
 
@@ -2963,6 +3104,80 @@ void Print_Mat(matrix *mat)
 		PhyML_Printf("\n");
 	}
 }
+
+/*********************************************************/
+void Print_Pij(double *Pij, model *mod)
+{
+	int i, j, k, l;
+	int dima = mod->ns;
+	int dimaa = dima * dima;
+	int dimd = mod->n_l * dimaa;
+
+	For(i, mod->n_catg)
+	{
+		PhyML_Printf("gamma cat: %d\n", i);
+		For(j, mod->n_l)
+		{
+			PhyML_Printf("BL set: %d\n", j);
+			For(k, mod->ns)
+			{
+				PhyML_Printf("%d [", k);
+				For(l, mod->ns)
+				{
+					PhyML_Printf(" %f ", Pij[i*dimd + j*dimaa + k*dima + l] );
+				}
+				PhyML_Printf("]\n");
+			}
+		}
+	}
+}
+
+/*********************************************************/
+/*
+ * plk is the array of partial likelihoods we'd like to print
+ * tree contains the model and the number of sites
+ * is_tax = 1 if plk corresponds to the side of an edge with a terminal taxon, 0 otherwise
+ */
+void Print_Plk(double *plk, arbre *tree, int is_tax)
+{
+	int dima, dimb, dimc;
+	dima = tree->mod->ns;
+	dimb = dima * tree->mod->n_l;
+	dimc = dimb * tree->mod->n_catg;
+
+	int site, catg, bl, state;
+
+	For(site, tree->n_pattern)
+	{
+		if (is_tax == 0)
+		{
+			For(catg, tree->mod->n_catg)
+			{
+				//PhyML_Printf("==gamma cat: %d\n",catg);
+				For(bl, tree->mod->n_l)
+				{
+					//PhyML_Printf("==BL set: %d\n", bl);
+					//PhyML_Printf("%d  ", site);
+					For(state, tree->mod->ns)
+					{
+						PhyML_Printf("%d %d %d %d %f\n", site, catg, bl, state, plk[site*dimc + catg*dimb + bl*dima + state]);
+						//PhyML_Printf("%d %f ", state, plk[site*dimc + catg*dimb + bl*dima + state]);
+					}
+					//PhyML_Printf("\n");
+				}
+			}
+		}
+		else if (is_tax == 1)
+		{
+			For(state, tree->mod->ns)
+			{
+				//PhyML_Printf("%d %f ", state, plk[site*dima + state]);
+			}
+			//PhyML_Printf("\n");
+		}
+	}
+}
+
 
 /*********************************************************/
 
@@ -7054,9 +7269,7 @@ void Get_List_Of_Reachable_Tips(arbre *tree)
 			tree->noeud[0]->v[0],
 			tree);
 
-	//Get_List_Of_Reachable_Tips_Pre(tree->noeud[0],tree->noeud[0]->v[0],tree);
-
-	PhyML_Printf(" . debug: leaving Get_List_Of_Reachable_Tips\n");
+	//PhyML_Printf(" . debug: leaving Get_List_Of_Reachable_Tips\n");
 }
 
 /*********************************************************/
@@ -7110,13 +7323,13 @@ void Get_List_Of_Reachable_Tips_Post(node *a, node *d, arbre *tree)
 
 void Get_List_Of_Reachable_Tips_Pre(node *a, node *d, arbre *tree)
 {
-	PhyML_Printf(" . debug: in Get_List_Of_Reachable_Tips_Pre, a->num = %d, d->num=%d\n", a->num, d->num);
+	//PhyML_Printf(" . debug: in Get_List_Of_Reachable_Tips_Pre, a->num = %d, d->num=%d\n", a->num, d->num);
 
 	int i,j,k,cpt;
 
 	For(i,3)
 	{
-		PhyML_Printf(" . debug: in Get_List_Of_Reachable_Tips_Pre line 7103, i = %d\n", i);
+		//PhyML_Printf(" . debug: in Get_List_Of_Reachable_Tips_Pre line 7103, i = %d\n", i);
 		//PhyML_Printf(" . debug: in Get_List_Of_Reachable_Tips_Pre, i = %d, d->v[i]->num = %d\n", i, d->v[i]->num);
 		if(d->v[i] == a)
 		{
@@ -9637,13 +9850,59 @@ arbre *Dist_And_BioNJ(allseq *alldata, model *mod, option *io)
 	if(!io->quiet) PhyML_Printf("\n. Computing pairwise distances...\n");
 
 	mat = ML_Dist(alldata,mod);
+
 	Fill_Missing_Dist(mat);
+
 
 	if(!io->quiet) PhyML_Printf("\n. Building BioNJ tree...\n");
 
 	mat->tree = Make_Tree_From_Scratch(alldata->n_otu, alldata, io->mod->n_l);
 
+	//PhyML_Printf(" . returned from Make_Tree_From_Scratch\n");
+
+
+	//PhyML_Printf(" . debug calling Bionj...\n");
 	Bionj(mat);
+	//PhyML_Printf(" . debug: ...returned from Bionj\n");
+
+//	int i, j, k;
+//	PhyML_Printf("\n . debugging edges (line 9754)...\n");
+//	For(i,2*mat->tree->n_otu-3)
+//	{
+//		PhyML_Printf("edge %d\n", i);
+//		PhyML_Printf(" ->num = %d\n", mat->tree->t_edges[i]->num);
+//		PhyML_Printf(" ->left->num = %d, ->rght->num = %d\n", 		mat->tree->t_edges[i]->left->num, mat->tree->t_edges[i]->rght->num);
+//		For(j, io->mod->n_l)
+//		{
+//			PhyML_Printf(" ->l[%d] = %f\n", j,  mat->tree->t_edges[i]->l[j]);
+//		}
+//	}
+//
+//	PhyML_Printf("\n . debugging nodes (line 9754)...\n");
+//	For(i,2*mat->tree->n_otu-2)
+//	{
+//		PhyML_Printf("node %d\n", i);
+//		PhyML_Printf(" ->num = %d\n", mat->tree->noeud[i]->num);
+//		if (!mat->tree->noeud[i]->tax)
+//		{	For(j,3)
+//			{
+//				PhyML_Printf(" ->v[%d]->num = %d\n", j,  mat->tree->noeud[i]->v[j]->num);
+//				PhyML_Printf(" ->b[%d]->num = \n", j, mat->tree->noeud[i]->b[j]->num);
+//				For(k, io->mod->n_l)
+//				{
+//					PhyML_Printf(" l[%d]=%f ",k*io->mod->n_l + j, mat->tree->noeud[i]->l[k*io->mod->n_l + j]);
+//				}
+//				PhyML_Printf("\n");
+//			}
+//		}
+//		else
+//		{
+//				PhyML_Printf(" ->v[0]->num = %d\n", mat->tree->noeud[i]->v[0]->num);
+//
+//		}
+//	}
+
+
 	tree      = mat->tree;
 	tree->mat = mat;
 
@@ -9800,54 +10059,85 @@ char *aLRT_From_String(char *s_tree, allseq *alldata, model *mod, option *io)
 void Prepare_Tree_For_Lk(arbre *tree)
 {
 
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk\n");
-
 	Order_Tree_CSeq(tree,tree->data);
-
 	if(tree->mod->s_opt->random_input_tree){
-		PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 0\n");
 		Random_Tree(tree);
 	}
-
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 1 \n");
-
 	Fill_Dir_Table(tree);
-
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 2\n");
-
 	Update_Dirs(tree);
-
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 3\n");
-
 	Make_Tree_4_Pars(tree,tree->data,tree->data->init_len);
-
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 4\n");
-
 	Make_Tree_4_Lk(tree,tree->data,tree->data->init_len);
-
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 5\n");
-
 	tree->triplet_struct = Make_Triplet_Struct(tree->mod);
-
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 6\n");
-
 	Br_Len_Not_Involving_Invar(tree);
-
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 7\n");
-
 	Make_Spr_List(tree);
-
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 8\n");
-
 	Make_Best_Spr(tree);
 
-#ifdef COMPRESS_SUBALIGNMENTS
-	PhyML_Printf(" . debug: in Prepare_Tree_For_Lk 9\n");
+	/********************************************************/
+	//
+	// VHS: Here is where I copy branch lengths:
+	//
+	  int i, j = 0;
+	  int n_l = tree->mod->n_l;
+	  For(j, 2*tree->n_otu-3) //foreach edge:
+	  {
+		  For(i, n_l)
+		  {
+			  if (i == 0)
+			  {	continue;
+			  }
+			  tree->t_edges[j]->l[i] = tree->t_edges[j]->l[0];
+		  }
+	  }
 
+	  /*
+	   * VHS: The For loop (below) copies branch lengths from node->l[0,1,2] node->l[i] where i > 2.
+	   * Unfortunately, it causes byzantine errors with edge->l[..].
+	   *
+	   * It appears that node->l is unnecessary for the likelihood calculation, and all downstream
+	   * code uses node->b[..]->l[..] to extract branch lengths instead of node->l[..].
+	   *
+	   * I've commented-out this block, and therefore node->l[..] should be considered depricated.
+	   *
+	  j = 0;
+	  For(j, 2*tree->n_otu-2) // foreach node:
+	  {
+		  i = 0;
+		  For(i, n_l)
+		  {
+			  if (i == 0)
+			  {	continue;
+			  }
+
+			  // for debugging:
+			  PhyML_Printf("\n tree->noeud[%d]->b[0]->l = ", j);
+			  PhyML_Printf("%d\n", tree->noeud[j]->b[0]->l);
+
+			  PhyML_Printf(" calling line 10058...\n");
+			  // VHS: The bug is on this line!!!!
+			  tree->noeud[j]->l[i*n_l] = tree->noeud[j]->l[0];
+
+			  // debug:
+			  PhyML_Printf(" tree->noeud[%d]->b[0]->l = ", j);
+			  PhyML_Printf("%d\n", tree->noeud[j]->b[0]->l);
+
+			  if (!tree->noeud[j]->tax)
+			  {
+				  tree->noeud[j]->l[i*n_l + 1] = tree->noeud[j]->l[1];
+				  tree->noeud[j]->l[i*n_l + 2] = tree->noeud[j]->l[2];
+			  }
+		  }
+	  }
+	*/
+
+
+	//PhyML_Printf(" . debug: calling Print_Tree_Screen (utilities line 10324)\n");
+	//Print_Tree_Screen( tree );
+
+	/*********************************************************/
+
+#ifdef COMPRESS_SUBALIGNMENTS
 	Make_All_Nodes_Red(tree);
 #endif
-
-	PhyML_Printf(" . debug: leaving Prepare_Tree_For_Lk\n");
 
 }
 

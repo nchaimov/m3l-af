@@ -994,6 +994,9 @@ void Print_P_Lk(plkflt *p_lk, int site, arbre *tree);
 void Print_Site(allseq *alldata,int num,int n_otu,char *sep,int stepsize);
 void Print_Seq(seq **data,int n_otu);
 void Print_CSeq(FILE *fp,allseq *alldata);
+void Print_Mat(matrix *mat);
+void Print_Pij(double *Pij, model *mod);
+void Print_Plk(double *plk, arbre *tree, int is_tax);
 void Order_Tree_Seq(arbre *tree,seq **data);
 void Order_Tree_CSeq(arbre *tree,allseq *data);
 matrix *Make_Mat(int n_otu);
@@ -1002,7 +1005,7 @@ void Print_Dist(matrix *mat);
 void Print_Node(node *a,node *d,arbre *tree);
 void Share_Lk_Struct(arbre *t_full,arbre *t_empt);
 void Init_Constant();
-void Print_Mat(matrix *mat);
+
 int Sort_Edges_NNI_Score(arbre *tree, edge **sorted_edges, int n_elem);
 void NNI(arbre *tree, edge *b_fcus, int do_swap);
 void Swap(node *a,node *b,node *c,node *d,arbre *tree);

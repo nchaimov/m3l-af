@@ -1491,8 +1491,6 @@ void Optimiz_Ext_Br(arbre *tree)
 
 void Optimiz_All_Free_Param(arbre *tree, int verbose)
 {
-	PhyML_Printf(". Optimizing all free parameters...\n");
-
 	int  init_both_sides;
 
 	init_both_sides  = tree->both_sides;

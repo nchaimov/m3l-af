@@ -213,7 +213,6 @@ void Init_Tips_At_One_Site_AA_Int(char aa, int pos, short int *p_pars)
 void Get_All_Partial_Lk_Scale(arbre *tree, edge *b_fcus, node *d)
 {
 	if(d->tax) return;
-	// VHS: pre-conditions for redundancy arrays are taken care of in Lk.
 	else Update_P_Lk(tree,b_fcus,d);
 }
 
@@ -267,7 +266,7 @@ void Lk(arbre *tree)
 	int br,site;
 	int n_patterns;
 
-	//PhyML_Printf("entered Lk(...) with tree:\n");
+	//PhyML_Printf(" . debug: entered Lk(...) with tree:\n");
 	//Print_Tree_Screen(tree);
 
 	n_patterns = tree->n_pattern;
@@ -293,11 +292,15 @@ void Lk(arbre *tree)
 			For(site,n_patterns) tree->t_edges[br]->sum_scale_f_left[site] = .0;
 
 		Update_PMat_At_Given_Edge(tree->t_edges[br],tree);
+
+		// debug:
+		//PhyML_Printf(" . debug: P matrix at edge %d:\n", tree->t_edges[br]->num);
+		//Print_Pij( tree->t_edges[br]->Pij_rr, tree->mod);
 	}
 
 
 #ifdef COMPRESS_SUBALIGNMENTS
-	PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
+	//PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
 	Init_All_Nodes_Red(tree);
 	Compute_Red_Arrays(tree->noeud[0], tree->noeud[0]->v[0], tree);
 
@@ -305,17 +308,38 @@ void Lk(arbre *tree)
 	{
 		Post_Order_Lk_Red(tree->noeud[0],tree->noeud[0]->v[0],tree,site);
 	}
+	if(tree->both_sides)
+	{
+		for(site = 0; site < n_patterns; site++)
+		{
+			Pre_Order_Lk_Red(tree->noeud[0],tree->noeud[0]->v[0],tree,site);
+		}
+	}
 #endif
 
 #ifndef COMPRESS_SUBALIGNMENTS
 	// VHS: the post- and pre-order traversals begin at a random node (the 0th node, to be specific).
 	// This random strategy is okay, because the Felsenstein pruning algorithm operates on unrooted trees.
 	Post_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
+	if(tree->both_sides)
+	{
+		Pre_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
+	}
 #endif
 
-	// VHS: I turned-off Pre_Order_Lk, because I think it's unecessary.  Am I wrong?
-	//if(tree->both_sides)
-	//	Pre_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
+	  // debugging:
+
+	  //PhyML_Printf(" . debug: returned from Post_Order_Lk and Pre_Order_Lk, likelihoods = \n");
+	  /*
+	  for(br = 1; br < 2*tree->n_otu-3; br++)
+	  {
+		PhyML_Printf("edge %d:\n", br);
+		int is_tax = 1;
+		if(!tree->t_edges[br]->left->tax)
+			is_tax = 0;
+		Print_Plk(tree->t_edges[br]->p_lk_left, tree, is_tax);
+	  }
+	  */
 
 
 	tree->c_lnL     = .0;
@@ -329,24 +353,30 @@ void Lk(arbre *tree)
 #endif
 	for(site = 0; site < n_patterns; site++)
 	{
-		//printf("JSJ: Iterating over state pattern %i in Lk\n",site);
 		tree->c_lnL_sorted[site] = .0;
 		tree->site_lk[site]      = .0;
-		//		tree->curr_site          = site;
+		tree->curr_site          = site;
 		Site_Lk(tree,site);
 	}
 
 	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
 
 	tree->c_lnL = .0;
+
 	//#pragma omp parallel
 	//for default(shared)
 	//private(site) schedule(static,chunk)
 	For(site,n_patterns)
 	{
 		if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
+		{
+			//PhyML_Printf(" . debug: lk.c line 372: tree->c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
 			tree->c_lnL += tree->c_lnL_sorted[site];
+		}
 	}
+
+	// debug:
+	//PhyML_Printf(" . debug: Lk is returning %f\n", tree->c_lnL);
 }
 
 /*********************************************************/
@@ -365,8 +395,12 @@ void Site_Lk(arbre *tree, int site)
 		Warn_And_Exit("");
 	}
 
-	if(tree->data->wght[tree->curr_site] > MDBL_MIN) Lk_Core(eroot,tree,site);
-	else tree->c_lnL_sorted[tree->curr_site] = 1.; /* WARNING : change cautiously */
+	if(tree->data->wght[tree->curr_site] > MDBL_MIN)
+	{	Lk_Core(eroot,tree,site);
+	}
+	else
+	{	tree->c_lnL_sorted[tree->curr_site] = 1.; /* WARNING : change cautiously */
+	}
 }
 
 /*********************************************************/
@@ -447,7 +481,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 	dimd = dimb * dima; // = number of BL sets * ns^2
 
 	ambiguity_check = state = -1;
-	ns = tree->mod->ns; // ns is the number of states in the alphabet.
+	ns = tree->mod->ns;
 	scale_left = (b->sum_scale_f_left)? (b->sum_scale_f_left[site]): (0.0);
 	scale_rght = (b->sum_scale_f_rght)? (b->sum_scale_f_rght[site]): (0.0);
 
@@ -477,11 +511,12 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 					sum = .0;
 					For(l,ns)
 					{
-						sum +=	b->Pij_rr[catg*dimd + i*dimaa + state*dima + l] * //[i][catg*dim3+state*dim2+l] *
+						sum +=	b->Pij_rr[catg*dimd + i*dimaa + state*dima + l] *
 								(m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l];
-								//(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 					}
 					site_lk_set += sum * tree->mod->pi[state];
+					//debug:
+					//PhyML_Printf(" . debug: lk 519: site_lk_set = %f\n", site_lk_set);
 				}
 				else
 				{
@@ -492,14 +527,15 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 						{
 							For(l,ns)
 							{
-								sum +=	b->Pij_rr[catg*dimd + i*dimaa + state*dima + l] *
+								sum +=	b->Pij_rr[catg*dimd + i*dimaa + k*dima + l] *
 										(m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l];
-										//(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 							}
 							site_lk_set +=
 									sum *
 									tree->mod->pi[k] *
 									(m3ldbl)b->p_lk_tip_r[site*dima+k];
+							//debug:
+							//PhyML_Printf(" . debug: lk 536: site_lk_set = %f\n", site_lk_set);
 						}
 					}
 				}
@@ -509,34 +545,41 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 				For(k,ns)
 				{
 					sum = .0;
-					//if(b->p_lk_rght[site*dim1+catg*dim2+k] > .0)
 					if(b->p_lk_rght[site*dimc + catg*dimb + i*dima + k] > .0)
 					{
 						For(l,ns)
 						{
 							sum += b->Pij_rr[catg*dimd + i*dimaa + k*dima + l] *
 									(m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l];
-									//(m3ldbl)b->p_lk_left[site*dim1+catg*dim2+l];
 						}
 						site_lk_set +=
 								sum *
 								tree->mod->pi[k] *
 								(m3ldbl)b->p_lk_rght[site*dimc + catg*dimb + i*dima + k];
-								//(m3ldbl)b->p_lk_rght[site*dim1+catg*dim2+k];
+						//debug:
+						//PhyML_Printf(" . debug: lk 556: site_lk_set = %f\n", site_lk_set);
 					}
 				}
 			}
+			//debug:
+			//PhyML_Printf(" . debug: tree->log_site_lk_set[%d][%d] = %f\n", i, site, site_lk_set);
+
 			site_lk_cat += site_lk_set * tree->mod->bl_props[i];
-			if(site_lk_cat < 1.E-300) // VHS: I'm unsure if this correction is appropriate
-			{	site_lk_cat = 1.E-300;
-			}
 		} // end for BL
 
+		// debug:
+		//PhyML_Printf(" . debug: tree->log_site_lk_cat[%d][%d] = %f\n", catg, site, site_lk_cat);
+
+		// we do the log-ing further down in this method.
+		tree->log_site_lk_cat[catg][site] = site_lk_cat;
+
 		site_lk += site_lk_cat * tree->mod->gamma_r_proba[catg];
-		if(site_lk < 1.E-300)
-		{	site_lk = 1.E-300;
-		}
 	} // end for gamma
+
+	if(site_lk < 1.E-300)
+	{
+		site_lk = 1.E-300;
+	}
 
 	if(!tree->mod->invar)
 	{
@@ -562,15 +605,21 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 	}
 
 	// to-do: VHS: we need to add an extra dimension to log_site_lk_cat to account for mixed BL.
+	// Here we're just taking the log of non-logged likelihoods
 	For(j, tree->mod->n_catg){
 		tree->log_site_lk_cat[j][site] =
-			(m3ldbl)log(sum_site_lk) +
+			(m3ldbl)log(tree->log_site_lk_cat[j][site]) +
 			(m3ldbl)scale_left +
 			(m3ldbl)scale_rght;
 	}
 
 	tree->site_lk[site] = log_site_lk;
 	tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
+
+	// debug:
+	//PhyML_Printf(" . debug: Lk_Core is returning %f\n", log_site_lk);
+
+
 	return log_site_lk;
 }
 
@@ -865,6 +914,7 @@ void Unconstraint_Lk(arbre *tree)
 /*********************************************************/
 void Update_P_Lk(arbre *tree, edge *b, node *d)
 {
+
 	/*
 				   |
 				   |<- b
@@ -883,12 +933,12 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	node *n_v1, *n_v2;
 	m3ldbl p1_lk1,p2_lk2;
 	plkflt *p_lk,*p_lk_v1,*p_lk_v2;
-	double *Pij1,*Pij2;
+	double *Pij1, *Pij2;
 	plkflt max_p_lk;
 	plkflt *sum_scale, *sum_scale_v1, *sum_scale_v2;
 	plkflt scale_v1, scale_v2;
 	int i,j,k;
-	int catg,site;
+	int catg, site;
 	int dir1,dir2;
 	int n_patterns;
 	/**
@@ -898,12 +948,6 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 	int ambiguity_check_v1,ambiguity_check_v2;
 	int state_v1,state_v2;
 
-	/* VHS: to accomodate branch-length heterogeneity, we now use dima, dimb, and dimc
-	int dim1, dim2, dim3;
-	dim1 = tree->mod->n_catg * tree->mod->ns;
-	dim2 = tree->mod->ns;
-	dim3 = tree->mod->ns * tree->mod->ns;
-	*/
 	int dima, dimb, dimc, dimaa, dimd;
 	dima = tree->mod->ns;
 	dimb = dima * tree->mod->n_l;
@@ -1049,9 +1093,9 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			ambiguity_check_v2 = 1;
 		}
 
-		for(k = 0; k < tree->mod->n_l; k++)
+		For(catg,tree->mod->n_catg)
 		{
-			For(catg,tree->mod->n_catg)
+			For(k, tree->mod->n_l)
 			{
 				For(i,tree->mod->ns)
 				{
@@ -1062,14 +1106,12 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					{
 						if(!ambiguity_check_v1)
 						{
-							// VHS:09.21.2009
 							p1_lk1 = Pij1[catg*dimd + k*dimaa + i*dima + state_v1];  //Pij_rr[k][catg*dim3+i*dim2+state_v1];
 						}
 						else
 						{
 							For(j,tree->mod->ns)
 							{
-								// VHS:09.21.2009
 								p1_lk1 += Pij1[catg*dimd + k*dimaa + i*dima + j] * (m3ldbl)n_v1->b[0]->p_lk_tip_r[site*dima+j];
 							}
 						}
@@ -1078,7 +1120,6 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 					{
 						For(j,tree->mod->ns)
 						{
-							// VHS:09.29.2009
 							p1_lk1 += Pij1[catg*dimd + k*dimaa + i*dima + j] * (m3ldbl)p_lk_v1[site*dimc + catg*dimb + k*dima + j];   //[site*dim1+catg*dim2+j];
 						}
 					}
@@ -1096,56 +1137,45 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 							For(j,tree->mod->ns)
 							{
 								p2_lk2 += Pij2[catg*dimd + k*dimaa + i*dima + j] * (m3ldbl)n_v2->b[0]->p_lk_tip_r[site*dima+j];
-							} //JSJ: end for J in alphabet
-						}//JSJ: end else
-					}//JSJ: end if(n_v2...)
+							}
+						}
+					}
 					else
 					{
 						For(j,tree->mod->ns)
 						{
 							p2_lk2 += Pij2[catg*dimd + k*dimaa + i*dima + j] * (m3ldbl)p_lk_v2[site*dimc + catg*dimb + k*dima + j];//[site*dim1+catg*dim2+j];
-						} //end for j in alphabet
-					} //JSJ: end else
-
-					if(k == 0){
-						p_lk[site*dimc + catg*dimb + k*dima + i] = (plkflt)(p1_lk1 * p2_lk2 * tree->mod->bl_props[k]);
-						// old way:
-						//p_lk[site*dim1+catg*dim2+i] = (plkflt)(p1_lk1 * p2_lk2 * tree->mod->bl_props[k]);
-					}else{
-						p_lk[site*dimc + catg*dimb + k*dima + i] += (plkflt)(p1_lk1 * p2_lk2 * tree->mod->bl_props[k]);
-						// old way:
-						//p_lk[site*dim1+catg*dim2+i] += (plkflt)(p1_lk1 * p2_lk2 * tree->mod->bl_props[k]);
+						}
 					}
 
-					// old way:
-					//if(p_lk[site*dim1+catg*dim2+i] > max_p_lk)
+					p_lk[site*dimc + catg*dimb + k*dima + i] = (plkflt)(p1_lk1 * p2_lk2);
+
 					if( p_lk[site*dimc + catg*dimb + k*dima + i] > max_p_lk )
 					{
 						max_p_lk = p_lk[site*dimc + catg*dimb + k*dima + i];
-						//max_p_lk = p_lk[site*dim1+catg*dim2+i];
 					}
-
-				}//JSJ: end For(i in alphabet)
-			}//JSJ: end For(catg in gama categories)
-		}//JSJ: end For(k,Num Branch Length sets)
+				}// end for ns
+			}// end for n_l
+		}// end for catg
 
 
 		if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
 		{
-			for(k = 0; k < tree->mod->n_l; k++)
+			For(catg,tree->mod->n_catg)
 			{
-				For(catg,tree->mod->n_catg)
+				for(k = 0; k < tree->mod->n_l; k++)
 				{
+
 					For(i,tree->mod->ns)
 					{
 						p_lk[site*dimc + catg*dimb + k*dima + i] /= max_p_lk;
 						// old way, before mixed BL
 						//p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
-					} //JSJ: end For(i, count of alphabet)
-				}//JSJ: end For(catg in gamma categories...
-				sum_scale[site] += (plkflt)log(max_p_lk);
+					}
+				}
 			}
-		}//JSJ: end if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
+			sum_scale[site] += (plkflt)log(max_p_lk);
+		}
 	} // end For(site,patterns)
 }
 
@@ -1278,8 +1308,11 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 	{
 		For(j,tree->mod->n_l) // foreach branch length category
 		{
+			//PhyML_Printf(" . debug: Update_PMat_At_Given_Edge: edge %d, catg %d, BL %d, edge->l[j] = %f\n", b_fcus->num, i, j, b_fcus->l[j]);
+
 			if(b_fcus->has_zero_br_len[j])
 			{
+				//PhyML_Printf( " . debug: this branch/catg/BL set has zero length\n");
 				len = -1.0;
 			}
 			else
@@ -1288,8 +1321,11 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 				if(len < BL_MIN)      len = BL_MIN;
 				else if(len > BL_MAX) len = BL_MAX;
 			}
-			// VHS:09.29.2009
-			PMat(len,tree->mod, tree->mod->ns*tree->mod->ns*tree->mod->n_l*i + tree->mod->ns*tree->mod->ns*j, b_fcus->Pij_rr);
+
+			PMat(len,
+					tree->mod,
+					tree->mod->ns*tree->mod->ns*tree->mod->n_l*i + tree->mod->ns*tree->mod->ns*j,
+					b_fcus->Pij_rr);
 		}
 	}
 }

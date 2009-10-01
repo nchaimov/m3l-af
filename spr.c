@@ -2309,7 +2309,7 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 				}
 			}
 #ifdef COMPRESS_SUBALIGNMENTS
-	PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
+	//PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
 	Init_All_Nodes_Red(tree);
 	Compute_Red_Arrays(tree->noeud[0], tree->noeud[0]->v[0], tree);
 
@@ -3442,7 +3442,7 @@ int Test_All_Spr_Targets(edge *b_pulled, node *n_link, arbre *tree)
 		Update_PMat_At_Given_Edge(b_pulled,tree);
 
 #ifdef COMPRESS_SUBALIGNMENTS
-	PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
+	//PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
 	Init_All_Nodes_Red(tree);
 	Compute_Red_Arrays(tree->noeud[0], tree->noeud[0]->v[0], tree);
 #endif
