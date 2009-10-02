@@ -3242,6 +3242,8 @@ int Sort_Edges_Depth(arbre *tree, edge **sorted_edges, int n_elem)
 /*********************************************************/
 void NNI(arbre *tree, edge *b_fcus, int do_swap)
 {
+
+
 	int l_r, r_l, l_v1, l_v2, r_v3, r_v4;
 	node *v1,*v2,*v3,*v4;
 	m3ldbl lk0, lk1, lk2;
@@ -3250,20 +3252,29 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	m3ldbl lk_init;
 	int i;
 
-	m3ldbl bl_init[MAX_BL_SET];
-	m3ldbl l0[MAX_BL_SET];
-	m3ldbl l1[MAX_BL_SET];
-	m3ldbl l2[MAX_BL_SET];
-	m3ldbl l_infa[MAX_BL_SET];
-	m3ldbl l_infb[MAX_BL_SET];
-	m3ldbl l_max[MAX_BL_SET];
+	m3ldbl *bl_init;
+	m3ldbl *l0;
+	m3ldbl *l1;
+	m3ldbl *l2;
+	m3ldbl *l_infa;
+	m3ldbl *l_infb;
+	m3ldbl *l_max;
+
+	int n_l = tree->mod->n_l;
+	bl_init = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	l0 = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	l1 = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	l2 = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	l_infa = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	l_infb = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	l_max = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
 
 
 
 	lk_init                = tree->c_lnL;
 	For(i,tree->mod->n_l){
 		bl_init[i]                = b_fcus->l[i];
-		b_fcus->nni->init_l[i]    = b_fcus->l[i]; //JSJ: Fixed!
+		b_fcus->nni->init_l[i]    = b_fcus->l[i];
 	}
 	b_fcus->nni->init_lk  = tree->c_lnL;;
 
@@ -3300,15 +3311,23 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 
 	/***********/
+	/*
+	 * The plan: swap a branch, optimize branch lengths, and then swap it back.
+	 */
+	//PhyML_Printf(" . debug: utilities.c 3312: calling Swap(%d, %d, %d, %d)\n", v2->num, b_fcus->left->num, b_fcus->rght->num, v3->num);
 	Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
 	tree->both_sides = 1;
 
+	// debug:
+	// This must be changed, essentially we are turning-off compression here:
+	debug_Lk_nocompress(tree);
+
 	lk1_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-	//	For(i,tree->mod->n_l){
-	//		l_infa[i] = 10.*b_fcus->l[i]; //JSJ: Changed so it compiles
-	//		l_max[i]  = b_fcus->l[i]; //JSJ: Changed so it compiles
-	//		l_infb[i] = BL_MIN;
-	//	}
+	For(i,tree->mod->n_l){
+		l_infa[i] = 10.*b_fcus->l[i];
+		l_max[i]  = b_fcus->l[i];
+		l_infb[i] = BL_MIN;
+	}
 
 	if(tree->mod->s_opt->fast_nni)
 	{
@@ -3335,21 +3354,29 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 
 	For(i,tree->mod->n_l) l1[i]  = b_fcus->l[i];
+	//PhyML_Printf(" . debug: utilities.c 3348: calling Swap(%d, %d, %d, %d)\n", v3->num, v2->num, b_fcus->left->num, b_fcus->rght->num, v2->num);
 	Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
 	/***********/
 
 
 	/***********/
+	/*
+	 * The plan: swap the other branch, optimize branch lengths, and then swap it back.
+	 */
+	//PhyML_Printf(" . debug: utilities.c 3354: calling Swap(%d, %d, %d, %d)\n", v2->num, b_fcus->left->num, b_fcus->rght->num, v4->num);
 	Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
 	For(i,tree->mod->n_l) b_fcus->l[i] = bl_init[i];
 	tree->both_sides = 1;
 
+	// debug:
+	debug_Lk_nocompress(tree);
+
 	lk2_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-	//	For(i,tree->mod->n_l){
-	//		l_infa[i] = 10.*b_fcus->l[i];
-	//		l_max[i]  = b_fcus->l[i];
-	//		l_infb[i] = BL_MIN;
-	//	}
+	For(i,tree->mod->n_l){
+		l_infa[i] = 10.*b_fcus->l[i];
+		l_max[i]  = b_fcus->l[i];
+		l_infb[i] = BL_MIN;
+	}
 
 	if(tree->mod->s_opt->fast_nni)
 	{
@@ -3376,6 +3403,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 
 	For(i,tree->mod->n_l) l2[i]  = b_fcus->l[i];
+	//PhyML_Printf(" . debug: utilities.c 3312: calling Swap(%d, %d, %d, %d)\n", v4->num, b_fcus->left->num, b_fcus->rght->num, v2->num);
 	Swap(v4,b_fcus->left,b_fcus->rght,v2,tree);
 	/***********/
 
@@ -3385,23 +3413,26 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	For(i,tree->mod->n_l) b_fcus->l[i] = bl_init[i];
 	tree->both_sides = 1;
 
+	// debug:
+	debug_Lk_nocompress(tree);
+
 	lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
 
-//	if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
-//	{
-//
-//		PhyML_Printf("\n. lk_init = %f; lk = %f diff = %f\n",
-//				lk_init,
-//				lk0_init,
-//				lk_init-lk0_init);
-//		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
-//		//Warn_And_Exit("\n. Err. in NNI (3)\n");
-//	}
-	//	For(i,tree->mod->n_l){
-	//		l_infa[i] = 10.*b_fcus->l[i];
-	//		l_max[i]  = b_fcus->l[i];
-	//		l_infb[i] = BL_MIN;
-	//	}
+	if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
+	{
+
+		PhyML_Printf("\n. lk_init = %f; lk = %f diff = %f\n",
+				lk_init,
+				lk0_init,
+				lk_init-lk0_init);
+		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
+		Warn_And_Exit("\n. Err. in NNI (3)\n");
+	}
+	For(i,tree->mod->n_l){
+		l_infa[i] = 10.*b_fcus->l[i];
+		l_max[i]  = b_fcus->l[i];
+		l_infb[i] = BL_MIN;
+	}
 
 	if(tree->mod->s_opt->fast_nni)
 	{
@@ -3420,21 +3451,23 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		}
 	}
 
-//	if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
-//	{
-//		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
-//		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
-//		PhyML_Printf("\n. Err. in NNI (3)\n");
-//
-//		//Warn_And_Exit("\n");
-//	}
+	if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
+	{
+		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
+		PhyML_Printf("%f -- %f \n",lk0_init,lk0);
+		PhyML_Printf("\n. Err. in NNI (3)\n");
+		Warn_And_Exit("\n");
+	}
 
 	/***********/
+	/*
+	 * The plan: did either of the previous swaps result in a better tree?
+	 */
 
 	b_fcus->nni->lk0 = lk0;
 	b_fcus->nni->lk1 = lk1;
 	b_fcus->nni->lk2 = lk2;
-	//JSJ: do over array...
+
 	For(i,tree->mod->n_l){
 		l0[i]  = b_fcus->l[i];
 		b_fcus->nni->l0[i]  = l0[i];
@@ -3456,7 +3489,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	if(lk0 > MAX(lk1,lk2))
 	{
 		b_fcus->nni->best_conf    = 0;
-		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l0[i]; //JSJ: fixed
+		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l0[i];
 		b_fcus->nni->swap_node_v1 = NULL;
 		b_fcus->nni->swap_node_v2 = NULL;
 		b_fcus->nni->swap_node_v3 = NULL;
@@ -3465,7 +3498,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else if(lk1 > MAX(lk0,lk2))
 	{
 		b_fcus->nni->best_conf    = 1;
-		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l1[i]; //JSJ: fixed
+		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l1[i];
 		b_fcus->nni->swap_node_v1 = v2;
 		b_fcus->nni->swap_node_v2 = b_fcus->left;
 		b_fcus->nni->swap_node_v3 = b_fcus->rght;
@@ -3474,7 +3507,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	else if(lk2 > MAX(lk0,lk1))
 	{
 		b_fcus->nni->best_conf    = 2;
-		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l2[i]; //JSJ: fixed
+		For(i,tree->mod->n_l) b_fcus->nni->best_l[i]       = l2[i];
 		b_fcus->nni->swap_node_v1 = v2;
 		b_fcus->nni->swap_node_v2 = b_fcus->left;
 		b_fcus->nni->swap_node_v3 = b_fcus->rght;
@@ -3498,6 +3531,9 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 		if(lk1 > lk2)
 		{
+			/*
+			 * Here, we decided the first Swap yielded the best tree.
+			 */
 			tree->best_lnL = lk1;
 			Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
 			For(i,tree->mod->n_l) b_fcus->l[i] = l1[i];
@@ -3506,6 +3542,9 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		}
 		else
 		{
+			/*
+			 * Here, we decided the second Swap yielded the best tree.
+			 */
 			tree->best_lnL = lk2;
 			Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
 			For(i,tree->mod->n_l) b_fcus->l[i] = l2[i];
@@ -3515,10 +3554,21 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 	else
 	{
+		/*
+		 * Here, we decided neither Swap yielded a better tree.
+		 */
 		For(i,tree->mod->n_l) b_fcus->l[i] = bl_init[i];
 		Update_PMat_At_Given_Edge(b_fcus,tree);
 		tree->c_lnL = lk_init;
 	}
+
+	Free(bl_init);
+	Free(l0);
+	Free(l1);
+	Free(l2);
+	Free(l_infa);
+	Free(l_infb);
+	Free(l_max);
 
 }
 

@@ -25,6 +25,8 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 void Simu_Loop(arbre *tree)
 {
+	PhyML_Printf(" . debug: entered Simu_Loop\n");
+
 	m3ldbl lk_old;
 
 	tree->both_sides = 0;
@@ -38,8 +40,16 @@ void Simu_Loop(arbre *tree)
 	do
 	{
 		lk_old = tree->c_lnL;
+
+		PhyML_Printf(" . debug: Simu_Loop: calling Optimiz_All_Free_Param\n");
 		Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-		if(!Simu(tree,10)) Check_NNI_Five_Branches(tree);
+		PhyML_Printf(" . debug: Simu_Loop: returned from Optimiz_All_Free_Param\n");
+
+		if(!Simu(tree,10))
+		{
+			PhyML_Printf(" . debug: simu.c 45: calling Check_NNI_Five_Branches\n");
+			Check_NNI_Five_Branches(tree);
+		}
 	}
 	while(tree->c_lnL > lk_old + tree->mod->s_opt->min_diff_lk_global);
 
@@ -129,10 +139,14 @@ int Simu(arbre *tree, int n_step_max)
 		Fix_All(tree);
 		n_neg = 0;
 		For(i,2*tree->n_otu-3)
-		if((!tree->t_edges[i]->left->tax) &&
-				(!tree->t_edges[i]->rght->tax))
-			NNI(tree,tree->t_edges[i],0);
-
+		{
+			if((!tree->t_edges[i]->left->tax) && (!tree->t_edges[i]->rght->tax))
+			{
+				//PhyML_Printf(" . debug: simu.c 140: calling NNI for edge %d\n", tree->t_edges[i]->num);
+				NNI(tree,tree->t_edges[i],0);
+				//PhyML_Printf(" . debug: simu.c 142: returned from NNI for edge %d\n", tree->t_edges[i]->num);
+			}
+		}
 
 		Select_Edges_To_Swap(tree,sorted_b,&n_neg);
 		Sort_Edges_NNI_Score(tree,sorted_b,n_neg);

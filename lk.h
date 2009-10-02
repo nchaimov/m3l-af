@@ -20,6 +20,7 @@ void Get_All_Partial_Lk_Scale(arbre *tree,edge *b_fcus,node *d);
 void Post_Order_Lk(node *pere, node *fils, arbre *tree);
 void Pre_Order_Lk(node *pere, node *fils, arbre *tree);
 void Lk(arbre *tree);
+void debug_Lk_nocompress(arbre *tree);
 void Site_Lk(arbre *tree, int site);
 m3ldbl Lk_At_Given_Edge(edge *b_fcus,arbre *tree);
 m3ldbl Return_Lk(arbre *tree);

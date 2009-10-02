@@ -259,6 +259,90 @@ void Pre_Order_Lk(node *a, node *d, arbre *tree)
 	}
 }
 
+void debug_Lk_nocompress(arbre *tree)
+{
+	int br,site;
+	int n_patterns;
+
+	//PhyML_Printf(" . debug: entered Lk(...)\n");
+	//Print_Tree_Screen(tree);
+
+	n_patterns = tree->n_pattern;
+	tree->number_of_lk_calls++;
+	Set_Model_Parameters(tree->mod);
+
+#ifdef MC
+	if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Get_Br_Len(tree);
+	if(tree->bl_from_node_stamps) MC_Bl_From_T(tree);
+#endif
+
+	//	chunk = (2*tree->n_otu-3)/omp_get_num_procs();
+	//	printf("chunk: %i total: %i\n",chunk,(2*tree->n_otu-3));
+
+	// #pragma omp parallel
+	//for shared(tree,n_patterns,chunk) schedule(static,chunk)
+	for(br=0; br < 2*tree->n_otu-3; br++)
+	{
+		if(!tree->t_edges[br]->rght->tax)
+			For(site,n_patterns) tree->t_edges[br]->sum_scale_f_rght[site] = .0;
+
+		if(!tree->t_edges[br]->left->tax)
+			For(site,n_patterns) tree->t_edges[br]->sum_scale_f_left[site] = .0;
+
+		Update_PMat_At_Given_Edge(tree->t_edges[br],tree);
+
+		// debug:
+		//PhyML_Printf(" . debug: P matrix at edge %d:\n", tree->t_edges[br]->num);
+		//Print_Pij( tree->t_edges[br]->Pij_rr, tree->mod);
+	}
+
+	// VHS: the post- and pre-order traversals begin at a random node (the 0th node, to be specific).
+	// This random strategy is okay, because the Felsenstein pruning algorithm operates on unrooted trees.
+	Post_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
+	if(tree->both_sides)
+	{
+		Pre_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
+	}
+
+
+
+	tree->c_lnL     = .0;
+	tree->curr_catg =  0;
+	tree->curr_site =  0;
+#ifdef USE_OPENMP
+	int chunk = n_patterns/omp_get_num_procs();
+#pragma omp parallel for \
+		shared(tree,n_patterns,chunk) private(site)\
+		schedule(static,chunk)
+#endif
+	for(site = 0; site < n_patterns; site++)
+	{
+		tree->c_lnL_sorted[site] = .0;
+		tree->site_lk[site]      = .0;
+		tree->curr_site          = site;
+		Site_Lk(tree,site);
+	}
+
+	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
+
+	tree->c_lnL = .0;
+
+	//#pragma omp parallel
+	//for default(shared)
+	//private(site) schedule(static,chunk)
+	For(site,n_patterns)
+	{
+		if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
+		{
+			//PhyML_Printf(" . debug: lk.c line 372: tree->c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
+			tree->c_lnL += tree->c_lnL_sorted[site];
+		}
+	}
+
+	// debug:
+	//PhyML_Printf(" . debug: Lk is returning %f\n", tree->c_lnL);
+}
+
 /*********************************************************/
 
 void Lk(arbre *tree)
@@ -266,7 +350,7 @@ void Lk(arbre *tree)
 	int br,site;
 	int n_patterns;
 
-	//PhyML_Printf(" . debug: entered Lk(...) with tree:\n");
+	//PhyML_Printf(" . debug: entered Lk(...)\n");
 	//Print_Tree_Screen(tree);
 
 	n_patterns = tree->n_pattern;
@@ -433,8 +517,15 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 	for(site = 0; site < n_patterns; site++)
 	{
 		//printf("JSJ: Iterating over state pattern %i in Lk_At_Given_Edge\n",tree->curr_site);
-		if(tree->data->wght[site] > MDBL_MIN) Lk_Core(b_fcus,tree,site);
+
+		// debug: x-inf
+
+		if(tree->data->wght[site] > MDBL_MIN)
+		{
+			Lk_Core(b_fcus,tree,site);
+		}
 		else tree->c_lnL_sorted[site] = 1.; /* WARNING : change cautiously */
+		//PhyML_Printf(" . debug: lk.c 443: tree->c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
 	}
 
 	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
@@ -581,6 +672,8 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 		site_lk = 1.E-300;
 	}
 
+
+
 	if(!tree->mod->invar)
 	{
 		log_site_lk = (m3ldbl)log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
@@ -601,7 +694,8 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 	}
 
 	if(log_site_lk < -MDBL_MAX)
-	{	Warn_And_Exit("\nlog_site_lk < -MDBL_MAX\n");
+	{
+		Warn_And_Exit("\nlog_site_lk < -MDBL_MAX\n");
 	}
 
 	// to-do: VHS: we need to add an extra dimension to log_site_lk_cat to account for mixed BL.
@@ -1176,6 +1270,9 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			}
 			sum_scale[site] += (plkflt)log(max_p_lk);
 		}
+
+		//PhyML_Printf(" . debug lk.c 1180: edge->num=%d, sum_scale[%d]=%f\n", b->num, site, sum_scale[site]);
+
 	} // end For(site,patterns)
 }
 

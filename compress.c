@@ -284,31 +284,6 @@ void Update_P_Lk_Red(arbre *tree, edge *b, node *d, int site)
 				schedule(static,chunk)
 #endif
 
-
-	if (d->red[site] != -1) // i.e. this site is redundant, use the partial likelihood (that we already computed) for the previous site.
-	{
-		int red_site = d->red[site];
-
-		for(k = 0; k < tree->mod->n_l; k++)
-		{
-			For(catg,tree->mod->n_catg)
-			{
-				For(i,tree->mod->ns)
-				{
-					// assign the partial likelihood for this site to the partial likelihood of the red. site:
-					// old way, using single branch length category:
-					//p_lk[site*dim1+catg*dim2+i] = p_lk[red_site*dim1+catg*dim2+i];
-					// new way:
-
-					//PhyML_Printf(" compress line 302: plk edge %d site %d bl %d catg %d state %d = %f\n", b->num, site, k, catg, i, p_lk[red_site*dimc + catg*dimb + k*dima + i]);
-					p_lk[site*dimc + catg*dimb + k*dima + i] = p_lk[red_site*dimc + catg*dimb + k*dima + i];
-				}
-			}
-		}
-		return; // We return, because we don't need to recompute partial likelihoods for this node.
-	}
-
-
 	/**
 	* JSJ: If sum_scale_v1 was assigned a non-null value in the above if/else cascade,
 	* the scale_v1 value is assigned as the site specific sum_scale_v1 from above.
@@ -316,15 +291,58 @@ void Update_P_Lk_Red(arbre *tree, edge *b, node *d, int site)
 	scale_v1 = (sum_scale_v1)?(sum_scale_v1[site]):(0.0);
 	scale_v2 = (sum_scale_v2)?(sum_scale_v2[site]):(0.0);
 
-	/**
-	* JSJ: sum_scale was assigned as a pointer to sum_scale_f_left(or right)
-	* scale_v1 and v2 above are the same but for the neighbor nodes...
-	*/
+
+	// Muy importante!
 	sum_scale[site] = scale_v1 + scale_v2;
 
 	max_p_lk = -MDBL_MAX;
 	state_v1 = state_v2 = -1; //just ints
 	ambiguity_check_v1 = ambiguity_check_v2 = -1;
+
+
+	if (d->red[site] != -1) // i.e. this site is redundant, use the partial likelihood (that we already computed) for the previous site.
+	{
+		int red_site = d->red[site];
+
+		For(catg,tree->mod->n_catg)
+		{
+			for(k = 0; k < tree->mod->n_l; k++)
+			{
+				For(i,tree->mod->ns)
+				{
+
+					//PhyML_Printf(" compress line 302: plk edge %d site %d bl %d catg %d state %d = %f\n", b->num, site, k, catg, i, p_lk[red_site*dimc + catg*dimb + k*dima + i]);
+					p_lk[site*dimc + catg*dimb + k*dima + i] = p_lk[red_site*dimc + catg*dimb + k*dima + i];
+
+					if( p_lk[site*dimc + catg*dimb + k*dima + i] > max_p_lk )
+					{	max_p_lk = p_lk[site*dimc + catg*dimb + k*dima + i];
+					}
+				}
+			}
+		}
+
+		// Scale all the likelihoods
+		if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
+		{
+			For(catg,tree->mod->n_catg)
+			{
+				for(k = 0; k < tree->mod->n_l; k++)
+				{
+					For(i,tree->mod->ns)
+					{
+						p_lk[site*dimc + catg*dimb + k*dima + i] /= max_p_lk;
+					}
+				}
+			}
+			sum_scale[site] += (plkflt)log(max_p_lk);
+		}
+
+		//PhyML_Printf(" . debug compress.c 343: edge->num=%d, sum_scale[%d]=%f\n", b->num, site, sum_scale[site]);
+		//PhyML_Printf(" . debug compress.c 343: max_p_lk = %f\n", max_p_lk);
+
+		return; // We return, because we don't need to recompute partial likelihoods for this node.
+	}
+
 
 	/**
 	* JSJ: If the model is set to greedy, and the node is terminal,
@@ -413,6 +431,7 @@ void Update_P_Lk_Red(arbre *tree, edge *b, node *d, int site)
 					}
 				}
 
+				// Muy importante!
 				p_lk[site*dimc + catg*dimb + k*dima + i] = (plkflt)(p1_lk1 * p2_lk2);
 
 				if( p_lk[site*dimc + catg*dimb + k*dima + i] > max_p_lk )
@@ -425,11 +444,12 @@ void Update_P_Lk_Red(arbre *tree, edge *b, node *d, int site)
 	}
 
 
+	// Scale all the likelihoods
 	if((max_p_lk < LIM_SCALE_VAL) || (max_p_lk > (1./LIM_SCALE_VAL)))
 	{
-		for(k = 0; k < tree->mod->n_l; k++)
+		For(catg,tree->mod->n_catg)
 		{
-			For(catg,tree->mod->n_catg)
+			for(k = 0; k < tree->mod->n_l; k++)
 			{
 				For(i,tree->mod->ns)
 				{
@@ -439,6 +459,8 @@ void Update_P_Lk_Red(arbre *tree, edge *b, node *d, int site)
 		}
 		sum_scale[site] += (plkflt)log(max_p_lk);
 	}
+
+	//PhyML_Printf(" . debug compress.c 464: edge->num=%d, sum_scale[%d]=%f\n", b->num, site, sum_scale[site]);
 }
 
 #endif // end of SUBALIGNMENT_COMPRESSION
