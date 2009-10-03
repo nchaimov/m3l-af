@@ -1215,8 +1215,17 @@ void Make_Edge_NNI(edge *b)
 
 nni *Make_NNI(int n_l)
 {
+	//PhyML_Printf(" . debug Make_NNI n_l = %d\n", n_l);
+
 	nni *a_nni;
 	a_nni = (nni *)mCalloc(1,sizeof(nni ));
+
+	a_nni->init_l = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	a_nni->best_l = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	a_nni->l0 = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	a_nni->l1 = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+	a_nni->l2 = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
+
 	Init_NNI(a_nni,n_l);
 	return a_nni;
 }
@@ -3243,6 +3252,11 @@ int Sort_Edges_Depth(arbre *tree, edge **sorted_edges, int n_elem)
 void NNI(arbre *tree, edge *b_fcus, int do_swap)
 {
 
+	// debug:
+	//PhyML_Printf(" . debug: entered NNI with edge %d\n", b_fcus->num);
+	//PhyML_Printf(" . debug: b_fcus->left = %d\n", b_fcus->left->num);
+	//PhyML_Printf(" . debug: b_fcus->rght = %d\n", b_fcus->rght->num);
+	// end debug:
 
 	int l_r, r_l, l_v1, l_v2, r_v3, r_v4;
 	node *v1,*v2,*v3,*v4;
@@ -3320,9 +3334,11 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 
 	// debug:
 	// This must be changed, essentially we are turning-off compression here:
-	debug_Lk_nocompress(tree);
+	//debug_Lk_nocompress(tree);
 
+	//PhyML_Printf(" . debug: utilities.c: calling Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 	lk1_init = Update_Lk_At_Given_Edge(b_fcus,tree);
+	//PhyML_Printf(" . debug: utilities.c: returned from Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 	For(i,tree->mod->n_l){
 		l_infa[i] = 10.*b_fcus->l[i];
 		l_max[i]  = b_fcus->l[i];
@@ -3369,9 +3385,11 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	tree->both_sides = 1;
 
 	// debug:
-	debug_Lk_nocompress(tree);
+	//debug_Lk_nocompress(tree);
 
+	//PhyML_Printf(" . debug: utilities.c: calling Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 	lk2_init = Update_Lk_At_Given_Edge(b_fcus,tree);
+	//PhyML_Printf(" . debug: utilities.c: returned from Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 	For(i,tree->mod->n_l){
 		l_infa[i] = 10.*b_fcus->l[i];
 		l_max[i]  = b_fcus->l[i];
@@ -3414,9 +3432,11 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	tree->both_sides = 1;
 
 	// debug:
-	debug_Lk_nocompress(tree);
+	//debug_Lk_nocompress(tree);
 
+	//PhyML_Printf(" . debug: utilities.c: calling Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 	lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
+	//PhyML_Printf(" . debug: utilities.c: returned from Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 
 	if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
 	{
@@ -3680,6 +3700,8 @@ void NNI_Pars(arbre *tree, edge *b_fcus, int do_swap)
 
 void Swap(node *a, node *b, node *c, node *d, arbre *tree)
 {
+	//PhyML_Printf(" . debug: utilities.c 3695: entered Swap(%d, %d, %d, %d)\n", a->num, b->num, c->num, d->num);
+
 	int ab, ba, cd, dc, bc;
 	int i;
 
@@ -7318,6 +7340,9 @@ void Get_List_Of_Reachable_Tips(arbre *tree)
 	Get_List_Of_Reachable_Tips_Post(tree->noeud[0],
 			tree->noeud[0]->v[0],
 			tree);
+	Get_List_Of_Reachable_Tips_Pre(tree->noeud[0],
+			tree->noeud[0]->v[0],
+			tree);
 
 	//PhyML_Printf(" . debug: leaving Get_List_Of_Reachable_Tips\n");
 }
@@ -7490,7 +7515,6 @@ void Find_Mutual_Direction(node *n1, node *n2, int *dir_n1_to_n2, int *dir_n2_to
 }
 
 /*********************************************************/
-
 void Fill_Dir_Table(arbre *tree)
 {
 	int i,j,k,l;

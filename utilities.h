@@ -37,7 +37,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 //#define MEASURE 1 // for timing and speedup measurements
 
-#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
+//#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
 								 // although this optimization can increase runtime, it costs more in memory.
 
 #define VERSION "v3.0 (179M)"
@@ -783,11 +783,11 @@ typedef struct __NNI{
 
   int					  n_l; //JSJ: stores the number of branch length sets
   m3ldbl                score;
-  m3ldbl              init_l[MAX_BL_SET]; //JSJ: array of initial branch lengths
+  m3ldbl              *init_l; //JSJ: array of initial branch lengths
   m3ldbl              init_lk;
-  m3ldbl              best_l[MAX_BL_SET]; //JSJ: array of best branch lengths
+  m3ldbl              *best_l; //JSJ: array of best branch lengths
   m3ldbl          lk0,lk1,lk2;
-  m3ldbl          l0[MAX_BL_SET],l1[MAX_BL_SET],l2[MAX_BL_SET]; //JSJ: array of bls extending in three directions.
+  m3ldbl          *l0,*l1,*l2; //JSJ: array of bls extending in three directions.
 
   struct __Node *swap_node_v1;
   struct __Node *swap_node_v2;
