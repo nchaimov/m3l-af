@@ -25,7 +25,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 void Simu_Loop(arbre *tree)
 {
-	PhyML_Printf(" . debug: entered Simu_Loop\n");
+	//PhyML_Printf(" . debug: entered Simu_Loop\n");
 
 	m3ldbl lk_old;
 
@@ -41,15 +41,16 @@ void Simu_Loop(arbre *tree)
 	{
 		lk_old = tree->c_lnL;
 
-		PhyML_Printf(" . debug: Simu_Loop: calling Optimiz_All_Free_Param\n");
+		//PhyML_Printf(" . debug: Simu_Loop: calling Optimiz_All_Free_Param\n");
 		Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-		PhyML_Printf(" . debug: Simu_Loop: returned from Optimiz_All_Free_Param\n");
+		//PhyML_Printf(" . debug: Simu_Loop: returned from Optimiz_All_Free_Param\n");
 
 		if(!Simu(tree,10))
 		{
-			PhyML_Printf(" . debug: simu.c 45: calling Check_NNI_Five_Branches\n");
+			//PhyML_Printf(" . debug: simu.c 45: calling Check_NNI_Five_Branches\n");
 			Check_NNI_Five_Branches(tree);
 		}
+		//PhyML_Printf(" . debug: Simu_Loop: returned from Simu\n");
 	}
 	while(tree->c_lnL > lk_old + tree->mod->s_opt->min_diff_lk_global);
 
@@ -105,7 +106,9 @@ int Simu(arbre *tree, int n_step_max)
 
 		old_loglk = tree->c_lnL;
 		tree->both_sides = 1;
+		//PhyML_Printf(" . debug: Simu 109: calling Lk:\n");
 		Lk(tree);
+		//PhyML_Printf(" . debug: Simu 109: returned from Lk\n");
 
 		if(tree->c_lnL < old_loglk)
 		{
@@ -120,7 +123,11 @@ int Simu(arbre *tree, int n_step_max)
 			Lk(tree);
 		}
 
-		if(step > n_step_max) break;
+		if(step > n_step_max)
+		{
+			//PhyML_Printf(" . debug: simu.c 126: breaking loop, step > n_step_max.\n");
+			break;
+		}
 
 		if(tree->io->print_trace)
 		{
@@ -135,9 +142,15 @@ int Simu(arbre *tree, int n_step_max)
 				(n_without_swap > it_lim_without_swap)) break;
 
 
+		//PhyML_Printf(" . debug: simu.c 145: %d\n", tree->t_dir[116][112]);
+
 		Fill_Dir_Table(tree);
+
+		//PhyML_Printf(" . debug: simu.c 147: %d\n", tree->t_dir[116][112]);
+
 		Fix_All(tree);
 		n_neg = 0;
+		//PhyML_Printf(" . debug: simu.c 148: calling NNI for every branch.\n");
 		For(i,2*tree->n_otu-3)
 		{
 			if((!tree->t_edges[i]->left->tax) && (!tree->t_edges[i]->rght->tax))
@@ -147,11 +160,29 @@ int Simu(arbre *tree, int n_step_max)
 				//PhyML_Printf(" . debug: simu.c 142: returned from NNI for edge %d\n", tree->t_edges[i]->num);
 			}
 		}
+		//PhyML_Printf(" . debug: simu.c 158: finished calling NNI for every branch.\n");
+
+		//PhyML_Printf(" . debug: simu.c 160: %d\n", tree->t_dir[116][112]);
+
+		//debug
+		//if (tree->t_edges[115]->nni->swap_node_v3->v[tree->t_dir[tree->t_edges[115]->nni->swap_node_v3->num][tree->t_edges[115]->nni->swap_node_v4->num]]->num == tree->t_edges[115]->nni->swap_node_v2->num)
+		//{
+			//PhyML_Printf( " . debug: APPLE at simu 163\n");
+			//PhyML_Printf( " . debug: 1 %d\n", tree->t_edges[115]->nni->swap_node_v2->num);
+			//PhyML_Printf(" . debug: 2 %d\n", tree->t_edges[115]->nni->swap_node_v4->num);
+			//PhyML_Printf(" . debug: 3 %d\n", tree->t_edges[115]->nni->swap_node_v3->num);
+			// VHS: 10.02.2009: the bug relates to the t_dir being incorrectly built!
+			//PhyML_Printf(" . debug: 4 %d\n", tree->t_dir[tree->t_edges[115]->nni->swap_node_v3->num][tree->t_edges[115]->nni->swap_node_v4->num]);
+		//}
 
 		Select_Edges_To_Swap(tree,sorted_b,&n_neg);
 		Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
 		Optimiz_Ext_Br(tree);
 		Update_Bl(tree,lambda);
+
+		//PhyML_Printf(" . debug: simu 169: step = %d\n", step);
+		//PhyML_Printf(" . debug: simu 169: d->v[0] = %d, d->v[1] = %d, d->v[2] = %d", tree->noeud[117]->v[0]->num,tree->noeud[117]->v[1]->num,tree->noeud[117]->v[2]->num);
+		//PhyML_Printf(" . debug: simu 169: d->b[0] = %d, d->b[1] = %d, d->b[2] = %d",tree->noeud[117]->b[0]->num,tree->noeud[117]->b[1]->num,tree->noeud[117]->b[2]->num);
 
 		n_tested = 0;
 		For(i,(int)ceil((m3ldbl)n_neg*(lambda)))
@@ -315,25 +346,32 @@ void Update_Bl(arbre *tree, m3ldbl fact)
 
 void Make_N_Swap(arbre *tree,edge **b, int beg, int end)
 {
+	//PhyML_Printf(" . debug: entered Make_N_Swap beg=%d, end=%d\n", beg, end);
+
 	int i,k;
 
 	/*   PhyML_Printf("\n. Beg Actually performing swaps\n"); */
 	tree->n_swap = 0;
 	for(i=beg;i<end;i++)
 	{
+		// debug
+		//PhyML_Printf(" edge num = %d\n", b[i]->num);
+
 		/* we use t_dir here to take into account previous modifications of the topology */
 		Swap(b[i]->nni->swap_node_v2->v[tree->t_dir[b[i]->nni->swap_node_v2->num][b[i]->nni->swap_node_v1->num]],
 				b[i]->nni->swap_node_v2,
 				b[i]->nni->swap_node_v3,
 				b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 				tree);
-		//JSJ: temporary fix to l
-		For(k,tree->mod->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
+		For(k,tree->mod->n_l)
+		{
+			b[i]->l[k] = b[i]->nni->best_l[k];
+		}
 
 		tree->n_swap++;
 	}
 
-	/*   PhyML_Printf("\n. End Actually performing swaps\n"); */
+	//PhyML_Printf("\n. End performing swaps\n");
 
 }
 
@@ -540,7 +578,7 @@ void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 			/* 	  (b[i]->nni->best_conf == 1)? */
 			/* 	    (Swap(b[i]->left->v[b[i]->l_v2],b[i]->left,b[i]->rght,b[i]->rght->v[b[i]->r_v1],tree)): */
 			/* 	    (Swap(b[i]->left->v[b[i]->l_v2],b[i]->left,b[i]->rght,b[i]->rght->v[b[i]->r_v2],tree)); */
-			//JSJ: Temporary fix
+
 			For(k,tree->mod->n_l) b[i]->l[k] = b[i]->l_old[k];
 		}
 	}
@@ -553,7 +591,6 @@ void Unswap_N_Branch(arbre *tree, edge **b, int beg, int end)
 					b[i]->nni->swap_node_v3,
 					b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 					tree);
-			//JSJ: Temporary Fix
 			For(k,tree->mod->n_l) b[i]->l[k] = b[i]->l_old[k];
 		}
 	}
@@ -574,8 +611,6 @@ void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 					b[i]->nni->swap_node_v3,
 					b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 					tree);
-
-			//JSJ: temp fix to l
 			For(k,tree->mod->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
 
 		}
@@ -589,8 +624,6 @@ void Swap_N_Branch(arbre *tree,edge **b, int beg, int end)
 					b[i]->nni->swap_node_v3,
 					b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num][b[i]->nni->swap_node_v4->num]],
 					tree);
-			//JSJ: temp fix to l
-
 			For(k,tree->mod->n_l) b[i]->l[k] = b[i]->nni->best_l[k];
 		}
 	}
