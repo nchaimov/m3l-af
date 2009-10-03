@@ -259,12 +259,13 @@ void Pre_Order_Lk(node *a, node *d, arbre *tree)
 	}
 }
 
+
 void debug_Lk_nocompress(arbre *tree)
 {
 	int br,site;
 	int n_patterns;
 
-	//PhyML_Printf(" . debug: entered Lk(...)\n");
+	//PhyML_Printf(" . debug: entered debug_Lk_nocompress\n");
 	//Print_Tree_Screen(tree);
 
 	n_patterns = tree->n_pattern;
@@ -351,6 +352,7 @@ void Lk(arbre *tree)
 	int n_patterns;
 
 	//PhyML_Printf(" . debug: entered Lk(...)\n");
+
 	//Print_Tree_Screen(tree);
 
 	n_patterns = tree->n_pattern;
