@@ -1344,8 +1344,6 @@ void Round_Optimize(arbre *tree, allseq *data, int n_round_max)
 
 		(!((n_round+2)%2))?(root=tree->noeud[0]):(root=tree->noeud[tree->n_otu-1]);
 
-		if(tree->mod->s_opt->opt_bl) Optimize_Br_Len_Serie(root,root->v[0],root->b[0],tree,data);
-
 		tree->both_sides = 1;
 		Lk(tree);
 
@@ -1376,46 +1374,19 @@ void Round_Optimize(arbre *tree, allseq *data, int n_round_max)
 void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *alldata)
 {
 	int i,j;
-	//	m3ldbl l_infa[MAX_BL_SET];
-	//	m3ldbl l_max[MAX_BL_SET];
-	//	m3ldbl l_infb[MAX_BL_SET];
-	//	m3ldbl lk_init;
-	//
-	//	lk_init = tree->c_lnL;
-	//	For(j,tree->mod->n_l){
-	//		l_infa[j] = l_max[j]  = l_infb[j] = BL_MIN;
-	//		//JSJ: temp fixes to l
-	//		l_infa[j] = 10.*b_fcus->l[j];
-	//		l_max[j]  = b_fcus->l[j];
-	//		l_infb[j] = BL_MIN;
-	//	}
-	//
-	//	/*   Br_Len_Brent(l_infa,l_max,l_infb, */
-	//	/* 	       1.e-3, */
-	//	/* 	       &(b_fcus->l), */
-	//	/* 	       b_fcus,tree,500); */
-	//
-	//	Br_Len_Brent(l_infa,l_max,l_infb,
-	//			tree->mod->s_opt->min_diff_lk_local,
-	//			b_fcus,tree,
-	//			tree->mod->s_opt->brent_it_max,
-	//			tree->mod->s_opt->quickdirty);
 
 	m3ldbl lk_init;
 	lk_init = tree->c_lnL;
-	//do{ //JSJ: give brent 10 chances
-	// VHS: actually, if Brent can't find a better tree on it's first try,
-	// additional attempts are unlikely to do better.
 
-		For(j,tree->mod->n_l){
-			//PhyML_Printf("Calling Br_Len_Brent_Iter (in Opt_Br_Len_Ser) lk: %lf \n",tree->c_lnL);
-			Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
-					tree->mod->s_opt->min_diff_lk_local,
-					b_fcus,tree,
-					tree->mod->s_opt->brent_it_max,
-					tree->mod->s_opt->quickdirty,j);
-		}
-	//}while((tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local) && (++iter < 10));
+	For(j,tree->mod->n_l){
+		//PhyML_Printf("Calling Br_Len_Brent_Iter (in Opt_Br_Len_Ser) lk: %lf \n",tree->c_lnL);
+		Br_Len_Brent_Iter(10.*b_fcus->l[j],b_fcus->l[j],BL_MIN,
+				tree->mod->s_opt->min_diff_lk_local,
+				b_fcus,tree,
+				tree->mod->s_opt->brent_it_max,
+				tree->mod->s_opt->quickdirty,j);
+	}
+
 
 	if(tree->c_lnL < lk_init - (tree->mod->s_opt->min_diff_lk_local))
 	{//JSJ: We hit this error when running SPR...
