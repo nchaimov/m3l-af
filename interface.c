@@ -1566,9 +1566,9 @@ void Launch_Interface_Topo_Search(option *io)
 	{
 		switch(io->in_tree)
 		{
-		case 0: { strcpy(s,"BioNJ");     break; }
-		case 1: { strcpy(s,"parsimony"); break; }
-		case 2: { strcpy(s,"user tree"); break; }
+			case 0: { strcpy(s,"BioNJ");     break; }
+			case 1: { strcpy(s,"parsimony"); break; }
+			case 2: { strcpy(s,"user tree"); break; }
 		}
 
 		PhyML_Printf("                [U] "

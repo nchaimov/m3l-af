@@ -1417,6 +1417,7 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 			else
 			{
 				len = b_fcus->l[j]*tree->mod->gamma_rr[i];
+				//PhyML_Printf( " . debug: lk.c 1420: ncatg=%d, bl=%d, len=%f\n", i, j, len);
 				if(len < BL_MIN)      len = BL_MIN;
 				else if(len > BL_MAX) len = BL_MAX;
 			}

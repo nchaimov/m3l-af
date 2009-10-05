@@ -87,6 +87,8 @@ arbre *Read_Tree(char *s_tree)
 	arbre *tree;
 	int degree;
 
+	// Here we determine the number of OTUs and the number of branch length classes.
+	// At the end of this block, the integers n_l and n_otu will have valid numbers.
 	n_l = 0;
 	n_otu=0;
 	For(i,(int)strlen(s_tree)){
@@ -163,7 +165,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 
 
 		Read_Branch_Label(s_tree_d,s_tree_a,tree->t_edges[tree->num_curr_branch_available]);
-
 		Read_Branch_Lengths(s_tree_d,s_tree_a,tree);
 
 		int n_l = tree->t_edges[0]->n_l;
@@ -173,7 +174,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, i
 			if(!a->v[i])
 			{
 				a->v[i]=d; //a is now connected to d
-				// we need to consider other branch length categories OUTSIDE this method
 				For(j,n_l){
 					//d->l[0] = a->l[i] = tree->t_edges[tree->num_curr_branch_available]->l[0];
 					d->l[j*n_l] = a->l[j*n_l + i] = tree->t_edges[tree->num_curr_branch_available]->l[j];
@@ -293,6 +293,8 @@ void Read_Branch_Label(char *s_d, char *s_a, edge *b)
 //
 void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 {
+	//PhyML_Printf(" . debug: entered Read_Branch_Lengths with %s and %s\n", s_d, s_a);
+
 	char *sub_tp;
 	//	char *p, *p2;
 	char *p;
@@ -324,6 +326,8 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 	p = strstr(s_a,sub_tp);
 	if(p)
 	{
+		//PhyML_Printf(" . debug: p = %s\n", p);
+
 		if(!brac){
 			b->l[0] = atof((char *)p+(int)strlen(sub_tp));
 		}
@@ -331,6 +335,7 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 		{
 			//now we need to grab the string up until ',' and do it n_l times
 			int glob = strlen(sub_tp);
+			//PhyML_Printf("glob = %d\n", glob);
 			//For(i,tree->mod->n_l)
 			//{
 			i = 0;
@@ -338,12 +343,15 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 			{
 				char tmp[100]; // tmp will hold the branch length
 				j = 0; // the char index of this token
-				glob++;//JSJ: increment glob past '[' and ','
+				if (i > 0)
+				{	glob++;//JSJ: increment glob past '[' and ','
+				}
 				while ((p[glob] != ']') && (p[glob] != ','))
 				{
 					tmp[j] = p[glob];
 					j++;
 					glob++;
+					//PhyML_Printf(" p[%d] = %c\n", glob - 1, tmp[j-1]);
 				}
 				tmp[j]='\0'; //JSJ: end the string
 				b->l[i] = atof(tmp);
@@ -352,7 +360,7 @@ void Read_Branch_Lengths(char *s_d, char *s_a, arbre *tree)
 			}
 		}
 		//JSJ: Print all of the bls read in
-		//For(i,b->n_l) printf("JSJ: Reading a branch from set %i of length %f\n",i,(double)b->l[i]);
+		//For(i,b->n_l) printf(" . debug: Reading a branch from set %i of length %f\n",i,(double)b->l[i]);
 		tree->has_branch_lengths = 1;
 	}
 	Free(sub_tp);
@@ -10150,10 +10158,24 @@ void Prepare_Tree_For_Lk(arbre *tree)
 	//
 	// VHS: Here is where I copy branch lengths:
 	//
-	  int i, j = 0;
-	  int n_l = tree->mod->n_l;
-	  For(j, 2*tree->n_otu-3) //foreach edge:
-	  {
+	if ( (tree->io->in_tree != 2) || // if the user tree was not specified, so we built a BioNJ tree
+			(tree->io->in_tree == 2 && !tree->has_branch_lengths) || // or, if a user tree was specified, but without branch lengths
+			(tree->io->in_tree == 2 && tree->has_branch_lengths && tree->t_edges[0]->n_l == 1 && tree->mod->n_l > 1) // or, if a user tree was specified with branch lengths, but only for the first BL class.
+			)
+	{
+		//PhyML_Printf(" . debug: utilities.c 10166: copying branch lengths\n");
+		if (tree->io->in_tree != 1)
+			PhyML_Printf(" case 1\n");
+		if (tree->io->in_tree == 1 && !tree->has_branch_lengths)
+			PhyML_Printf(" case 2\n");
+		if (tree->io->in_tree == 1 && tree->has_branch_lengths && tree->t_edges[0]->n_l == 1 && tree->mod->n_l > 1)
+			PhyML_Printf(" case 3\n");
+
+
+		int i, j = 0;
+		int n_l = tree->mod->n_l;
+		For(j, 2*tree->n_otu-3) //foreach edge:
+		{
 		  For(i, n_l)
 		  {
 			  if (i == 0)
@@ -10161,7 +10183,7 @@ void Prepare_Tree_For_Lk(arbre *tree)
 			  }
 			  tree->t_edges[j]->l[i] = tree->t_edges[j]->l[0];
 		  }
-	  }
+		}
 
 	  /*
 	   * VHS: The For loop (below) copies branch lengths from node->l[0,1,2] node->l[i] where i > 2.
@@ -10202,6 +10224,8 @@ void Prepare_Tree_For_Lk(arbre *tree)
 		  }
 	  }
 	*/
+	}
+
 
 
 	//PhyML_Printf(" . debug: calling Print_Tree_Screen (utilities line 10324)\n");

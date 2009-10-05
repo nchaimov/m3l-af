@@ -172,6 +172,19 @@ int main(int argc, char **argv)
 
 		  if(io->in_tree == 1) Spr_Pars(tree);
 
+		  //debugging:
+		  /*
+		  int br;
+		  int bl;
+		  for(br=0; br < 2*tree->n_otu-3; br++)
+		  {
+				For(bl,tree->mod->n_l) // foreach branch length category
+				{
+					PhyML_Printf(" . debug: main.c 182: tree->t_edges[%d]->l[%d] = %f\n", br, bl, tree->t_edges[br]->l[bl]);
+				}
+		  }
+		  */
+
 		  //
 		  // VHS: precondition entering all these cases: the tree contains allocated space for
 		  // red. arrays, the red arrays are initialized, the patterns have been collapsed according
