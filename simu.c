@@ -41,7 +41,7 @@ void Simu_Loop(arbre *tree)
 	{
 		lk_old = tree->c_lnL;
 
-		//PhyML_Printf(" . debug: Simu_Loop: calling Optimiz_All_Free_Param\n");
+		PhyML_Printf(" . debug: Simu_Loop: calling Optimiz_All_Free_Param\n");
 		Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 		//PhyML_Printf(" . debug: Simu_Loop: returned from Optimiz_All_Free_Param\n");
 

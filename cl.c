@@ -1257,6 +1257,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			break;
 		}
 
+
 		case 'v':case 13:
 		{
 			if ((strcmp (optarg, "e") == 0) ||

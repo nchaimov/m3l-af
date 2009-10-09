@@ -220,10 +220,10 @@ int main(int argc, char **argv)
 			  {
 				  Round_Optimize(tree,tree->data,ROUND_MAX);
 			  }
-			  else
-			  {
-				  Lk(tree);
-			  }
+			  //else
+			  //{
+			//	  Lk(tree);
+			  //}
 		  }
 
 		  tree->both_sides = 1;

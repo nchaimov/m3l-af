@@ -439,6 +439,7 @@ void Lk(arbre *tree)
 #endif
 	for(site = 0; site < n_patterns; site++)
 	{
+		// Here we reset these three variables, so that we can update them in Site_Lk
 		tree->c_lnL_sorted[site] = .0;
 		tree->site_lk[site]      = .0;
 		tree->curr_site          = site;
@@ -454,6 +455,7 @@ void Lk(arbre *tree)
 	//private(site) schedule(static,chunk)
 	For(site,n_patterns)
 	{
+		//PhyML_Printf(" . debug: in lk.c 258: c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
 		if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
 		{
 			//PhyML_Printf(" . debug: lk.c line 372: tree->c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
@@ -562,7 +564,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 	m3ldbl sum;
 	int ambiguity_check,state;
 	int catg,ns,k,l;
-	m3ldbl scale_left, scale_rght;
+	float scale_left, scale_rght;
 
 	site_lk = site_lk_cat = site_lk_set = sum_site_lk = log_site_lk = 0.0;
 
@@ -655,30 +657,39 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 				}
 			}
 			//debug:
-			//PhyML_Printf(" . debug: tree->log_site_lk_set[%d][%d] = %f\n", i, site, site_lk_set);
+			//PhyML_Printf(" . debug: tree->log_site_lk_set[BL set %d][site %d] = %f\n", i, site, site_lk_set);
 
 			site_lk_cat += site_lk_set * tree->mod->bl_props[i];
+			//PhyML_Printf( " %f * %f = %f\n", site_lk_set, tree->mod->bl_props[i], site_lk_set * tree->mod->bl_props[i]);
 		} // end for BL
 
 		// debug:
-		//PhyML_Printf(" . debug: tree->log_site_lk_cat[%d][%d] = %f\n", catg, site, site_lk_cat);
+		//PhyML_Printf(" . debug: tree->log_site_lk_cat[catg %d][site %d] = %f\n", catg, site, site_lk_cat);
 
 		// we do the log-ing further down in this method.
 		tree->log_site_lk_cat[catg][site] = site_lk_cat;
 
 		site_lk += site_lk_cat * tree->mod->gamma_r_proba[catg];
+
+		//PhyML_Printf(" . debug: site_lk = %e\n", site_lk);
 	} // end for gamma
 
 	if(site_lk < 1.E-300)
 	{
 		site_lk = 1.E-300;
+		//PhyML_Printf(" . debug: WARNING, site_lk is too small! new site_lk = %f\n", site_lk);
 	}
 
+
+	//debug test
+	//PhyML_Printf(" lk.c 685 log(site_lk) = %e\n", log(site_lk) );
 
 
 	if(!tree->mod->invar)
 	{
-		log_site_lk = (m3ldbl)log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
+		log_site_lk = log(site_lk) + (m3ldbl)scale_left + (m3ldbl)scale_rght;
+
+		//PhyML_Printf(" . debug: lk.c 689: log_site_lk = %f + %f + %f  = %f\n", log(site_lk), (m3ldbl)scale_left + (m3ldbl)scale_rght, log_site_lk);
 	}
 	else
 	{
@@ -695,10 +706,16 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 		}
 	}
 
+
 	if(log_site_lk < -MDBL_MAX)
 	{
+		PhyML_Printf("\n .debug: log_site_lk = %f\n", log_site_lk);
 		Warn_And_Exit("\nlog_site_lk < -MDBL_MAX\n");
 	}
+
+	//PhyML_Printf(" . debug: lk.c 712: tree->c_lnL_sorted[%d] = %d * %f = %f\n", site, tree->data->wght[site], log_site_lk, tree->c_lnL_sorted[site]);
+	//PhyML_Printf(" . debug: line 713: scale_left = %f, scale_right = %f\n", scale_left, scale_rght);
+
 
 	// to-do: VHS: we need to add an extra dimension to log_site_lk_cat to account for mixed BL.
 	// Here we're just taking the log of non-logged likelihoods
@@ -712,8 +729,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 	tree->site_lk[site] = log_site_lk;
 	tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
 
-	// debug:
-	//PhyML_Printf(" . debug: Lk_Core is returning %f\n", log_site_lk);
+	//PhyML_Printf(" . debug: line 724: tree->c_lnL_sorted[%d] = %d * %f = %f\n", site, tree->data->wght[site], log_site_lk, tree->c_lnL_sorted[site]);
 
 
 	return log_site_lk;
@@ -1153,10 +1169,8 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		scale_v1 = (sum_scale_v1)?(sum_scale_v1[site]):(0.0);
 		scale_v2 = (sum_scale_v2)?(sum_scale_v2[site]):(0.0);
 
-		/**
-		* JSJ: sum_scale was assigned as a pointer to sum_scale_f_left(or right)
-		* scale_v1 and v2 above are the same but for the neighbor nodes...
-		*/
+		// VHS: As of October 2009, I don't think sum_scale[i] is ever set to a value
+		// other than 0.0.  I'm not sure why sum_scale is included in this code at all.
 		sum_scale[site] = scale_v1 + scale_v2;
 
 		max_p_lk = -MDBL_MAX;
@@ -1261,16 +1275,15 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			{
 				for(k = 0; k < tree->mod->n_l; k++)
 				{
-
 					For(i,tree->mod->ns)
 					{
 						p_lk[site*dimc + catg*dimb + k*dima + i] /= max_p_lk;
-						// old way, before mixed BL
-						//p_lk[site*dim1+catg*dim2+i] /= max_p_lk;
 					}
 				}
 			}
+			// sum_scale[site] gets uses later in Lk_Core to calculate the final likelihood of the tree.
 			sum_scale[site] += (plkflt)log(max_p_lk);
+			//PhyML_Printf(" . debug: sum_scale[%d] = %f\n", site, sum_scale[site]);
 		}
 
 		//PhyML_Printf(" . debug lk.c 1180: edge->num=%d, sum_scale[%d]=%f\n", b->num, site, sum_scale[site]);

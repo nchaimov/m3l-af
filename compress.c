@@ -116,6 +116,7 @@ void Post_Order_Lk_Red(node *a, node *d, arbre *tree, int site)
 		}
 	}
 	else{ // we need to determine which edge (in d->b) connects d to a:
+		//PhyML_Printf(" . debug: Post_Order_Lk_Red: d = %d, skipping traverse to lower nodes.\n", d->num);
 		For(i,3)
 		{
 			if (d->v[i] == a)
@@ -461,6 +462,52 @@ void Update_P_Lk_Red(arbre *tree, edge *b, node *d, int site)
 	}
 
 	//PhyML_Printf(" . debug compress.c 464: edge->num=%d, sum_scale[%d]=%f\n", b->num, site, sum_scale[site]);
+}
+
+/*********************************************************/
+// This method assumes that tree->n_pattern is initialized to a real value (not -1).
+//
+// This method allocates memory for red arrays AND fills all the arrays with values -1.
+void Make_All_Nodes_Red(arbre *tree)
+{
+	PhyML_Printf(". Allocating memory for red. arrays. . .\n");
+
+	int i;
+	int k;
+
+	For(i,2*tree->n_otu-2)
+	{
+		// VHS: we allocate memory space for the redundant site array here, instead of inside
+		// Make_Node_Light, because we need to know how many patterns are in the alignment.
+		// An optimization (to-do) would be to leave ->red size 0, thus saving memory space,
+		// and allocate more memory everytime we want to add information to ->red.
+		//PhyML_Printf("Make_Node_Red: calling mCalloc(%d, %d)\n", tree->n_pattern, sizeof(int));
+		tree->noeud[i]->red = (int *)mCalloc( tree->n_pattern, sizeof(int) );
+		For(k, tree->n_pattern)
+		{
+			tree->noeud[i]->red[k] = -1; // we initialize all values to -1.
+		}
+	}
+}
+
+//
+// This method assumes that the memory for red arrays has already been allocated.
+// This method fills all (pre-allocated) red arrays with the value -1.
+//
+void Init_All_Nodes_Red(arbre *tree)
+{
+	//PhyML_Printf(". Resetting red arrays\n");
+
+	int i;
+	int k;
+
+	For(i,2*tree->n_otu-2)
+	{
+		For(k, tree->n_pattern)
+		{
+			tree->noeud[i]->red[k] = -1; // we initialize all values to -1.
+		}
+	}
 }
 
 #endif // end of SUBALIGNMENT_COMPRESSION

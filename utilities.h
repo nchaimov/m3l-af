@@ -966,11 +966,6 @@ void Init_Edge_Light(edge *b, int num);
 void Make_Edge_Dirs(edge *b,node *a,node *d);
 void Make_Edge_Lk(edge *b, arbre *tree);
 
-#ifdef COMPRESS_SUBALIGNMENTS
-void Make_All_Nodes_Red(arbre *tree); //VHS
-void Init_All_Nodes_Red(arbre *tree);
-#endif
-
 node *Make_Node_Light(int num, int n_l);
 void Make_Node_Lk(node *n);
 seq **Get_Seq(option *input,int rw);

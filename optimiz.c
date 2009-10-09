@@ -521,6 +521,9 @@ m3ldbl Br_Len_Brent_Default(edge *b_fcus, arbre *tree)
 /**
 * JSJ: call the following function iteratively and pass the counter as the last argument
 *
+* This method uses Brent's hill-climbing algorithm to optimize the lnum-th branch length for edge b_fcus.
+* This method returns the likelihood of the tree after optimization.
+*
 * @param ax
 * @param bx
 * @param cx
@@ -563,7 +566,10 @@ m3ldbl Br_Len_Brent_Iter(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 			return tree->c_lnL;
 		}
 
-//JSJ: removed the last part of this statement, because this function should fail if it is at fault.
+
+// VHS: 10.2009: What does this comment mean?
+//
+//JSJ: 08.2009: removed the last part of this statement, because this function should fail if it is at fault.
 // rather than simply allowing the next function to fail.
 		if(((fabs(tree->c_lnL-old_lnL) < tol) &&
 				(tree->c_lnL > init_lnL - tol)) ||
@@ -1462,6 +1468,8 @@ void Optimiz_Ext_Br(arbre *tree)
 
 void Optimiz_All_Free_Param(arbre *tree, int verbose)
 {
+	PhyML_Printf(" . debug: optimiz.c 1471: entered Optimiz_All_Free_Param\n");
+
 	int  init_both_sides;
 
 	init_both_sides  = tree->both_sides;
@@ -1501,6 +1509,8 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 	if(tree->mod->s_opt->opt_kappa)
 	{
+		PhyML_Printf(" . debug: optimiz.c 1512: optimizing kappa\n");
+
 		tree->mod->update_eigen = 1;
 		Optimize_Single_Param_Generic(tree,&(tree->mod->kappa),
 				.1,100.,
@@ -1517,6 +1527,8 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 	if(tree->mod->s_opt->opt_lambda)
 	{
+		PhyML_Printf(" . debug: optimiz.c 1530: optimizing lambda\n");
+
 		Optimize_Single_Param_Generic(tree,&(tree->mod->lambda),.001,100.,
 				tree->mod->s_opt->min_diff_lk_global,
 				tree->mod->s_opt->brent_it_max,
@@ -1530,7 +1542,10 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 	if((tree->mod->s_opt->opt_pinvar) && (tree->mod->s_opt->opt_alpha))
 	{
+		PhyML_Printf(" . debug: optimiz.c 1545: optimizing alpha and pinvar\n");
+
 		Optimiz_Alpha_And_Pinv(tree);
+		PhyML_Printf(" . debug: optimiz.c 1540\n");
 		if(verbose)
 		{
 			Print_Lk(tree,"[Alpha              ]");
@@ -1538,11 +1553,14 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 			Print_Lk(tree,"[P-inv              ]");
 			PhyML_Printf("[%10f]",tree->mod->pinvar);
 		}
+		PhyML_Printf(" . debug: optimiz.c 1548\n");
 	}
 	else
 	{
 		if(tree->mod->s_opt->opt_pinvar)
 		{
+			PhyML_Printf(" . debug: optimiz.c 1562: optimizing pinvar\n");
+
 			Optimize_Single_Param_Generic(tree,&(tree->mod->pinvar),
 					.0001,0.9999,
 					tree->mod->s_opt->min_diff_lk_global,
@@ -1557,6 +1575,8 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 		if(tree->mod->s_opt->opt_alpha)
 		{
+			PhyML_Printf(" . debug: optimiz.c 1578: optimizing alpha\n");
+
 			if(tree->mod->n_catg > 1)
 				Optimize_Single_Param_Generic(tree,&(tree->mod->alpha),
 						/* 					  .01,100., */
@@ -1693,6 +1713,8 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 	}
 
 	tree->both_sides = init_both_sides;
+
+	PhyML_Printf(" . debug: optimiz.c 1717: leaving Optimiz_All_Free_Param\n");
 }
 
 

@@ -3242,20 +3242,23 @@ int Spr(m3ldbl init_lnL, arbre *tree)
 	old_pars         = -1;
 
 	Reset_Spr_List(tree);
-	//JSJ: OK to here... The bug is in the following for loop!!!
 	For(br,2*tree->n_otu-3)
 	{
 		b = tree->t_edges[br];
 
 		old_pars = tree->c_pars;
+		//PhyML_Printf(" . debug: spr.c line 3250: calling Spr_Subtree\n");
 		Spr_Subtree(b,b->left,tree);
+		//PhyML_Printf(" . debug: spr.c line 3252: returned fromSpr_Subtree\n");
 		new_pars = tree->c_pars;
 		//JSJ: gets weird after second time through above...
 		pars_diff =  new_pars - old_pars;
 		if(pars_diff > max_pars_diff) max_pars_diff = pars_diff;
 
 		old_pars = tree->c_pars;
+		//PhyML_Printf(" . debug: spr.c line 3259: calling Spr_Subtree\n");
 		Spr_Subtree(b,b->rght,tree);
+		//PhyML_Printf(" . debug: spr.c line 3261: returnd from Spr_Subtree\n");
 		new_pars = tree->c_pars;
 		//JSJ: not altered further by this point at second itteration...
 		pars_diff = new_pars - old_pars;
@@ -3289,7 +3292,9 @@ void Spr_Subtree(edge *b, node *link, arbre *tree)
 	}
 	else
 	{
+		//PhyML_Printf(" . debug: spr.c line 3295\n");
 		if(!link->tax) Test_All_Spr_Targets(b,link,tree);
+		//PhyML_Printf(" . debug: spr.c line 3297\n");
 
 		if(tree->n_moves)
 		{
@@ -3320,15 +3325,20 @@ void Spr_Subtree(edge *b, node *link, arbre *tree)
 
 				if(best_pars_move->pars < tree->best_pars)
 				{
+					//PhyML_Printf(" . debug: spr.c line 3328\n");
 					Prune_Subtree(best_pars_move->n_link,best_pars_move->n_opp_to_link,&target,&residual,tree);
+					//PhyML_Printf(" . debug: spr.c line 3330\n");
 					Graft_Subtree(best_pars_move->b_target,best_pars_move->n_link,residual,tree);
+					//PhyML_Printf(" . debug: spr.c line 3332\n");
 					tree->both_sides = 1;
+					//PhyML_Printf(" . debug: spr.c line 3334\n");
 					Pars(tree);
+					//PhyML_Printf(" . debug: spr.c line 3336\n");
 					tree->best_pars = tree->c_pars;
 					if(tree->best_pars != best_pars_move->pars)
 					{
 						printf("\n. best_pars = %d move_pars = %d",tree->best_pars,best_pars_move->pars);
-						PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+						//PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 						Warn_And_Exit("");
 					}
 					tree->n_improvements++;
@@ -3338,11 +3348,15 @@ void Spr_Subtree(edge *b, node *link, arbre *tree)
 			}
 			else
 			{
+				//PhyML_Printf(" . debug: spr.c line 3351\n");
 				best_move = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
+				//PhyML_Printf(" . debug: spr.c line 3353\n");
 
 				if(tree->spr_list[best_move]->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move)
 				{
+					//PhyML_Printf(" . debug: spr.c line 3357\n");
 					Try_One_Spr_Move_Triple(tree->spr_list[best_move],tree);
+					//PhyML_Printf(" . debug: spr.c line 3359\n");
 					ret_val = 1;
 				}
 				else
@@ -3351,7 +3365,9 @@ void Spr_Subtree(edge *b, node *link, arbre *tree)
 				}
 			}
 		}
+		//PhyML_Printf(" . debug: spr.c line 3369\n");
 		Reset_Spr_List(tree);
+		//PhyML_Printf(" . debug: spr.c line 3370\n");
 	}
 }
 
@@ -3641,12 +3657,15 @@ void Speed_Spr_Loop(arbre *tree)
 	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 	tree->best_lnL = tree->c_lnL;
 
+	//PhyML_Printf(" . debug: spr.c line 3644\n");
+
 	/*****************************/
 	lk_old = UNLIKELY;
 	tree->mod->s_opt->max_depth_path = 2*tree->n_otu-3;
 	tree->mod->s_opt->spr_lnL        = 0;
 	do
 	{
+		//PhyML_Printf(" . debug: spr.c line 3652\n");
 		lk_old = tree->c_lnL;
 		Speed_Spr(tree,1);
 		if(tree->n_improvements) Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
@@ -3678,6 +3697,7 @@ void Speed_Spr_Loop(arbre *tree)
 	lk_old = UNLIKELY;
 	do
 	{
+		//PhyML_Printf(" . debug: spr.c line 3684\n");
 		lk_old = tree->c_lnL;
 		Simu(tree,10);
 		Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
@@ -3688,6 +3708,7 @@ void Speed_Spr_Loop(arbre *tree)
 	/*****************************/
 	do
 	{
+		//PhyML_Printf(" . debug: spr.c line 3695\n");
 		if(!Check_NNI_Five_Branches(tree)) break;
 	}while(1);
 	/*****************************/
@@ -3699,6 +3720,8 @@ void Speed_Spr_Loop(arbre *tree)
 
 void Speed_Spr(arbre *tree, int max_cycles)
 {
+	//PhyML_Printf(" . debug: spr.c line 3707: entered Speed_Spr\n");
+
 	int step,old_pars;
 	m3ldbl old_lnL;
 
@@ -3713,7 +3736,10 @@ void Speed_Spr(arbre *tree, int max_cycles)
 	tree->both_sides = 1;
 	Pars(tree);
 	Lk(tree);
+	//PhyML_Printf(" . debug: spr.c line 3725: calling Record_Br_Len\n");
 	Record_Br_Len(NULL,tree);
+
+	//PhyML_Printf(" . debug: spr.c line 3728:\n");
 
 	tree->mod->s_opt->deepest_path  = 0;
 	tree->best_pars                 = tree->c_pars;
@@ -3732,12 +3758,15 @@ void Speed_Spr(arbre *tree, int max_cycles)
 
 		tree->n_improvements         = 0;
 		tree->perform_spr_right_away = 1;
+		//PhyML_Printf(" . debug: spr.c line 3745: calling Spr\n");
 		Spr(UNLIKELY,tree);
+		//PhyML_Printf(" . debug: spr.c line 3747: returned from Spr\n");
 
 		if(!tree->mod->s_opt->spr_pars)
 		{
 
 			/* Optimise branch lengths */
+			//PhyML_Printf(" . debug: spr.c line 3752: calling Optimize_Br_Len_Serie\n");
 			Optimize_Br_Len_Serie(tree->noeud[0],
 					tree->noeud[0]->v[0],
 					tree->noeud[0]->b[0],
@@ -3746,6 +3775,7 @@ void Speed_Spr(arbre *tree, int max_cycles)
 
 			/* Update partial likelihoods */
 			tree->both_sides = 1;
+			//PhyML_Printf(" . debug: spr.c line 3759: calling Lk\n");
 			Lk(tree);
 
 			/* Print log-likelihood and parsimony scores */
@@ -3760,8 +3790,10 @@ void Speed_Spr(arbre *tree, int max_cycles)
 
 		if(tree->io->print_trace)
 		{
+			//PhyML_Printf(" . debug: spr.c line 3776\n");
 			PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,Write_Tree(tree)); fflush(tree->io->fp_out_trace);
 			if((tree->io->print_site_lnl) && (!tree->mod->s_opt->spr_pars)) Print_Site_Lk(tree,tree->io->fp_out_lk); fflush(tree->io->fp_out_lk);
+			//PhyML_Printf(" . debug: spr.c line 3779\n");
 		}
 
 
@@ -3789,6 +3821,7 @@ void Speed_Spr(arbre *tree, int max_cycles)
 		}
 
 		/* Record the current best branch lengths  */
+		///PhyML_Printf(" . debug: spr.c line 3807: calling Record_Br_Len\n");
 		Record_Br_Len(NULL,tree);
 
 		/* Exit if no improvements after complete optimization */
@@ -3845,6 +3878,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(spr **spr_list, int list_size, arbre *tr
 			Record_Br_Len(NULL,tree);
 
 			/* Prune subtree */
+			//PhyML_Printf(" . debug: spr.c line 3881\n");
 			Prune_Subtree(move->n_link,move->n_opp_to_link,&init_target,&b_residual,tree);
 			For(k,tree->mod->n_l){
 				if(recorded_l[k] < 0.0)

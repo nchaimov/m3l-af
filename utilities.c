@@ -25,6 +25,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "mc.h"
 #include "rates.h"
 #include "numeric.h"
+#include "compress.h"
 
 #ifdef MEASURE
 #include "math.h"
@@ -1832,6 +1833,9 @@ allseq *Compact_Seq(seq **data, option *io)
 
 allseq *Compact_CSeq(allseq *data, model *mod)
 {
+	//PhyML_Printf(" . debug: entered Compact_CSeq\n");
+
+
 	allseq *alldata;
 	int i,j,k,site;
 	int n_patt,which_patt;
@@ -2826,53 +2830,7 @@ void Make_Tree_Path(arbre *tree)
 	tree->curr_path = (node **)mCalloc(tree->n_otu,sizeof(node *));
 }
 
-/*********************************************************/
-// This method assumes that tree->n_pattern is initiliazed to a real value (not -1).
-//
-// This method allocates memory for red arrays AND fills all the arrays with values -1.
-#ifdef COMPRESS_SUBALIGNMENTS
-void Make_All_Nodes_Red(arbre *tree)
-{
-	PhyML_Printf(". Allocating memory for red. arrays. . .\n");
 
-	int i;
-	int k;
-
-	For(i,2*tree->n_otu-2)
-	{
-		// VHS: we allocate memory space for the redundant site array here, instead of inside
-		// Make_Node_Light, because we need to know how many patterns are in the alignment.
-		// An optimization (to-do) would be to leave ->red size 0, thus saving memory space,
-		// and allocate more memory everytime we want to add information to ->red.
-		//PhyML_Printf("Make_Node_Red: calling mCalloc(%d, %d)\n", tree->n_pattern, sizeof(int));
-		tree->noeud[i]->red = (int *)mCalloc( tree->n_pattern, sizeof(int) );
-		For(k, tree->n_pattern)
-		{
-			tree->noeud[i]->red[k] = -1; // we initialize all values to -1.
-		}
-	}
-}
-
-//
-// This method assumes that the memory for red arrays has already been allocated.
-// This method fills all (pre-allocated) red arrays with the value -1.
-//
-void Init_All_Nodes_Red(arbre *tree)
-{
-	//PhyML_Printf(". Resetting red arrays\n");
-
-	int i;
-	int k;
-
-	For(i,2*tree->n_otu-2)
-	{
-		For(k, tree->n_pattern)
-		{
-			tree->noeud[i]->red[k] = -1; // we initialize all values to -1.
-		}
-	}
-}
-#endif
 
 /*********************************************************/
 
@@ -3360,6 +3318,8 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 	else
 	{
+		// At the end of this loop, lk1 will contain the lnL for the tree with all branch
+		// lengths optimized for edge b_fcus.
 		For(i,tree->mod->n_l){
 		//	PhyML_Printf("Tree lnL (line 2983 of utilities.c): %lf \n",tree->c_lnL);
 			lk1 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
@@ -3411,6 +3371,8 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	}
 	else
 	{
+		// At the end of this loop, lk2 will contain the lnL for the tree with all branch
+		// lengths optimized for edge b_fcus.
 		For(i,tree->mod->n_l){
 		//	PhyML_Printf("Tree lnL (line 3024 of utilities.c): %lf \n",tree->c_lnL);
 			lk2 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
@@ -3442,20 +3404,15 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	// debug:
 	//debug_Lk_nocompress(tree);
 
-	//PhyML_Printf(" . debug: utilities.c: calling Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 	lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-	//PhyML_Printf(" . debug: utilities.c: returned from Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 
-	if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
-	{
 
-		PhyML_Printf("\n. lk_init = %f; lk = %f diff = %f\n",
-				lk_init,
-				lk0_init,
-				lk_init-lk0_init);
-		PhyML_Printf("\n. Curr_lnL = %f\n",Return_Lk(tree));
-		Warn_And_Exit("\n. Err. in NNI (3)\n");
-	}
+	//PhyML_Printf(" . debug: utilities.c 3410: lk0_init = %f, lk_init = %f\n", lk0_init, lk_init);
+	// VHS: 10.2009: I temporarily commented-out this if block:
+	//if(fabs(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
+	//{
+	//	Warn_And_Exit("\n. Err. in NNI (3)\n");
+	//}
 	For(i,tree->mod->n_l){
 		l_infa[i] = 10.*b_fcus->l[i];
 		l_max[i]  = b_fcus->l[i];
@@ -7617,7 +7574,9 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 
 	Update_PMat_At_Given_Edge(b,tree);
 
+	PhyML_Printf(" . debug: utilities.c 7577: accessing F[i]: this line is throwing a segmentation fault:\n");
 	For(i, dimc*dima) F[i] = .0;
+	PhyML_Printf(" . debug: utilities.c 7579: finished accessing F[i]\n");
 
 	For(site,tree->n_pattern)
 	{
@@ -7757,8 +7716,9 @@ triplet *Make_Triplet_Struct(model *mod)
 	triplet_struct->pi_bc           = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl ));
 	triplet_struct->pi_cd           = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl ));
 	triplet_struct->pi_bd           = (m3ldbl *)mCalloc(mod->ns,sizeof(m3ldbl ));
-	triplet_struct->F_bc            = (m3ldbl *)mCalloc(mod->ns*mod->ns*mod->n_catg,sizeof(m3ldbl));
-	triplet_struct->F_cd            = (m3ldbl *)mCalloc(mod->ns*mod->ns*mod->n_catg,sizeof(m3ldbl));
+	// VHS: 10.2009: I added the dimension n_l to F_bc and F_cd.
+	triplet_struct->F_bc            = (m3ldbl *)mCalloc(mod->ns*mod->ns*mod->n_catg*mod->n_l,sizeof(m3ldbl));
+	triplet_struct->F_cd            = (m3ldbl *)mCalloc(mod->ns*mod->ns*mod->n_catg*mod->n_l,sizeof(m3ldbl));
 	triplet_struct->F_bd            = (m3ldbl *)mCalloc(mod->ns*mod->ns,sizeof(m3ldbl));
 	triplet_struct->core            = (m3ldbl ****)mCalloc(mod->n_catg,sizeof(m3ldbl ***));
 	triplet_struct->p_one_site      = (m3ldbl ***)mCalloc(mod->ns,sizeof(m3ldbl **));
@@ -8425,6 +8385,13 @@ void Print_Settings(option *io)
 		}
 	}
 	PhyML_Printf("\n                . Optimize proportion of sites in each b.l. category: \t %s", (io->fixed_props == 0) ? ("Yes"):("No"));
+
+#ifdef COMPRESS_SUBALIGNMENTS
+	PhyML_Printf("\n                . Tree-based subalignment compression: \t\t yes");
+#endif
+#ifndef COMPRESS_SUBALIGNMENTS
+	PhyML_Printf("\n                . Tree-based subalignment compression: \t\t no");
+#endif
 
 	PhyML_Printf("\n                . Run ID : \t\t\t\t\t %s", (io->append_run_ID) ? (io->run_id_string) : ("none"));
 
@@ -10163,13 +10130,7 @@ void Prepare_Tree_For_Lk(arbre *tree)
 			(tree->io->in_tree == 2 && tree->has_branch_lengths && tree->t_edges[0]->n_l == 1 && tree->mod->n_l > 1) // or, if a user tree was specified with branch lengths, but only for the first BL class.
 			)
 	{
-		//PhyML_Printf(" . debug: utilities.c 10166: copying branch lengths\n");
-		if (tree->io->in_tree != 1)
-			PhyML_Printf(" case 1\n");
-		if (tree->io->in_tree == 1 && !tree->has_branch_lengths)
-			PhyML_Printf(" case 2\n");
-		if (tree->io->in_tree == 1 && tree->has_branch_lengths && tree->t_edges[0]->n_l == 1 && tree->mod->n_l > 1)
-			PhyML_Printf(" case 3\n");
+
 
 
 		int i, j = 0;
