@@ -7574,9 +7574,9 @@ void Fast_Br_Len(edge *b, arbre *tree, int approx)
 
 	Update_PMat_At_Given_Edge(b,tree);
 
-	PhyML_Printf(" . debug: utilities.c 7577: accessing F[i]: this line is throwing a segmentation fault:\n");
+	//PhyML_Printf(" . debug: utilities.c 7577: accessing F[i]: this line is throwing a segmentation fault:\n");
 	For(i, dimc*dima) F[i] = .0;
-	PhyML_Printf(" . debug: utilities.c 7579: finished accessing F[i]\n");
+	//PhyML_Printf(" . debug: utilities.c 7579: finished accessing F[i]\n");
 
 	For(site,tree->n_pattern)
 	{
