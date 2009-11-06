@@ -5634,6 +5634,7 @@ void Set_Defaults_Input(option* io)
 	io->prob_emig                  = 0.0;
 	io->num_anneal_stages		   = 2000;
 	io->iters_per_stage			   = 1000;
+	io->eb_n_gens                  = 100000;
 	io->tree                       = NULL;
 
 

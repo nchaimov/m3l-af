@@ -645,6 +645,7 @@ typedef struct __Option { /* mostly used in 'options.c' */
   double               prob_topology;
   double                 prob_pinvar;
   double 				   prob_emig;
+  int                      eb_n_gens;
 
 
   char                  *in_seq_file; /* sequence file name */

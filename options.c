@@ -173,6 +173,11 @@ void Usage()
 	PhyML_Printf("\t\tCan be %sNNI%s (default, fast), %sSPR%s (a bit slower than NNI), %sBEST%s (best of NNI and SPR search), %sSTA%s (simulated thermal annealing, much better option for complex models), %sSQA%s (simulated quantum annealing, not yet implemented), or %sEB%s (Empirical Bayes MCMC) .\n",LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT);
 
 	PhyML_Printf("\n");
+	
+	PhyML_Printf("%s\n\t--eb_n_gens %sinteger%s\n",BOLD,LINE,FLAT);
+	PhyML_Printf("\t\tNumber of MCMC generations for EB search (default, 100000)\n");
+	
+	PhyML_Printf("\n");
 
 	PhyML_Printf("%s\n\t-u (or --inputtree) %suser_tree_file%s\n",BOLD,LINE,FLAT);
 	PhyML_Printf("\t\tuser_tree_file%s : starting tree filename. The tree must be in Newick format.\n",FLAT);

@@ -116,6 +116,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"prob_emig",         required_argument,NULL,74},
 			{"tau_start",		  required_argument,NULL,75},
 			{"tau_end",			  required_argument,NULL,76},
+			{"eb_n_gens",         required_argument,NULL,77},
 
 			{0,0,0,0}
 	};
@@ -1224,6 +1225,13 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			io->tau_end = atof(optarg);
 			if(io->tau_end < 0.0) io->tau_end = tmp;
 			break;
+		}
+		case 77:
+		{
+			int tmp = io->eb_n_gens;
+			io->eb_n_gens = atoi(optarg);
+			if(io->eb_n_gens < 1) io->eb_n_gens = tmp;
+			break;	
 		}
 
 		case 'u':case 15:
