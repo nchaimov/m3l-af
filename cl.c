@@ -432,6 +432,11 @@ void Read_Command_Line(option *io, int argc, char **argv)
 				io->mod->s_opt->topo_search = SIMULATED_QUANTUM_ANNEALING;
 				io->user_topo 						= 1;
 			}
+			else if((!strcmp(optarg,"eb")) || (!strcmp(optarg,"EB")))
+			{
+				io->mod->s_opt->topo_search = EMPIRICAL_BAYES;
+				io->user_topo                       = 1;	
+			}
 			break;
 		}
 

@@ -30,9 +30,9 @@ PROG = PHYML
 
 
 phyml_SOURCES = main.c utilities.c optimiz.c annealing.c emig.c lk.c bionj.c models.c free.c\
-options.c simu.c eigen.c pars.c alrt.c interface.c cl.c spr.c  draw.c mpi_boot.c numeric.c compress.c unittests.c
+options.c simu.c eigen.c pars.c alrt.c interface.c cl.c spr.c  draw.c mpi_boot.c numeric.c compress.c unittests.c eb.c
 phyml_LDADD = main.o utilities.o optimiz.o annealing.o lk.o emig.o bionj.o models.o free.o\
-options.o simu.o eigen.o pars.o alrt.o interface.o cl.o spr.o draw.o mpi_boot.o numeric.o compress.o unittests.o
+options.o simu.o eigen.o pars.o alrt.o interface.o cl.o spr.o draw.o mpi_boot.o numeric.o compress.o unittests.o eb.o
 
 
 SCOMPILE = $(CC) $(SDEFS) $(DEFS) $(INCLUDES) $(AM_CFLAGS) $(SCFLAGS)
@@ -130,3 +130,7 @@ compress.o: compress.c compress.h
 
 unittests.o: unittests.c unittests.h
 	$(SCOMPILE) -c unittests.c
+
+eb.o:	eb.c eb.h
+	$(SCOMPILE) -c eb.c
+

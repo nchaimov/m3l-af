@@ -26,6 +26,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "alrt.h"
 #include "annealing.h"
 #include "unittests.h"
+#include "eb.h"
 
 #ifdef MPI
 #include "mpi_boot.h"
@@ -208,6 +209,9 @@ int main(int argc, char **argv)
 			  case SIMULATED_QUANTUM_ANNEALING:
 				  Quantum_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0)); //JSJ: 0 for verbose...
 				  break;
+              case EMPIRICAL_BAYES:
+                  Empirical_Bayes(tree);
+                  break;
 			  default:
 				  PhyML_Printf("\n The topology search option was not recognized...");
 				  PhyML_Printf("\n. Err. in file %s on line %d\n",__FILE__,__LINE__);
