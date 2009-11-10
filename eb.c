@@ -2,6 +2,7 @@
 #include "utilities.h"
 #include "optimiz.h"
 #include "spr.h"
+#include "lk.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -27,72 +28,69 @@ void Empirical_Bayes(arbre* tree)
 	/* create random number generator */
 	gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937);
 	gsl_rng_set(rng, (int)time(NULL));
-
-	/* create storage in tree */
-	tree->best_tree = Make_Tree(tree->n_otu);
-	Init_Tree(tree->best_tree,tree->n_otu);
-	Make_All_Tree_Nodes(tree->best_tree, tree->mod->n_l);
-	Make_All_Tree_Edges(tree->best_tree, tree->mod->n_l);
-	tree->best_tree->mod = Copy_Model(tree->mod);
-
-	tree->old_tree = Make_Tree(tree->n_otu);
-	Init_Tree(tree->old_tree,tree->n_otu);
-	Make_All_Tree_Nodes(tree->old_tree, tree->mod->n_l);
-	Make_All_Tree_Edges(tree->old_tree, tree->mod->n_l);
-	tree->old_tree->mod = Copy_Model(tree->mod);
 	
 	PhyML_Printf("\nstarting empirical Bayes MCMC of %d generations.\n", 
 				 tree->io->eb_n_gens);
 	PhyML_Printf("Sampled trees will be written to %s\n\n", outfilestr);
 	
 	/* optimize starting tree and sample it */
-	Round_Optimize(tree,tree->data,ROUND_MAX);
+	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 	fprintf(outfile, "[%f] ", tree->c_lnL);
 	Print_Tree(outfile, tree);
+	
+	/* create storage for trees and models */
+	arbre *best_tree = Make_Tree(tree->n_otu);
+	Init_Tree(best_tree,tree->n_otu);
+	Make_All_Tree_Nodes(best_tree, tree->mod->n_l);
+	Make_All_Tree_Edges(best_tree, tree->mod->n_l);
+	best_tree->mod = Copy_Model(tree->mod);
+	Copy_Tree(tree, best_tree);
+	Record_Model(tree->mod, best_tree->mod);
 
-	/* current tree is best so far */
-	Copy_Tree(tree, tree->best_tree);
-	Record_Model(tree->mod, tree->best_tree->mod);
-	tree->best_lnL = tree->c_lnL;
+	arbre *last_tree = Make_Tree(tree->n_otu);
+	Init_Tree(last_tree,tree->n_otu);
+	Make_All_Tree_Nodes(last_tree, tree->mod->n_l);
+	Make_All_Tree_Edges(last_tree, tree->mod->n_l);
+	last_tree->mod = Copy_Model(best_tree->mod);
+	Copy_Tree(tree, last_tree);
+	Record_Model(tree->mod, last_tree->mod);
 
-	m3ldbl last_lnL;
+	m3ldbl lnL_best = tree->c_lnL;
+	m3ldbl lnL_current = tree->c_lnL;
 	
 	/* MCMC routine */
 	for(i=0; i<tree->io->eb_n_gens; i++)
-	{
-		/* copy current tree into old tree */
-		Copy_Tree(tree, tree->old_tree);
-		Record_Model(tree->mod, tree->old_tree->mod);
-		last_lnL = tree->c_lnL;
-		
+	{		
 		/* modify current tree */
 		Random_Spr(1, tree);
 		
 		/* optimize current tree */
-		Round_Optimize(tree,tree->data,ROUND_MAX);
+		Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 		
 		/* check acceptance */
-		printf("LR %f/%f [%f]\n", tree->c_lnL, last_lnL, exp(tree->c_lnL - last_lnL));
+		//printf("LR %f/%f [%f]\n", tree->c_lnL, lnL_current, exp(tree->c_lnL - lnL_current));
 		
-		if(tree->c_lnL >= last_lnL || gsl_rng_uniform(rng) < exp(tree->c_lnL - last_lnL))
+		if(tree->c_lnL >= lnL_current || gsl_rng_uniform(rng) < exp(tree->c_lnL - lnL_current))
 		{			
-			printf("OKAY!\n");
+			Copy_Tree(tree, last_tree);
+			Record_Model(tree->mod, last_tree->mod);
+			lnL_current = tree->c_lnL;
 			
 			/* check if better than best so far */
-			if(tree->c_lnL > tree->best_lnL)
+			if(tree->c_lnL > lnL_best)
 			{
-				Copy_Tree(tree, tree->best_tree);
-				Record_Model(tree->mod, tree->best_tree->mod);
-				tree->best_lnL = tree->c_lnL;
+				Copy_Tree(tree, best_tree);
+				Record_Model(tree->mod, best_tree->mod);
+				lnL_best = tree->c_lnL;
 			}
 		}
 		
 		else
 		{
 			/* copy old tree back to current tree */
-			Copy_Tree(tree->old_tree, tree);
-			Record_Model(tree->old_tree->mod, tree->mod);
-			tree->c_lnL = last_lnL;
+			Copy_Tree(last_tree, tree);
+			Record_Model(last_tree->mod, tree->mod);
+			tree->c_lnL = lnL_current;
 		}
 		
 		/* print sampled tree */
@@ -101,9 +99,9 @@ void Empirical_Bayes(arbre* tree)
 	}
 		
 	/* copy best tree found back into tree */
-	Copy_Tree(tree->best_tree, tree);
-	Record_Model(tree->best_tree->mod, tree->mod);
-	tree->c_lnL = tree->best_lnL;
+	Copy_Tree(best_tree, tree);
+	Record_Model(best_tree->mod, tree->mod);
+	tree->c_lnL = lnL_best;
 	
 	printf("BEST: %f\n", tree->c_lnL);
 	

@@ -1468,7 +1468,9 @@ void Optimiz_Ext_Br(arbre *tree)
 
 void Optimiz_All_Free_Param(arbre *tree, int verbose)
 {
+	#ifdef DEBUG
 	PhyML_Printf(" . debug: optimiz.c 1471: entered Optimiz_All_Free_Param\n");
+	#endif
 
 	int  init_both_sides;
 
@@ -1714,7 +1716,9 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 	tree->both_sides = init_both_sides;
 
+	#ifdef DEBUG
 	PhyML_Printf(" . debug: optimiz.c 1717: leaving Optimiz_All_Free_Param\n");
+	#endif
 }
 
 

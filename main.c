@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 			  //}
 		  }
 
-		  tree->both_sides = 1;
+		  tree->both_sides = 1;		  
 		  Lk(tree);
 		  Pars(tree);
 		  Get_Tree_Size(tree);
