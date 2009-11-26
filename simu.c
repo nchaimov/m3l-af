@@ -41,7 +41,7 @@ void Simu_Loop(arbre *tree)
 	{
 		lk_old = tree->c_lnL;
 
-		PhyML_Printf(" . debug: Simu_Loop: calling Optimiz_All_Free_Param\n");
+		//PhyML_Printf(" . debug: Simu_Loop: calling Optimiz_All_Free_Param\n");
 		Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 		//PhyML_Printf(" . debug: Simu_Loop: returned from Optimiz_All_Free_Param\n");
 
@@ -99,7 +99,6 @@ int Simu(arbre *tree, int n_step_max)
 		Warn_And_Exit("");
 	}
 
-
 	do
 	{
 		++step;
@@ -109,6 +108,7 @@ int Simu(arbre *tree, int n_step_max)
 		//PhyML_Printf(" . debug: Simu 109: calling Lk:\n");
 		Lk(tree);
 		//PhyML_Printf(" . debug: Simu 109: returned from Lk\n");
+
 
 		if(tree->c_lnL < old_loglk)
 		{
@@ -120,7 +120,9 @@ int Simu(arbre *tree, int n_step_max)
 				For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
 			}
 			tree->both_sides = 1;
+			//PhyML_Printf(" . debug: Simu 131: calling Lk:\n");
 			Lk(tree);
+			//PhyML_Printf(" . debug: Simu 131: returned from Lk\n");
 		}
 
 		if(step > n_step_max)
@@ -151,6 +153,10 @@ int Simu(arbre *tree, int n_step_max)
 		Fix_All(tree);
 		n_neg = 0;
 		//PhyML_Printf(" . debug: simu.c 148: calling NNI for every branch.\n");
+#ifdef COMPRESS_SUBALIGNMENTS
+	debug_Lk_nocompress(tree);
+#endif
+
 		For(i,2*tree->n_otu-3)
 		{
 			if((!tree->t_edges[i]->left->tax) && (!tree->t_edges[i]->rght->tax))

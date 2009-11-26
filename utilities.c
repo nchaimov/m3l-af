@@ -963,6 +963,8 @@ void Init_Tree(arbre *tree, int n_otu)
 	tree->print_boot_val            = 0;
 	tree->print_alrt_val            = 0;
 	tree->num_curr_branch_available = 0;
+
+	tree->red_arrays_invalid = 1;
 }
 
 /*********************************************************/
@@ -3218,12 +3220,6 @@ int Sort_Edges_Depth(arbre *tree, edge **sorted_edges, int n_elem)
 void NNI(arbre *tree, edge *b_fcus, int do_swap)
 {
 
-	// debug:
-	//PhyML_Printf(" . debug: entered NNI with edge %d\n", b_fcus->num);
-	//PhyML_Printf(" . debug: b_fcus->left = %d\n", b_fcus->left->num);
-	//PhyML_Printf(" . debug: b_fcus->rght = %d\n", b_fcus->rght->num);
-	// end debug:
-
 	int l_r, r_l, l_v1, l_v2, r_v3, r_v4;
 	node *v1,*v2,*v3,*v4;
 	m3ldbl lk0, lk1, lk2;
@@ -3294,17 +3290,28 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	/*
 	 * The plan: swap a branch, optimize branch lengths, and then swap it back.
 	 */
+	// debug stuff:
+	int dima = tree->mod->ns;
+	int dimb = dima * tree->mod->n_l;
+	int dimc = dimb * tree->mod->n_catg;
+	int site = 3;
+	if ( (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] < 0.0 || (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] > 1.0 )
+	{
+		PhyML_Printf(" . debug: utilities.c 3304: the p_lk_left is invalid for edge %d at site %d\n", b_fcus->num, site);
+	}
+
+
 	//PhyML_Printf(" . debug: utilities.c 3312: calling Swap(%d, %d, %d, %d)\n", v2->num, b_fcus->left->num, b_fcus->rght->num, v3->num);
 	Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
+
 	tree->both_sides = 1;
 
-	// debug:
-	// This must be changed, essentially we are turning-off compression here:
-	//debug_Lk_nocompress(tree);
 
-	//PhyML_Printf(" . debug: utilities.c: calling Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
+	//PhyML_Printf(" . debug: utilities.c 3306: calling Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 	lk1_init = Update_Lk_At_Given_Edge(b_fcus,tree);
-	//PhyML_Printf(" . debug: utilities.c: returned from Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
+	//PhyML_Printf(" . debug: utilities.c 3308: returned from Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
+
+
 	For(i,tree->mod->n_l){
 		l_infa[i] = 10.*b_fcus->l[i];
 		l_max[i]  = b_fcus->l[i];
@@ -3314,19 +3321,22 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	if(tree->mod->s_opt->fast_nni)
 	{
 		Fast_Br_Len(b_fcus,tree,1);
+		//PhyML_Printf(" . debug: utilities.c 3317\n");
 		lk1 = Lk_At_Given_Edge(b_fcus,tree);
+		//PhyML_Printf(" . debug: utilities.c 3319\n");
 	}
 	else
 	{
 		// At the end of this loop, lk1 will contain the lnL for the tree with all branch
 		// lengths optimized for edge b_fcus.
 		For(i,tree->mod->n_l){
-		//	PhyML_Printf("Tree lnL (line 2983 of utilities.c): %lf \n",tree->c_lnL);
+			//PhyML_Printf(" . debug: utilities.c 3324\n");
 			lk1 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty,i);
+			//PhyML_Printf(" . debug: utilities.c 3332\n");
 		}
 	}
 
@@ -3352,9 +3362,6 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	For(i,tree->mod->n_l) b_fcus->l[i] = bl_init[i];
 	tree->both_sides = 1;
 
-	// debug:
-	//debug_Lk_nocompress(tree);
-
 	//PhyML_Printf(" . debug: utilities.c: calling Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
 	lk2_init = Update_Lk_At_Given_Edge(b_fcus,tree);
 	//PhyML_Printf(" . debug: utilities.c: returned from Update_Lk_At_Given_Edge(edge %d)\n", b_fcus->num);
@@ -3367,14 +3374,15 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	if(tree->mod->s_opt->fast_nni)
 	{
 		Fast_Br_Len(b_fcus,tree,1);
+		PhyML_Printf(" . debug: utilities.c 3373\n");
 		lk2 = Lk_At_Given_Edge(b_fcus,tree);
+		PhyML_Printf(" . debug: utilities.c 3375\n");
 	}
 	else
 	{
 		// At the end of this loop, lk2 will contain the lnL for the tree with all branch
 		// lengths optimized for edge b_fcus.
 		For(i,tree->mod->n_l){
-		//	PhyML_Printf("Tree lnL (line 3024 of utilities.c): %lf \n",tree->c_lnL);
 			lk2 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
@@ -3401,10 +3409,9 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	For(i,tree->mod->n_l) b_fcus->l[i] = bl_init[i];
 	tree->both_sides = 1;
 
-	// debug:
-	//debug_Lk_nocompress(tree);
-
+	//PhyML_Printf(" . debug: utilities.c 3412\n");
 	lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
+	//PhyML_Printf(" . debug: utilities.c 3414\n");
 
 
 	//PhyML_Printf(" . debug: utilities.c 3410: lk0_init = %f, lk_init = %f\n", lk0_init, lk_init);
@@ -3422,12 +3429,13 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	if(tree->mod->s_opt->fast_nni)
 	{
 		Fast_Br_Len(b_fcus,tree,1);
+		PhyML_Printf(" . debug: utilities.c 3432\n");
 		lk0 = Lk_At_Given_Edge(b_fcus,tree);
+		PhyML_Printf(" . debug: utilities.c 3432\n");
 	}
 	else
 	{
 		For(i,tree->mod->n_l){
-		//	PhyML_Printf("Tree lnL (line 3076 of utilities.c): %lf \n",tree->c_lnL);
 			lk0 = Br_Len_Brent_Iter(10.*b_fcus->l[i],b_fcus->l[i],BL_MIN,
 					tree->mod->s_opt->min_diff_lk_local,
 					b_fcus,tree,
@@ -3523,7 +3531,9 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 			Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
 			For(i,tree->mod->n_l) b_fcus->l[i] = l1[i];
 			tree->both_sides = 1;
+			PhyML_Printf(" . debug: utilities.c 3526: calling Lk\n");
 			Lk(tree);
+			PhyML_Printf(" . debug: utilities.c 3526: returned from Lk\n");
 		}
 		else
 		{
@@ -3534,7 +3544,9 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 			Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
 			For(i,tree->mod->n_l) b_fcus->l[i] = l2[i];
 			tree->both_sides = 1;
+			PhyML_Printf(" . debug: utilities.c 3539: calling Lk\n");
 			Lk(tree);
+			PhyML_Printf(" . debug: utilities.c 3539: returned from Lk\n");
 		}
 	}
 	else
@@ -3543,7 +3555,9 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		 * Here, we decided neither Swap yielded a better tree.
 		 */
 		For(i,tree->mod->n_l) b_fcus->l[i] = bl_init[i];
+		//PhyML_Printf(" . debug: utilities.c 3559\n");
 		Update_PMat_At_Given_Edge(b_fcus,tree);
+		//PhyML_Printf(" . debug: utilities.c 3561\n");
 		tree->c_lnL = lk_init;
 	}
 
@@ -3761,6 +3775,10 @@ void Swap(node *a, node *b, node *c, node *d, arbre *tree)
 						}
 					}
 					Update_Dirs(tree);
+
+#ifdef COMPRESS_SUBALIGNMENTS
+	tree->red_arrays_invalid = 1; // we've swapped branches, to the red arrays are now dirty.
+#endif
 }
 
 /*********************************************************/
@@ -5433,6 +5451,7 @@ model *Make_Model_Basic()
 	mod->rr_num             = (int *)mCalloc(6,sizeof(int *));
 	mod->n_rr_per_cat       = (int *)mCalloc(6,sizeof(int));
 	mod->s_opt              = (optimiz *)Alloc_Optimiz();
+	mod->bl_props			= (m3ldbl *)mCalloc(1,sizeof(m3ldbl));
 
 	return mod;
 }
@@ -5459,9 +5478,7 @@ void Make_Model_Complete(model *mod)
 		mod->p_rr_branch = (m3ldbl *)mCalloc(mod->n_rr_branch,sizeof(m3ldbl));
 	}
 
-	if (!mod->bl_props)
-	{	mod->bl_props			= (m3ldbl *)mCalloc(mod->n_l,sizeof(m3ldbl));
-	}
+	mod->bl_props			= (m3ldbl *)mCalloc(mod->n_l,sizeof(m3ldbl));
 }
 
 /*********************************************************/
@@ -5696,7 +5713,6 @@ void Set_Defaults_Model(model *mod)
 	mod->rr_branch_alpha         = 0.1;
 	mod->gamma_median            = 0;
 	mod->n_l 				   = 1;
-	//mod->bl_props[0]		   = 1.0; //JSJ: initialize to all sites falling under the one set
 }
 
 /*********************************************************/
@@ -7070,6 +7086,10 @@ void Prune_Subtree(node *a, node *d, edge **target, edge **residual, arbre *tree
 			}
 #endif
 
+#ifdef COMPRESS_SUBALIGNMENTS
+	tree->red_arrays_invalid = 1; // we've swapped branches, to the red arrays are now dirty.
+#endif
+
 
 }
 
@@ -7191,6 +7211,10 @@ void Graft_Subtree(edge *target, node *link, edge *residual, arbre *tree)
 	Make_Edge_Dirs(target,target->left,target->rght);
 	Make_Edge_Dirs(residual,residual->left,residual->rght);
 	Make_Edge_Dirs(b_up,b_up->left,b_up->rght);
+
+#ifdef COMPRESS_SUBALIGNMENTS
+	tree->red_arrays_invalid = 1; // we've swapped branches, to the red arrays are now dirty.
+#endif
 }
 
 /*********************************************************/
@@ -8385,7 +8409,7 @@ void Print_Settings(option *io)
 			PhyML_Printf(" %lf,",(double)io->mod->bl_props[i]);
 		}
 	}
-	PhyML_Printf("\n                . Optimize proportion of sites in each b.l. category: \t %s", (io->fixed_props == 0) ? ("Yes"):("No"));
+	PhyML_Printf("\n                . Optimize branch length category proportions: \t %s", (io->fixed_props == 0) ? ("yes"):("no"));
 
 #ifdef COMPRESS_SUBALIGNMENTS
 	PhyML_Printf("\n                . Tree-based subalignment compression: \t\t yes");

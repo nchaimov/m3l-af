@@ -223,21 +223,23 @@ void Launch_Interface_MBL_Model(option *io)
 	PhyML_Printf("                [N] "
 			"............. Number of Branch lengths per edge:  "
 			" %i \n", io->mod->n_l);
-	PhyML_Printf("                [P] "
-			"Initial props in branch length set: [");
-	For(i,io->mod->n_l){
-		if(i+1 != io->mod->n_l){
-			PhyML_Printf(" %lf,",io->mod->bl_props[i]);
-		}else{
-			PhyML_Printf(" %lf ",io->mod->bl_props[i]);
+	if (io->mod->n_l > 1)
+	{
+		PhyML_Printf("                [P] "
+				"Initial props in branch length set: [");
+		For(i,io->mod->n_l){
+			if(i+1 != io->mod->n_l){
+				PhyML_Printf(" %lf,",io->mod->bl_props[i]);
+			}else{
+				PhyML_Printf(" %lf ",io->mod->bl_props[i]);
+			}
 		}
+		PhyML_Printf("]\n");
+		PhyML_Printf("                [F] "
+				"...... Fixed Starting Proportions (Yes/No) "
+				" %-15s \n",
+				(io->fixed_props)?("Yes"):("No"));
 	}
-	PhyML_Printf("]\n");
-
-	PhyML_Printf("                [F] "
-			"...... Fixed Starting Proportions (Yes/No) "
-			" %-15s \n",
-			(io->fixed_props)?("Yes"):("No"));
 
 	PhyML_Printf("\n\n. Are these settings correct ? "
 			"(type '+', '-', 'Y' or other letter for one to change)  ");

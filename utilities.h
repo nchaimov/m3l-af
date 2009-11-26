@@ -81,6 +81,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  SIMULATED_QUANTUM_ANNEALING 4
 #define  EMPIRICAL_BAYES             5
 
+
 #define  PI      3.141593
 #define  SQRT2PI 2.506628
 
@@ -154,7 +155,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  DEFAULT_SIZE_SPR_LIST  20
 #define  OUTPUT_TREE_FORMAT  0 /* 0-->Newick; 1-->Nexus */
 #define  MAX_PARS        1000000000
-#define  MIN_DIFF_LK_LOCAL	 1.E-04
+#define  MIN_DIFF_LK_LOCAL	 1.E-04 // VHS: changed from 1.E-03
 #define  MIN_DIFF_LK_GLOBAL	 1.E-03
 #define  MIN_DIFF_LK_MOVE    1.E-02
 
@@ -212,7 +213,7 @@ typedef struct __Node {
 
 #ifdef COMPRESS_SUBALIGNMENTS
   int								*red; /* VHS: a list of redundant sites.  For examples if red[i] = j, then site j contains the same sub-alignment pattern as site i for this node.*/
-#endif
+ #endif
 
   m3ldbl                           *score; /* score used in BioNJ to determine the best pair of nodes to agglomerate */
   m3ldbl                               *l; /* lengths of the (three or one) branch length sets connected this node */
@@ -383,6 +384,8 @@ typedef struct __Arbre {
   struct __Triplet            *triplet_struct;
 
   int                     bl_from_node_stamps; /* == 1 -> Branch lengths are determined by node times */
+
+  int					   red_arrays_invalid; /* == 1 -> the red arrays are dirty, == 0 -> the red arrays are up-to-date. */
 
 }arbre;
 

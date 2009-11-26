@@ -22,7 +22,7 @@
  */
 void Compute_Red_Arrays(node *a, node *d, arbre *tree)
 {
-	//PhyML_Printf("entered Post_Order_Foo(node %d, node %d, ...)\n", a->num, d->num);
+	//PhyML_Printf("entered Compute_Red_Arrays(node a = %d, node d = %d, ...)\n", a->num, d->num);
 
 	int i,site,state;
 	if(d->tax)
@@ -169,6 +169,13 @@ void Update_P_Lk_Red(arbre *tree, edge *b, node *d, int site)
 
 	 */
 
+	// debug:
+	/*
+	if (b->num == 3 || b->num == 31)
+	{
+		PhyML_Printf(" . debug: compress.c: entered Update_P_Lk_Red for edge %d\n", b->num);
+	}
+	*/
 	//PhyML_Printf("entered Update_P_Lk_Red(..., edge %d, node %d)\n", b->num, d->num);
 	//PhyML_Printf("left = %d, right = %d\n", b->left->num, b->rght->num);
 

@@ -159,6 +159,10 @@ void Update_Tree(matrix *mat, int x, int y, m3ldbl lx, m3ldbl ly, m3ldbl score)
   new->v[2]     = ny;
   new->num      = mat->curr_int;
 
+  //PhyML_Printf(" . debug: bionj.c 162:\n");
+  //PhyML_Printf(" lx = %f\n", lx);
+  //PhyML_Printf(" nx->l[0] = %f\n", nx->l[0]);
+
   //PhyML_Printf(" . debug: connect node %d to new node %d via edge %d\n", nx->num, new->num, mat->tree->num_curr_branch_available);
   Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->t_edges[mat->tree->num_curr_branch_available],mat->tree);
   mat->tree->num_curr_branch_available++;
@@ -173,6 +177,10 @@ void Update_Tree(matrix *mat, int x, int y, m3ldbl lx, m3ldbl ly, m3ldbl score)
   new->b[1]->l[0]  = lx;
   new->b[2]->l[0]  = ly;
   new->score[0] = score;
+
+  //PhyML_Printf(" . debug: bionj.c 177:\n");
+  //PhyML_Printf(" lx = %f\n", lx);
+  //PhyML_Printf(" nx->l[o] = %f\n", nx->l[0]);
 
   nx->l[0]      = lx;
   ny->l[0]      = ly;

@@ -259,7 +259,11 @@ void Pre_Order_Lk(node *a, node *d, arbre *tree)
 	}
 }
 
-
+//
+// THis is basically the Lk method without the COMPRESS_SUBALIGNMENT pragmas.
+//
+// It is for debugging tests, and should be removed from the production code.
+//
 void debug_Lk_nocompress(arbre *tree)
 {
 	int br,site;
@@ -291,10 +295,6 @@ void debug_Lk_nocompress(arbre *tree)
 			For(site,n_patterns) tree->t_edges[br]->sum_scale_f_left[site] = .0;
 
 		Update_PMat_At_Given_Edge(tree->t_edges[br],tree);
-
-		// debug:
-		//PhyML_Printf(" . debug: P matrix at edge %d:\n", tree->t_edges[br]->num);
-		//Print_Pij( tree->t_edges[br]->Pij_rr, tree->mod);
 	}
 
 	// VHS: the post- and pre-order traversals begin at a random node (the 0th node, to be specific).
@@ -305,7 +305,8 @@ void debug_Lk_nocompress(arbre *tree)
 		Pre_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
 	}
 
-
+	// 10.11.2009: here.
+	return;
 
 	tree->c_lnL     = .0;
 	tree->curr_catg =  0;
@@ -351,10 +352,6 @@ void Lk(arbre *tree)
 	int br,site;
 	int n_patterns;
 
-	//PhyML_Printf(" . debug: entered Lk(...)\n");
-
-	//Print_Tree_Screen(tree);
-
 	n_patterns = tree->n_pattern;
 	tree->number_of_lk_calls++;
 	Set_Model_Parameters(tree->mod);
@@ -364,11 +361,10 @@ void Lk(arbre *tree)
 	if(tree->bl_from_node_stamps) MC_Bl_From_T(tree);
 #endif
 
-	//	chunk = (2*tree->n_otu-3)/omp_get_num_procs();
+	int chunk = (2*tree->n_otu-3)/omp_get_num_procs();
 	//	printf("chunk: %i total: %i\n",chunk,(2*tree->n_otu-3));
 
-	// #pragma omp parallel
-	//for shared(tree,n_patterns,chunk) schedule(static,chunk)
+#pragma omp parallel for shared(tree,n_patterns,chunk) schedule(static,chunk)
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
 		if(!tree->t_edges[br]->rght->tax)
@@ -389,6 +385,7 @@ void Lk(arbre *tree)
 	//PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
 	Init_All_Nodes_Red(tree);
 	Compute_Red_Arrays(tree->noeud[0], tree->noeud[0]->v[0], tree);
+	tree->red_arrays_invalid = 0; // now the red arrays are valid again.
 
 	for(site = 0; site < n_patterns; site++)
 	{
@@ -526,10 +523,26 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 
 		if(tree->data->wght[site] > MDBL_MIN)
 		{
+			//PhyML_Printf(" . debug: lk.c 533: calling Lk_Core for edge %d, site %d\n", b_fcus->num, site);
+
+			// debug stuff:
+			/*
+			int dima = tree->mod->ns;
+			int dimb = dima * tree->mod->n_l;
+			int dimc = dimb * tree->mod->n_catg;
+	*/
+
+			//debug:
+//			if ( (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] < 0.0 || (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] > 1.0 )
+//			{
+//				PhyML_Printf(" . debug: lk.c 543: the p_lk_left is invalid for edge %d at site %d\n", b_fcus->num, site);
+//			}
+
+
 			Lk_Core(b_fcus,tree,site);
 		}
 		else tree->c_lnL_sorted[site] = 1.; /* WARNING : change cautiously */
-		//PhyML_Printf(" . debug: lk.c 443: tree->c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
+		//PhyML_Printf(" . debug: lk.c 537: returned from Lk_Core: tree->c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
 	}
 
 	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
@@ -555,6 +568,8 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 	* the likelihood given the branch length set.
 	*/
 
+	//PhyML_Printf(" . debug lk.c 563: entered Lk_Core with edge %d\n", b->num);
+	//PhyML_Printf("   connecting nodes %d on left and %d on right\n", b->left->num, b->rght->num);
 
 	/**
 	* Global variables (in the scope of this loop)
@@ -624,13 +639,18 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 							{
 								sum +=	b->Pij_rr[catg*dimd + i*dimaa + k*dima + l] *
 										(m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l];
+								// debug:
+								if ( (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l] < 0.0 || (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l] > 1.0)
+								{
+									PhyML_Printf(" . debug: lk.c 637: in Lk_Core: problem with edge %d, site %d, catg %d, bl %d, k %d, l%d\n", b->num, site, catg, i, k, l);
+								}
 							}
 							site_lk_set +=
 									sum *
 									tree->mod->pi[k] *
 									(m3ldbl)b->p_lk_tip_r[site*dima+k];
 							//debug:
-							//PhyML_Printf(" . debug: lk 536: site_lk_set = %f\n", site_lk_set);
+							//PhyML_Printf(" . debug: lk 536: site_lk_set = %e\n", site_lk_set);
 						}
 					}
 				}
@@ -646,12 +666,22 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 						{
 							sum += b->Pij_rr[catg*dimd + i*dimaa + k*dima + l] *
 									(m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l];
+							// note on 10.11.2009: VHS: the value in (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l];
+							// equals nan for edge 3, site 3 in the apgm83 test suite.
+							// Why?
+							//PhyML_Printf("sum = %e += %e * %e\n", sum, b->Pij_rr[catg*dimd + i*dimaa + k*dima + l], (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l]);
+							// debug:
+							//if ( (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l] < 0.0 || (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l] > 1.0)
+							//{
+							//	PhyML_Printf(" . debug: lk.c 668: in Lk_Core: problem with edge %d, site %d, catg %d, bl %d, k %d, l%d\n", b->num, site, catg, i, k, l);
+							//}
 						}
 						site_lk_set +=
 								sum *
 								tree->mod->pi[k] *
 								(m3ldbl)b->p_lk_rght[site*dimc + catg*dimb + i*dima + k];
 						//debug:
+						//PhyML_Printf("tree->mod->pi[%d] = %d\n",k, tree->mod->pi[k]);
 						//PhyML_Printf(" . debug: lk 556: site_lk_set = %f\n", site_lk_set);
 					}
 				}
@@ -660,7 +690,7 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 			//PhyML_Printf(" . debug: tree->log_site_lk_set[BL set %d][site %d] = %f\n", i, site, site_lk_set);
 
 			site_lk_cat += site_lk_set * tree->mod->bl_props[i];
-			//PhyML_Printf( " %f * %f = %f\n", site_lk_set, tree->mod->bl_props[i], site_lk_set * tree->mod->bl_props[i]);
+			//PhyML_Printf( " . debug: lk 672: %lf * %lf = %lf\n", site_lk_set, tree->mod->bl_props[i], site_lk_set * tree->mod->bl_props[i]);
 		} // end for BL
 
 		// debug:
@@ -670,14 +700,12 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 		tree->log_site_lk_cat[catg][site] = site_lk_cat;
 
 		site_lk += site_lk_cat * tree->mod->gamma_r_proba[catg];
-
-		//PhyML_Printf(" . debug: site_lk = %e\n", site_lk);
 	} // end for gamma
 
 	if(site_lk < 1.E-300)
 	{
 		site_lk = 1.E-300;
-		//PhyML_Printf(" . debug: WARNING, site_lk is too small! new site_lk = %f\n", site_lk);
+		PhyML_Printf(" . debug: WARNING, site_lk is too small! new site_lk = %e\n", site_lk);
 	}
 
 
@@ -706,12 +734,13 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 		}
 	}
 
-
+/*
 	if(log_site_lk < -MDBL_MAX)
 	{
-		PhyML_Printf("\n .debug: log_site_lk = %f\n", log_site_lk);
+		PhyML_Printf("\n . debug: lk.c near 740: log_site_lk = %f\n", log_site_lk);
 		Warn_And_Exit("\nlog_site_lk < -MDBL_MAX\n");
 	}
+*/
 
 	//PhyML_Printf(" . debug: lk.c 712: tree->c_lnL_sorted[%d] = %d * %f = %f\n", site, tree->data->wght[site], log_site_lk, tree->c_lnL_sorted[site]);
 	//PhyML_Printf(" . debug: line 713: scale_left = %f, scale_right = %f\n", scale_left, scale_rght);
@@ -1041,6 +1070,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 
 	//PhyML_Printf("entered Update_P_Lk(..., edge %d, node %d)\n", b->num, d->num);
 	//PhyML_Printf("left = %d, right = %d\n", b->left->num, b->rght->num);
+
 
 	node *n_v1, *n_v2;
 	m3ldbl p1_lk1,p2_lk2;
@@ -1600,9 +1630,33 @@ m3ldbl Lk_Dist(m3ldbl *F, m3ldbl *dist, model *mod, arbre *tree)
 
 m3ldbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 {
+	//PhyML_Printf(" . debug: lk.c 1607: tree->c_lnL = %f\n", tree->c_lnL);
+
+	// debug stuff:
+	int dima = tree->mod->ns;
+	int dimb = dima * tree->mod->n_l;
+	int dimc = dimb * tree->mod->n_catg;
+	int site = 3;
+	if ( (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] < 0.0 || (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] > 1.0 )
+	{
+		PhyML_Printf(" . debug: lk.c 1648: the p_lk_left is invalid for edge %d at site %d\n", b_fcus->num, site);
+	}
+
+
 	if(!b_fcus->left->tax) Update_P_Lk(tree,b_fcus,b_fcus->left);
 	if(!b_fcus->rght->tax) Update_P_Lk(tree,b_fcus,b_fcus->rght);
+
+	// debug stuff:
+	/*
+	if ( (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] < 0.0 || (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] > 1.0 )
+	{
+		PhyML_Printf(" . debug: lk.c 1650: the p_lk_left is invalid for edge %d at site %d\n", b_fcus->num, site);
+	}
+	*/
+
 	tree->c_lnL = Lk_At_Given_Edge(b_fcus,tree);
+	//PhyML_Printf(" . debug: lk.c 1615: tree->c_lnL = %f\n", tree->c_lnL);
+
 	return tree->c_lnL;
 }
 
