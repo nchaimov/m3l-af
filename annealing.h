@@ -56,7 +56,8 @@ typedef struct __ANNEALING{
 	m3ldbl	gamma_sigma;
 	m3ldbl  pinvar_sigma;
 	m3ldbl  emig_sigma;
-	int 	no_change;
+	int 	no_change; // 1 = we made NO changes to the parameters (and therefore, likelihoods do
+						// not need to be recomputed.  If == 0, then YES we made changes.
 
 	int     random_seed;
     gsl_rng *rng;

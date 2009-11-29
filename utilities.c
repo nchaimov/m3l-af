@@ -5744,7 +5744,7 @@ void Set_Defaults_Optimiz(optimiz *s_opt)
 	s_opt->opt_alpha            = 1;
 	s_opt->opt_kappa            = 1;
 	s_opt->opt_bl               = 1;
-	s_opt->opt_props			= 1; //JSJ: defaults to 0 because optimizing 1 proportion (default) makes no sense...
+	s_opt->opt_props			= 0;
 	s_opt->opt_lambda           = 0;
 	s_opt->opt_pinvar           = 0;
 	s_opt->opt_num_param        = 0;
@@ -8376,7 +8376,9 @@ void Print_Settings(option *io)
 		if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
 			PhyML_Printf("\n                . Search heuristic : \t\t\t\t simulated thermal annealing");
 		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING)
-			PhyML_Printf("\n                . Tree topology search : \t\t\t simulated quantum annealing");
+			PhyML_Printf("\n                . Search heuristic : \t\t\t simulated quantum annealing");
+		else if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+			PhyML_Printf("\n                . Search heuristic  : \t\t\t empirical Bayes MCMC");
 
 
 		PhyML_Printf("\n                . Starting tree : \t\t\t\t %s",s);

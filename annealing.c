@@ -258,23 +258,9 @@ m3ldbl Get_distance_between_topologies(node *nodea, node *nodeb){
 
 // helper for "Get_Neighbor_Proposition"
 void Step_Brlen_Proportion(arbre *tree){
-	// For now, do something simple and stupid, like stepping branch lengths by +/- 0.001.
-	// We'll eventually do something more sophisticated, like selected the new branch
-	// lengths from a Dirichlet distribution.
-	// when we update proportions we need to recalculate the likelihoods on the whole tree...
 	if(tree->mod->s_opt->opt_props == 1){
 		tree->both_sides = 1;
 		anneal.no_change = 0;
-		//		int i,j;
-		//		double r = (((double)rand() + 1.0) / ((double)(RAND_MAX)+ 1.0));
-		//		int prange = (int)(Rand_Int(1,(tree->mod->n_l)) * r);
-		//		For(i,prange){
-		//			j = Rand_Int(0,(tree->mod->n_l - 1));
-		//			r = ((((double)rand() + 1.0) / ((double)(RAND_MAX)+1.0)) - 0.5)/10.0; //r is in the range -0.04999 to 0.049999
-		//			tree->props[j] += r;
-		//			if(tree->props[j] > 1.0) tree->props[j] = 1.0;
-		//			else if(tree->props[j] < 0.0) tree->props[j] = 0.0;
-		//		}
 		double *alpha;
 		alpha = (m3ldbl *)mCalloc(tree->mod->n_l, sizeof(m3ldbl));
 		int i;

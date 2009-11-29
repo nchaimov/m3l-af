@@ -130,9 +130,6 @@ int main(int argc, char **argv)
 		  }
 
 // VHS: this is code from JSJ, which I think we can scrap:
-
-
-
 			//JSJ: Make sure that the user hasn't defined starting
 				//parameters that we need to copy into the tree.
 //				if(tree->mod->n_l > 1) io->mod->s_opt->opt_five_branch = 0;
@@ -148,7 +145,6 @@ int main(int argc, char **argv)
 //						PhyML_Printf("\n. Err. in file %s on line %d\n",__FILE__,__LINE__);
 //						Warn_And_Exit("\n");
 //					}
-
 //					For(i,tree->mod->n_l){
 //						tree->mod->bl_props[i] = io->mod->bl_props[i];
 //					}
@@ -187,8 +183,9 @@ int main(int argc, char **argv)
 		  */
 
 		  //
-		  // VHS: precondition entering all these cases: the tree contains allocated space for
-		  // red. arrays, the red arrays are initialized, the patterns have been collapsed according
+		  // VHS: If subalignment compression is enabled, then the following precondition is true
+		  // as we enter this switch block: (1) the tree contains allocated space for
+		  // red. arrays, (2) the red arrays are initialized, (3) the patterns have been collapsed according
 		  // to the phylogeny.
 		  //
 		  if(tree->mod->s_opt->opt_topo)
@@ -204,10 +201,10 @@ int main(int argc, char **argv)
 				  Best_Of_NNI_And_SPR(tree);
 				  break;
 			  case SIMULATED_THERMAL_ANNEALING:
-				  Thermal_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0));//JSJ: 0 for verbose...
+				  Thermal_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0));
 				  break;
 			  case SIMULATED_QUANTUM_ANNEALING:
-				  Quantum_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0)); //JSJ: 0 for verbose...
+				  Quantum_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0));
 				  break;
               case EMPIRICAL_BAYES:
                   Empirical_Bayes(tree);
@@ -230,7 +227,7 @@ int main(int argc, char **argv)
 			  //}
 		  }
 
-		  tree->both_sides = 1;		  
+		  tree->both_sides = 1;
 		  Lk(tree);
 		  Pars(tree);
 		  Get_Tree_Size(tree);

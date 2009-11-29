@@ -622,7 +622,7 @@ typedef struct __Option { /* mostly used in 'options.c' */
   int                        in_tree; /* =1 iff a user input tree is used as input */
   int				      user_props; /* JSJ: 0-> proportions are not user defined. */
   int 					   user_topo; /* JSJ: 0-> user has not defined a topo search method */
-  int					 fixed_props; /* JSJ: fix the proportion of sites, defaults to 0 */
+  int					 fixed_props;
   int 					  num_anneal_stages; /* JSJ: the temp count for use in Simulated Annealing */
   int 					   iters_per_stage; /* JSJ: the number of iterations per temp in Simulated Annealing*/
   double					temp_end; /* JSJ: the following, until the break, are options for simulated annealing*/

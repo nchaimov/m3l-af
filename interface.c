@@ -305,9 +305,11 @@ void Launch_Interface_MBL_Model(option *io)
 		else
 		{
 			io->fixed_props = 0;
-			io->mod->s_opt->opt_props = io->fixed_props;
+			io->mod->s_opt->opt_props = 1;
 			io->mod->s_opt->opt_five_branch = 0;
 			//Default to Simulated Thermal Annealing if there is more than 1 branch length category
+			// The user can change back to NNI, SPR, etc., but we *think* simulated annealing provides a
+			// better optimization hueristic for complex likelihood landscapes.
 			if(io->user_topo == 0)
 			{
 				io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
@@ -323,7 +325,7 @@ void Launch_Interface_MBL_Model(option *io)
 			io->mod->s_opt->opt_props = io->fixed_props;
 		} else {
 			io->fixed_props = (io->fixed_props)?(0):(1);
-			io->mod->s_opt->opt_props = io->fixed_props;
+			io->mod->s_opt->opt_props = 1;
 		}
 		break;
 	}
@@ -1607,6 +1609,9 @@ void Launch_Interface_Topo_Search(option *io)
 		}else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING)
 		{
 			strcpy(s,"Simulated Quantum Annealing \0");
+		}else if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+		{
+			strcpy(s,"Empirial Bayes MCMC \0");
 		}
 
 		PhyML_Printf("                [S] "
@@ -1629,11 +1634,18 @@ void Launch_Interface_Topo_Search(option *io)
 						" %-15d \n",io->mod->s_opt->n_rand_starts);
 			}
 		}
+
+		if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+		{
+			PhyML_Printf("                [G] "
+					"........................ MCMC generations "
+					" %-15d \n",io->eb_n_gens);
+		}
 	}
 	else
 	{
 		PhyML_Printf("                [L] "
-				".......................... Optimise branch lengths "
+				".......................... Optimize branch lengths "
 				" %-15s \n",
 				(io->mod->s_opt->opt_bl)?("yes"):("no"));
 	}
@@ -1745,6 +1757,14 @@ void Launch_Interface_Topo_Search(option *io)
 		}
 		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING){
 
+			io->mod->s_opt->topo_search         = EMPIRICAL_BAYES;
+			io->mod->s_opt->n_rand_starts       = 1;
+			io->user_topo 						= 1;
+			io->mod->s_opt->random_input_tree   = 0;
+			io->mod->s_opt->greedy              = 0;
+		}
+		else if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES){
+
 			io->mod->s_opt->topo_search         = NNI_MOVE;
 			io->mod->s_opt->n_rand_starts       = 1;
 			io->user_topo 						= 1;
@@ -1767,6 +1787,26 @@ void Launch_Interface_Topo_Search(option *io)
 			strcpy(io->out_trees_file,io->in_seq_file);
 			strcat(io->out_trees_file,"_phyml_trees.txt");
 		}
+		break;
+	}
+	case 'G' :
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. How many generations to run MCMC? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atoi(n) < 1)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the number of generations must be a positive integer\n");
+			PhyML_Printf("\n. The number of generations must be a positive integer\n");
+			PhyML_Printf("\n. Enter a new value > ");
+			Getstring_Stdin(n);
+		}
+		io->eb_n_gens = atoi(n);
+		Free(n);
 		break;
 	}
 	default :
