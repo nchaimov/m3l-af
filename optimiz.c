@@ -198,8 +198,9 @@ m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 			Lk(tree);
 			if(tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local)
 			{
-				PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-				Warn_And_Exit("");
+				//PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+				//Warn_And_Exit("");
+				break;
 			}
 			return tree->c_lnL;
 		}
@@ -268,7 +269,11 @@ m3ldbl Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		}
 	}
 
-	Exit("\n. Too many iterations in BRENT !");
+	// VHS: instead of erring, return what we have, even if it's not very good:
+	Lk(tree);
+	return tree->c_lnL;
+
+	Exit("\n. 1 Too many iterations in BRENT !");
 	return(-1);
 	/* Not Reached ??  *xmin=x;   */
 	/* Not Reached ??  return fx; */
@@ -635,7 +640,7 @@ m3ldbl Br_Len_Brent_Iter(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 			}
 		}
 	}
-	if(iter > BRENT_ITMAX) PhyML_Printf("\n. Too many iterations in BRENT (%d) (%f)",iter,b_fcus->l);
+	if(iter > BRENT_ITMAX) PhyML_Printf("\n. 2 Too many iterations in BRENT (%d) (%f)",iter,b_fcus->l);
 
 	return(-1);
 	/* Not Reached ??  *xmin=x;   */
@@ -815,7 +820,7 @@ m3ldbl Br_Len_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol,
 		}
 
 	}
-	if(iter > BRENT_ITMAX) PhyML_Printf("\n. Too many iterations in BRENT (%d) (%f)",iter,b_fcus->l[0]);
+	if(iter > BRENT_ITMAX) PhyML_Printf("\n. 3 Too many iterations in BRENT (%d) (%f)",iter,b_fcus->l[0]);
 
 	return(-1);
 	/* Not Reached ??  *xmin=x;   */
@@ -1015,7 +1020,7 @@ m3ldbl Time_Stamps_Mult_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		}
 	}
 	tree->mod->s_opt->tree_size_mult = 1.0;
-	if(iter > BRENT_ITMAX) PhyML_Printf("\n. Too many iterations in BRENT (%d)",iter);
+	if(iter > BRENT_ITMAX) PhyML_Printf("\n. 4 Too many iterations in BRENT (%d)",iter);
 	return(-1);
 	/* Not Reached ??  *xmin=x;   */
 	/* Not Reached ??  return fx; */
@@ -1379,6 +1384,8 @@ void Round_Optimize(arbre *tree, allseq *data, int n_round_max)
 
 void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *alldata)
 {
+	//PhyML_Printf(" . debug: in Optimize_Br_Len_Serie\n");
+
 	int i,j;
 
 	m3ldbl lk_init;
@@ -1394,13 +1401,12 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 	}
 
 
-	if(tree->c_lnL < lk_init - (tree->mod->s_opt->min_diff_lk_local))
-	{//JSJ: We hit this error when running SPR...
+//	if(tree->c_lnL < lk_init - (tree->mod->s_opt->min_diff_lk_local))
+//	{//JSJ: We hit this error when running SPR...
 //		For(j,tree->mod->n_l) PhyML_Printf("\n.Bl Set# %i: %lf %lf %lf %lf",j,(double)10.*b_fcus->l[j],(double)b_fcus->l[j],(double)BL_MIN,(double)b_fcus->l[j]);
-
 //		PhyML_Printf("\n. %f -- %f",lk_init,tree->c_lnL);
-	//	Warn_And_Exit("\n. Err. in Optimize_Br_Len_Serie\n");
-	}
+//	//	Warn_And_Exit("\n. Err. in Optimize_Br_Len_Serie\n");
+//	}
 
 	if(d->tax) return;
 	else For(i,3) if(d->v[i] != a)
@@ -1416,6 +1422,8 @@ void Optimize_Br_Len_Serie(node *a, node *d, edge *b_fcus, arbre *tree, allseq *
 
 void Optimiz_Ext_Br(arbre *tree)
 {
+	//PhyML_Printf(" . debug: in Optimiz_Ext_Br\n");
+
 	int i,j;
 	edge *b;
 	m3ldbl lk, lk_init;
@@ -1468,9 +1476,7 @@ void Optimiz_Ext_Br(arbre *tree)
 
 void Optimiz_All_Free_Param(arbre *tree, int verbose)
 {
-	#ifdef DEBUG
-	PhyML_Printf(" . debug: optimiz.c 1471: entered Optimiz_All_Free_Param\n");
-	#endif
+	//PhyML_Printf(" . debug: optimiz.c 1471: entered Optimiz_All_Free_Param\n");
 
 	int  init_both_sides;
 
@@ -1511,8 +1517,6 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 	if(tree->mod->s_opt->opt_kappa)
 	{
-		PhyML_Printf(" . debug: optimiz.c 1512: optimizing kappa\n");
-
 		tree->mod->update_eigen = 1;
 		Optimize_Single_Param_Generic(tree,&(tree->mod->kappa),
 				.1,100.,
@@ -1529,7 +1533,6 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 	if(tree->mod->s_opt->opt_lambda)
 	{
-		PhyML_Printf(" . debug: optimiz.c 1530: optimizing lambda\n");
 
 		Optimize_Single_Param_Generic(tree,&(tree->mod->lambda),.001,100.,
 				tree->mod->s_opt->min_diff_lk_global,
@@ -1544,10 +1547,7 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 	if((tree->mod->s_opt->opt_pinvar) && (tree->mod->s_opt->opt_alpha))
 	{
-		PhyML_Printf(" . debug: optimiz.c 1545: optimizing alpha and pinvar\n");
-
 		Optimiz_Alpha_And_Pinv(tree);
-		PhyML_Printf(" . debug: optimiz.c 1540\n");
 		if(verbose)
 		{
 			Print_Lk(tree,"[Alpha              ]");
@@ -1555,14 +1555,11 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 			Print_Lk(tree,"[P-inv              ]");
 			PhyML_Printf("[%10f]",tree->mod->pinvar);
 		}
-		PhyML_Printf(" . debug: optimiz.c 1548\n");
 	}
 	else
 	{
 		if(tree->mod->s_opt->opt_pinvar)
 		{
-			PhyML_Printf(" . debug: optimiz.c 1562: optimizing pinvar\n");
-
 			Optimize_Single_Param_Generic(tree,&(tree->mod->pinvar),
 					.0001,0.9999,
 					tree->mod->s_opt->min_diff_lk_global,
@@ -1577,7 +1574,6 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 		if(tree->mod->s_opt->opt_alpha)
 		{
-			PhyML_Printf(" . debug: optimiz.c 1578: optimizing alpha\n");
 
 			if(tree->mod->n_catg > 1)
 				Optimize_Single_Param_Generic(tree,&(tree->mod->alpha),
@@ -1613,6 +1609,20 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 		}
 		if(verbose) Print_Lk(tree,"[Nucleotide freqs.  ]");
 		tree->mod->update_eigen = 0;
+	}
+
+	// VHS: Here we force a round of branch-length optization to occur.
+	Optimize_Br_Len_Serie(tree->noeud[0],
+							   tree->noeud[0]->v[0],
+							   tree->noeud[0]->b[0],
+							   tree,
+							   tree->data);
+	tree->both_sides = 1;
+	Lk(tree);
+	if(verbose)
+	{
+		Print_Lk(tree,"[Branch lengths     ]");
+		//PhyML_Printf("[%10f]",tree->mod->lambda);
 	}
 
 	if(tree->mod->use_m4mod)
@@ -1715,10 +1725,6 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 	}
 
 	tree->both_sides = init_both_sides;
-
-	#ifdef DEBUG
-	PhyML_Printf(" . debug: optimiz.c 1717: leaving Optimiz_All_Free_Param\n");
-	#endif
 }
 
 
@@ -2355,6 +2361,10 @@ m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_m
 
 			return -curr_lnL;
 		}
+
+		// for debugging purposes:
+		PhyML_Printf(" optimiz.c 1512: tree->mod->n_l = %i\n", tree->mod->n_l);
+
 		For(i,tree->mod->n_l){
 			if(fabs(e[i]) > tol1[i])
 			{
@@ -2424,7 +2434,7 @@ m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_m
 		}
 	}
 
-	Exit("\n. Too many iterations in BRENT !");
+	Exit("\n. 5 Too many iterations in BRENT !");
 	return(-1);
 }
 
@@ -2524,7 +2534,7 @@ m3ldbl Dist_F_Brent_No_Bl(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_ite
 			}
 		}
 	}
-	Exit("\n. Too many iterations in BRENT !");
+	Exit("\n. 6 Too many iterations in BRENT !");
 	return(-1);
 }
 
@@ -2735,7 +2745,7 @@ m3ldbl Missing_Dist_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, int n_ite
 			}
 		}
 	}
-	Exit("\n. Too many iterations in BRENT !");
+	Exit("\n. 7 Too many iterations in BRENT !");
 	return(-1);
 }
 
@@ -3146,7 +3156,7 @@ m3ldbl Node_Time_Brent_Fixed_Br_Len(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol,
 		}
 	}
 	/*   PhyML_Printf("\n. iter=%3d max=%3d l=%f lnL=%f init_lnL=%f",iter,n_iter_max,tree->rates->nd_t[n->num],tree->rates->c_lnL,init_lnL); */
-	if(iter > BRENT_ITMAX) PhyML_Printf("\n. Too many iterations in BRENT (%d) (%f)",iter,tree->rates->nd_t[n->num]);
+	if(iter > BRENT_ITMAX) PhyML_Printf("\n. 8 Too many iterations in BRENT (%d) (%f)",iter,tree->rates->nd_t[n->num]);
 	tree->rates->adjust_rates = 0;
 	return(-1);
 	/* Not Reached ??  *xmin=x;   */
@@ -3242,7 +3252,7 @@ m3ldbl Rates_Generic_Brent(m3ldbl ax, m3ldbl bx, m3ldbl cx, m3ldbl tol, m3ldbl *
 			}
 		}
 	}
-	if(iter > BRENT_ITMAX) PhyML_Printf("\n. Too many iterations in BRENT (%d)",iter);
+	if(iter > BRENT_ITMAX) PhyML_Printf("\n. 9 Too many iterations in BRENT (%d)",iter);
 	return(-1);
 	/* Not Reached ??  *xmin=x;   */
 	/* Not Reached ??  return fx; */
