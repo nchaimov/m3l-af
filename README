@@ -1,0 +1,29 @@
+==================================================================================
+Dear User,
+
+Congratulations, you downloaded and unpackaged PhyML+M3L.  This software is forked from the source code for PhyML version 3.0 (http://code.google.com/p/phyml/).  Although PhyML is an excellent tool for phylogenetic inference, PhyML+M3L implements a few semi-exotic algorithms not found in PhyML v3.0:
+
+(1). A mixed-branch length model of heterotachy, as discussed by Kolaczkowski et al. 2008:
+
+http://mbe.oxfordjournals.org/cgi/content/short/25/6/1054
+
+The mixed-branch length model allows each branch to have N number of possible lengths (where N > 0).  In some cases, this hetergenous model yields more accurate phylogenetic estimates.  See the paper (linked above) for more details.
+
+(2). An empirical Bayes MCMC option, to sample phylogenetic tree space while fixing branch lengths at their maximum likelihood estimates.  Compared to a fully-Bayesian MCMC strategy (such as Mr. Bayes), an empirical Bayesian strategy is more accurate at estimating the posterior probability of clades.  Please see Kolaczkowski et al. 2007: 
+
+http://mbe.oxfordjournals.org/cgi/content/abstract/msm141v1
+
+(3). Parallelization of the likelihood calculation over sites, using OpenMP.  The core likelihood algorithm calculates the likelihood of a proposed phylogeny, given a sequence alignment, an evolutionary model, and parameter values for the model.  Assuming that sites evolve independently, the likelihood of a phylogeny is calculated as the product of likelihoods at each site in the alignment.  These per-site likelihoods can be calculated in any order, as long as they are all combined together as a product.  In order to speedup the likelihood calculation, we use OpenMP to dispatch per-site likelihood calculations to parallel CPU cores.  If your computer's CPU contains multiple cores (for example, if you're using an Intel dual-core, quad-core, (or 8-core?) CPU), then OpenMP extensions will help reduce the clocktime required to run PhyML+M3L.  The efficacy of the parallelization depends on the number of available cores; a CPU with 8 cores will yield a greater speedup than a CPU with only 2 cores.  If your CPU is single-core, or if you'd rather not use OpenMP, you can compile PhyML+M3L to not use the OpenMP libraries.
+
+I hope you find PhyML+M3L useful.  However, be aware that I do not have a large team of software developers.  I am providing this software as a resource to the research community, but without the promise of support.  If you have questions, or find software bugs (!), please do not hesitate to contact me (at the email address below).  I plan to release a new version of PhyML+M3L in the very near future, including MPI-based parallelism (and some other cool speedups). 
+
+   Computationally Yours,
+
+   Victor Hanson-Smith
+   Department of Computer and Information Science, University of Oregon
+   Center for Ecology and Evolutionary Biology, University of Oregon
+   
+   email = victorhs@cs.uoregon.edu
+   website = http://www.victorhansonsmith.com
+
+=========================================================================================
