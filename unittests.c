@@ -70,9 +70,9 @@ void Run_tests(int argc, char **argv)
 	/*
 	 * Test case #1:
 	 */
-	char align[] = " 4 10\nta\nAAAAAAAAAA\ntb\nDDDDDDDDDD\nta\nEEEEEEEEEE\nta\nLLLLLLLLLL\n";
-	Write_File("align.phy", align, 0);
-	int x = Test_main(argc, argv, 1);
+	//char align[] = " 4 10\nta\nAAAAAAAAAA\ntb\nDDDDDDDDDD\nta\nEEEEEEEEEE\nta\nLLLLLLLLLL\n";
+	//Write_File("align.phy", align, 0);
+	//int x = Test_main(argc, argv, 1);
 }
 
 // This is a faux main for unit tests.

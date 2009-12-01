@@ -328,10 +328,6 @@ void debug_Lk_nocompress(arbre *tree)
 	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
 
 	tree->c_lnL = .0;
-
-	//#pragma omp parallel
-	//for default(shared)
-	//private(site) schedule(static,chunk)
 	For(site,n_patterns)
 	{
 		if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
@@ -361,10 +357,11 @@ void Lk(arbre *tree)
 	if(tree->bl_from_node_stamps) MC_Bl_From_T(tree);
 #endif
 
-	int chunk = (2*tree->n_otu-3)/omp_get_num_procs();
-	//	printf("chunk: %i total: %i\n",chunk,(2*tree->n_otu-3));
 
+#ifdef USE_OPENMP
+	int chunk = (2*tree->n_otu-3)/omp_get_num_procs();
 #pragma omp parallel for shared(tree,n_patterns,chunk) schedule(static,chunk)
+#endif
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
 		if(!tree->t_edges[br]->rght->tax)
@@ -411,7 +408,6 @@ void Lk(arbre *tree)
 #endif
 
 	  // debugging:
-
 	  //PhyML_Printf(" . debug: returned from Post_Order_Lk and Pre_Order_Lk, likelihoods = \n");
 	  /*
 	  for(br = 1; br < 2*tree->n_otu-3; br++)
@@ -428,8 +424,9 @@ void Lk(arbre *tree)
 	tree->c_lnL     = .0;
 	tree->curr_catg =  0;
 	tree->curr_site =  0;
+
 #ifdef USE_OPENMP
-	int chunk = n_patterns/omp_get_num_procs();
+	chunk = n_patterns/omp_get_num_procs();
 #pragma omp parallel for \
 		shared(tree,n_patterns,chunk) private(site)\
 		schedule(static,chunk)
@@ -447,9 +444,6 @@ void Lk(arbre *tree)
 
 	tree->c_lnL = .0;
 
-	//#pragma omp parallel
-	//for default(shared)
-	//private(site) schedule(static,chunk)
 	For(site,n_patterns)
 	{
 		//PhyML_Printf(" . debug: in lk.c 258: c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);

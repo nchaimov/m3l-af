@@ -8416,8 +8416,16 @@ void Print_Settings(option *io)
 #ifdef COMPRESS_SUBALIGNMENTS
 	PhyML_Printf("\n                . Tree-based subalignment compression: \t\t yes");
 #endif
+
 #ifndef COMPRESS_SUBALIGNMENTS
 	PhyML_Printf("\n                . Tree-based subalignment compression: \t\t no");
+#endif
+
+#ifdef USE_OPENMP
+	PhyML_Printf("\n                . OpenMP multiprocessor parallelization: \t yes");
+#endif
+#ifndef USE_OPENMP
+	PhyML_Printf("\n                . OpenMP multiprocessor parallelization: \t no");
 #endif
 
 	PhyML_Printf("\n                . Run ID : \t\t\t\t\t %s", (io->append_run_ID) ? (io->run_id_string) : ("none"));
@@ -10454,6 +10462,40 @@ m3ldbl *Matrix_Transpose(m3ldbl *A, int dim)
 	}
 
 	return tA;
+}
+
+/*********************************************************/
+// now = the time_t object recorded now
+// start = the time_t object recorded when we started
+// i = the iteration number of the current generation, where 0 <= i < total
+// total = the total number of generations we want to complete
+void Print_time_remaining(time_t now, time_t start, int i, int total)
+{
+	// etc = "estimated time to completion" in seconds
+	long delta = (long)difftime(now,start);
+	double secs_per_rep = delta / (double)(i+1);
+	int remaining_reps = total - (i + 1);
+	int seconds = remaining_reps * secs_per_rep;
+
+	int SECONDS_IN_DAY = 86400;
+	int SECONDS_IN_HOUR = 3600;
+	int SECONDS_IN_MINUTE = 60;
+
+	int days = seconds / SECONDS_IN_DAY;
+	seconds = seconds - (days * SECONDS_IN_DAY);
+	int hours = seconds / SECONDS_IN_HOUR;
+	seconds = seconds - (hours * SECONDS_IN_HOUR);
+	int minutes = seconds / SECONDS_IN_MINUTE;
+	seconds = seconds - (minutes * SECONDS_IN_MINUTE);
+
+    if (days > 0)
+    {
+    	PhyML_Printf("\n . Est. time remaining = %dd %dh %dm %lds\n", days, hours, minutes, seconds );
+    }
+    else
+    {
+    	PhyML_Printf("\n . Est. time remaining = %dh %dm %lds \n", hours, minutes, seconds );
+    }
 }
 
 /*********************************************************/

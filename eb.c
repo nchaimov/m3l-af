@@ -33,6 +33,10 @@ void Empirical_Bayes(arbre* tree)
 				 tree->io->eb_n_gens);
 	PhyML_Printf("Sampled trees will be written to %s\n\n", outfilestr);
 
+	/* Record clock time, to estimate time-to-completion */
+	time_t start = time(NULL);
+	time_t now;
+
 	/* optimize starting tree and sample it */
 	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 	fprintf(outfile, "[%f] ", tree->c_lnL);
@@ -97,6 +101,12 @@ void Empirical_Bayes(arbre* tree)
 		fprintf(outfile, "[%f] ", tree->c_lnL);
 		Print_Tree(outfile, tree);
 
+		/* print estimated remaining time*/
+		if (i%DISPLAY_TIME_REMAINING_PERIOD == 0)
+		{
+			now = time(NULL);
+			Print_time_remaining(now, start, i, tree->io->eb_n_gens);
+		}
 	}
 
 	/* copy best tree found back into tree */
