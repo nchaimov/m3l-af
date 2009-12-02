@@ -29,11 +29,10 @@ the GNU public licence. See http://www.opensource.org for details.
 #define FALSE 0
 #define TRUE 1
 
-//#define USE_OPENMP 1
-
+#define USE_OPENMP 1 // comment/uncomment this line to use OpenMP parallelization
 #ifdef USE_OPENMP
 #include <omp.h>
-#endif //USE_OPENMP
+#endif
 
 //#define MEASURE 1 // for timing and speedup measurements
 
@@ -190,6 +189,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define COMPOUND_NOCOR 1
 #define EXPONENTIAL    2
 #define GAMMA          3
+
+#define DISPLAY_TIME_REMAINING_PERIOD 10 // Display the "estimated time remaining" counter every DISPLAY_TIME_REMAINING_PERIOD generations
 
 typedef	double m3ldbl;
 typedef double plkflt;
@@ -1229,6 +1230,7 @@ m3ldbl Rnorm(m3ldbl mean, m3ldbl sd);
 m3ldbl *Rnorm_Multid(m3ldbl *mu, m3ldbl *cov, int dim);
 m3ldbl *Matrix_Mult(m3ldbl *A, m3ldbl *B, int nra, int nca, int nrb, int ncb);
 m3ldbl *Matrix_Transpose(m3ldbl *A, int dim);
+void Print_time_remaining(time_t now, time_t start, int i, int total);
 void Normalize_Props(model *mod);
 void Update_Default_Props(option *io);
 void Print_Tree_Screen(arbre *tree);
