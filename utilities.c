@@ -8417,10 +8417,6 @@ void Print_Settings(option *io)
 	PhyML_Printf("\n                . Tree-based subalignment compression: \t\t yes");
 #endif
 
-#ifndef COMPRESS_SUBALIGNMENTS
-	PhyML_Printf("\n                . Tree-based subalignment compression: \t\t no");
-#endif
-
 #ifdef USE_OPENMP
 	PhyML_Printf("\n                . OpenMP multiprocessor parallelization: \t yes");
 #endif

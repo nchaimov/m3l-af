@@ -77,8 +77,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  SPR_MOVE                    1
 #define  BEST_OF_NNI_AND_SPR         2
 #define  SIMULATED_THERMAL_ANNEALING 3
-#define  SIMULATED_QUANTUM_ANNEALING 4
-#define  EMPIRICAL_BAYES             5
+#define  EMPIRICAL_BAYES             4
+#define  SIMULATED_QUANTUM_ANNEALING 5
 
 
 #define  PI      3.141593

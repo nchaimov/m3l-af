@@ -1606,13 +1606,17 @@ void Launch_Interface_Topo_Search(option *io)
 		}else if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
 		{
 			strcpy(s,"Simulated Thermal Annealing \0");
-		}else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING)
-		{
-			strcpy(s,"Simulated Quantum Annealing \0");
-		}else if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+		}
+		else if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
 		{
 			strcpy(s,"Empirial Bayes MCMC \0");
 		}
+/*		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING)
+		{
+			strcpy(s,"Simulated Quantum Annealing \0");
+		}
+*/
+
 
 		PhyML_Printf("                [S] "
 				".................. Tree topology search operations "
@@ -1749,14 +1753,6 @@ void Launch_Interface_Topo_Search(option *io)
 		}
 		else if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
 		{
-			io->mod->s_opt->topo_search         = SIMULATED_QUANTUM_ANNEALING;
-			io->mod->s_opt->n_rand_starts       = 1;
-			io->user_topo 						= 1;
-			io->mod->s_opt->random_input_tree   = 0;
-			io->mod->s_opt->greedy              = 0;
-		}
-		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING){
-
 			io->mod->s_opt->topo_search         = EMPIRICAL_BAYES;
 			io->mod->s_opt->n_rand_starts       = 1;
 			io->user_topo 						= 1;
@@ -1771,6 +1767,15 @@ void Launch_Interface_Topo_Search(option *io)
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
 		}
+/*		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING){
+
+			io->mod->s_opt->topo_search         = EMPIRICAL_BAYES;
+			io->mod->s_opt->n_rand_starts       = 1;
+			io->user_topo 						= 1;
+			io->mod->s_opt->random_input_tree   = 0;
+			io->mod->s_opt->greedy              = 0;
+		}
+*/
 		break;
 	}
 	case 'R' :
