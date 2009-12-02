@@ -122,7 +122,6 @@ arbre *Read_Tree(char *s_tree)
 	Make_All_Tree_Edges(tree, n_l);
 	Make_Tree_Path(tree); //just allocates memory
 	Make_List_Of_Reachable_Tips(tree);
-
 	tree->noeud[n_otu]->num = n_otu;
 	tree->noeud[n_otu]->tax = 0;
 
@@ -740,7 +739,6 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 
 // VHS: by the way, "pere" means father and "fils" means son.
 // This part of the code was obviously written in French.
-
 void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 {
 	int i,p,j;
