@@ -124,7 +124,7 @@ void Empirical_Bayes(arbre* tree)
 	/* clean up and done */
 	fclose(outfile);
 	gsl_rng_free(rng);
-	PhyML_Printf("\n . Done with empirical Bayes MCMC.\n");
+	PhyML_Printf("\n. Done with empirical Bayes MCMC.\n");
 
 	Calculate_PP(tree);
 }
@@ -133,7 +133,7 @@ void Empirical_Bayes(arbre* tree)
 // given the *.eb file written by the method named "Empricial_Bayes"
 void Calculate_PP(arbre* tree)
 {
-	PhyML_Printf("\n . Calculating posterior probabilities of clades.");
+	PhyML_Printf("\n. Calculating posterior probabilities of clades.");
 
 	char outfilestr[1000];
 	sprintf(outfilestr, "%s.eb", tree->io->out_tree_file);

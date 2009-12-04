@@ -428,15 +428,19 @@ void Read_Command_Line(option *io, int argc, char **argv)
 				io->mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
 				io->user_topo 						= 1;
 			}
+			/*
 			else if((!strcmp(optarg,"sqa")) || (!strcmp(optarg,"SQA")))
 			{
 				io->mod->s_opt->topo_search = SIMULATED_QUANTUM_ANNEALING;
 				io->user_topo 						= 1;
 			}
+			*/
 			else if((!strcmp(optarg,"eb")) || (!strcmp(optarg,"EB")))
 			{
 				io->mod->s_opt->topo_search = EMPIRICAL_BAYES;
-				io->user_topo                       = 1;	
+				io->user_topo                       = 1;
+				io->mod->bootstrap 					= 0; //disable bootstrap
+				io->ratio_test 						= 0; //disable aLRT
 			}
 			break;
 		}
@@ -1231,7 +1235,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			int tmp = io->eb_n_gens;
 			io->eb_n_gens = atoi(optarg);
 			if(io->eb_n_gens < 1) io->eb_n_gens = tmp;
-			break;	
+			break;
 		}
 
 		case 'u':case 15:
@@ -1417,6 +1421,12 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		io->mod->s_opt->opt_cov_delta      = 0;
 		io->mod->s_opt->opt_cov_alpha      = 0;
 		io->mod->s_opt->opt_cov_free_rates = 0;
+	}
+
+	if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+	{
+		io->mod->bootstrap 					= 0; //disable bootstrap
+		io->ratio_test 						= 0; //disable aLRT
 	}
 
 	if((io->mod->s_opt->opt_cov_free_rates) && (io->mod->s_opt->opt_cov_alpha))
