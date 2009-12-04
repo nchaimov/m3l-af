@@ -25,8 +25,6 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 void Simu_Loop(arbre *tree)
 {
-	//PhyML_Printf(" . debug: entered Simu_Loop\n");
-
 	m3ldbl lk_old;
 
 	tree->both_sides = 0;
@@ -166,29 +164,11 @@ int Simu(arbre *tree, int n_step_max)
 				//PhyML_Printf(" . debug: simu.c 142: returned from NNI for edge %d\n", tree->t_edges[i]->num);
 			}
 		}
-		//PhyML_Printf(" . debug: simu.c 158: finished calling NNI for every branch.\n");
-
-		//PhyML_Printf(" . debug: simu.c 160: %d\n", tree->t_dir[116][112]);
-
-		//debug
-		//if (tree->t_edges[115]->nni->swap_node_v3->v[tree->t_dir[tree->t_edges[115]->nni->swap_node_v3->num][tree->t_edges[115]->nni->swap_node_v4->num]]->num == tree->t_edges[115]->nni->swap_node_v2->num)
-		//{
-			//PhyML_Printf( " . debug: APPLE at simu 163\n");
-			//PhyML_Printf( " . debug: 1 %d\n", tree->t_edges[115]->nni->swap_node_v2->num);
-			//PhyML_Printf(" . debug: 2 %d\n", tree->t_edges[115]->nni->swap_node_v4->num);
-			//PhyML_Printf(" . debug: 3 %d\n", tree->t_edges[115]->nni->swap_node_v3->num);
-			// VHS: 10.02.2009: the bug relates to the t_dir being incorrectly built!
-			//PhyML_Printf(" . debug: 4 %d\n", tree->t_dir[tree->t_edges[115]->nni->swap_node_v3->num][tree->t_edges[115]->nni->swap_node_v4->num]);
-		//}
 
 		Select_Edges_To_Swap(tree,sorted_b,&n_neg);
 		Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
 		Optimiz_Ext_Br(tree);
 		Update_Bl(tree,lambda);
-
-		//PhyML_Printf(" . debug: simu 169: step = %d\n", step);
-		//PhyML_Printf(" . debug: simu 169: d->v[0] = %d, d->v[1] = %d, d->v[2] = %d", tree->noeud[117]->v[0]->num,tree->noeud[117]->v[1]->num,tree->noeud[117]->v[2]->num);
-		//PhyML_Printf(" . debug: simu 169: d->b[0] = %d, d->b[1] = %d, d->b[2] = %d",tree->noeud[117]->b[0]->num,tree->noeud[117]->b[1]->num,tree->noeud[117]->b[2]->num);
 
 		n_tested = 0;
 		For(i,(int)ceil((m3ldbl)n_neg*(lambda)))

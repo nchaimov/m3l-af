@@ -370,11 +370,15 @@ void Lk(arbre *tree)
 		if(!tree->t_edges[br]->left->tax)
 			For(site,n_patterns) tree->t_edges[br]->sum_scale_f_left[site] = .0;
 
-		Update_PMat_At_Given_Edge(tree->t_edges[br],tree);
-
 		// debug:
+		//PhyML_Printf(" . debug lk.c 376\n");
 		//PhyML_Printf(" . debug: P matrix at edge %d:\n", tree->t_edges[br]->num);
 		//Print_Pij( tree->t_edges[br]->Pij_rr, tree->mod);
+		// VHS: 12.3.2009: the problem = going into this method, the Pij_rr matrices
+		// do not appear to be allocated for the best_tree.
+
+		Update_PMat_At_Given_Edge(tree->t_edges[br],tree);
+
 	}
 
 
@@ -408,8 +412,8 @@ void Lk(arbre *tree)
 #endif
 
 	  // debugging:
-	  //PhyML_Printf(" . debug: returned from Post_Order_Lk and Pre_Order_Lk, likelihoods = \n");
 	  /*
+	  PhyML_Printf(" . debug: returned from Post_Order_Lk and Pre_Order_Lk, likelihoods = \n");
 	  for(br = 1; br < 2*tree->n_otu-3; br++)
 	  {
 		PhyML_Printf("edge %d:\n", br);
@@ -419,6 +423,7 @@ void Lk(arbre *tree)
 		Print_Plk(tree->t_edges[br]->p_lk_left, tree, is_tax);
 	  }
 	  */
+
 
 
 	tree->c_lnL     = .0;
@@ -1434,7 +1439,6 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 	m3ldbl len;
 
 	len = -1.0;
-	//JSJ: fixes to b_fcus_l, Pir_rr and has_zero_br_len
 	For(i,tree->mod->n_l){
 		if(b_fcus->l[i] < BL_MIN)      b_fcus->l[i] = BL_MIN;
 		else if(b_fcus->l[i] > BL_MAX) b_fcus->l[i] = BL_MAX;
@@ -1444,7 +1448,7 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 	{
 		For(j,tree->mod->n_l) // foreach branch length category
 		{
-			//PhyML_Printf(" . debug: Update_PMat_At_Given_Edge: edge %d, catg %d, BL %d, edge->l[j] = %f\n", b_fcus->num, i, j, b_fcus->l[j]);
+			//PhyML_Printf(" . debug: Update_PMat_At_Given_Edge: edge %d, catg %d, b_fcus->l[%d] = %f\n", b_fcus->num, i, j, b_fcus->l[j]);
 
 			if(b_fcus->has_zero_br_len[j])
 			{
@@ -1454,7 +1458,7 @@ void Update_PMat_At_Given_Edge(edge *b_fcus, arbre *tree)
 			else
 			{
 				len = b_fcus->l[j]*tree->mod->gamma_rr[i];
-				//PhyML_Printf( " . debug: lk.c 1420: ncatg=%d, bl=%d, len=%f\n", i, j, len);
+				//PhyML_Printf( " . debug: lk.c 1457: ncatg=%d, bl=%d, len=%f\n", i, j, len);
 				if(len < BL_MIN)      len = BL_MIN;
 				else if(len > BL_MAX) len = BL_MAX;
 			}

@@ -29,7 +29,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #define FALSE 0
 #define TRUE 1
 
-#define USE_OPENMP 1 // comment/uncomment this line to use OpenMP parallelization
+//#define USE_OPENMP 1 // comment/uncomment this line to use OpenMP parallelization
 #ifdef USE_OPENMP
 #include <omp.h>
 #endif
@@ -303,6 +303,8 @@ typedef struct __Edge {
   int          num_tax_left, num_tax_rght; /* number of taxa in subtrees          */
   m3ldbl     avg_dist_left, avg_dist_rght; /* average taxon distance in subtrees  */
 
+  m3ldbl						post_prob; /* posterior probability, see methods in eb.c and eb.h */
+
   int                       is_p_lk_l_u2d; /* is the conditional likelihood vector on the left up
 					      to data ? */
   int                       is_p_lk_r_u2d; /* is the conditional likelihood vector on the right up
@@ -344,7 +346,8 @@ typedef struct __Arbre {
   int                               n_pattern; /* number of distinct site patterns */
   int                      has_branch_lengths; /* =1 iff input tree displays branch lengths */
   int                          print_boot_val; /* if print_boot_val=1, the bootstrap values are printed */
-  int                          print_alrt_val; /* if print_boot_val=1, the bootstrap values are printed */
+  int                          print_alrt_val; /* if print_alrt_val=1, the aLRT values are printed */
+  int                            print_pp_val; /* if print_pp_val=1, the posterior probabilities are printed */
   int                              both_sides; /* both_sides=1 -> a pre-order and a post-order tree
 												  traversal are required to compute the likelihood
 												  of every subtree in the phylogeny*/
@@ -957,6 +960,7 @@ m3ldbl PointChi2(m3ldbl prob,m3ldbl v);
 m3ldbl PointNormal(m3ldbl prob);
 int DiscreteGamma(m3ldbl freqK[],m3ldbl rK[],m3ldbl alfa,m3ldbl beta,int K,int median);
 arbre *Read_Tree(char *s_tree);
+void Restore_Tree_From_String(char *s_tree, arbre* tree);
 void Make_All_Edges_Light(node *a,node *d);
 void Make_All_Edges_Lk(node *a,node *d,arbre *tree);
 void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, int *n_ext);
@@ -1091,6 +1095,7 @@ void Restore_Br_Len(m3ldbl **from, arbre *tree);
 void Get_Dist_Btw_Edges(node *a, node *d, arbre *tree);
 void Detect_Polytomies(edge *b, m3ldbl l_thresh, arbre *tree);
 int Compare_List_Of_Reachable_Tips(node **list1, int size_list1, node **list2, int size_list2);
+int Compare_List_Of_Reachable_Tips_version2(node **list1, int size_list1, node **list2, int size_list2);
 void Find_Mutual_Direction(node *n1, node *n2, int *dir_n1_to_n2, int *dir_n2_to_n1);
 void Fill_Dir_Table(arbre *tree);
 void Get_List_Of_Nodes_In_Polytomy(node *a, node *d, node ***list, int *size_list);

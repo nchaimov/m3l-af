@@ -142,7 +142,64 @@ arbre *Read_Tree(char *s_tree)
 
 /*********************************************************/
 
+void Restore_Tree_From_String(char *s_tree, arbre* tree)
+{
+	char **subs;
+	int i,n_ext,n_int,n_otu, n_l;
+	int degree;
 
+	// Here we determine the number of OTUs and the number of branch length classes.
+	// At the end of this block, the integers n_l and n_otu will have valid numbers.
+	n_l = 0;
+	n_otu=0;
+	For(i,(int)strlen(s_tree)){
+		if(s_tree[i] == '['){
+			int tmp_nl = 0;
+			for(;;){ //continue until close bracket
+				i++;
+				if(s_tree[i] == ','){
+					tmp_nl++;
+				} else if(s_tree[i] == ']'){
+					if(n_l == 0){
+						n_l = tmp_nl;
+					}else if(n_l != tmp_nl){
+						PhyML_Printf("Error: The number of branch length sets was not properly counted.\n");
+						exit(1);
+					}
+					break; //done counting this round of branch_length sets
+				}
+			}
+		}else if(s_tree[i] == ','){
+			n_otu++;
+		}
+	}
+	n_otu+=1;
+	n_l +=1;
+
+	Free(tree->noeud);
+	Free(tree->t_edges);
+	//tree = (arbre *)Make_Tree(n_otu, n_l);
+	//Init_Tree(tree,tree->n_otu);
+	Make_All_Tree_Nodes(tree, n_l);
+	Make_All_Tree_Edges(tree, n_l);
+	Make_Tree_Path(tree); //just allocates memory
+	Make_List_Of_Reachable_Tips(tree);
+	tree->noeud[n_otu]->num = n_otu;
+	tree->noeud[n_otu]->tax = 0;
+
+	subs = Sub_Trees(s_tree,&degree);
+	Clean_Multifurcation(subs,degree,3);
+	if(degree == 2) Unroot_Tree(subs);
+	degree = 3;
+
+	tree->has_branch_lengths = 0;
+	tree->num_curr_branch_available = 0;
+	n_int = n_ext = 0;
+	For(i,degree) R_rtree(s_tree,subs[i],tree->noeud[n_otu],tree,&n_int,&n_ext);
+
+	For(i,NODE_DEG_MAX) Free(subs[i]);
+	Free(subs);
+}
 /*********************************************************/
 /* 'a' in node a stands for ancestor. 'd' stands for descendant */
 void R_rtree(char *s_tree_a, char *s_tree_d, node *a, arbre *tree, int *n_int, int *n_ext)
@@ -862,6 +919,8 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 				sprintf(s_tree+(int)strlen(s_tree),"%d",fils->b[p]->bip_score);
 			else if(tree->print_alrt_val)
 				sprintf(s_tree+(int)strlen(s_tree),"%.10f",fils->b[p]->ratio_test);
+			else if(tree->print_pp_val)
+				sprintf(s_tree+(int)strlen(s_tree),"%.10f",fils->b[p]->post_prob);
 
 			if(tree->print_labels)
 			{
@@ -960,6 +1019,7 @@ void Init_Tree(arbre *tree, int n_otu)
 
 	tree->print_boot_val            = 0;
 	tree->print_alrt_val            = 0;
+	tree->print_pp_val              = 0;
 	tree->num_curr_branch_available = 0;
 
 	tree->red_arrays_invalid = 1;
@@ -3442,6 +3502,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		}
 	}
 
+	/*
 	if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
 	{
 		PhyML_Printf("\n\n%f %f %f %f\n",l_infa,l_max,l_infb,b_fcus->l);
@@ -3449,6 +3510,7 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 		PhyML_Printf("\n. Err. in NNI (3)\n");
 		Warn_And_Exit("\n");
 	}
+	*/
 
 	/***********/
 	/*
@@ -5517,7 +5579,7 @@ model *Copy_Model(model *ori)
 }
 
 /*********************************************************/
-// POSTCONDITION: 'ori' will be a copy of 'cpy'
+// POSTCONDITION: the values from 'ori' will be copied into 'cpy'
 void Record_Model(model *ori, model *cpy)
 {
 	int i;
@@ -6811,20 +6873,41 @@ void Hide_Ambiguities(allseq *data)
 }
 
 /*********************************************************/
-// This method copies the topology, nodes, and edges, but DOES NOT copy tree->mod!
+// Copies the arbre structure ori into the arbre structure cpy.
 void Copy_Tree(arbre *ori, arbre *cpy)
 {
 	int i,j;
 
+	char *ori_tree_s;
+	ori_tree_s = (char *)Write_Tree(ori);
+	Restore_Tree_From_String(ori_tree_s, cpy);
+	//Record_Model(copy_tree->mod, ori->mod); // we do this outside the method.
+	cpy->io 		 = ori->io;
+	cpy->data        = ori->data;
+	cpy->both_sides  = ori->both_sides; //int copy
+	cpy->n_pattern   = ori->n_pattern; // m3ldbl copy
+	cpy->num_curr_branch_available = 0;
+	Fill_Dir_Table(cpy);
+	Update_Dirs(cpy);
+	return;
+
+	/*
+	 * Copy nodes
+	 */
 	For(i,2*ori->n_otu-2)
 	{
 		For(j,3)
 		{
 			if(ori->noeud[i]->v[j])
 			{
-				cpy->noeud[i]->v[j] = cpy->noeud[ori->noeud[i]->v[j]->num];
+				//VHS: 12.3.2009: is this accurate:?
+				//cpy->noeud[i]->v[j] = (node)ori->noeud[ori->noeud[i]->v[j]->num];
+				//cpy->noeud[i]->l[j] = (m3ldbl)ori->noeud[i]->l[j];
+				//cpy->noeud[i]->b[j] = (edge)cpy->t_edges[ori->noeud[i]->b[j]->num];
+				cpy->noeud[i]->v[j] = ori->noeud[i]->v[j];
 				cpy->noeud[i]->l[j] = ori->noeud[i]->l[j];
-				cpy->noeud[i]->b[j] = cpy->t_edges[ori->noeud[i]->b[j]->num];
+				cpy->noeud[i]->b[j] = ori->noeud[i]->b[j];
+
 #ifdef COMPRESS_SUBALIGNMENTS
 				cpy->noeud[i]->red = ori->noeud[i]->red; //VHS
 #endif
@@ -6838,21 +6921,36 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 		}
 	}
 
+	/*
+	 * Copy edges
+	 */
 	For(i,2*ori->n_otu-3)
 	{
-		cpy->t_edges[i]->l    	= ori->t_edges[i]->l;
-		cpy->t_edges[i]->best_l = ori->t_edges[i]->best_l;
-		cpy->t_edges[i]->l_old  = ori->t_edges[i]->l_old;
-		cpy->t_edges[i]->left = cpy->noeud[ori->t_edges[i]->left->num];
-		cpy->t_edges[i]->rght = cpy->noeud[ori->t_edges[i]->rght->num];
-		cpy->t_edges[i]->l_v1 = ori->t_edges[i]->l_v1;
-		cpy->t_edges[i]->l_v2 = ori->t_edges[i]->l_v2;
-		cpy->t_edges[i]->r_v1 = ori->t_edges[i]->r_v1;
-		cpy->t_edges[i]->r_v2 = ori->t_edges[i]->r_v2;
-		cpy->t_edges[i]->l_r  = ori->t_edges[i]->l_r;
-		cpy->t_edges[i]->r_l  = ori->t_edges[i]->r_l;
+		//cpy->t_edges[i]->l    	= ori->t_edges[i]->l;
+		//cpy->t_edges[i]->best_l = ori->t_edges[i]->best_l;
+		//cpy->t_edges[i]->l_old  = ori->t_edges[i]->l_old;
+		cpy->t_edges[i]->left = ori->t_edges[i]->left;
+		cpy->t_edges[i]->rght = ori->t_edges[i]->rght;
+		cpy->t_edges[i]->l_v1 = (int)ori->t_edges[i]->l_v1;
+		cpy->t_edges[i]->l_v2 = (int)ori->t_edges[i]->l_v2;
+		cpy->t_edges[i]->r_v1 = (int)ori->t_edges[i]->r_v1;
+		cpy->t_edges[i]->r_v2 = (int)ori->t_edges[i]->r_v2;
+		cpy->t_edges[i]->l_r  = (int)ori->t_edges[i]->l_r;
+		cpy->t_edges[i]->r_l  = (int)ori->t_edges[i]->r_l;
 	}
 
+	/*
+	 * Copy edge lengths
+	 */
+	For(j,ori->mod->n_l){
+		For(i,2*ori->n_otu-3){
+			cpy->t_edges[i]->l[j] = (m3ldbl)ori->t_edges[i]->l[j];
+		}
+	}
+
+	/*
+	 * Copy node names
+	 */
 	For(i,ori->n_otu)
 	{
 		cpy->noeud[i]->tax = 1;
@@ -6862,6 +6960,8 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 	cpy->num_curr_branch_available = 0;
 	/*   Connect_Edges_To_Nodes_Recur(cpy->noeud[0],cpy->noeud[0]->v[0],cpy); */
 	/*   Update_Dirs(cpy); */
+
+
 }
 
 /*********************************************************/
@@ -7458,6 +7558,36 @@ int Compare_List_Of_Reachable_Tips(node **list1, int size_list1, node **list2, i
 	return n_matches;
 }
 
+/*
+ * Victor: I  wrote this version as an alternative to Compare_List_Of_Reachable_Tips.
+ * When I use Compare_List_Of_Reachable_Tips in our empirical Bayesian methods
+ * (see Calculate_PP), Compare_List_Of_Reachable_Tips returns incorrect match counts.
+ * Perhaps my lists are formatted incorrectly?
+ * In this alternative version, instead of comparing tip objects, I compare tip names.
+ */
+int Compare_List_Of_Reachable_Tips_version2(node **list1, int size_list1, node **list2, int size_list2)
+{
+	int i,j,n_matches;
+
+	n_matches = 0;
+	For(i,size_list1)
+	{
+		For(j,size_list2)
+		{
+			/* The following line is different from the original version of Compare_List_Of_Reachable_Tips.
+			 * By the way, strcmp doesn't return typical 0 = false, 1 = true values.
+			 * Instead, 0 = the strings are identical.  For more information, see this reference:
+			 * http://www.cplusplus.com/reference/clibrary/cstring/strcmp/
+			 */
+			if( 0 == strcmp(list1[i]->name,list2[j]->name) )
+			{
+				n_matches++;
+			}
+		}
+	}
+	return n_matches;
+}
+
 /*********************************************************/
 
 void Find_Mutual_Direction(node *n1, node *n2, int *dir_n1_to_n2, int *dir_n2_to_n1)
@@ -7980,7 +8110,7 @@ void Record_Br_Len(m3ldbl **where, arbre *tree)
 }
 
 /*********************************************************/
-//JSJ: changed so that an array of lengths are coppied
+//JSJ: changed so that an array of lengths are copied
 void Restore_Br_Len(m3ldbl **from, arbre *tree)
 {
 	int i,j;
@@ -9734,7 +9864,7 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 
 		// ori_tree = tree
 		Copy_Tree(tree,ori_tree);
-		Record_Br_Len(ori_bl,tree);
+		//Record_Br_Len(ori_bl,tree);
 
 		best_lnL = UNLIKELY;
 		Lk(tree);
@@ -9743,15 +9873,14 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		Simu_Loop(tree); /* Perform simultaneous NNIs */
 		best_lnL = tree->c_lnL; /* Record the likelihood */
 		nni_lnL = tree->c_lnL;
-		// best_tree = tree
+
 		Copy_Tree(tree,best_tree); /* Record the tree topology and branch lengths */
-		Record_Br_Len(best_bl,tree);
-		Restore_Br_Len(best_bl,best_tree);
+		//Record_Br_Len(best_bl,tree);
+		//Restore_Br_Len(best_bl,best_tree);
 		Record_Model(tree->mod,best_mod);
 
-		// tree = ori_tree
 		Copy_Tree(ori_tree,tree); /* Back to the original tree topology */
-		Restore_Br_Len(ori_bl,tree); /* Back to the original branch lengths */
+		//Restore_Br_Len(ori_bl,tree); /* Back to the original branch lengths */
 		Record_Model(ori_mod,tree->mod); /* Back to the original model */
 
 		/* Make sure the tree is in its original form */
@@ -9769,13 +9898,13 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		{
 			best_lnL = tree->c_lnL;
 			Copy_Tree(tree,best_tree); /* Record tree topology, branch lengths and model parameters */
-			Record_Br_Len(best_bl,tree);
-			Restore_Br_Len(best_bl,best_tree);
+			//Record_Br_Len(best_bl,tree);
+			//Restore_Br_Len(best_bl,best_tree);
 			Record_Model(tree->mod,best_mod);
 		}
 
 		Copy_Tree(best_tree,tree);
-		Restore_Br_Len(best_bl,tree);
+		//Restore_Br_Len(best_bl,tree);
 		Record_Model(best_mod,tree->mod);
 
 		/* Make sure the current tree has the best topology, branch lengths and model parameters */

@@ -1766,6 +1766,8 @@ void Launch_Interface_Topo_Search(option *io)
 			io->user_topo 						= 1;
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
+			io->mod->bootstrap 					= 0; //disable bootstrap
+			io->ratio_test 						= 0; //disable aLRT
 		}
 /*		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING){
 
@@ -1852,8 +1854,19 @@ void Launch_Interface_Branch_Support(option *io)
 
 	PhyML_Printf("\n");
 
-
-	strcpy(s,(io->mod->bootstrap > 0)?("yes"):("no"));
+	if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+	{
+		strcpy(s,"no");
+		io->mod->bootstrap = 0;
+	}
+	else if (io->mod->bootstrap > 0)
+	{
+		strcpy(s, "yes");
+	}
+	else
+	{
+		strcpy(s, "no");
+	}
 	if(io->mod->bootstrap > 0) sprintf(s+strlen(s)," (%d replicate%s)",
 			io->mod->bootstrap,
 			(io->mod->bootstrap>1)?("s"):(""));
@@ -1863,7 +1876,12 @@ void Launch_Interface_Branch_Support(option *io)
 			"................ Non parametric bootstrap analysis "
 			" %-15s \n",s);
 
-	if(io->ratio_test == 0)
+	if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+	{
+		strcpy(s,"no");
+		io->ratio_test = 0;
+	}
+	else if(io->ratio_test == 0)
 	{
 		strcpy(s,"no");
 	}
@@ -1890,6 +1908,14 @@ void Launch_Interface_Branch_Support(option *io)
 			"................ Approximate likelihood ratio test "
 			" %-15s \n",s);
 
+	if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+	{
+		strcpy(s,"yes");
+		PhyML_Printf("                    "
+			"............. Posterior probabilities from EB MCMC "
+			" %-15s \n", s);
+	}
+
 	PhyML_Printf("\n. Are these settings correct ? "
 			"(type '+', '-', 'Y' or other letter for one to change)  ");
 
@@ -1911,6 +1937,12 @@ void Launch_Interface_Branch_Support(option *io)
 
 	case 'B' :
 	{
+		if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+		{
+			io->mod->bootstrap = 0;
+			break;
+		}
+
 		if(io->mod->bootstrap > 0) io->mod->bootstrap = 0;
 		else
 		{
@@ -1927,7 +1959,6 @@ void Launch_Interface_Branch_Support(option *io)
 				if(!scanf("%c",&choix)) Exit("\n");
 				Exit("\n");
 			}
-
 
 			PhyML_Printf("\n. Number of replicates > ");
 			r = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
@@ -1979,6 +2010,12 @@ void Launch_Interface_Branch_Support(option *io)
 	}
 	case 'A' :
 	{
+		if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+		{
+			io->ratio_test = 0;
+			break;
+		}
+
 		io->mod->bootstrap = 0;
 
 		switch(io->ratio_test)
@@ -2012,7 +2049,6 @@ void Launch_Interface_Branch_Support(option *io)
 		}
 		break;
 	}
-
 	case '-' :
 	{
 		io->curr_interface = INTERFACE_TOPO_SEARCH;

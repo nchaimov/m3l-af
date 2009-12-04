@@ -62,6 +62,10 @@ void Empirical_Bayes(arbre* tree)
 	m3ldbl lnL_best = tree->c_lnL;
 	m3ldbl lnL_current = tree->c_lnL;
 
+	Prepare_Tree_For_Lk(last_tree);
+	Prepare_Tree_For_Lk(best_tree);
+
+
 	/* MCMC routine */
 	for(i=0; i<tree->io->eb_n_gens-1; i++)
 	{
@@ -79,6 +83,8 @@ void Empirical_Bayes(arbre* tree)
 			Copy_Tree(tree, last_tree);
 			Record_Model(tree->mod, last_tree->mod);
 			lnL_current = tree->c_lnL;
+			Prepare_Tree_For_Lk(last_tree);
+
 
 			/* check if better than best so far */
 			if(tree->c_lnL > lnL_best)
@@ -86,15 +92,16 @@ void Empirical_Bayes(arbre* tree)
 				Copy_Tree(tree, best_tree);
 				Record_Model(tree->mod, best_tree->mod);
 				lnL_best = tree->c_lnL;
+				Prepare_Tree_For_Lk(best_tree);
 			}
 		}
-
 		else
 		{
 			/* copy old tree back to current tree */
 			Copy_Tree(last_tree, tree);
 			Record_Model(last_tree->mod, tree->mod);
 			tree->c_lnL = lnL_current;
+			Prepare_Tree_For_Lk(tree);
 		}
 
 		/* print sampled tree */
@@ -103,8 +110,7 @@ void Empirical_Bayes(arbre* tree)
 
 		/* print estimated remaining time*/
 		if (i%DISPLAY_TIME_REMAINING_PERIOD == 0)
-		{
-			now = time(NULL);
+		{	now = time(NULL);
 			Print_time_remaining(now, start, i, tree->io->eb_n_gens);
 		}
 	}
@@ -112,29 +118,28 @@ void Empirical_Bayes(arbre* tree)
 	/* copy best tree found back into tree */
 	Copy_Tree(best_tree, tree);
 	Record_Model(best_tree->mod, tree->mod);
+	Prepare_Tree_For_Lk(tree);
 	tree->c_lnL = lnL_best;
-
-	printf("\n . Empirical Bayes MCMC, lnL of best sample = %f\n", tree->c_lnL);
 
 	/* clean up and done */
 	fclose(outfile);
 	gsl_rng_free(rng);
 	PhyML_Printf("\n . Done with empirical Bayes MCMC.\n");
 
-	//Calculate_PP(tree);
+	Calculate_PP(tree);
 }
 
-// Calculate posterior probability values for clades,
-// given the *.eb file written by the Empricial_Bayes method.
+// Calculate posterior probabilities of clades,
+// given the *.eb file written by the method named "Empricial_Bayes"
 void Calculate_PP(arbre* tree)
 {
-	PhyML_Printf("\n . Calculating posterior probabilities of clades.\n");
+	PhyML_Printf("\n . Calculating posterior probabilities of clades.");
 
 	char outfilestr[1000];
 	sprintf(outfilestr, "%s.eb", tree->io->out_tree_file);
 	FILE* ebfile = fopen(outfilestr, "r");
 
-	int i,j,k;
+	int i,j,k,l;
 
 	int count_lines = 0; // how many lines (i.e. samples) have we seen?
 	struct __Node ***parts; // parts[i] = a list_of_reachable_tips for partition i
@@ -149,57 +154,164 @@ void Calculate_PP(arbre* tree)
 	For(i,MAX_PARTS) freq_of_parts[i] = 0;
 	int count_parts = 0; // how many partitions exist?
 
+	/*
+	 * 1. Parse the MCMC samples and count the frequency of topological partitions among samples
+	 */
 	char line[T_MAX_LINE];
 	while( fgets( line, T_MAX_LINE, ebfile) != NULL ){
 		char *tokens = strtok( line, " ;");
 		tokens = strtok( NULL, " ;");
-		//PhyML_Printf("tree=%s\n", tokens);
 		count_lines++;
-		PhyML_Printf(" . parsing MCMC sample %d\n", count_lines);
-		arbre* sampled_tree = Read_Tree(tokens);
-		For(j, 2*tree->n_otu-2) // for every node in the tree
-		{	if (!tree->noeud[j]->tax) // if the node is not terminal
-			{	int found_parti = 0;
-				For(i,count_parts) // for each partition
-				{	PhyML_Printf("debug: partition %d\n", i);
-					// First look to see if the partition i exists in the tree:
-					For(k,3)
-					{	PhyML_Printf("debug: direction %d\n", k);
-						int score = Compare_List_Of_Reachable_Tips(parts[i],
-								size_of_parts[i],
-								tree->noeud[j]->list_of_reachable_tips[k],
-								tree->noeud[j]->n_of_reachable_tips[k]);
+		PhyML_Printf(".");
 
-						if(score == size_of_parts[i])
-						{	PhyML_Printf("debug: found partition %d\n", i);
-							found_parti = 1;
-							// partition i is present within the sampled_tree
-							// increment our frequency count for partition i
-							freq_of_parts[i]++;
-							break;
+		arbre* sampled_tree = Read_Tree(tokens); // Read the Newick-formatted tree from the *.eb file and create an arbre structure. . .
+		sampled_tree->mod         = tree->mod;
+		sampled_tree->io          = tree->io;
+		sampled_tree->data        = tree->data;
+		sampled_tree->both_sides  = tree->both_sides;
+		sampled_tree->n_pattern   = tree->n_pattern;
+		Fill_Dir_Table(sampled_tree);
+		Update_Dirs(sampled_tree);
 
-						}
+		For(j,2*sampled_tree->n_otu-3) // for every edge in the tree...
+		{
+			/*
+			 * Does edge j connect to a terminal taxa?
+			 * If so, then this partition will *always* have posterior probability = 1.0.
+			 * Therefore, let's not bother computing the PP for this edge.
+			 */
+			if (sampled_tree->t_edges[j]->rght->tax || sampled_tree->t_edges[j]->left->tax)
+			{	continue;
+			}
+
+			/*
+			 * Here we find that largest partition attached to edge j.
+			 * The tips in the largest partition will be saved in tiplist.
+			 */
+			node **tiplist;
+			int proposed_part_size = 0;
+			For(k,3)
+			{
+				if (sampled_tree->t_edges[j]->left->n_of_reachable_tips[k] > proposed_part_size)
+				{	tiplist = sampled_tree->t_edges[j]->left->list_of_reachable_tips[k];
+					proposed_part_size = sampled_tree->t_edges[j]->left->n_of_reachable_tips[k];
+				}
+				if (sampled_tree->t_edges[j]->rght->n_of_reachable_tips[k] > proposed_part_size)
+				{	tiplist = sampled_tree->t_edges[j]->rght->list_of_reachable_tips[k];
+					proposed_part_size = sampled_tree->t_edges[j]->rght->n_of_reachable_tips[k];
+				}
+			}
+
+			int found_parti = 0;
+			For(i,count_parts) // for each partition...
+			{	// do partition i and subtree k have the same number of descendants?
+				if (size_of_parts[i] == proposed_part_size)
+				{	int score = Compare_List_Of_Reachable_Tips_version2(parts[i],
+							size_of_parts[i],
+							tiplist,
+							proposed_part_size);
+					// do partition i and subtree k contain the exact same set of descendant taxa?
+					if(score == size_of_parts[i])
+					{	// ... then partition i is present within the sampled_tree.
+						// Increment the observed frequency for partition i:
+						found_parti = 1;
+						freq_of_parts[i]++;
+						break;
+					}
+					// a case we must deal with: if the partition size = 1/2 the number of terminal taxa, and if
+					// the match score = 0, then we found the taxa in tiplist are the inverse of the taxa
+					// in partition i.  In other words, we found the partition in sampled_tree.
+					if (score == 0 && proposed_part_size == sampled_tree->n_otu * 0.5)
+					{
+						found_parti = 1;
+						freq_of_parts[i]++;
+						break;
 					}
 				}
-				if (found_parti == 0) // this node has not been seen in previous samples.
-				{	PhyML_Printf("debug: adding partition\n");
-					// ... then add the partition to our list of partitions
-					parts[count_parts] = tree->noeud[j]->list_of_reachable_tips[0];
-					size_of_parts[count_parts] = tree->noeud[j]->n_of_reachable_tips[0];
-					freq_of_parts[count_parts]++;
-					count_parts++;
+				if(found_parti == 1) break;
+			}
+			if (found_parti == 0) // if the partition of node j has not been observed in previous samples...
+			{	// ... then add the partition to our collection of observed partitions.
+				parts[count_parts] = tiplist;
+				size_of_parts[count_parts] = proposed_part_size;
+				freq_of_parts[count_parts]++; // ... and increment the observed frequency of this partition.
+				count_parts++;
+			}
+		}
+	}
+	PhyML_Printf("\n");
+	fclose(ebfile);
+
+	/*
+	 * 2. Scale the raw frequency counts to posterior probabilities.
+	 */
+	double *pp_of_parts; // how often have we seen each partition?
+	pp_of_parts = (double *)mCalloc(count_parts,sizeof(double));
+	For(i,count_parts) pp_of_parts[i] = 0.0;
+	For(i,count_parts)
+	{	pp_of_parts[i] = (double)freq_of_parts[i] / (double)count_lines;
+	}
+
+	/*
+	 * 3. Write posterior probabilities onto the branches of the given tree
+	 */
+	For(j,2*tree->n_otu-3) // for every edge in the tree...
+	{
+		/*
+		 * Does edge j connect to a terminal taxa?
+		 * If so, then this partition will *always* have posterior probability = 1.0.
+		 * Therefore, let's not bother computing the PP for this edge.
+		 */
+		if (tree->t_edges[j]->rght->tax || tree->t_edges[j]->left->tax)
+		{	tree->t_edges[j]->post_prob = 1.0;
+		}
+
+		/*
+		 * Determine which partition matches edge j
+		 */
+		node **tiplist;
+		int proposed_part_size = 0;
+		For(k,3)
+		{
+			if (tree->t_edges[j]->left->n_of_reachable_tips[k] > proposed_part_size)
+			{	tiplist = tree->t_edges[j]->left->list_of_reachable_tips[k];
+				proposed_part_size = tree->t_edges[j]->left->n_of_reachable_tips[k];
+			}
+			if (tree->t_edges[j]->rght->n_of_reachable_tips[k] > proposed_part_size)
+			{	tiplist = tree->t_edges[j]->rght->list_of_reachable_tips[k];
+				proposed_part_size = tree->t_edges[j]->rght->n_of_reachable_tips[k];
+			}
+		}
+		For(i,count_parts)
+		{	if (size_of_parts[i] == proposed_part_size)
+			{	int score = Compare_List_Of_Reachable_Tips_version2(parts[i],
+						size_of_parts[i],
+						tiplist,
+						proposed_part_size);
+				if( (score == size_of_parts[i]) ||
+						(score == 0 && proposed_part_size == tree->n_otu * 0.5) )
+				{	tree->t_edges[j]->post_prob = pp_of_parts[i];
+					break;
 				}
 			}
 		}
 	}
+	tree->print_pp_val = 1;
 
-	// debugging code:
+	/*
+	 * debugging code: spew PP results
+	 */
+	/*
+	Print_Tree_Screen(tree);
 	For(i,count_parts)
 	{
-		PhyML_Printf(" partition %d: size = %d, freq = %d\n", i, size_of_parts[i], freq_of_parts[i]);
+		PhyML_Printf(" partition %d: size = %d, freq = %d, pp = %f\n", i, size_of_parts[i], freq_of_parts[i], pp_of_parts[i]);
+		For(j,size_of_parts[i])
+		{	PhyML_Printf("%s ", parts[i][j]->name );
+		}
+		PhyML_Printf("\n");
 	}
+	*/
 	// end debugging code
-
-	fclose(ebfile);
 }
 
