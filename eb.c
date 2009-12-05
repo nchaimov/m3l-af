@@ -62,8 +62,8 @@ void Empirical_Bayes(arbre* tree)
 	m3ldbl lnL_best = tree->c_lnL;
 	m3ldbl lnL_current = tree->c_lnL;
 
-	Prepare_Tree_For_Lk(last_tree);
-	Prepare_Tree_For_Lk(best_tree);
+	//Prepare_Tree_For_Lk(last_tree);
+	//Prepare_Tree_For_Lk(best_tree);
 
 
 	/* MCMC routine */
@@ -83,7 +83,7 @@ void Empirical_Bayes(arbre* tree)
 			Copy_Tree(tree, last_tree);
 			Record_Model(tree->mod, last_tree->mod);
 			lnL_current = tree->c_lnL;
-			Prepare_Tree_For_Lk(last_tree);
+			//Prepare_Tree_For_Lk(last_tree);
 
 
 			/* check if better than best so far */
@@ -92,7 +92,7 @@ void Empirical_Bayes(arbre* tree)
 				Copy_Tree(tree, best_tree);
 				Record_Model(tree->mod, best_tree->mod);
 				lnL_best = tree->c_lnL;
-				Prepare_Tree_For_Lk(best_tree);
+				//Prepare_Tree_For_Lk(best_tree);
 			}
 		}
 		else
@@ -101,7 +101,7 @@ void Empirical_Bayes(arbre* tree)
 			Copy_Tree(last_tree, tree);
 			Record_Model(last_tree->mod, tree->mod);
 			tree->c_lnL = lnL_current;
-			Prepare_Tree_For_Lk(tree);
+			//Prepare_Tree_For_Lk(tree);
 		}
 
 		/* print sampled tree */
@@ -118,7 +118,7 @@ void Empirical_Bayes(arbre* tree)
 	/* copy best tree found back into tree */
 	Copy_Tree(best_tree, tree);
 	Record_Model(best_tree->mod, tree->mod);
-	Prepare_Tree_For_Lk(tree);
+	//Prepare_Tree_For_Lk(tree);
 	tree->c_lnL = lnL_best;
 
 	/* clean up and done */
@@ -127,6 +127,9 @@ void Empirical_Bayes(arbre* tree)
 	PhyML_Printf("\n. Done with empirical Bayes MCMC.\n");
 
 	Calculate_PP(tree);
+
+	Free_Tree(best_tree);
+	Free_Tree(last_tree);
 }
 
 // Calculate posterior probabilities of clades,

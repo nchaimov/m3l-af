@@ -176,8 +176,8 @@ void Restore_Tree_From_String(char *s_tree, arbre* tree)
 	n_otu+=1;
 	n_l +=1;
 
-	Free(tree->noeud);
-	Free(tree->t_edges);
+	Free_All_Nodes_Light(tree);
+	Free_All_Edges_Light(tree);
 	//tree = (arbre *)Make_Tree(n_otu, n_l);
 	//Init_Tree(tree,tree->n_otu);
 	Make_All_Tree_Nodes(tree, n_l);
@@ -1053,7 +1053,6 @@ void Normalize_Props(model *mod){
 
 
 /*********************************************************/
-
 void Make_New_Edge_Label(edge *b)
 {
 	int i;
@@ -1076,12 +1075,10 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 {
 	edge *b;
 	b = (edge *)mCalloc(1,sizeof(edge));
-	b->l = (m3ldbl *)mCalloc(n_l, sizeof(m3ldbl));
 	Init_Edge_Light(b,num);
 	b->n_l = n_l;
 	b->l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
-	b->l_old = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
-	b->best_l = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl));
+	b->l_old = (m3ldbl *)mCalloc(n_l,sizeof(m3ldbl)); //l_old is used by NNI and SPR methods
 
 
 	if(a && b)
@@ -1092,21 +1089,14 @@ edge *Make_Edge_Light(node *a, node *d, int num, int n_l)
 
 		(b->left == a)? (Make_Edge_Dirs(b,a,d)):(Make_Edge_Dirs(b,d,a));
 
-// this is the version sans m3l:
+		// this is the version sans m3l...
+		// the code for m3l functionality w/r/t making edges has been
+		//moved to after the BioNJ algorithm.
 		  b->l[0]                    = a->l[b->l_r];
 		  if(a->tax) b->l[0]         = a->l[b->r_l];
 		  if(b->l[0] < BL_MIN)  b->l[0] = BL_MIN;
 		  else if(b->l[0] > BL_MAX) b->l[0] = BL_MAX;
 		  b->l_old[0]                = b->l[0];
-
-// VHS:09.27.2009: moving all multiple branch configurations until AFTER the BioNJ algorithm.
-//		For(i,n_l){
-//			b->l[i]                    = a->l[i*n_l + b->l_r];
-//			if(a->tax) b->l[i]         = a->l[i*n_l + b->r_l];
-//			if(b->l[i] < BL_MIN)  b->l[i] = BL_MIN;
-//			else if(b->l[i] > BL_MAX) b->l[i] = BL_MAX;
-//			b->l_old[i]                = b->l[i];
-//		}
 	}
 	else
 	{
@@ -6873,7 +6863,59 @@ void Hide_Ambiguities(allseq *data)
 }
 
 /*********************************************************/
+void Copy_Tree(arbre *ori, arbre *cpy)
+{
+  int i,j;
+
+  For(i,2*ori->n_otu-2)
+    {
+      For(j,3)
+	{
+	  if(ori->noeud[i]->v[j])
+	    {
+	      cpy->noeud[i]->v[j] = cpy->noeud[ori->noeud[i]->v[j]->num];
+	      cpy->noeud[i]->l[j] = ori->noeud[i]->l[j];
+	      cpy->noeud[i]->b[j] = cpy->t_edges[ori->noeud[i]->b[j]->num];
+	    }
+	  else
+	    {
+	      cpy->noeud[i]->v[j] = NULL;
+	      cpy->noeud[i]->b[j] = NULL;
+	    }
+	}
+    }
+
+  For(i,2*ori->n_otu-3)
+    {
+      For(j, ori->mod->n_l)
+      {
+    	  cpy->t_edges[i]->l[j] = ori->t_edges[i]->l[j];
+    	  cpy->t_edges[i]->l_old[j] = ori->t_edges[i]->l_old[j];
+      }
+      cpy->t_edges[i]->left = cpy->noeud[ori->t_edges[i]->left->num];
+      cpy->t_edges[i]->rght = cpy->noeud[ori->t_edges[i]->rght->num];
+      cpy->t_edges[i]->l_v1 = ori->t_edges[i]->l_v1;
+      cpy->t_edges[i]->l_v2 = ori->t_edges[i]->l_v2;
+      cpy->t_edges[i]->r_v1 = ori->t_edges[i]->r_v1;
+      cpy->t_edges[i]->r_v2 = ori->t_edges[i]->r_v2;
+      cpy->t_edges[i]->l_r  = ori->t_edges[i]->l_r;
+      cpy->t_edges[i]->r_l  = ori->t_edges[i]->r_l;
+    }
+
+  For(i,ori->n_otu)
+    {
+      cpy->noeud[i]->tax = 1;
+      strcpy(cpy->noeud[i]->name,ori->noeud[i]->name);
+    }
+
+  cpy->num_curr_branch_available = 0;
+/*   Connect_Edges_To_Nodes_Recur(cpy->noeud[0],cpy->noeud[0]->v[0],cpy); */
+/*   Update_Dirs(cpy); */
+}
+
+
 // Copies the arbre structure ori into the arbre structure cpy.
+/*
 void Copy_Tree(arbre *ori, arbre *cpy)
 {
 	int i,j;
@@ -6890,79 +6932,9 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 	Fill_Dir_Table(cpy);
 	Update_Dirs(cpy);
 	return;
-
-	/*
-	 * Copy nodes
-	 */
-	For(i,2*ori->n_otu-2)
-	{
-		For(j,3)
-		{
-			if(ori->noeud[i]->v[j])
-			{
-				//VHS: 12.3.2009: is this accurate:?
-				//cpy->noeud[i]->v[j] = (node)ori->noeud[ori->noeud[i]->v[j]->num];
-				//cpy->noeud[i]->l[j] = (m3ldbl)ori->noeud[i]->l[j];
-				//cpy->noeud[i]->b[j] = (edge)cpy->t_edges[ori->noeud[i]->b[j]->num];
-				cpy->noeud[i]->v[j] = ori->noeud[i]->v[j];
-				cpy->noeud[i]->l[j] = ori->noeud[i]->l[j];
-				cpy->noeud[i]->b[j] = ori->noeud[i]->b[j];
-
-#ifdef COMPRESS_SUBALIGNMENTS
-				cpy->noeud[i]->red = ori->noeud[i]->red; //VHS
-#endif
-
-			}
-			else
-			{
-				cpy->noeud[i]->v[j] = NULL;
-				cpy->noeud[i]->b[j] = NULL;
-			}
-		}
-	}
-
-	/*
-	 * Copy edges
-	 */
-	For(i,2*ori->n_otu-3)
-	{
-		//cpy->t_edges[i]->l    	= ori->t_edges[i]->l;
-		//cpy->t_edges[i]->best_l = ori->t_edges[i]->best_l;
-		//cpy->t_edges[i]->l_old  = ori->t_edges[i]->l_old;
-		cpy->t_edges[i]->left = ori->t_edges[i]->left;
-		cpy->t_edges[i]->rght = ori->t_edges[i]->rght;
-		cpy->t_edges[i]->l_v1 = (int)ori->t_edges[i]->l_v1;
-		cpy->t_edges[i]->l_v2 = (int)ori->t_edges[i]->l_v2;
-		cpy->t_edges[i]->r_v1 = (int)ori->t_edges[i]->r_v1;
-		cpy->t_edges[i]->r_v2 = (int)ori->t_edges[i]->r_v2;
-		cpy->t_edges[i]->l_r  = (int)ori->t_edges[i]->l_r;
-		cpy->t_edges[i]->r_l  = (int)ori->t_edges[i]->r_l;
-	}
-
-	/*
-	 * Copy edge lengths
-	 */
-	For(j,ori->mod->n_l){
-		For(i,2*ori->n_otu-3){
-			cpy->t_edges[i]->l[j] = (m3ldbl)ori->t_edges[i]->l[j];
-		}
-	}
-
-	/*
-	 * Copy node names
-	 */
-	For(i,ori->n_otu)
-	{
-		cpy->noeud[i]->tax = 1;
-		strcpy(cpy->noeud[i]->name,ori->noeud[i]->name);
-	}
-
-	cpy->num_curr_branch_available = 0;
-	/*   Connect_Edges_To_Nodes_Recur(cpy->noeud[0],cpy->noeud[0]->v[0],cpy); */
-	/*   Update_Dirs(cpy); */
-
-
 }
+*/
+
 
 /*********************************************************/
 
