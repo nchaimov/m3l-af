@@ -4276,6 +4276,31 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, arbre *tree, option 
 			}
 			/*****************************************/
 
+			if (tree->mod->s_opt->opt_topo)
+			{
+				PhyML_Fprintf(fp_out, "\n\n. Optimization Strategy:\t\t");
+				switch(tree->mod->s_opt->topo_search){
+				case NNI_MOVE:
+				  PhyML_Fprintf(fp_out, "NNI\n");
+				  break;
+				case SPR_MOVE:
+				  PhyML_Fprintf(fp_out, "SPR\n");
+				  break;
+				case BEST_OF_NNI_AND_SPR:
+				  PhyML_Fprintf(fp_out, "Best of NNI, SPR\n");
+				  break;
+				case SIMULATED_THERMAL_ANNEALING:
+				  PhyML_Fprintf(fp_out, "Simulated thermal annealing\n");
+				  break;
+				case SIMULATED_QUANTUM_ANNEALING:
+				  PhyML_Fprintf(fp_out, "Simulated quantum annealing\n");
+				  break;
+				case EMPIRICAL_BAYES:
+				  PhyML_Fprintf(fp_out, "empirical Bayes MCMC\n");
+				  break;
+				}
+			}
+
 
 			if(io->ratio_test == 1)
 			{
@@ -4285,7 +4310,6 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, arbre *tree, option 
 			{
 				PhyML_Fprintf(fp_out,". aLRT branch supports (cubic approximation, mixture of Chi2s distribution)");
 			}
-
 
 			hour = div(t_end-t_beg,3600);
 			min  = div(t_end-t_beg,60  );
@@ -4314,9 +4338,6 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, arbre *tree, option 
 			PhyML_Fprintf(fp_out," \"A Mixed Branch length model of heterotachy improves phylogenetic accuracy\"\n");
 			PhyML_Fprintf(fp_out," Molecular Biology and Evolution. 2008. 25(6):1054--1066.\n");
 			PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
-
-
-
 }
 
 /*********************************************************/
