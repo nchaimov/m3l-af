@@ -1758,6 +1758,8 @@ void Launch_Interface_Topo_Search(option *io)
 			io->user_topo 						= 1;
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
+			io->mod->bootstrap 					= 0; //disable bootstrap
+			io->ratio_test 						= 0; //disable aLRT
 		}
 		else if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES){
 
@@ -1766,8 +1768,6 @@ void Launch_Interface_Topo_Search(option *io)
 			io->user_topo 						= 1;
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
-			io->mod->bootstrap 					= 0; //disable bootstrap
-			io->ratio_test 						= 0; //disable aLRT
 		}
 /*		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING){
 

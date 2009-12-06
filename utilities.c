@@ -8522,11 +8522,11 @@ void Print_Settings(option *io)
 		else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n                . Tree topology search : \t\t\t Best of NNIs and SPRs");
 
 		if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
-			PhyML_Printf("\n                . Search heuristic : \t\t\t\t simulated thermal annealing");
+			PhyML_Printf("\n                . Search heuristic : \t\t\t\t\t simulated thermal annealing");
 		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING)
-			PhyML_Printf("\n                . Search heuristic : \t\t\t simulated quantum annealing");
+			PhyML_Printf("\n                . Search heuristic : \t\t\t\t simulated quantum annealing");
 		else if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
-			PhyML_Printf("\n                . Search heuristic  : \t\t\t empirical Bayes MCMC");
+			PhyML_Printf("\n                . Search heuristic  : \t\t\t\t empirical Bayes MCMC");
 
 
 		PhyML_Printf("\n                . Starting tree : \t\t\t\t %s",s);
@@ -8718,10 +8718,14 @@ void Print_Banner(FILE *fp)
 	PhyML_Fprintf(fp,"    A simple, fast, and accurate algorithm to estimate large phylogenies by maximum likelihood    \n");
 	PhyML_Fprintf(fp,"                            Stephane Guindon & Olivier Gascuel                                      \n");
 	PhyML_Fprintf(fp,"                                                                                                  \n");
-	PhyML_Fprintf(fp,"                           http://www.atgc-montpellier.fr/phyml                                          \n");
+	PhyML_Fprintf(fp,"                           http://www.atgc-montpellier.fr/phyml                                   \n");
 	PhyML_Fprintf(fp,"                                                                                                  \n");
-	PhyML_Fprintf(fp,"                         Copyright CNRS - Universite Montpellier II                                 \n");
-	PhyML_Fprintf(fp,"                                                                                                  \n");
+	PhyML_Fprintf(fp,"                                 with +M3L extensions\n");
+	PhyML_Fprintf(fp,"            Victor Hanson-Smith, Bryan Kolaczkowski, John St. John, and Joe Thornton\n");
+	PhyML_Fprintf(fp,"                       http://phylo.uoregon.edu/software/phyml-m3l\n");
+	PhyML_Fprintf(fp,"\n");
+	PhyML_Fprintf(fp,"                     Released under the GNU General Public License version 2\n");
+	PhyML_Fprintf(fp,"                  See the file named 'COPYING' for more copyright information.\n");
 	PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 }
 
@@ -8732,8 +8736,13 @@ void Print_Banner_Small(FILE *fp)
 	PhyML_Fprintf(fp,"\n");
 	PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 	PhyML_Fprintf(fp,"                                    ---  PhyML %s  ---                                             \n",VERSION);
-	PhyML_Fprintf(fp,"                            http://www.atgc-montpellier.fr/phyml                                          \n");
-	PhyML_Fprintf(fp,"                         Copyright CNRS - Universite Montpellier II                                 \n");
+	PhyML_Fprintf(fp,"                            http://www.atgc-montpellier.fr/phyml                                   \n");
+	PhyML_Fprintf(fp,"\n");
+	PhyML_Fprintf(fp,"                                 with +M3L extensions\n");
+	PhyML_Fprintf(fp,"                       http://phylo.uoregon.edu/software/phyml-m3l\n");
+	PhyML_Fprintf(fp,"\n");
+	PhyML_Fprintf(fp,"                     Released under the GNU General Public License version 2\n");
+	PhyML_Fprintf(fp,"                  See the file named 'COPYING' for more copyright information.\n");
 	PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 }
 
