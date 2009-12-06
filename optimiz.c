@@ -1496,6 +1496,8 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 				&Num_Derivative_Several_Param,
 				&Lnsrch_RR_Param,&failed);
 
+
+
 		if(failed)
 		{
 			int i;
@@ -1611,7 +1613,43 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 		tree->mod->update_eigen = 0;
 	}
 
-	// VHS: Here we force a round of branch-length optization to occur.
+	//VHS: here we optimize branch-length set proportions
+	/*
+	if (tree->mod->s_opt->opt_props)
+	{
+		int failed, i;
+		failed = 0;
+
+		BFGS(tree,tree->mod->bl_props,
+				5,1.e-5,1.e-7,
+				&Return_Abs_Lk,
+				&Num_Derivative_Several_Param,
+				&Lnsrch_RR_Cov_Param,&failed);
+
+		if(failed)
+		{
+			For(i,tree->mod->n_l)
+			{
+				Optimize_Single_Param_Generic(tree,&(tree->mod->bl_props[i]),
+						-1000.,1000.,
+						tree->mod->s_opt->min_diff_lk_global,
+						tree->mod->s_opt->brent_it_max,
+						tree->mod->s_opt->quickdirty);
+				Normalize_Props(tree->mod);
+			}
+		}
+		if(verbose) Print_Lk(tree,"[BL proportions     ]");
+		PhyML_Printf("[ ",tree->mod->alpha);
+		For(i, tree->mod->n_l)
+		{
+			PhyML_Printf("%.3f ", tree->mod->bl_props[i]);
+		}
+		PhyML_Printf("]");
+	}
+*/
+	Normalize_Props(tree->mod);
+
+	// VHS: Here we force a round of branch-length optimzation to occur.
 	Optimize_Br_Len_Serie(tree->noeud[0],
 							   tree->noeud[0]->v[0],
 							   tree->noeud[0]->b[0],

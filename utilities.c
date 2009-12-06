@@ -1036,7 +1036,7 @@ void Normalize_Props(model *mod){
 		sum += mod->bl_props[i];
 	}
 
-	if (sum == 0.0) // In this rare case, all the proportions are zero (why?), so we set all the BL props to be equal
+	if (sum == 0.0) // In this case, all the proportions are zero, so we set all the BL props to be equal
 	{
 		For(i, mod->n_l)
 		{
@@ -4204,6 +4204,19 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, arbre *tree, option 
 				PhyML_Fprintf(fp_out,"\n  - Gamma shape parameter: \t\t%.3f",tree->mod->alpha);
 			}
 
+			PhyML_Fprintf(fp_out,"\n\n. Multiple length-sets per branch: \t%s",
+					(tree->mod->n_l>1)?("Yes"):("No"));
+			if(tree->mod->n_l > 1)
+			{
+				PhyML_Fprintf(fp_out,"\n  - Number of sets per branch: \t\t%d",tree->mod->n_l);
+				PhyML_Fprintf(fp_out,"\n  - Proportions of sites in sets: \t");
+				int j = 0;
+				For(j, tree->mod->n_l)
+				{
+					PhyML_Fprintf(fp_out, "%.3f ", tree->mod->bl_props[j]);
+				}
+			}
+
 			if(tree->mod->invar) PhyML_Fprintf(fp_out,"\n\n. Proportion of invariant: \t\t%.3f",tree->mod->pinvar);
 
 			/*was before Discrete gamma model ; moved here FLT*/
@@ -4284,10 +4297,22 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, arbre *tree, option 
 
 			PhyML_Fprintf(fp_out,"\n");
 			PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
-			PhyML_Fprintf(fp_out," Suggested citation:\n");
+			PhyML_Fprintf(fp_out," Suggested citation for aLRT and PhyML:\n");
 			PhyML_Fprintf(fp_out," S. Guindon & O. Gascuel\n");
 			PhyML_Fprintf(fp_out," \"A simple, fast, and accurate algorithm to estimate large phylogenies by maximum likelihood\"\n");
 			PhyML_Fprintf(fp_out," Systematic Biology. 2003. 52(5):696-704.\n");
+			PhyML_Fprintf(fp_out,"\n");
+			PhyML_Fprintf(fp_out,"\n");
+			PhyML_Fprintf(fp_out," Suggested citation for the accuracy of empirical Bayes MCMC:\n");
+			PhyML_Fprintf(fp_out," Bryan Kolaczkowski and Joseph W. Thornton\n");
+			PhyML_Fprintf(fp_out," \"Effects of Branch Length Uncertainty on Bayesian Posterior Probabilities for Phylogenetic Hypotheses\"\n");
+			PhyML_Fprintf(fp_out," Molecular Biology and Evolution. 2007. 24(9):2108--2118.\n");
+			PhyML_Fprintf(fp_out,"\n");
+			PhyML_Fprintf(fp_out,"\n");
+			PhyML_Fprintf(fp_out," Suggested citation for mixed branch length model:\n");
+			PhyML_Fprintf(fp_out," Bryan Kolaczkowski and Joseph W. Thornton\n");
+			PhyML_Fprintf(fp_out," \"A Mixed Branch length model of heterotachy improves phylogenetic accuracy\"\n");
+			PhyML_Fprintf(fp_out," Molecular Biology and Evolution. 2008. 25(6):1054--1066.\n");
 			PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 
 
@@ -6914,6 +6939,8 @@ void Copy_Tree(arbre *ori, arbre *cpy)
 }
 
 
+// VHS: 12.5.2009: This version is outdated:
+//
 // Copies the arbre structure ori into the arbre structure cpy.
 /*
 void Copy_Tree(arbre *ori, arbre *cpy)
@@ -8506,9 +8533,9 @@ void Print_Settings(option *io)
 	PhyML_Printf("\n                . Proportion of sites in each b.l. category: \t [");
 	For(i,io->mod->n_l){
 		if(i+1 == io->mod->n_l){
-			PhyML_Printf(" %lf ]",(double)io->mod->bl_props[i]);
+			PhyML_Printf(" %f ]",io->mod->bl_props[i]);
 		}else{
-			PhyML_Printf(" %lf,",(double)io->mod->bl_props[i]);
+			PhyML_Printf(" %f,",io->mod->bl_props[i]);
 		}
 	}
 	PhyML_Printf("\n                . Optimize branch length category proportions: \t %s", (io->fixed_props == 0) ? ("yes"):("no"));
