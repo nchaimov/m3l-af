@@ -9871,34 +9871,36 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 	else
 	{
 		arbre *ori_tree,*best_tree;
-		model *ori_mod,*best_mod;
 		m3ldbl **ori_bl,**best_bl;
 		m3ldbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
+		/*
 		ori_bl = (m3ldbl **)mCalloc(tree->mod->n_l,sizeof(m3ldbl *));
 		best_bl = (m3ldbl **)mCalloc(tree->mod->n_l,sizeof(m3ldbl *));
 		For(i,tree->mod->n_l){ // VHS: I think John added this loop?
 			ori_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 			best_bl[i] = (m3ldbl *)mCalloc(2*tree->n_otu-3,sizeof(m3ldbl));
 		}
-
-		ori_mod   = Copy_Model(tree->mod);
-		best_mod  = Copy_Model(tree->mod);
+		*/
 
 		// Build ori_tree
 		ori_tree = Make_Tree(tree->n_otu);
 		Init_Tree(ori_tree,tree->n_otu);
 		Make_All_Tree_Nodes(ori_tree, tree->mod->n_l);
 		Make_All_Tree_Edges(ori_tree, tree->mod->n_l);
+		ori_tree->mod = Copy_Model(tree->mod);
+		Record_Model(tree->mod, ori_tree->mod);
 
 		// Build best_tree
 		best_tree = Make_Tree(tree->n_otu);
 		Init_Tree(best_tree,tree->n_otu);
 		Make_All_Tree_Nodes(best_tree, tree->mod->n_l);
 		Make_All_Tree_Edges(best_tree, tree->mod->n_l);
+		best_tree->mod = Copy_Model(tree->mod);
+		Record_Model(tree->mod, best_tree->mod);
 
 		// ori_tree = tree
 		Copy_Tree(tree,ori_tree);
-		//Record_Br_Len(ori_bl,tree);
+		Copy_Tree(tree,best_tree);
 
 		best_lnL = UNLIKELY;
 		Lk(tree);
@@ -9909,37 +9911,26 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 		nni_lnL = tree->c_lnL;
 
 		Copy_Tree(tree,best_tree); /* Record the tree topology and branch lengths */
-		//Record_Br_Len(best_bl,tree);
-		//Restore_Br_Len(best_bl,best_tree);
-		Record_Model(tree->mod,best_mod);
+		Record_Model(tree->mod, best_tree->mod);
 
 		Copy_Tree(ori_tree,tree); /* Back to the original tree topology */
-		//Restore_Br_Len(ori_bl,tree); /* Back to the original branch lengths */
-		Record_Model(ori_mod,tree->mod); /* Back to the original model */
+		Record_Model(ori_tree->mod,tree->mod); /* Back to the original model */
 
 		/* Make sure the tree is in its original form */
 		Lk(tree);
-//		if(fabs(tree->c_lnL - ori_lnL) > tree->mod->s_opt->min_diff_lk_global)
-//		{
-//			PhyML_Printf("\n. ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
-//			PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-//			Warn_And_Exit("");
-//		}
 
 		Speed_Spr_Loop(tree);
 		spr_lnL = tree->c_lnL;
-		if(tree->c_lnL > best_lnL) // if the SPR results were better than NNI results....
+		if(spr_lnL > best_lnL) // if the SPR results were better than NNI results....
 		{
-			best_lnL = tree->c_lnL;
+			best_lnL = spr_lnL;
 			Copy_Tree(tree,best_tree); /* Record tree topology, branch lengths and model parameters */
-			//Record_Br_Len(best_bl,tree);
-			//Restore_Br_Len(best_bl,best_tree);
-			Record_Model(tree->mod,best_mod);
+			Record_Model(tree->mod,best_tree->mod);
 		}
-
-		Copy_Tree(best_tree,tree);
-		//Restore_Br_Len(best_bl,tree);
-		Record_Model(best_mod,tree->mod);
+		else{
+			Copy_Tree(best_tree,tree);
+			Record_Model(best_tree->mod,tree->mod);
+		}
 
 		/* Make sure the current tree has the best topology, branch lengths and model parameters */
 		Lk(tree);
@@ -9955,20 +9946,9 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 			PhyML_Printf("\n\n. Log likelihood obtained after NNI moves : %f",nni_lnL);
 			PhyML_Printf("\n. Log likelihood obtained after SPR moves : %f",spr_lnL);
 		}
-		For(i,n_l){
 
-			if(ori_bl[i]) Free(ori_bl[i]);
-			if(best_bl[i]) Free(best_bl[i]);
-		}
-		if(ori_bl) Free(ori_bl);
-		if(best_bl) Free(best_bl);
-		//JSJ: currently problems in Free_Tree... causes bus error...
-		if(ori_tree) Free_Tree(ori_tree);
-		if(best_tree) Free_Tree(best_tree);
-
-		if(ori_mod) Free_Model(ori_mod);
-		if(best_mod) Free_Model(best_mod);
-
+		Free_Tree(ori_tree);
+		Free_Tree(best_tree);
 	}
 }
 
