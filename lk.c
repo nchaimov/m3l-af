@@ -281,11 +281,6 @@ void debug_Lk_nocompress(arbre *tree)
 	if(tree->bl_from_node_stamps) MC_Bl_From_T(tree);
 #endif
 
-	//	chunk = (2*tree->n_otu-3)/omp_get_num_procs();
-	//	printf("chunk: %i total: %i\n",chunk,(2*tree->n_otu-3));
-
-	// #pragma omp parallel
-	//for shared(tree,n_patterns,chunk) schedule(static,chunk)
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
 		if(!tree->t_edges[br]->rght->tax)
@@ -313,9 +308,7 @@ void debug_Lk_nocompress(arbre *tree)
 	tree->curr_site =  0;
 #ifdef USE_OPENMP
 	int chunk = n_patterns/omp_get_num_procs();
-#pragma omp parallel for \
-		shared(tree,n_patterns,chunk) private(site)\
-		schedule(static,chunk)
+#pragma omp parallel for shared(tree,n_patterns,chunk) private(site) schedule(static,chunk)
 #endif
 	for(site = 0; site < n_patterns; site++)
 	{
@@ -351,16 +344,6 @@ void Lk(arbre *tree)
 	tree->number_of_lk_calls++;
 	Set_Model_Parameters(tree->mod);
 
-	/*
-	arbre *tree = Make_Tree(tree->n_otu);
-	Init_Tree(tree,tree->n_otu);
-	Make_All_Tree_Nodes(tree, tree->mod->n_l);
-	Make_All_Tree_Edges(tree, tree->mod->n_l);
-	tree->mod = Copy_Model(tree->mod);
-	Copy_Tree(tree, tree);
-	Record_Model(tree->mod, tree->mod);
-	*/
-
 #ifdef MC
 	if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Get_Br_Len(tree);
 	if(tree->bl_from_node_stamps) MC_Bl_From_T(tree);
@@ -368,6 +351,10 @@ void Lk(arbre *tree)
 
 #ifdef USE_OPENMP
 	int chunk = (2*tree->n_otu-3)/omp_get_num_procs();
+	//
+	// NOTE: vhs: 12.6.2009: this following loop is the one that is causing the error:
+	// "site_lk is too small! new site_lk = 1.000000e-300" when run in OpenMP parallel:
+	//
 //#pragma omp parallel for shared(tree,chunk) private(br,n_patterns) schedule(static,chunk)
 #endif
 	for(br=0; br < 2*tree->n_otu-3; br++)
@@ -418,9 +405,7 @@ void Lk(arbre *tree)
 
 #ifdef USE_OPENMP
 	chunk = n_patterns/omp_get_num_procs();
-#pragma omp parallel for \
-		shared(tree,n_patterns,chunk) private(site)\
-		schedule(static,chunk)
+#pragma omp parallel for shared(tree,n_patterns,chunk) private(site) schedule(static,chunk)
 #endif
 	for(site = 0; site < n_patterns; site++)
 	{
@@ -429,8 +414,6 @@ void Lk(arbre *tree)
 		tree->site_lk[site]      = .0;
 		tree->curr_site          = site;
 		Site_Lk(tree,site);
-		//PhyML_Printf("tree->c_lnL_sorted[%d] = %f, proc = %d\n",site, tree->c_lnL_sorted[site], omp_get_thread_num( ) );
-		//PhyML_Printf("tree->site_lk[%d] = %f, proc = %d\n",site, tree->site_lk[site], omp_get_thread_num( ) );
 	}
 
 	//Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1);
@@ -500,9 +483,7 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 	tree->c_lnL = .0;
 #ifdef USE_OPENMP
 	int chunk = n_patterns/omp_get_num_procs();
-//#pragma omp parallel for \
-		shared(tree,n_patterns,chunk,b_fcus) private(site) \
-		schedule(static,chunk)
+#pragma omp parallel for shared(tree,n_patterns,chunk,b_fcus) private(site) schedule(static,chunk)
 #endif
 	for(site = 0; site < n_patterns; site++)
 	{
