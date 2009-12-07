@@ -342,7 +342,6 @@ void debug_Lk_nocompress(arbre *tree)
 }
 
 /*********************************************************/
-
 void Lk(arbre *tree)
 {
 	int br,site;
@@ -352,35 +351,36 @@ void Lk(arbre *tree)
 	tree->number_of_lk_calls++;
 	Set_Model_Parameters(tree->mod);
 
+	/*
+	arbre *tree = Make_Tree(tree->n_otu);
+	Init_Tree(tree,tree->n_otu);
+	Make_All_Tree_Nodes(tree, tree->mod->n_l);
+	Make_All_Tree_Edges(tree, tree->mod->n_l);
+	tree->mod = Copy_Model(tree->mod);
+	Copy_Tree(tree, tree);
+	Record_Model(tree->mod, tree->mod);
+	*/
+
 #ifdef MC
 	if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Get_Br_Len(tree);
 	if(tree->bl_from_node_stamps) MC_Bl_From_T(tree);
 #endif
 
-
 #ifdef USE_OPENMP
 	int chunk = (2*tree->n_otu-3)/omp_get_num_procs();
-#pragma omp parallel for shared(tree,n_patterns,chunk) schedule(static,chunk)
+//#pragma omp parallel for shared(tree,chunk) private(br,n_patterns) schedule(static,chunk)
 #endif
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
+		//PhyML_Printf("branch %d from process %d\n", br, omp_get_thread_num( ) );
 		if(!tree->t_edges[br]->rght->tax)
 			For(site,n_patterns) tree->t_edges[br]->sum_scale_f_rght[site] = .0;
 
 		if(!tree->t_edges[br]->left->tax)
 			For(site,n_patterns) tree->t_edges[br]->sum_scale_f_left[site] = .0;
 
-		// debug:
-		//PhyML_Printf(" . debug lk.c 376\n");
-		//PhyML_Printf(" . debug: P matrix at edge %d:\n", tree->t_edges[br]->num);
-		//Print_Pij( tree->t_edges[br]->Pij_rr, tree->mod);
-		// VHS: 12.3.2009: the problem = going into this method, the Pij_rr matrices
-		// do not appear to be allocated for the best_tree.
-
 		Update_PMat_At_Given_Edge(tree->t_edges[br],tree);
-
 	}
-
 
 #ifdef COMPRESS_SUBALIGNMENTS
 	//PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
@@ -411,20 +411,6 @@ void Lk(arbre *tree)
 	}
 #endif
 
-	  // debugging:
-	  /*
-	  PhyML_Printf(" . debug: returned from Post_Order_Lk and Pre_Order_Lk, likelihoods = \n");
-	  for(br = 1; br < 2*tree->n_otu-3; br++)
-	  {
-		PhyML_Printf("edge %d:\n", br);
-		int is_tax = 1;
-		if(!tree->t_edges[br]->left->tax)
-			is_tax = 0;
-		Print_Plk(tree->t_edges[br]->p_lk_left, tree, is_tax);
-	  }
-	  */
-
-
 
 	tree->c_lnL     = .0;
 	tree->curr_catg =  0;
@@ -443,19 +429,23 @@ void Lk(arbre *tree)
 		tree->site_lk[site]      = .0;
 		tree->curr_site          = site;
 		Site_Lk(tree,site);
+		//PhyML_Printf("tree->c_lnL_sorted[%d] = %f, proc = %d\n",site, tree->c_lnL_sorted[site], omp_get_thread_num( ) );
+		//PhyML_Printf("tree->site_lk[%d] = %f, proc = %d\n",site, tree->site_lk[site], omp_get_thread_num( ) );
 	}
 
-	/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
+	//Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1);
 
 	tree->c_lnL = .0;
 
 	For(site,n_patterns)
 	{
 		//PhyML_Printf(" . debug: in lk.c 258: c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
-		if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
+		//if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
+		if(tree->site_lk[site] < .0)
 		{
 			//PhyML_Printf(" . debug: lk.c line 372: tree->c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
-			tree->c_lnL += tree->c_lnL_sorted[site];
+			//tree->c_lnL += tree->c_lnL_sorted[site];
+			tree->c_lnL += tree->site_lk[site];
 		}
 	}
 
@@ -479,11 +469,11 @@ void Site_Lk(arbre *tree, int site)
 		Warn_And_Exit("");
 	}
 
-	if(tree->data->wght[tree->curr_site] > MDBL_MIN)
+	if(tree->data->wght[site] > MDBL_MIN)
 	{	Lk_Core(eroot,tree,site);
 	}
 	else
-	{	tree->c_lnL_sorted[tree->curr_site] = 1.; /* WARNING : change cautiously */
+	{	tree->c_lnL_sorted[site] = 1.; /* WARNING : change cautiously */
 	}
 }
 
@@ -510,12 +500,13 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 	tree->c_lnL = .0;
 #ifdef USE_OPENMP
 	int chunk = n_patterns/omp_get_num_procs();
-#pragma omp parallel for \
+//#pragma omp parallel for \
 		shared(tree,n_patterns,chunk,b_fcus) private(site) \
 		schedule(static,chunk)
 #endif
 	for(site = 0; site < n_patterns; site++)
 	{
+		//PhyML_Printf("site %d from process %d\n", site, omp_get_thread_num( ) );
 		//printf("JSJ: Iterating over state pattern %i in Lk_At_Given_Edge\n",tree->curr_site);
 
 		// debug: x-inf
@@ -639,10 +630,10 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 								sum +=	b->Pij_rr[catg*dimd + i*dimaa + k*dima + l] *
 										(m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l];
 								// debug:
-								if ( (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l] < 0.0 || (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l] > 1.0)
-								{
-									PhyML_Printf(" . debug: lk.c 637: in Lk_Core: problem with edge %d, site %d, catg %d, bl %d, k %d, l%d\n", b->num, site, catg, i, k, l);
-								}
+								//if ( (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l] < 0.0 || (m3ldbl)b->p_lk_left[site*dimc + catg*dimb + i*dima + l] > 1.0)
+								//{
+								//	PhyML_Printf(" . debug: lk.c 637: in Lk_Core: problem with edge %d, site %d, catg %d, bl %d, k %d, l%d\n", b->num, site, catg, i, k, l);
+								//}
 							}
 							site_lk_set +=
 									sum *

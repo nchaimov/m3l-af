@@ -111,8 +111,12 @@ int Simu(arbre *tree, int n_step_max)
 		if(tree->c_lnL < old_loglk)
 		{
 			if((tree->mod->s_opt->print) && (!tree->io->quiet)) printf("\n\n. Moving backward\n");
-			if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested))
-				Exit("\n. Err: mov_back failed\n");
+			int mbret = Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested);
+			if(!mbret)
+				{
+					PhyML_Printf(" mbret = %d\n", mbret);
+					Exit("\n. Err: mov_back failed\n");
+				}
 			if(!tree->n_swap) n_neg = 0;
 			For(j,tree->mod->n_l){
 				For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
@@ -244,7 +248,7 @@ void Simu_Pars(arbre *tree, int n_step_max)
 			if((tree->mod->s_opt->print) && (!tree->io->quiet))
 				PhyML_Printf("\n\n. Moving backward (topology) \n");
 			if(!Mov_Backward_Topo_Pars(tree,old_pars,tested_b,n_tested))
-				Exit("\n. Err: mov_back failed\n");
+				Exit("\n. Error: mov_back failed\n");
 			if(!tree->n_swap) n_neg = 0;
 
 			tree->both_sides = 1;
