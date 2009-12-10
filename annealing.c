@@ -672,8 +672,8 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			// Some useful debugging statements:
 			//Print_Tree_Screen(tree);
 			PhyML_Printf("[%ld sec] [temp = %f] [current lnL = %f] [proposed lnL = %f]\n", (long)difftime(now,start), temp, lnL_current, lnL_proposed);
-			PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
-			PhyML_Printf("plot2 %ld %d\n", (long)difftime(now,start), steps_tried);
+			//PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
+			//PhyML_Printf("plot2 %ld %d\n", (long)difftime(now,start), steps_tried);
 			//PhyML_Printf("proposed tree = %s\n", Write_Tree(tree) );
 
 			if(lnL_proposed > lnL_best){
