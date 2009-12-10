@@ -93,7 +93,6 @@ int main(int argc, char **argv)
 	  io->n_trees     = MIN(io->n_trees,io->n_data_sets);
 	}
 
-
   For(num_data_set,io->n_data_sets)
 	{
 
@@ -129,27 +128,6 @@ int main(int argc, char **argv)
 			case 2 : { 	tree = Read_User_Tree(alldata,mod,io); break; }
 		  }
 
-// VHS: this is code from JSJ, which I think we can scrap:
-			//JSJ: Make sure that the user hasn't defined starting
-				//parameters that we need to copy into the tree.
-//				if(tree->mod->n_l > 1) io->mod->s_opt->opt_five_branch = 0;
-//				if(io->user_topo == 0 && tree->mod->n_l > 1){ //if more than one bl set default to simulated thermal annealing.
-//					mod->s_opt->topo_search = SIMULATED_THERMAL_ANNEALING;
-//				}
-//				if(io->user_props != 0){
-//					int tmp = io->mod->n_l;
-//					//if(tmp == 1) io->mod->n_l = tree->mod->n_l; //if io->n_l hasn't been initialized, set it...
-//					if(tmp != tree->mod->n_l){
-//						PhyML_Printf("Warning, the starting tree you supplied doesn't have the same number of branch length sets that you requested.\n");
-//						PhyML_Printf("Requested %i branch length sets. Found %i branch length sets on the starting tree.\n",tmp,tree->mod->n_l);
-//						PhyML_Printf("\n. Err. in file %s on line %d\n",__FILE__,__LINE__);
-//						Warn_And_Exit("\n");
-//					}
-//					For(i,tree->mod->n_l){
-//						tree->mod->bl_props[i] = io->mod->bl_props[i];
-//					}
-//				}
-
 		  if(!tree) continue;
 
 		  Print_Settings(io);
@@ -168,19 +146,6 @@ int main(int argc, char **argv)
 		  if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);
 
 		  if(io->in_tree == 1) Spr_Pars(tree);
-
-		  //debugging:
-		  /*
-		  int br;
-		  int bl;
-		  for(br=0; br < 2*tree->n_otu-3; br++)
-		  {
-				For(bl,tree->mod->n_l) // foreach branch length category
-				{
-					PhyML_Printf(" . debug: main.c 182: tree->t_edges[%d]->l[%d] = %f\n", br, bl, tree->t_edges[br]->l[bl]);
-				}
-		  }
-		  */
 
 		  //
 		  // VHS: If subalignment compression is enabled, then the following precondition is true

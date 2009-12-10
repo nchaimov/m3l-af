@@ -1609,7 +1609,7 @@ void Launch_Interface_Topo_Search(option *io)
 		}
 		else if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
 		{
-			strcpy(s,"Empirial Bayes MCMC \0");
+			strcpy(s,"Empirical Bayes MCMC \0");
 		}
 /*		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING)
 		{
@@ -1642,8 +1642,87 @@ void Launch_Interface_Topo_Search(option *io)
 		if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
 		{
 			PhyML_Printf("                [G] "
-					"........................ MCMC generations "
+					"................................. MCMC generations "
 					" %-15d \n",io->eb_n_gens);
+		}
+
+		if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
+		{
+			PhyML_Printf("                [1] "
+					"....................... Number of annealing stages "
+					" %-15d \n",io->num_anneal_stages);
+			PhyML_Printf("                [2] "
+					"............................. Starting temperature "
+					" %-15f \n",io->temp_start);
+			PhyML_Printf("                [3] "
+					"................................ Final temperature "
+					" %-15f \n",io->temp_end);
+			PhyML_Printf("                [4] "
+					"............................. Iterations per stage "
+					" %-15d \n",io->iters_per_stage);
+			PhyML_Printf("                [5] "
+					"........................... Set-back interval size "
+					" %-15d \n",io->set_back);
+			/*
+			PhyML_Printf("                [6] "
+					"............................... Starting tau value "
+					" %-15f \n",io->tau_start);
+			PhyML_Printf("                [7] "
+					"................................. Ending tau value "
+					" %-15f \n",io->tau_end);
+			*/
+			PhyML_Printf("                [6] "
+					".............................. Maximum alpha value "
+					" %-15f \n",io->max_alpha);
+			PhyML_Printf("                [7] "
+					"........................ Branch length sigma value "
+					" %-15f \n",io->brlen_sigma);
+			PhyML_Printf("                [8] "
+					".............................. P-invar sigma value "
+					" %-15f \n",io->pinvar_sigma);
+			PhyML_Printf("                [9] "
+					"................................ Gamma sigma value "
+					" %-15f \n",io->gamma_sigma);
+/*			PhyML_Printf("                [C] "
+					"................................. Emig sigma value "
+					" %-15f \n",io->emig_sigma);
+			PhyML_Printf("                [D] "
+					".............................. Probability of emig "
+					" %-15f \n",io->prob_emig);
+*/
+			PhyML_Printf("                [A] "
+					"................. Probability of stepping topology "
+					" %-15f \n",io->prob_topology);
+			PhyML_Printf("                [B] "
+					"............. Probability of stepping NNI topology "
+					" %-15f \n",io->prob_NNI);
+			PhyML_Printf("                [C] "
+					"............. Probability of stepping SPR topology "
+					" %-15f \n",io->prob_SPR);
+			PhyML_Printf("                [D] "
+					"........... Probability of stepping branch lengths "
+					" %-15f \n",io->prob_brlen);
+			PhyML_Printf("                [E] "
+					".................... Probability of stepping gamma "
+					" %-15f \n",io->prob_gamma);
+			PhyML_Printf("                [F] "
+					".................... Probability of stepping kappa "
+					" %-15f \n",io->prob_kappa);
+			PhyML_Printf("                [H] "
+					"................... Probability of stepping lambda "
+					" %-15f \n",io->prob_lambda);
+			PhyML_Printf("                [I] "
+					"...... Probability of stepping relative sub. rates "
+					" %-15f \n",io->prob_rr);
+			PhyML_Printf("                [J] "
+					"........ Probability of stepping state frequencies "
+					" %-15f \n",io->prob_pi);
+			PhyML_Printf("                [K] "
+					"... Probability of stepping gamma-dist. rate props "
+					" %-15f \n",io->prob_rate_proportion);
+			PhyML_Printf("                [P] "
+					"............ Probability of stepping P-invar props "
+					" %.3f \n",io->prob_pinvar);
 		}
 	}
 	else
@@ -1816,6 +1895,421 @@ void Launch_Interface_Topo_Search(option *io)
 		Free(n);
 		break;
 	}
+	case '1':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. How many annealing stages? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atoi(n) < 1)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the number of stages must be a positive integer.\n");
+			PhyML_Printf("\n. The number of stages must be a positive integer.\n");
+			PhyML_Printf("\n. Enter a new value.  How many annealing stages? > ");
+			Getstring_Stdin(n);
+		}
+		io->num_anneal_stages = atoi(n);
+		Free(n);
+		break;
+	}
+	case '2':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. Enter the starting temperature, as value ranging [1.0, 0.0]: > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the starting temperature must be a positive decimal value.\n");
+			PhyML_Printf("\n. The starting temperature must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new starting temperature, ranging from [1.0, 0.0]: > ");
+			Getstring_Stdin(n);
+		}
+		while(atof(n) < io->temp_end)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the starting temperature cannot be less than the final temperature\n");
+			PhyML_Printf("\n. The starting temperature must be greater than the final temperature.\n");
+			PhyML_Printf("\n. Enter a new starting temperature, ranging from [1.0, 0.0]: > ");
+			Getstring_Stdin(n);
+		}
+		io->temp_start = atof(n);
+		Free(n);
+		break;
+	}
+	case '3':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. Enter the final temperature, as value ranging [1.0, 0.0]: > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the final temperature must be a positive decimal value.\n");
+			PhyML_Printf("\n. The final temperature must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new final temperature, ranging from [1.0, 0.0]: > ");
+			Getstring_Stdin(n);
+		}
+		while(atof(n) > io->tau_start)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the final temperature cannot be greater than the starting temperature\n");
+			PhyML_Printf("\n. The final temperature must be greater than the starting temperature.\n");
+			PhyML_Printf("\n. Enter a new final temperature, ranging from [1.0, 0.0]: > ");
+			Getstring_Stdin(n);
+		}
+		io->temp_start = atof(n);
+		Free(n);
+		break;
+	}
+	case '4':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. How many iterations per stage? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atoi(n) < 1)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the number of iterations must be a positive integer.\n");
+			PhyML_Printf("\n. The number of iterations must be a positive integer.\n");
+			PhyML_Printf("\n. Enter a new value.  How many iterations per stage? > ");
+			Getstring_Stdin(n);
+		}
+		io->iters_per_stage = atoi(n);
+		Free(n);
+		break;
+	}
+	case '5':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. How many iterations to `set-back'? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atoi(n) < 1)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the set-back interval must be a positive integer.\n");
+			PhyML_Printf("\n. The set-back interval must be a positive integer.\n");
+			PhyML_Printf("\n. Enter a new value.  How many iterations to `set-back'? > ");
+			Getstring_Stdin(n);
+		}
+		io->set_back = atoi(n);
+		Free(n);
+		break;
+	}
+	case '6':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the maximum alpha value? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the max alpha must be a positive decimal.\n");
+			PhyML_Printf("\n. The max alpha must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the maximum alpha value? > ");
+			Getstring_Stdin(n);
+		}
+		io->max_alpha = atof(n);
+		Free(n);
+		break;
+	}
+	case '7':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the branch length sigma value? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the branch length sigma must be a positive decimal.\n");
+			PhyML_Printf("\n. The branch length sigma must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the branch length sigma value? > ");
+			Getstring_Stdin(n);
+		}
+		io->brlen_sigma = atof(n);
+		Free(n);
+		break;
+	}
+	case '8':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the P-invar sigma value? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the P-invar sigma must be a positive decimal.\n");
+			PhyML_Printf("\n. The P-invar sigma must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the P-invar sigma value? > ");
+			Getstring_Stdin(n);
+		}
+		io->pinvar_sigma = atof(n);
+		Free(n);
+		break;
+	}
+	case '9':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the gamma sigma value? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the gamma sigma must be a positive decimal.\n");
+			PhyML_Printf("\n. The gamma sigma must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the gamma sigma value? > ");
+			Getstring_Stdin(n);
+		}
+		io->gamma_sigma = atof(n);
+		Free(n);
+		break;
+	}
+	case 'A':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of stepping the topology? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of stepping the topology must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of stepping the topology must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of stepping the topology? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_topology = atof(n);
+		Free(n);
+		break;
+	}
+	case 'B':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of making a step using NNI? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of making a step using NNI must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of making a step using NNI must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of making a step using NNI? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_NNI = atof(n);
+		Free(n);
+		break;
+	}
+	case 'C':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of making a step using SPR? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of making a step using SPR must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of making a step using SPR must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of making a step using SPR? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_SPR = atof(n);
+		Free(n);
+		break;
+	}
+	case 'D':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of stepping branch lengths? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of stepping branch lengths must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of stepping branch lengths must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of stepping branch lengths? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_brlen = atof(n);
+		Free(n);
+		break;
+	}
+	case 'E':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of stepping gamma? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of stepping gamma must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of stepping gamma must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of stepping gamma? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_gamma = atof(n);
+		Free(n);
+		break;
+	}
+	case 'F':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of stepping kappa? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of stepping kappa must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of stepping kappa must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of stepping kappa? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_kappa = atof(n);
+		Free(n);
+		break;
+	}
+	case 'H':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of stepping lambda? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of stepping lambda must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of stepping lambda must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of stepping lambda? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_lambda = atof(n);
+		Free(n);
+		break;
+	}
+	case 'I':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of stepping relative substitution rates? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of stepping relative substitution rates must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of stepping relative substitution rates must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of stepping relative substitution rates? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_rr = atof(n);
+		Free(n);
+		break;
+	}
+	case 'J':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of stepping relative state frequencies? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of stepping relative state frequencies must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of stepping relative state frequencies must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of stepping relative state frequencies? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_pi = atof(n);
+		Free(n);
+		break;
+	}
+	case 'K':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of stepping gamma-distributed rate proportions? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of stepping gamma-distributed rate proportions must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of stepping gamma-distributed rate proportions must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of stepping gamma-distributed rate proportions? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_rate_proportion = atof(n);
+		Free(n);
+		break;
+	}
+	case 'P':
+	{
+		char *n;
+		int n_trial;
+
+		PhyML_Printf("\n. What is the probability of stepping proportion of invariant sites? > ");
+		n = (char *)mCalloc(100,sizeof(char));
+		Getstring_Stdin(n);
+		n_trial = 0;
+		while(atof(n) < 0.0)
+		{
+			if(++n_trial > 10) Exit("\n. Err : the probability of stepping proportion of invariant sites must be a positive decimal.\n");
+			PhyML_Printf("\n. The probability of stepping proportion of invariant sites must be a positive decimal.\n");
+			PhyML_Printf("\n. Enter a new value.  What is the probability of stepping proportion of invariant sites? > ");
+			Getstring_Stdin(n);
+		}
+		io->prob_pinvar = atof(n);
+		Free(n);
+		break;
+	}
+
 	default :
 	{
 		break;

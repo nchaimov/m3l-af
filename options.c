@@ -173,10 +173,10 @@ void Usage()
 	PhyML_Printf("\t\tCan be %sNNI%s (default, fast), %sSPR%s (a bit slower than NNI), %sBEST%s (best of NNI and SPR search), %sSTA%s (simulated thermal annealing, much better option for complex models), %sSQA%s (simulated quantum annealing, not yet implemented), or %sEB%s (Empirical Bayes MCMC) .\n",LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT);
 
 	PhyML_Printf("\n");
-	
+
 	PhyML_Printf("%s\n\t--eb_n_gens %sinteger%s\n",BOLD,LINE,FLAT);
 	PhyML_Printf("\t\tNumber of MCMC generations for EB search (default, 100000)\n");
-	
+
 	PhyML_Printf("\n");
 
 	PhyML_Printf("%s\n\t-u (or --inputtree) %suser_tree_file%s\n",BOLD,LINE,FLAT);
@@ -261,64 +261,66 @@ void Usage()
 	PhyML_Printf("%s\n\t --temp_start %snum%s\n",BOLD,LINE,FLAT);
 	PhyML_Printf("%s\t\t Sets the starting temperature for Simulated Annealing. \n",FLAT);
 
+/*
 	PhyML_Printf("%s\n\t --tau_start %snum%s\n",BOLD,LINE,FLAT);
 	PhyML_Printf("%s\t\t Sets the starting value of the kinetic energy coefficient (Tau) for simulated quantum annealing. \n",FLAT);
 
 	PhyML_Printf("%s\n\t --tau_end %snum%s\n",BOLD,LINE,FLAT);
 	PhyML_Printf("%s\t\t Sets the ending value of the kinetic energy coefficient (Tau) for simulated quantum annealing.. \n",FLAT);
+*/
 
 	//	{"max_alpha",         required_argument,NULL,58},
 	PhyML_Printf("%s\n\t --max_alpha %snum%s\n",BOLD,LINE,FLAT);
 	PhyML_Printf("%s\t\t Sets the max_alpha for Simulated Annealing. \n",FLAT);
 	//	{"brlen_sigma",       required_argument,NULL,59},
 	PhyML_Printf("%s\n\t --brlen_sigma %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the branch length sigma variable for random number generation of branch length modifiers in Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the branch length sigma variable for random number generation of branch length modifiers in during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"pinvar_sigma",      required_argument,NULL,60},
 	PhyML_Printf("%s\n\t --pinvar_sigma %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the proportion of invariable sites sigma variable for Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the proportion of invariable sites sigma variable for during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"gamma_sigma",       required_argument,NULL,61},
 	PhyML_Printf("%s\n\t --gamma_sigma %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the gamma value sigma variable for Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the gamma value sigma variable during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"emig_sigma",        required_argument,NULL,62},
-	PhyML_Printf("%s\n\t --emig_sigma %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the edge migration sigma variable for use with the edge migration topology and branch length algorithm for Simulated Annealing. \n",FLAT);
+	//PhyML_Printf("%s\n\t --emig_sigma %snum%s\n",BOLD,LINE,FLAT);
+	//PhyML_Printf("%s\t\t Sets the edge migration sigma variable for use with the edge migration topology and branch length algorithm for Simulated Annealing. \n",FLAT);
 	//	{"prob_nni",          required_argument,NULL,63},
 	PhyML_Printf("%s\n\t --prob_nni %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability nni will be used for a given temperature in Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability that the topology will be modified using Nearest Neighbor Interchange (NNI) during optimization by simulated thermal annealing. \n",FLAT);
 	//	{"prob_spr",          required_argument,NULL,64},
 	PhyML_Printf("%s\n\t --prob_spr %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability spr will be used for a given temperature in Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability spr will be used for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"prob_brlen",        required_argument,NULL,65},
 	PhyML_Printf("%s\n\t --prob_brlen %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability branch length will be modified for a given temperature Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability branch length will be modified for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 
 	PhyML_Printf("%s\n\t --prob_kappa %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability kappa will be modified for a given temperature Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability kappa will be modified for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"prob_gamma",        required_argument,NULL,66},
 	PhyML_Printf("%s\n\t --prob_gamma %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability gamma will be modified for a given temperature Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability gamma will be modified for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"prob_kappa",        required_argument,NULL,67},
 	PhyML_Printf("%s\n\t --prob_lambda %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability lambda will be modified for a given temperature Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability lambda will be modified for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"prob_lambda",       required_argument,NULL,68},
 	PhyML_Printf("%s\n\t --prob_rr %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability rr will be modified for a given temperature Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability the relative rates will be modified for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"prob_rr",           required_argument,NULL,69},
 
 	PhyML_Printf("%s\n\t --prob_rate_proportions %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability the proportion of sites accounted for by a given branch length category will be modified for a given temperature Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability the proportion of sites accounted for by a given branch length category will be modified for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"prob_rate_proportion",required_argument,NULL,70},
 	PhyML_Printf("%s\n\t --prob_topology %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability the topology will be modified for a given temperature Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability the topology will be modified for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"prob_topology",     required_argument,NULL,71},
 	PhyML_Printf("%s\n\t --prob_pinvar %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability that the proportion of invariable sites will be modified for a given temperature Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability that the proportion of invariable sites will be modified for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"prob_pinvar",       required_argument,NULL,72},
 	PhyML_Printf("%s\n\t --prob_pi %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability that pi will be modified for a given temperature Simulated Annealing. \n",FLAT);
+	PhyML_Printf("%s\t\t Sets the probability that pi will be modified for a given temperature during optimization by simulated thermal annealing. \n \n",FLAT);
 	//	{"prob_pi",           required_argument,NULL,73},
-	PhyML_Printf("%s\n\t --prob_emig %snum%s\n",BOLD,LINE,FLAT);
-	PhyML_Printf("%s\t\t Sets the probability that edge migration will be used as opposed to NNI or SPR for a given temperature Simulated Annealing. \n",FLAT);
+	//PhyML_Printf("%s\n\t --prob_emig %snum%s\n",BOLD,LINE,FLAT);
+	//PhyML_Printf("%s\t\t Sets the probability that edge migration will be used as opposed to NNI or SPR for a given temperature Simulated Annealing. \n",FLAT);
 	//	{"prob_emig",         required_argument,NULL,74},
 
 	PhyML_Printf("\n");

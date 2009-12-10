@@ -3339,14 +3339,14 @@ void NNI(arbre *tree, edge *b_fcus, int do_swap)
 	 * The plan: swap a branch, optimize branch lengths, and then swap it back.
 	 */
 	// debug stuff:
-	int dima = tree->mod->ns;
-	int dimb = dima * tree->mod->n_l;
-	int dimc = dimb * tree->mod->n_catg;
-	int site = 3;
-	if ( (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] < 0.0 || (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] > 1.0 )
-	{
-		PhyML_Printf(" . debug: utilities.c 3304: the p_lk_left is invalid for edge %d at site %d\n", b_fcus->num, site);
-	}
+	//int dima = tree->mod->ns;
+	//int dimb = dima * tree->mod->n_l;
+	//int dimc = dimb * tree->mod->n_catg;
+	//int site = 3;
+	//if ( (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] < 0.0 || (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] > 1.0 )
+	//{
+	//	PhyML_Printf(" . debug: utilities.c 3304: the p_lk_left is invalid for edge %d at site %d\n", b_fcus->num, site);
+	//}
 
 
 	//PhyML_Printf(" . debug: utilities.c 3312: calling Swap(%d, %d, %d, %d)\n", v2->num, b_fcus->left->num, b_fcus->rght->num, v3->num);
@@ -5749,11 +5749,6 @@ void Set_Defaults_Input(option* io)
 	io->iters_per_stage			   = 1000;
 	io->eb_n_gens                  = 100000;
 	io->tree                       = NULL;
-
-
-
-
-
 
 	io->mod->datatype              = 0;
 	strcpy(io->nt_or_cd,"nucleotides");
@@ -9862,8 +9857,8 @@ m3ldbl Mean(m3ldbl *x, int n)
 
 void Best_Of_NNI_And_SPR(arbre *tree)
 {
-	int i;
-	int n_l = tree->mod->n_l;
+	//int i;
+	//int n_l = tree->mod->n_l;
 	if(tree->mod->s_opt->random_input_tree)
 	{
 		Speed_Spr_Loop(tree); /* Don't do simultaneous NNIs if starting tree is random */
@@ -9871,7 +9866,7 @@ void Best_Of_NNI_And_SPR(arbre *tree)
 	else
 	{
 		arbre *ori_tree,*best_tree;
-		m3ldbl **ori_bl,**best_bl;
+		//m3ldbl **ori_bl,**best_bl;
 		m3ldbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
 		/*
 		ori_bl = (m3ldbl **)mCalloc(tree->mod->n_l,sizeof(m3ldbl *));

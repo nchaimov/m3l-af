@@ -266,7 +266,7 @@ void Step_Brlen_Proportion(arbre *tree){
 		int i;
 		For(i,tree->mod->n_l){
 			alpha[i] = anneal.max_alpha;
-			PhyML_Printf("(annealing.c 201) alpha[%d] = %f", i, alpha[i]);
+			//PhyML_Printf("(annealing.c 201) alpha[%d] = %f", i, alpha[i]);
 		}
 		gsl_ran_dirichlet(anneal.rng,tree->mod->n_l,alpha,tree->mod->bl_props);
 		Normalize_Props(tree->mod);
@@ -616,7 +616,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	m3ldbl temp_of_best = 0; // VHS: for optimization purposes, let's record the temperature at which we discovered the best tree.
 	m3ldbl iter_of_best = 0;
 
-	PhyML_Printf("\n\n Starting simulated thermal annealing with the following parameters:\n");
+	PhyML_Printf("\n\n Starting simulated thermal annealing with the following parameters:\n\n");
 	PhyML_Printf("\t. acceptance ratio = %f\n", anneal.accept_ratio);
 	PhyML_Printf("\t. start temperature = %f\n", anneal.start_temp);
 	PhyML_Printf("\t. end temperature = %f\n", anneal.end_temp);
@@ -670,9 +670,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 			now = time(NULL);
 			// Some useful debugging statements:
 			//Print_Tree_Screen(tree);
-			PhyML_Printf("T: %f iter: %d current lnL = %f proposed lnL = %f\n", temp, iter, lnL_current, lnL_proposed);
-			//PhyML_Printf("plot1 %d %lf\n", (steps_tried * (itemp + 1)), lnL_current);
-			//PhyML_Printf("plot2 %ld %d\n", (long)now, (steps_tried * (itemp + 1)));
+			PhyML_Printf("[%ld sec] [temp = %f] [current lnL = %f] [proposed lnL = %f]\n", (long)difftime(now,start), temp, lnL_current, lnL_proposed);
 			PhyML_Printf("plot1 %d %lf\n", steps_tried, lnL_current);
 			PhyML_Printf("plot2 %ld %d\n", (long)difftime(now,start), steps_tried);
 			//PhyML_Printf("proposed tree = %s\n", Write_Tree(tree) );

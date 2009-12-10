@@ -349,17 +349,9 @@ void Lk(arbre *tree)
 	if(tree->bl_from_node_stamps) MC_Bl_From_T(tree);
 #endif
 
-#ifdef USE_OPENMP
-	int chunk = (2*tree->n_otu-3)/omp_get_num_procs();
-	//
-	// NOTE: vhs: 12.6.2009: this following loop is the one that is causing the error:
-	// "site_lk is too small! new site_lk = 1.000000e-300" when run in OpenMP parallel:
-	//
-//#pragma omp parallel for shared(tree,chunk) private(br,n_patterns) schedule(static,chunk)
-#endif
+
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
-		//PhyML_Printf("branch %d from process %d\n", br, omp_get_thread_num( ) );
 		if(!tree->t_edges[br]->rght->tax)
 			For(site,n_patterns) tree->t_edges[br]->sum_scale_f_rght[site] = .0;
 
@@ -404,7 +396,7 @@ void Lk(arbre *tree)
 	tree->curr_site =  0;
 
 #ifdef USE_OPENMP
-	chunk = n_patterns/omp_get_num_procs();
+	int chunk = n_patterns/omp_get_num_procs();
 #pragma omp parallel for shared(tree,n_patterns,chunk) private(site) schedule(static,chunk)
 #endif
 	for(site = 0; site < n_patterns; site++)
@@ -673,11 +665,11 @@ m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 		site_lk += site_lk_cat * tree->mod->gamma_r_proba[catg];
 	} // end for gamma
 
-	if(site_lk < 1.E-300)
-	{
-		site_lk = 1.E-300;
-		PhyML_Printf(" . debug: WARNING, site_lk is too small! new site_lk = %e\n", site_lk);
-	}
+	//if(site_lk < 1.E-300)
+	//{
+	//	site_lk = 1.E-300;
+	//	PhyML_Printf(" . debug: WARNING, site_lk is too small! new site_lk = %e\n", site_lk);
+	//}
 
 
 	//debug test
@@ -1150,8 +1142,6 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 
 #ifdef USE_OPENMP
 	int chunk = n_patterns/omp_get_num_procs();
-	//	int chunk = n_patterns/2;
-	//printf("Chunk size: %i\n",chunk);
 #pragma omp parallel for\
 		default(shared) private(k,catg,i,j,site,scale_v1,scale_v2,\
 				max_p_lk,state_v1,state_v2,ambiguity_check_v1,\
@@ -1160,9 +1150,6 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 #endif
 	for(site = 0; site < n_patterns; site++)
 	{
-
-		//printf("JSJ: In Update_P_Lk iterating over state pattern %i\n",site);
-
 		/**
 		* JSJ: If sum_scale_v1 was assigned a non-null value in the above if/else cascade,
 		* the scale_v1 value is assigned as the site specific sum_scale_v1 from above.
@@ -1603,14 +1590,14 @@ m3ldbl Update_Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 	//PhyML_Printf(" . debug: lk.c 1607: tree->c_lnL = %f\n", tree->c_lnL);
 
 	// debug stuff:
-	int dima = tree->mod->ns;
-	int dimb = dima * tree->mod->n_l;
-	int dimc = dimb * tree->mod->n_catg;
-	int site = 3;
-	if ( (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] < 0.0 || (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] > 1.0 )
-	{
-		PhyML_Printf(" . debug: lk.c 1648: the p_lk_left is invalid for edge %d at site %d\n", b_fcus->num, site);
-	}
+	//int dima = tree->mod->ns;
+	//int dimb = dima * tree->mod->n_l;
+	//int dimc = dimb * tree->mod->n_catg;
+	//int site = 3;
+	//if ( (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] < 0.0 || (m3ldbl)b_fcus->p_lk_left[site*dimc + 0*dimb + 0*dima + 0] > 1.0 )
+	//{
+	//	PhyML_Printf(" . debug: lk.c 1648: the p_lk_left is invalid for edge %d at site %d\n", b_fcus->num, site);
+	//}
 
 
 	if(!b_fcus->left->tax) Update_P_Lk(tree,b_fcus,b_fcus->left);

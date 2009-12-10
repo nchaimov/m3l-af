@@ -750,7 +750,14 @@ void Read_Command_Line(option *io, int argc, char **argv)
 				if(!scanf("%c",&choix)) Exit("\n");
 				Exit("\n");
 			}
-			else io->mod->n_catg = atoi(optarg);
+			else
+			{
+				io->mod->n_catg = atoi(optarg);
+				if (io->mod->n_catg < 2)
+				{
+					io->mod->s_opt->opt_alpha = 0;
+				}
+			}
 			break;
 		}
 		case 'f':
