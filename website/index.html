@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+   <HEAD>
+   	  <link rel="stylesheet" type="text/css" href="phyml+m3l.css">
+      <TITLE>PhyML+M3L</TITLE>
+   </HEAD>
+<BODY>
+
+<p><a href='http://www.uoregon.edu/~joet/'><small>Thornton Lab</small></a> | <a href='http://evolution.uoregon.edu/'><small>CEEB</small></a> | <a href='http://uoregon.edu/'><small>University of Oregon</small></a> | <a href="http://www.victorhansonsmith.com"><small>Victor Hanson-Smith</small></a></p>
+<h1>PhyML+M3L</h1>
+<hr>
+<p>PhyML+M3L is an extension of PhyML version 3.0, using publicly-available open source C code.  The '+M3L' extensions implement the following features new for PhyML: 
+<ol>
+<li>a mixed branch length model of heterotachy</li>
+<li>an empirical Bayes MCMC sampler to estimate posterior probabilities of clades</li> 
+<li>multiprocessor parallelization using OpenMP libraries</li>
+<li>phylogenetic optimization by simulated thermal annealing</li>
+</ol>
+</p>
+<div class="divYellow">
+<h2>Download PhyML+M3L</h2>
+<ul>
+
+<li>
+<h3>User Manual</h3>
+</li>
+
+<li>
+<h3>Precompiled binaries:</h3>
+</li>
+<p>
+For Intel-based Macs, using OpenMP</a><br>
+<a>For Intel-based Macs, no OpenMP</a>
+</p>
+
+</li>
+<li>
+<h3>Source Code:</h3>
+</li>
+
+<p>
+<a>Current stable release: revision XXXXX</a><br>
+<a>Go to the Google Code repository</a>
+</p>
+
+<p>
+<small>
+Written in C.  Tested using the following software tools: <strong>gcc</strong> version 4.2.1 (Apple Inc. build 5574), with hardware target = i686-apple-darwin9.
+<strong>aclocal</strong> version 1.10, <strong>GNU Make</strong> version 3.81, and <strong>GNU Autoconf</strong> version 2.61.
+</small>
+</p>
+
+</ul>
+</div>
+
+<hr>
+<h2>What is PhyML+M3L?</h2>
+<p>PhyML+M3L is forked from the publicly-available source code for <a href="http://code.google.com/p/phyml/">PhyML version 3.0</a>, and includes the
+following features new for PhyML:</p>
+
+<ol>
+<li>
+A mixed branch length model of heterotachy
+</li>
+<p>
+The mixed branch length model calculates the likelihood of phylogenies at each site in a given sequence alignment as a weighted sum over multiple independent branch length sets; weights and branch lengths can be inferred from the given sequence data [\cite{kolaczkowski2008}].  Under most conditions, the mixed branch length model improves phylogenetic accuracy compared to other homotachous and heterotachous models.  This model should not be confused with other models, such as the gamma model [\cite{Yang:1994vf}] or the covarion model [\cite{Penny:2001zv}].  Unlike those models, the mixed branch length model relaxes the assumption that the ratio of branch lengths remains constant across sites.
+</p>
+
+<li>
+An empirical Bayes MCMC sampler to estimate posterior probabilities of clades
+</li>
+<p>
+Compared to a fully-Bayesian MCMC strategy [\cite{schultz1999}, \cite{mrbayes}, \cite{huelsenbeck2003mrb}], an empirical Bayesian strategy that fixes branch lengths at their maximum likelihood values is more accurate at estimating the posterior probability of clades [\cite{kolaczkowski2007}].
+</p>
+<p>
+Phylogenetic practicioners traditionally use the software package Mr.\ Bayes to perform MCMC sampling and compute posterior probabilities of clades.  Unfortunately, Mr.\ Bayes does not support a sampling scheme in which we calculate the ML value of branch lengths while integrating over uncertainty about all other parameters.  Out of necessity, we implemented such an empirical Bayes strategy in PhyML+M3L.  Combined with the previous features of PhyML, you can now use PhyML+M3L as a single tool to estimate bootstrap values, approximate likelihood ratio test (aLRT) values, and posterior probability values.
+</p>
+
+<li>
+Multicore parallelization 
+</li>
+<p>
+The basic likelihood algorithm calculates the likelihood of a proposed phylogeny, given a sequence alignment, an evolutionary model, and parameter values for the model [\cite{felsenstein1981}].  Assuming that sites evolve independently, the likelihood of a phylogeny is calculated as the product of likelihoods at each site in the alignment.  These per-site likelihoods can be calculated in any order, as long as they are all combined together as a product.  In terms of computational parallelism, the likelihood calculation is \textit{embarrassingly parallel} over sites.  
+</p>
+<p>
+In order to speedup the likelihood calculation, we included features from the OpenMP library to dispatch per-site likelihood calculations to parallel CPU cores.  If your computer's CPU contains multiple cores (for example, Intel dual-core or quad-core Mac products), then OpenMP extensions will help reduce the clocktime required to run PhyML+M3L.  The efficacy of the parallelization depends on the number of available cores; a CPU with 8 cores will yield a greater speedup than a CPU with only 2 cores.  If your CPU is single-core, or if you'd rather not use OpenMP, you can run PhyML+M3L without the OpenMP features.  Consult the section named `Installation' for more information.
+</p>
+<li>
+Optimization by simulated thermal annealing
+</li>
+</p>
+Traditional hill-climbing optimization algorithms can struggle to escape local optima when searching over extremely rugged multi-parameterized likelihood landscapes.  By default, PhyML uses a hill-climbing algorithm based on ``Brent's Method'' [\cite{brent1972}].  Although Brent's method seems to generally yield good results, the mixed branch length model can create conditions in which hill-climbing seems to be ineffective.
+</p>
+<p>
+As an alternative to hill-climbing methods, PhyML+M3L provides an experimental method to optimize the topology, branch lengths, and model parameters using simulated thermal annealing (STA) [\cite{Kirkpatrick1983}, \cite{kirkpatrick1984}, \cite{kolaczkowski2008}].  Although STA can yield extremely excellent results, STA is computationally demanding and can require hours, days, (or longer!) to infer a likelihood maxima.  STA is provided here for experimental purposes.
+</p>
+</ol>
+<p>
+We hope you find PhyML+M3L useful.  However, be aware that we do not have a large team of software developers.  We are providing this software as a resource to the research community, but without the promise of support.  If you have questions, or find software bugs (!), please do not hesitate to contact us.  We plan to release a new version of PhyML+M3L in the very near future, including MPI-based parallelism (and some other cool speedups).
+</p>
+
+<hr>
+<p><small>Last Modified: December 9, 2009</small></p>
+
+</BODY>
+</HTML>
