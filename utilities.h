@@ -29,7 +29,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #define FALSE 0
 #define TRUE 1
 
-#define USE_OPENMP 1 // comment/uncomment this line to use OpenMP parallelization
+//#define USE_OPENMP 1 // comment/uncomment this line to use OpenMP parallelization
 #ifdef USE_OPENMP
 #include <omp.h>
 #endif

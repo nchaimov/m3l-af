@@ -1,7 +1,7 @@
 #This version uses OpenMP:
-AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math -fopenmp
+#AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math -fopenmp
 # This version does not use OpenMP:
-#AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math
+AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math
 
 # the GNU Scientific Library (GSL) is necessary for sampling from probability distributions (Poisson, Dirichlet, Binomial, etc.).
 AM_LDFLAGS=-lm -lgsl
