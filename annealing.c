@@ -617,6 +617,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	m3ldbl iter_of_best = 0;
 
 	PhyML_Printf("\n\n Starting simulated thermal annealing with the following parameters:\n\n");
+	PhyML_Printf("\t. number of annealing stages = %d\n", anneal.num_anneal_stages);
 	PhyML_Printf("\t. acceptance ratio = %f\n", anneal.accept_ratio);
 	PhyML_Printf("\t. start temperature = %f\n", anneal.start_temp);
 	PhyML_Printf("\t. end temperature = %f\n", anneal.end_temp);
@@ -639,7 +640,7 @@ m3ldbl Thermal_Anneal_All_Free_Params(arbre *tree, int verbose){
 	PhyML_Printf("\t. P of using SPR = %f\n", anneal.prob_SPR );
 
 	PhyML_Printf("\t. P of adjusting branch length rate proportions = %f\n", anneal.prob_rate_proportion );
-
+	PhyML_Printf("\n00000000000000000000000000000000000000000000000000000\n");
 
 	for(itemp = 0; itemp < anneal.num_anneal_stages; itemp++){
 		//recenter the search at each temperature.

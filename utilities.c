@@ -8517,7 +8517,7 @@ void Print_Settings(option *io)
 		else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n                . Tree topology search : \t\t\t Best of NNIs and SPRs");
 
 		if(io->mod->s_opt->topo_search == SIMULATED_THERMAL_ANNEALING)
-			PhyML_Printf("\n                . Search heuristic : \t\t\t\t\t simulated thermal annealing");
+			PhyML_Printf("\n                . Search heuristic : \t\t\t\t simulated thermal annealing");
 		else if(io->mod->s_opt->topo_search == SIMULATED_QUANTUM_ANNEALING)
 			PhyML_Printf("\n                . Search heuristic : \t\t\t\t simulated quantum annealing");
 		else if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)

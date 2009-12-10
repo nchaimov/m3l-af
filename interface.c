@@ -1653,10 +1653,10 @@ void Launch_Interface_Topo_Search(option *io)
 					" %-15d \n",io->num_anneal_stages);
 			PhyML_Printf("                [2] "
 					"............................. Starting temperature "
-					" %-15f \n",io->temp_start);
+					" %.3f \n",io->temp_start);
 			PhyML_Printf("                [3] "
 					"................................ Final temperature "
-					" %-15f \n",io->temp_end);
+					" %.3f \n",io->temp_end);
 			PhyML_Printf("                [4] "
 					"............................. Iterations per stage "
 					" %-15d \n",io->iters_per_stage);
@@ -1673,16 +1673,16 @@ void Launch_Interface_Topo_Search(option *io)
 			*/
 			PhyML_Printf("                [6] "
 					".............................. Maximum alpha value "
-					" %-15f \n",io->max_alpha);
+					" %.3f \n",io->max_alpha);
 			PhyML_Printf("                [7] "
 					"........................ Branch length sigma value "
-					" %-15f \n",io->brlen_sigma);
+					" %.3f \n",io->brlen_sigma);
 			PhyML_Printf("                [8] "
 					".............................. P-invar sigma value "
-					" %-15f \n",io->pinvar_sigma);
+					" %.3f \n",io->pinvar_sigma);
 			PhyML_Printf("                [9] "
 					"................................ Gamma sigma value "
-					" %-15f \n",io->gamma_sigma);
+					" %.3f \n",io->gamma_sigma);
 /*			PhyML_Printf("                [C] "
 					"................................. Emig sigma value "
 					" %-15f \n",io->emig_sigma);
@@ -1692,34 +1692,34 @@ void Launch_Interface_Topo_Search(option *io)
 */
 			PhyML_Printf("                [A] "
 					"................. Probability of stepping topology "
-					" %-15f \n",io->prob_topology);
+					" %.3f \n",io->prob_topology);
 			PhyML_Printf("                [B] "
 					"............. Probability of stepping NNI topology "
-					" %-15f \n",io->prob_NNI);
+					" %.3f \n",io->prob_NNI);
 			PhyML_Printf("                [C] "
 					"............. Probability of stepping SPR topology "
-					" %-15f \n",io->prob_SPR);
+					" %.3f \n",io->prob_SPR);
 			PhyML_Printf("                [D] "
 					"........... Probability of stepping branch lengths "
-					" %-15f \n",io->prob_brlen);
+					" %.3f \n",io->prob_brlen);
 			PhyML_Printf("                [E] "
 					".................... Probability of stepping gamma "
-					" %-15f \n",io->prob_gamma);
+					" %.3f \n",io->prob_gamma);
 			PhyML_Printf("                [F] "
 					".................... Probability of stepping kappa "
-					" %-15f \n",io->prob_kappa);
+					" %.3f \n",io->prob_kappa);
 			PhyML_Printf("                [H] "
 					"................... Probability of stepping lambda "
-					" %-15f \n",io->prob_lambda);
+					" %.3f \n",io->prob_lambda);
 			PhyML_Printf("                [I] "
 					"...... Probability of stepping relative sub. rates "
-					" %-15f \n",io->prob_rr);
+					" %.3f \n",io->prob_rr);
 			PhyML_Printf("                [J] "
 					"........ Probability of stepping state frequencies "
-					" %-15f \n",io->prob_pi);
+					" %.3f \n",io->prob_pi);
 			PhyML_Printf("                [K] "
 					"... Probability of stepping gamma-dist. rate props "
-					" %-15f \n",io->prob_rate_proportion);
+					" %.3f \n",io->prob_rate_proportion);
 			PhyML_Printf("                [P] "
 					"............ Probability of stepping P-invar props "
 					" %.3f \n",io->prob_pinvar);
