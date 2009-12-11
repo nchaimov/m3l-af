@@ -8722,7 +8722,7 @@ void Print_Banner(FILE *fp)
 	PhyML_Fprintf(fp,"       using an empricial Bayesian MCMC strategy to sample phylo-parameter space.\n");
 	PhyML_Fprintf(fp,"\n");
 	PhyML_Fprintf(fp,"                Victor Hanson-Smith, Bryan Kolaczkowski, John St. John, and Joe Thornton\n");
-	PhyML_Fprintf(fp,"                       http://phylo.uoregon.edu/software/phyml-m3l\n");
+	PhyML_Fprintf(fp,"                       http://phylo.uoregon.edu/software/phyml+m3l\n");
 	PhyML_Fprintf(fp,"\n");
 	PhyML_Fprintf(fp,"                     Released under the GNU General Public License version 2\n");
 	PhyML_Fprintf(fp,"                  See the file named 'COPYING' for more copyright information.\n");
@@ -8739,7 +8739,7 @@ void Print_Banner_Small(FILE *fp)
 	PhyML_Fprintf(fp,"                            http://www.atgc-montpellier.fr/phyml                                   \n");
 	PhyML_Fprintf(fp,"\n");
 	PhyML_Fprintf(fp,"                                 with +M3L extensions\n");
-	PhyML_Fprintf(fp,"                       http://phylo.uoregon.edu/software/phyml-m3l\n");
+	PhyML_Fprintf(fp,"                       http://phylo.uoregon.edu/software/phyml+m3l\n");
 	PhyML_Fprintf(fp,"\n");
 	PhyML_Fprintf(fp,"                     Released under the GNU General Public License version 2\n");
 	PhyML_Fprintf(fp,"                  See the file named 'COPYING' for more copyright information.\n");
