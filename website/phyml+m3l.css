@@ -41,20 +41,20 @@ hr{
 	
 }
 a:visited {
-        color: #0066cc;
+        color: #0000FF;
         text-decoration: underline;
 }
 a:mouseover {
-        color: #66CC00;
+        color: #FF3300;
         text-decoration: underline;
 }
 a:hover {
-        color: #66CC00;
+        color: #FF3300;
         text-decoration: underline;
 }
 a:active{
         text-decoration: none;
-        color: #0066cc;
+        color: #0000FF;
 }
 .divBlue{
 	border:3px #3399ff solid;

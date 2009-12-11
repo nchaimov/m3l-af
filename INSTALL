@@ -209,22 +209,19 @@ operates.
 
 Notes on Parallelization
 ================================
-PhyML+M3L uses the OpenMP library to parallelize the likelihood calculation over sites.  By default, OpenMP is enabled.  In order to disable OpenMP, follow these steps:
+PhyML+M3L uses the OpenMP library to parallelize the likelihood calculation over sites.  By default, OpenMP is disabled.  In order to enable OpenMP, follow these steps:
 
 1. Open the file named "Makefile.am."  
-2. Comment the following line (by adding a '#' to the start of the line):
+2. Uncommont the following line (by removing '#' at the start of the line):
    #AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math -fopenmp
 
-3. Uncomment the following line (by removing the '#' at the start of the line):
-AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math
-
-4. Save and close "Makefile.am" 
-5. Open the file named "utilities.h"
-6. Comment the following line (by adding '//' to the start of the line):
+3. Save and close "Makefile.am" 
+4. Open the file named "utilities.h"
+5. Uncomment the following line (by removing '//' at the start of the line):
    //#define USE_OPENMP 1
 
-7. Save and close "utilities.h"
-8. Repeat the steps for compiling and installing PhyML (at the top of this document).
+6. Save and close "utilities.h"
+7. Repeat the steps for compiling and installing PhyML (at the top of this document).
 ========================================================================================
 
 
