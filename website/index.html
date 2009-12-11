@@ -7,10 +7,12 @@
    </HEAD>
 <BODY>
 
-<p><a href='http://www.uoregon.edu/~joet/'><small>Thornton Lab</small></a> | <a href='http://evolution.uoregon.edu/'><small>CEEB</small></a> | <a href='http://uoregon.edu/'><small>University of Oregon</small></a> | <a href="http://www.victorhansonsmith.com"><small>Victor Hanson-Smith</small></a></p>
+<p><a href='http://www.uoregon.edu/~joet/'><small>Thornton Lab</small></a> | <a href='http://evolution.uoregon.edu/'><small>CEEB</small></a> | <a href='http://uoregon.edu/'><small>University of Oregon</small></a></p>
 <h1>PhyML+M3L</h1>
 <hr>
-<p>PhyML+M3L is an extension of PhyML version 3.0, using publicly-available open source C code.  The '+M3L' extensions implement the following features new for PhyML: 
+<p>PhyML+M3L is an extension of <a href="http://www.atgc-montpellier.fr/phyml/">PhyML version 3.0</a>,
+ using publicly-available open source <a href="http://code.google.com/p/phyml/">C code</a>.  The '+M3L' extensions implement the 
+ following features new for PhyML: 
 <ol>
 <li>a mixed branch length model of heterotachy</li>
 <li>an empirical Bayes MCMC sampler to estimate posterior probabilities of clades</li> 
@@ -18,6 +20,8 @@
 <li>phylogenetic optimization by simulated thermal annealing</li>
 </ol>
 </p>
+
+
 <div class="divYellow">
 <h2>Download PhyML+M3L</h2>
 <ul>
@@ -28,22 +32,22 @@
 
 <p>
 <a href="phyml+m3l_user_doc.pdf">
-<img src="pdf_icon.png" width=50 border=0 align=center>
+<img src="pdf_icon.png" width=64 border=0 align=center>
 </a>
-<a href="phyml+m3l_user_doc.pdf">User Manual - updated December 10th, 2009</a> <em>PDF (1.2 MB)</em>
+<a href="phyml+m3l_user_doc.pdf">User Manual - updated December 10th, 2009</a>, <em>PDF (1.2 MB)</em>
 </p>
 
 <li>
-<h3>Precompiled binaries:</h3>
+<h3>Precompiled Binaries:</h3>
 </li>
 <p>
 <a href="phyml-openmp">
-<img src="binary_icon.png" width=50 border=0 align=center>
+<img src="binary_icon.png" width=64 border=0 align=center>
 </a>
 <a href="phyml-openmp">For Intel-based Macs, using OpenMP</a>, <em>Unix application (957 K)</em>
 <br>
 <a href="phyml-serial">
-<img src="binary_icon.png" width=50 border=0 align=center>
+<img src="binary_icon2.png" width=64 border=0 align=center>
 </a>
 <a href="phyml-serial">For Intel-based Macs, no OpenMP</a>, <em>Unix application (935 K)</em>
 </p>
@@ -54,10 +58,16 @@
 </li>
 
 <p>
-<!--<a>Current stable release: revision XXXXX</a><br>-->
+<a href="phyml+m3l_12.10.2009.zip">
+<img src="zip_icon.png" width=64 border=0 align=center>
+</a>
+<a href="phyml+m3l_12.10.2009.zip">Current stable release - updated December 10th, 2009</a>, <em>ZIP (11MB)</em>
+
+<br>
+<br>
 
 <a href="http://code.google.com/p/m3l/source/checkout">
-<img src="google_icon.png" width=50 border=0 align=center>
+<img src="google_icon.png" width=64 border=0 align=center>
 </a>
 <a href="http://code.google.com/p/m3l/source/checkout">Go to the Google Code repository</a>
 </p>
@@ -93,7 +103,7 @@ from the given sequence data
 [see <a href="http://mbe.oxfordjournals.org/cgi/content/short/25/6/1054">Kolaczkowski and Thornton (2008)</a>]. 
  Under most conditions, the mixed branch length model improves phylogenetic 
  accuracy compared to other homotachous and heterotachous models.  This model 
- should not be confused with other hetertachous models, such as the gamma model 
+ should not be confused with other heterotachous models, such as the gamma model 
  [see <a href="http://www.springerlink.com/content/t7k1m86q68854142/">Yang (1994)</a>]
   or the covarion model [see <a href="http://www.springerlink.com/content/127etdjqcuahtg17/">Penny et al. (2001)</a>].  Unlike those models,
    the mixed branch length model relaxes the assumption that the ratio 
@@ -105,10 +115,10 @@ An empirical Bayes MCMC sampler to estimate posterior probabilities of clades
 </li>
 
 <p>
-Posterior probabilities (PPs) can be a useful metric to estimate the statistical support for the existence
+Posterior probability (PP) can be a useful metric to estimate the statistical support for the existence
 of a phylogenetic clade.  However, simulation studies have shown that when PPs are estimated 
-using a Bayesian MCMC strategy that integrates over branch length uncertainty,
-the PPs can significantly diverge from their expected values had the branch lengths been known in advance.
+using a Bayesian MCMC strategy that integrates over branch length uncertainty, 
+PPs can significantly diverge from their expected values had the branch lengths been known in advance.
 Alternatively, an empirical Bayesian strategy that fixes branch lengths at their maximum likelihood values 
 is more accurate at estimating the posterior probability of clades
 [see <a href="http://mbe.oxfordjournals.org/cgi/content/abstract/24/9/2108">Kolaczkowski and Thornton (2007)</a>].
@@ -138,12 +148,22 @@ The basic likelihood algorithm calculates the likelihood of a proposed phylogeny
   likelihood of a phylogeny is calculated as the product of likelihoods at each
    site in the alignment.  These per-site likelihoods can be calculated in any order,
     as long as they are all combined together as a product.  In terms of computational 
-    parallelism, the likelihood calculation is "embarrassingly parallel" over sites.  
+    parallelism, the likelihood algorithm is "embarrassingly parallel" over sites
+    because we can directly parallelize the per-site likelihood calculations to
+    independent processors.  If your CPU contains eight independent 
+    cores, you can therefore delegate each core to calculate likelihoods for one-eighth 
+    of the sites.
 </p>
 <p>
 In order to speedup the likelihood calculation, we included features from the 
 <a href="http://openmp.org/wp/">OpenMP</a> library to dispatch per-site likelihood 
-calculations to parallel CPU cores.  If your computer's CPU contains multiple cores (for example, Intel dual-core or quad-core Mac products), then OpenMP extensions will help reduce the clocktime required to run PhyML+M3L.  The efficacy of the parallelization depends on the number of available cores; a CPU with 8 cores will yield a greater speedup than a CPU with only 2 cores.  If your CPU is single-core, or if you'd rather not use OpenMP, you can run PhyML+M3L without the OpenMP features.  Consult the section named `Installation' for more information.
+calculations to parallel CPU cores.  If your computer's CPU contains multiple cores
+ (for example, Intel dual-core or quad-core Mac products), then OpenMP extensions will
+ automatically reduce the clocktime required to run PhyML+M3L.  The efficacy of the parallelization 
+  depends on the number of available cores; a CPU with 8 cores will yield a greater speedup 
+  than a CPU with only 2 cores.  If your CPU is single-core, or if you would rather not use OpenMP,
+   you can run PhyML+M3L without the OpenMP features.  Consult the section named `Installation'
+   within the user manual for more information.
 </p>
 <li>
 Optimization by simulated thermal annealing
@@ -153,7 +173,8 @@ Traditional hill-climbing optimization algorithms can struggle to escape local
  optima when searching over extremely rugged multi-parameterized likelihood landscapes.
    By default, PhyML uses a hill-climbing algorithm based on 
    "Brent's Method" [see <a href="http://books.google.com/books?id=6Ay2biHG-GEC&printsec=frontcover&source=gbs_navlinks_s#v=onepage&q=&f=false">Brent (2002)</a>].  
-   Although Brent's method seems to generally yield good results, the mixed branch length model can create conditions in which hill-climbing seems to be ineffective.
+   Although Brent's method seems to generally yield good results, the mixed branch length
+    model can create rugged conditions in which hill-climbing seems to be ineffective.
 </p>
 <p>
 As an alternative to hill-climbing methods, PhyML+M3L provides a method to optimize 
@@ -174,7 +195,9 @@ We hope you find PhyML+M3L useful.  However, be aware that we do not have a larg
 </p>
 
 <hr>
-<p><small>Last Modified: December 9, 2009</small></p>
+<p><small>Last Modified: December 9, 2009</small>
+<br>
+<small>by <a href="http://www.victorhansonsmith.com">Victor Hanson-Smith</a></small></p>
 
 </BODY>
 </HTML>
