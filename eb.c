@@ -39,10 +39,10 @@ void Empirical_Bayes(arbre* tree)
 	time_t start = time(NULL);
 	time_t now;
 
-	/* optimize starting tree and sample it */
+	/* optimize starting tree */
 	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-	fprintf(outfile, "[%f] ", tree->c_lnL);
-	Print_Tree(outfile, tree);
+	//fprintf(outfile, "[%f] ", tree->c_lnL);
+	//Print_Tree(outfile, tree);
 
 	/* create storage for trees and models */
 	arbre *best_tree = Make_Tree(tree->n_otu);
