@@ -3,6 +3,7 @@
 #include "optimiz.h"
 #include "spr.h"
 #include "lk.h"
+#include "free.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +12,7 @@
 
 void Empirical_Bayes(arbre* tree)
 {
+	int CHAIN_THINNING = 100;
 	int i;
 
 	char outfilestr[1000];
@@ -105,8 +107,11 @@ void Empirical_Bayes(arbre* tree)
 		}
 
 		/* print sampled tree */
-		fprintf(outfile, "[%f] ", tree->c_lnL);
-		Print_Tree(outfile, tree);
+		if(i % CHAIN_THINNING == 0)
+		{
+			fprintf(outfile, "[%f] ", tree->c_lnL);
+			Print_Tree(outfile, tree);
+		}
 
 		/* print estimated remaining time*/
 		if (i%DISPLAY_TIME_REMAINING_PERIOD == 0)
@@ -142,7 +147,7 @@ void Calculate_PP(arbre* tree)
 	sprintf(outfilestr, "%s.eb", tree->io->out_tree_file);
 	FILE* ebfile = fopen(outfilestr, "r");
 
-	int i,j,k,l;
+	int i,j,k;
 
 	int count_lines = 0; // how many lines (i.e. samples) have we seen?
 	struct __Node ***parts; // parts[i] = a list_of_reachable_tips for partition i
