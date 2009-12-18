@@ -318,7 +318,7 @@ void Mg_Make_Superarbre_Full(superarbre *st, option *io, allseq **data)
 {
   int i,j,k;
 
-  if(io->in_tree == 2)
+  if(io->in_tree == 1)
     {
       printf("\n. Reading user tree...\n");
       rewind(io->fp_in_tree);

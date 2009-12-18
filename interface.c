@@ -69,7 +69,7 @@ void Launch_Interface(option *io)
 	}while(!io->ready_to_go);
 
 
-	if(io->in_tree == 2)
+	if(io->in_tree == 1)
 	{
 		PhyML_Printf("\n. Enter the name of the input tree file > ");
 		Getstring_Stdin(io->in_tree_file);
@@ -1579,8 +1579,9 @@ void Launch_Interface_Topo_Search(option *io)
 		switch(io->in_tree)
 		{
 			case 0: { strcpy(s,"BioNJ");     break; }
-			case 1: { strcpy(s,"parsimony"); break; }
-			case 2: { strcpy(s,"user tree"); break; }
+			case 1: { strcpy(s,"user tree"); break; }
+			case 2: { strcpy(s,"parsimony"); break; }
+
 		}
 
 		PhyML_Printf("                [U] "
@@ -1773,7 +1774,14 @@ void Launch_Interface_Topo_Search(option *io)
 	case 'U' :
 	{
 		io->in_tree++;
-		if(io->in_tree == 3) io->in_tree = 0;
+		if(io->in_tree == 3)
+		{
+			io->in_tree = 0;
+		}
+		else if ( (io->mod->s_opt->opt_topo == 0) && (io->in_tree == 2) )
+		{
+			io->in_tree = 0;
+		}
 		break;
 	}
 	case 'N' :

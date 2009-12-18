@@ -190,7 +190,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define EXPONENTIAL    2
 #define GAMMA          3
 
-#define DISPLAY_TIME_REMAINING_PERIOD 10 // Display the "estimated time remaining" counter every DISPLAY_TIME_REMAINING_PERIOD generations
+#define DISPLAY_TIME_REMAINING_PERIOD 10 // Display the "estimated time remaining" counter every DISPLAY_TIME_REMAINING_PERIOD generations during EB MCMC
 
 typedef	double m3ldbl;
 typedef double plkflt;
@@ -622,7 +622,7 @@ typedef struct __Option { /* mostly used in 'options.c' */
   struct __AllSeq           *alldata; /* pointer to the compressed sequences */
   struct __Super_Arbre           *st; /* pointer to supertree */
   int                    interleaved; /* interleaved or sequential sequence file format ? */
-  int                        in_tree; /* =1 iff a user input tree is used as input */
+  int                        in_tree; /* =1 if a user input tree is used as input */
   int				      user_props; /* JSJ: 0-> proportions are not user defined. */
   int 					   user_topo; /* JSJ: 0-> user has not defined a topo search method */
   int					 fixed_props;
@@ -737,14 +737,14 @@ typedef struct __Optimiz { /* parameters to be optimised (mostly used in 'optimi
   int    opt_cov_free_rates;
 
 
-  int                opt_bl; /* =1 -> the branch lengths are optimised */
+  int                opt_bl; /* =1 -> the branch lengths are optimized */
   int             opt_props; /* =1 -> the proportion of sites described by each member of
 							          the branch length sets are optimized */
-  int              opt_topo; /* =1 -> the tree topology is optimised */
+  int              opt_topo; /* =1 -> the tree topology is optimized */
   int           topo_search;
   m3ldbl            init_lk; /* initial loglikelihood value */
-  int              n_it_max; /* maximum bnumber of iteration during an optimisation step */
-  int              last_opt; /* =1 -> the numerical parameters are optimised further while the
+  int              n_it_max; /* maximum number of iterations during an optimization step */
+  int              last_opt; /* =1 -> the numerical parameters are optimized further while the
 			       tree topology remains fixed */
   int     random_input_tree; /* boolean */
   int         n_rand_starts; /* number of random starting points */

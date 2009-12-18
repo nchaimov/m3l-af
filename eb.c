@@ -137,9 +137,6 @@ void Empirical_Bayes(arbre* tree)
 
 // Calculate posterior probabilities of clades,
 // given the *.eb file written by the method named "Empricial_Bayes"
-//
-//
-//
 char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io)
 {
 	arbre *tree;
@@ -218,21 +215,27 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 	/*
 	 * 1. Parse the MCMC samples and count the frequency of topological partitions among samples
 	 */
+	arbre* sampled_tree = NULL;
 	char line[T_MAX_LINE];
 	while( fgets( line, T_MAX_LINE, ebfile) != NULL ){
 		char *tokens = strtok( line, " ;");
 		tokens = strtok( NULL, " ;");
-		count_lines++;
-		PhyML_Printf(".");
 
-		arbre* sampled_tree = Read_Tree(tokens); // Read the Newick-formatted tree from the *.eb file and create an arbre structure. . .
-		sampled_tree->mod         = (model *)tree->mod;
-		sampled_tree->io          = (option *)tree->io;
-		sampled_tree->data        = (allseq *)tree->data;
+		sampled_tree = Read_Tree(tokens); // Read the Newick-formatted tree from the *.eb file and create an arbre structure. . .
+		sampled_tree->mod         = tree->mod;
+		sampled_tree->io          = tree->io;
+		sampled_tree->data        = tree->data;
 		sampled_tree->both_sides  = tree->both_sides;
 		sampled_tree->n_pattern   = tree->n_pattern;
 		Fill_Dir_Table(sampled_tree);
 		Update_Dirs(sampled_tree);
+
+		count_lines++;
+
+		if ( (count_lines != 0) && (count_lines%1000 == 0) )
+        {       PhyML_Printf(" . [ MCMC sample %d ]\n", count_lines);
+        }
+		PhyML_Printf(".");
 
 		For(j,2*sampled_tree->n_otu-3) // for every edge in the tree...
 		{
@@ -297,12 +300,20 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 			}
 			if (found_parti == 0) // if the partition of node j has not been observed in previous samples...
 			{	// ... then add the partition to our collection of observed partitions.
-				parts[count_parts] = tiplist;
+				For(i, proposed_part_size)
+				{
+					parts[count_parts][i] = (node *)Make_Node_Light( tiplist[i]->num, 1);
+					strcpy(parts[count_parts][i]->name, tiplist[i]->name);
+				}
+
 				size_of_parts[count_parts] = proposed_part_size;
 				freq_of_parts[count_parts]++; // ... and increment the observed frequency of this partition.
 				count_parts++;
 			}
 		}
+		if(tree->mat) Free_Mat(sampled_tree->mat);
+		Free_Tree(sampled_tree);
+
 	}
 	PhyML_Printf("\n");
 	fclose(ebfile);
@@ -364,6 +375,7 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 		}
 	}
 
+
 	/*
 	 * 4. Write a partition table
 	 */
@@ -403,6 +415,14 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 	}
 	fprintf(partsfile, "\n");
 	fclose(partsfile);
+	For(i, MAX_PARTS)
+	{
+		For(j, size_of_parts[i])
+		{
+			Free_Node(parts[i][j]);
+		}
+	}
+	Free(parts);
 
 	Free(size_of_parts);
 	Free(freq_of_parts);

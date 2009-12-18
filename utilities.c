@@ -4141,7 +4141,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, arbre *tree, option 
 
 	/* was after Sequence file ; moved here FLT */
 	s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
-	if(io->in_tree == 2)
+	if(io->in_tree == 1)
 	{
 		strcat(strcat(strcat(s,"user tree ("),io->in_tree_file),")");
 	}
@@ -4344,10 +4344,10 @@ void Print_Fp_Out_Lines(FILE *fp_out, time_t t_beg, time_t t_end, arbre *tree, o
 				switch(io->in_tree)
 				{
 				case 0: { strcpy(s,"BioNJ");     break; }
-				case 1: { strcpy(s,"parsimony"); break; }
-				case 2: { strcpy(s,"user tree (");
-				strcat(s,io->in_tree_file);
-				strcat(s,")");         break; }
+				case 1: { strcpy(s,"user tree (");
+					strcat(s,io->in_tree_file);
+					strcat(s,")");         break; }
+				case 2: { strcpy(s,"parsimony"); break; }
 				}
 
 				fprintf(fp_out,". Initial tree : [%s]\n\n",s);
@@ -5177,7 +5177,7 @@ void Bootstrap(arbre *tree)
 				boot_mod = Copy_Model(tree->mod);
 				Init_Model(boot_data,boot_mod);
 
-				if(tree->io->in_tree == 2)
+				if(tree->io->in_tree == 1)
 				{
 					rewind(tree->io->fp_in_tree);
 					boot_tree = Read_Tree_File(tree->io->fp_in_tree);
@@ -8490,10 +8490,10 @@ void Print_Settings(option *io)
 	switch(io->in_tree)
 	{
 	case 0: { strcpy(s,"BioNJ");     break; }
-	case 1: { strcpy(s,"parsimony"); break; }
-	case 2: { strcpy(s,"user tree (");
+	case 1: { strcpy(s,"user tree (");
 	strcat(s,Basename(io->in_tree_file));
 	strcat(s,")");         break; }
+	case 2: { strcpy(s,"parsimony"); break; }
 	}
 
 	if(io->mod->s_opt->opt_topo)
@@ -10274,17 +10274,12 @@ void Prepare_Tree_For_Lk(arbre *tree)
 	Make_Spr_List(tree);
 	Make_Best_Spr(tree);
 
-	/********************************************************/
-	//
 	// VHS: Here is where I copy branch lengths:
-	//
-	if ( (tree->io->in_tree != 2) || // if the user tree was not specified, so we built a BioNJ tree
-			(tree->io->in_tree == 2 && !tree->has_branch_lengths) || // or, if a user tree was specified, but without branch lengths
-			(tree->io->in_tree == 2 && tree->has_branch_lengths && tree->t_edges[0]->n_l == 1 && tree->mod->n_l > 1) // or, if a user tree was specified with branch lengths, but only for the first BL class.
+	if ( (tree->io->in_tree != 1) || // if the user tree was not specified, so we built a BioNJ tree
+			(tree->io->in_tree == 1 && !tree->has_branch_lengths) || // or, if a user tree was specified, but without branch lengths
+			(tree->io->in_tree == 1 && tree->has_branch_lengths && tree->t_edges[0]->n_l == 1 && tree->mod->n_l > 1) // or, if a user tree was specified with branch lengths, but only for the first BL class.
 			)
 	{
-
-
 
 		int i, j = 0;
 		int n_l = tree->mod->n_l;

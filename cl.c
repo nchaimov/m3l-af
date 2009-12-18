@@ -135,7 +135,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		}
 		case 'p' : case 47 :
 		{
-			io->in_tree = 1;
+			io->in_tree = 2;
 			break;
 		}
 		case 46 :
@@ -1324,7 +1324,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			else
 			{
 				strcpy(io->in_tree_file, optarg);
-				io->in_tree = 2;
+				io->in_tree = 1;
 				io->fp_in_tree = Openfile(io->in_tree_file,0);
 			}
 			Free(tmp);

@@ -1649,18 +1649,20 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 */
 	Normalize_Props(tree->mod);
 
-	// VHS: Here we force a round of branch-length optimzation to occur.
-	Optimize_Br_Len_Serie(tree->noeud[0],
-							   tree->noeud[0]->v[0],
-							   tree->noeud[0]->b[0],
-							   tree,
-							   tree->data);
-	tree->both_sides = 1;
-	Lk(tree);
-	if(verbose)
+	if (tree->mod->s_opt->opt_bl)
 	{
-		Print_Lk(tree,"[Branch lengths     ]");
-		//PhyML_Printf("[%10f]",tree->mod->lambda);
+		Optimize_Br_Len_Serie(tree->noeud[0],
+								   tree->noeud[0]->v[0],
+								   tree->noeud[0]->b[0],
+								   tree,
+								   tree->data);
+		tree->both_sides = 1;
+		Lk(tree);
+		if(verbose)
+		{
+			Print_Lk(tree,"[Branch lengths     ]");
+			//PhyML_Printf("[%10f]",tree->mod->lambda);
+		}
 	}
 
 	if(tree->mod->use_m4mod)

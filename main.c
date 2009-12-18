@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 
 				  if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);
 
-				  if(io->in_tree == 1) Spr_Pars(tree);
+				  if(io->in_tree == 2) Spr_Pars(tree); /* minimize parsimony, if it was specified */
 
 				  //
 				  // VHS: If subalignment compression is enabled, then the following precondition is true
