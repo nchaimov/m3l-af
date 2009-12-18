@@ -1,5 +1,4 @@
 /*
-
 PhyML:  a program that  computes maximum likelihood phylogenies from
 DNA or AA homologous sequences.
 
@@ -49,7 +48,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"datatype",          required_argument,NULL,7},
 			{"multiple",          required_argument,NULL,8},
 			{"input",             required_argument,NULL,9},
-			{"bootstrap",         required_argument,NULL,10},
+			{"support",           required_argument,NULL,10},
 			{"ts/tv",             required_argument,NULL,11},
 			{"nclasses",          required_argument,NULL,12},
 			{"pinv",              required_argument,NULL,13},
@@ -117,6 +116,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			{"tau_start",		  required_argument,NULL,75},
 			{"tau_end",			  required_argument,NULL,76},
 			{"eb_n_gens",         required_argument,NULL,77},
+			{"prev_eb_sample",	  required_argument,NULL,78},
 
 			{0,0,0,0}
 	};
@@ -703,10 +703,10 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		}
 		case 'b':case 10:
 		{
-			if (atoi(optarg) < -4)
+			if (atoi(optarg) < -6)
 			{
 				char choix;
-				PhyML_Printf("\n. Branch test value must be a positive integer for bootstrap, or between -1 and -4 for aLRT branch test\n");
+				PhyML_Printf("\n. Branch test value must be a positive integer for bootstrap, between -1 and -4 for aLRT branch test, or between -5 and -6 for posterior probability estimation.\n");
 				PhyML_Printf("\n. Type any key to exit.\n");
 				if(!scanf("%c",&choix)) Exit("\n");
 				Exit("\n");
@@ -716,6 +716,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 				if((int)atoi(optarg) > 0)
 				{
 					io->ratio_test       = 0;
+					io->post_probs	     = 0;
 					io->mod->bootstrap   = (int)atoi(optarg);
 					io->print_boot_trees = 1;
 
@@ -728,15 +729,29 @@ void Read_Command_Line(option *io, int argc, char **argv)
 						Exit("\n");
 					}
 				}
-				else if (atoi(optarg)==0)
+				else if (atoi(optarg) == 0)
 				{
 					io->mod->bootstrap = 0;
 					io->ratio_test     = 0;
+					io->post_probs	   = 0;
 				}
-				else
+				else if(atoi(optarg) > -5)
 				{
 					io->mod->bootstrap = 0;
 					io->ratio_test     = -(int)atoi(optarg);
+					io->post_probs	   = 0;
+				}
+				else if (atoi(optarg) == -5)
+				{
+					io->post_probs	   = 2; // use an existing *.eb file
+					io->mod->bootstrap = 0;
+					io->ratio_test     = 0;
+				}
+				else if (atoi(optarg) == -6)
+				{
+					io->post_probs	   = 1; // use the output from the current MCMC run.
+					io->mod->bootstrap = 0;
+					io->ratio_test     = 0;
 				}
 			}
 			break;
@@ -1245,6 +1260,40 @@ void Read_Command_Line(option *io, int argc, char **argv)
 			if(io->eb_n_gens < 1) io->eb_n_gens = tmp;
 			break;
 		}
+		case 78:
+		{
+			char *tmp;
+			tmp = (char *)mCalloc(T_MAX_FILE, sizeof(char));
+			if (strlen (optarg) > T_MAX_FILE -11)
+			{
+				char choix;
+				strcpy (tmp, "\n. The file name'");
+				strcat (tmp, optarg);
+				strcat (tmp, "' is too long.\n");
+				PhyML_Printf("%s",tmp);
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else if (! Filexists (optarg))
+			{
+				char choix;
+				strcpy (tmp, "\n. The file '");
+				strcat (tmp, optarg);
+				strcat (tmp, "' doesn't exist.\n");
+				PhyML_Printf("%s",tmp);
+				PhyML_Printf("\n. Type any key to exit.\n");
+				if(!scanf("%c",&choix)) Exit("\n");
+				Exit("\n");
+			}
+			else
+			{
+				strcpy(io->in_eb_file, optarg);
+				io->fp_in_eb = Openfile(io->in_eb_file,0);
+			}
+			Free(tmp);
+			break;
+		}
 
 		case 'u':case 15:
 		{
@@ -1387,8 +1436,10 @@ void Read_Command_Line(option *io, int argc, char **argv)
 #endif
 
 
-
-
+	/*
+	 * Here are cases and situations that must be dealt with after we've parsed
+	 * the command line.  Most of the cases result in throwing an error and/or exiting.
+	 */
 
 	if((io->mod->s_opt->n_rand_starts)           &&
 			(io->mod->s_opt->topo_search == NNI_MOVE) &&
@@ -1435,7 +1486,17 @@ void Read_Command_Line(option *io, int argc, char **argv)
 	{
 		io->mod->bootstrap 					= 0; //disable bootstrap
 		io->ratio_test 						= 0; //disable aLRT
-		io->post_probs						= 1;
+		if ((io->post_probs != 1) && (io->post_probs != 2))
+		{
+			io->post_probs						= 1;
+		}
+	}
+	if ( (io->post_probs == 2) && (io->fp_in_eb == NULL) )
+	{
+		PhyML_Printf("\n. Err. You specified to estimate posterior probabilities using an existing *.eb file, but you failed to specify which file.\n");
+		PhyML_Printf("    In other words, if you specify '--support -5', you must also use the argument '--prev_eb_sample'. \n");
+		PhyML_Printf("\n. Type any key to exit.\n");
+		Exit("\n");
 	}
 
 	if((io->mod->s_opt->opt_cov_free_rates) && (io->mod->s_opt->opt_cov_alpha))

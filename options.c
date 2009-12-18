@@ -87,13 +87,22 @@ void Usage()
 	PhyML_Printf("%s\t\tUse a minimum parsimony starting tree. This option is taken into account when the '-u' option\n",FLAT);
 	PhyML_Printf("%s\t\tis absent and when tree topology modifications are to be done.\n",FLAT);
 
-	PhyML_Printf("%s\n\t-b (or --bootstrap) %sint%s\n",BOLD,LINE,FLAT);
+	PhyML_Printf("%s\n\t-b (or --support) %sint%s\n",BOLD,LINE,FLAT);
 	PhyML_Printf("\t\t%sint%s >  0 : %sint%s is the number of bootstrap replicates.\n",LINE,FLAT,LINE,FLAT);
-	PhyML_Printf("\t\t%sint%s =  0 : neither approximate likelihood ratio test nor bootstrap values are computed.\n",LINE,FLAT);
+	PhyML_Printf("\t\t%sint%s =  0 : no support values will be computes.\n",LINE,FLAT);
 	PhyML_Printf("\t\t%sint%s = -1 : approximate likelihood ratio test returning aLRT statistics.\n",LINE,FLAT);
 	PhyML_Printf("\t\t%sint%s = -2 : approximate likelihood ratio test returning Chi2-based parametric branch supports.\n",LINE,FLAT);
 	/*   PhyML_Printf("\t\t%sint%s = -3 : minimum of Chi2-based parametric and SH-like branch supports.\n",LINE,FLAT); */
 	PhyML_Printf("\t\t%sint%s = -4 : SH-like branch supports alone.\n",LINE,FLAT);
+	PhyML_Printf("\t\t%sint%s = -5 : posterior probabilities will be computed, using an existing *.eb file.\n",LINE,FLAT);
+	PhyML_Printf("\t\t\t\tNOTE: option -5 requires the use of option --prev_eb_sample.\n");
+	PhyML_Printf("\t\t%sint%s = -6 : posterior probabilities will be computed, using the output of the current MCMC run.\n",LINE,FLAT);
+	PhyML_Printf("\t\t\tNOTE: if the option '--search' = EB, then '--support' will default to value = -6.");
+
+	PhyML_Printf("\n");
+
+	PhyML_Printf("%s\n\t--prev_eb_sample %s*.eb file%s\n",BOLD,LINE,FLAT);
+	PhyML_Printf("\t\t*.eb file%s : the output file from a previous MCMC run.\n",FLAT);
 
 	PhyML_Printf("\n");
 

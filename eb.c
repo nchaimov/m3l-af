@@ -12,127 +12,124 @@
 
 void Empirical_Bayes(arbre* tree)
 {
-	int i;
+    int CHAIN_THINNING = 100;
+    int i;
 
-	char outfilestr[1000];
-	sprintf(outfilestr, "%s.eb", tree->io->out_tree_file);
+    char outfilestr[1000];
+    sprintf(outfilestr, "%s.eb", tree->io->out_tree_file);
 
-	FILE* outfile = fopen(outfilestr, "w");
+    FILE* outfile = fopen(outfilestr, "w");
 
-	if(!outfile)
-	{
-		fprintf(stderr, "ERROR: cant open output file for EB: %s\n",
-			    outfilestr);
-		exit(1);
-	}
+    if(!outfile)
+    {
+            fprintf(stderr, "ERROR: cant open output file for EB: %s\n",
+                        outfilestr);
+            exit(1);
+    }
 
-	/* create random number generator */
-	gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937);
-	gsl_rng_set(rng, (int)time(NULL));
+    /* create random number generator */
+    gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937);
+    gsl_rng_set(rng, (int)time(NULL));
 
-	PhyML_Printf("\n . Starting empirical Bayes MCMC of %d generations.\n",
-				 tree->io->eb_n_gens);
-	PhyML_Printf(" . Sampled trees will be written to %s\n\n", outfilestr);
+    PhyML_Printf("\n . Starting empirical Bayes MCMC of %d generations.\n",
+                             tree->io->eb_n_gens);
+    PhyML_Printf(" . Sampled trees will be written to %s\n\n", outfilestr);
 
-	/* Record clock time, to estimate time-to-completion */
-	time_t start = time(NULL);
-	time_t now;
+    /* Record clock time, to estimate time-to-completion */
+    time_t start = time(NULL);
+    time_t now;
 
-	/* optimize starting tree and sample it */
-	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-	fprintf(outfile, "[%f] ", tree->c_lnL);
-	Print_Tree(outfile, tree);
+    /* optimize starting tree */
+    Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
+    //fprintf(outfile, "[%f] ", tree->c_lnL);
+    //Print_Tree(outfile, tree);
 
-	/* create storage for trees and models */
-	arbre *best_tree = Make_Tree(tree->n_otu);
-	Init_Tree(best_tree,tree->n_otu);
-	Make_All_Tree_Nodes(best_tree, tree->mod->n_l);
-	Make_All_Tree_Edges(best_tree, tree->mod->n_l);
-	best_tree->mod = Copy_Model(tree->mod);
-	Copy_Tree(tree, best_tree);
-	Record_Model(tree->mod, best_tree->mod);
+    /* create storage for trees and models */
+    arbre *best_tree = Make_Tree(tree->n_otu);
+    Init_Tree(best_tree,tree->n_otu);
+    Make_All_Tree_Nodes(best_tree, tree->mod->n_l);
+    Make_All_Tree_Edges(best_tree, tree->mod->n_l);
+    best_tree->mod = Copy_Model(tree->mod);
+    Copy_Tree(tree, best_tree);
+    Record_Model(tree->mod, best_tree->mod);
 
-	arbre *last_tree = Make_Tree(tree->n_otu);
-	Init_Tree(last_tree,tree->n_otu);
-	Make_All_Tree_Nodes(last_tree, tree->mod->n_l);
-	Make_All_Tree_Edges(last_tree, tree->mod->n_l);
-	last_tree->mod = Copy_Model(best_tree->mod);
-	Copy_Tree(tree, last_tree);
-	Record_Model(tree->mod, last_tree->mod);
+    arbre *last_tree = Make_Tree(tree->n_otu);
+    Init_Tree(last_tree,tree->n_otu);
+    Make_All_Tree_Nodes(last_tree, tree->mod->n_l);
+    Make_All_Tree_Edges(last_tree, tree->mod->n_l);
+    last_tree->mod = Copy_Model(best_tree->mod);
+    Copy_Tree(tree, last_tree);
+    Record_Model(tree->mod, last_tree->mod);
 
-	m3ldbl lnL_best = tree->c_lnL;
-	m3ldbl lnL_current = tree->c_lnL;
+    m3ldbl lnL_best = tree->c_lnL;
+    m3ldbl lnL_current = tree->c_lnL;
 
-	//Prepare_Tree_For_Lk(last_tree);
-	//Prepare_Tree_For_Lk(best_tree);
-
-
-	/* MCMC routine */
-	for(i=0; i<tree->io->eb_n_gens-1; i++)
-	{
-		/* modify current tree */
-		Random_Spr(1, tree);
-
-		/* optimize current tree */
-		Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-
-		/* check acceptance */
-		//printf("LR %f/%f [%f]\n", tree->c_lnL, lnL_current, exp(tree->c_lnL - lnL_current));
-
-		if(tree->c_lnL >= lnL_current || gsl_rng_uniform(rng) < exp(tree->c_lnL - lnL_current))
-		{
-			Copy_Tree(tree, last_tree);
-			//last_tree->mod = Copy_Model(tree->mod);
-			Record_Model(tree->mod, last_tree->mod);
-			lnL_current = tree->c_lnL;
-			//Prepare_Tree_For_Lk(last_tree);
+    //Prepare_Tree_For_Lk(last_tree);
+    //Prepare_Tree_For_Lk(best_tree);
 
 
-			/* check if better than best so far */
-			if(tree->c_lnL > lnL_best)
-			{
-				Copy_Tree(tree, best_tree);
-				//best_tree->mod = Copy_Model(tree->mod);
-				Record_Model(tree->mod, best_tree->mod);
-				lnL_best = tree->c_lnL;
-				//Prepare_Tree_For_Lk(best_tree);
-			}
-		}
-		else
-		{
-			/* copy old tree back to current tree */
-			Copy_Tree(last_tree, tree);
-			//tree->mod = Copy_Model(last_tree->mod);
-			Record_Model(last_tree->mod, tree->mod);
-			tree->c_lnL = lnL_current;
-			//Prepare_Tree_For_Lk(tree);
-		}
+    /* MCMC routine */
+    for(i=0; i<tree->io->eb_n_gens-1; i++)
+    {
+            /* modify current tree */
+            Random_Spr(1, tree);
 
-		/* print sampled tree */
-		fprintf(outfile, "[%f] ", tree->c_lnL);
-		Print_Tree(outfile, tree);
+            /* optimize current tree */
+            Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 
-		/* print estimated remaining time*/
-		if (i%DISPLAY_TIME_REMAINING_PERIOD == 0)
-		{	now = time(NULL);
-			Print_time_remaining(now, start, i, tree->io->eb_n_gens);
-		}
-	}
+            /* check acceptance */
+            //printf("LR %f/%f [%f]\n", tree->c_lnL, lnL_current, exp(tree->c_lnL - lnL_current));
 
-	/* copy best tree found back into tree */
-	Copy_Tree(best_tree, tree);
-	//tree->mod = Copy_Model(best_tree->mod);
-	Record_Model(best_tree->mod, tree->mod);
-	//Prepare_Tree_For_Lk(tree);
-	tree->c_lnL = lnL_best;
+            if(tree->c_lnL >= lnL_current || gsl_rng_uniform(rng) < exp(tree->c_lnL - lnL_current))
+            {
+                    Copy_Tree(tree, last_tree);
+                    Record_Model(tree->mod, last_tree->mod);
+                    lnL_current = tree->c_lnL;
+                    //Prepare_Tree_For_Lk(last_tree);
 
-	/* clean up and done */
-	fclose(outfile);
-	gsl_rng_free(rng);
-	PhyML_Printf("\n. Done with empirical Bayes MCMC.\n");
 
-	// We now call Calculate_PP from main.c
-	//Calculate_PP(tree);
+                    /* check if better than best so far */
+                    if(tree->c_lnL > lnL_best)
+                    {
+                            Copy_Tree(tree, best_tree);
+                            Record_Model(tree->mod, best_tree->mod);
+                            lnL_best = tree->c_lnL;
+                            //Prepare_Tree_For_Lk(best_tree);
+                    }
+            }
+            else
+            {
+                    /* copy old tree back to current tree */
+                    Copy_Tree(last_tree, tree);
+                    Record_Model(last_tree->mod, tree->mod);
+                    tree->c_lnL = lnL_current;
+                    //Prepare_Tree_For_Lk(tree);
+            }
+
+            /* print sampled tree */
+            if(i % CHAIN_THINNING == 0)
+            {
+                    fprintf(outfile, "[%f] ", tree->c_lnL);
+                    Print_Tree(outfile, tree);
+            }
+
+            /* print estimated remaining time*/
+            if (i%DISPLAY_TIME_REMAINING_PERIOD == 0)
+            {       now = time(NULL);
+                    Print_time_remaining(now, start, i, tree->io->eb_n_gens);
+            }
+    }
+
+    /* copy best tree found back into tree */
+    Copy_Tree(best_tree, tree);
+    Record_Model(best_tree->mod, tree->mod);
+    //Prepare_Tree_For_Lk(tree);
+    tree->c_lnL = lnL_best;
+
+    /* clean up and done */
+    fclose(outfile);
+    gsl_rng_free(rng);
+    PhyML_Printf("\n. Done with empirical Bayes MCMC.\n");
 
 	Free_Tree(best_tree);
 	Free_Tree(last_tree);
