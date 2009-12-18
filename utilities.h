@@ -699,6 +699,10 @@ typedef struct __Option { /* mostly used in 'options.c' */
   int                     ratio_test; /* from 1 to 4 for specific branch supports, 0 of not */
   int                    ready_to_go;
 
+  int					  post_probs; /* 1 = calculate PPs using the default *.eb file produce by EB MCMC, 2 = calculate PPs using a specified existing *.eb file, 0 = no PPs */
+  char                   *in_eb_file; /* pathname of *.eb file, to be used to calculate PPs */
+  FILE                     *fp_in_eb; /* pointer to the *.eb file */
+
   int                 curr_interface;
   int                         r_seed; /* random seed */
   int                  collapse_boot; /* 0 -> branch length on bootstrap trees are not collapsed if too small */

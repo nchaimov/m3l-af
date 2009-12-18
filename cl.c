@@ -441,6 +441,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 				io->user_topo                       = 1;
 				io->mod->bootstrap 					= 0; //disable bootstrap
 				io->ratio_test 						= 0; //disable aLRT
+				io->post_probs						= 1;
 			}
 			break;
 		}
@@ -1434,6 +1435,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 	{
 		io->mod->bootstrap 					= 0; //disable bootstrap
 		io->ratio_test 						= 0; //disable aLRT
+		io->post_probs						= 1;
 	}
 
 	if((io->mod->s_opt->opt_cov_free_rates) && (io->mod->s_opt->opt_cov_alpha))

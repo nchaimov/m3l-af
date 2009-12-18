@@ -459,8 +459,6 @@ void Free_Spr_List(arbre *tree)
 }
 
 /*********************************************************/
-
-
 void Free_Triplet(triplet *t)
 {
   int i,j,k;

@@ -174,6 +174,8 @@ void aLRT(arbre *tree)
 
 	/* aLRT support will label each internal branch */
 	tree->print_alrt_val = 1;
+	tree->print_boot_val = 0;
+	tree->print_pp_val	 = 0;
 
 	/* The topology will not be modified when assessing the branch support. We make sure that it will
      not be modified afterwards by locking the topology */

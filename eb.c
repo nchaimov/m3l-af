@@ -1,9 +1,9 @@
 #include "eb.h"
+#include "free.h"
 #include "utilities.h"
 #include "optimiz.h"
 #include "spr.h"
 #include "lk.h"
-#include "free.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -12,7 +12,6 @@
 
 void Empirical_Bayes(arbre* tree)
 {
-	int CHAIN_THINNING = 100;
 	int i;
 
 	char outfilestr[1000];
@@ -39,10 +38,10 @@ void Empirical_Bayes(arbre* tree)
 	time_t start = time(NULL);
 	time_t now;
 
-	/* optimize starting tree */
+	/* optimize starting tree and sample it */
 	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-	//fprintf(outfile, "[%f] ", tree->c_lnL);
-	//Print_Tree(outfile, tree);
+	fprintf(outfile, "[%f] ", tree->c_lnL);
+	Print_Tree(outfile, tree);
 
 	/* create storage for trees and models */
 	arbre *best_tree = Make_Tree(tree->n_otu);
@@ -83,6 +82,7 @@ void Empirical_Bayes(arbre* tree)
 		if(tree->c_lnL >= lnL_current || gsl_rng_uniform(rng) < exp(tree->c_lnL - lnL_current))
 		{
 			Copy_Tree(tree, last_tree);
+			//last_tree->mod = Copy_Model(tree->mod);
 			Record_Model(tree->mod, last_tree->mod);
 			lnL_current = tree->c_lnL;
 			//Prepare_Tree_For_Lk(last_tree);
@@ -92,6 +92,7 @@ void Empirical_Bayes(arbre* tree)
 			if(tree->c_lnL > lnL_best)
 			{
 				Copy_Tree(tree, best_tree);
+				//best_tree->mod = Copy_Model(tree->mod);
 				Record_Model(tree->mod, best_tree->mod);
 				lnL_best = tree->c_lnL;
 				//Prepare_Tree_For_Lk(best_tree);
@@ -101,17 +102,15 @@ void Empirical_Bayes(arbre* tree)
 		{
 			/* copy old tree back to current tree */
 			Copy_Tree(last_tree, tree);
+			//tree->mod = Copy_Model(last_tree->mod);
 			Record_Model(last_tree->mod, tree->mod);
 			tree->c_lnL = lnL_current;
 			//Prepare_Tree_For_Lk(tree);
 		}
 
 		/* print sampled tree */
-		if(i % CHAIN_THINNING == 0)
-		{
-			fprintf(outfile, "[%f] ", tree->c_lnL);
-			Print_Tree(outfile, tree);
-		}
+		fprintf(outfile, "[%f] ", tree->c_lnL);
+		Print_Tree(outfile, tree);
 
 		/* print estimated remaining time*/
 		if (i%DISPLAY_TIME_REMAINING_PERIOD == 0)
@@ -122,6 +121,7 @@ void Empirical_Bayes(arbre* tree)
 
 	/* copy best tree found back into tree */
 	Copy_Tree(best_tree, tree);
+	//tree->mod = Copy_Model(best_tree->mod);
 	Record_Model(best_tree->mod, tree->mod);
 	//Prepare_Tree_For_Lk(tree);
 	tree->c_lnL = lnL_best;
@@ -131,7 +131,8 @@ void Empirical_Bayes(arbre* tree)
 	gsl_rng_free(rng);
 	PhyML_Printf("\n. Done with empirical Bayes MCMC.\n");
 
-	Calculate_PP(tree);
+	// We now call Calculate_PP from main.c
+	//Calculate_PP(tree);
 
 	Free_Tree(best_tree);
 	Free_Tree(last_tree);
@@ -139,21 +140,76 @@ void Empirical_Bayes(arbre* tree)
 
 // Calculate posterior probabilities of clades,
 // given the *.eb file written by the method named "Empricial_Bayes"
-void Calculate_PP(arbre* tree)
+//
+//
+//
+char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io)
 {
-	PhyML_Printf("\n. Calculating posterior probabilities of clades.");
+	arbre *tree;
 
-	char outfilestr[1000];
-	sprintf(outfilestr, "%s.eb", tree->io->out_tree_file);
-	FILE* ebfile = fopen(outfilestr, "r");
+	tree = Read_Tree(s_tree);
 
-	int i,j,k;
+	if(!tree)
+	{
+		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+		Warn_And_Exit("");
+	}
 
+	tree->mod         = mod;
+	tree->io          = io;
+	tree->data        = alldata;
+	tree->both_sides  = 1;
+	tree->n_pattern   = tree->data->crunch_len/tree->mod->stepsize;
+
+	Order_Tree_CSeq(tree,alldata);
+	if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
+	Fill_Dir_Table(tree);
+	Update_Dirs(tree);
+	Make_Tree_4_Pars(tree,alldata,alldata->init_len);
+	Make_Tree_4_Lk(tree,alldata,alldata->init_len);
+	tree->triplet_struct = Make_Triplet_Struct(mod);
+	Br_Len_Not_Involving_Invar(tree);
+	Make_Spr_List(tree);
+	Make_Best_Spr(tree);
+
+	tree->both_sides = 1;
+	Lk(tree);
+
+	PhyML_Printf("\n. Calculating posterior probabilities of clades.\n");
+
+	tree->print_alrt_val = 0;
+	tree->print_boot_val = 0;
+	tree->print_pp_val	 = 1;
+
+	char ebfilestr[1000];
+	FILE* ebfile = NULL;
+	if (tree->io->post_probs == 1) // Are we using the EB file that was written by the latest MCMC run?
+	{
+		sprintf(ebfilestr, "%s.eb", tree->io->out_tree_file);
+		ebfile = fopen(ebfilestr, "r");
+	}
+	else if (tree->io->post_probs == 2) // ... or are we using an existing *.eb file from a previous MCMC run?
+	{
+		ebfile = tree->io->fp_in_eb;
+	}
+	else
+	{
+		exit(1);
+	}
+
+	char partsfilestr[1000];
+	sprintf(partsfilestr, "%s.parts", tree->io->out_tree_file);
+	FILE* partsfile = fopen(partsfilestr, "w");
+
+	int i,j,k,l;
 	int count_lines = 0; // how many lines (i.e. samples) have we seen?
-	struct __Node ***parts; // parts[i] = a list_of_reachable_tips for partition i
-	int MAX_PARTS = 10*(2*tree->n_otu-2);
-	parts = (node ***)mCalloc(MAX_PARTS,sizeof(node **));
-	For(i,MAX_PARTS) parts[i] = (node **)mCalloc(tree->n_otu,sizeof(node *));
+	int MAX_PARTS = 10 * (2 * (int)tree->n_otu - 2);
+	struct __Node ***parts = (node ***)mCalloc(MAX_PARTS,sizeof(node **)); // parts[i] = a list_of_reachable_tips for partition i
+
+	For(i, MAX_PARTS)
+	{
+		parts[i] = (node **)mCalloc(tree->n_otu,sizeof(node *));
+	}
 	int *size_of_parts; // how big is each partition?
 	size_of_parts = (int *)mCalloc(MAX_PARTS,sizeof(int));
 	For(i,MAX_PARTS) size_of_parts[i] = 0;
@@ -173,9 +229,9 @@ void Calculate_PP(arbre* tree)
 		PhyML_Printf(".");
 
 		arbre* sampled_tree = Read_Tree(tokens); // Read the Newick-formatted tree from the *.eb file and create an arbre structure. . .
-		sampled_tree->mod         = tree->mod;
-		sampled_tree->io          = tree->io;
-		sampled_tree->data        = tree->data;
+		sampled_tree->mod         = (model *)tree->mod;
+		sampled_tree->io          = (option *)tree->io;
+		sampled_tree->data        = (allseq *)tree->data;
 		sampled_tree->both_sides  = tree->both_sides;
 		sampled_tree->n_pattern   = tree->n_pattern;
 		Fill_Dir_Table(sampled_tree);
@@ -210,6 +266,9 @@ void Calculate_PP(arbre* tree)
 				}
 			}
 
+			// Now we compare our proposed partition to all other partitions found so far.
+			// If our proposed partition is not unique, then we increment the counter for its match.
+			// Else, we add the proposed partition to our list of partitions.
 			int found_parti = 0;
 			For(i,count_parts) // for each partition...
 			{	// do partition i and subtree k have the same number of descendants?
@@ -218,6 +277,7 @@ void Calculate_PP(arbre* tree)
 							size_of_parts[i],
 							tiplist,
 							proposed_part_size);
+					//PhyML_Printf("score = %d\n", score);
 					// do partition i and subtree k contain the exact same set of descendant taxa?
 					if(score == size_of_parts[i])
 					{	// ... then partition i is present within the sampled_tree.
@@ -263,7 +323,7 @@ void Calculate_PP(arbre* tree)
 	/*
 	 * 3. Write posterior probabilities onto the branches of the given tree
 	 */
-	For(j,2*tree->n_otu-3) // for every edge in the tree...
+	For(j,2*tree->n_otu-3) // for every e dge in the tree...
 	{
 		/*
 		 * Does edge j connect to a terminal taxa?
@@ -292,10 +352,12 @@ void Calculate_PP(arbre* tree)
 		}
 		For(i,count_parts)
 		{	if (size_of_parts[i] == proposed_part_size)
-			{	int score = Compare_List_Of_Reachable_Tips_version2(parts[i],
+			{
+				int score = Compare_List_Of_Reachable_Tips_version2(parts[i],
 						size_of_parts[i],
 						tiplist,
 						proposed_part_size);
+
 				if( (score == size_of_parts[i]) ||
 						(score == 0 && proposed_part_size == tree->n_otu * 0.5) )
 				{	tree->t_edges[j]->post_prob = pp_of_parts[i];
@@ -304,22 +366,62 @@ void Calculate_PP(arbre* tree)
 			}
 		}
 	}
-	tree->print_pp_val = 1;
 
 	/*
-	 * debugging code: spew PP results
+	 * 4. Write a partition table
 	 */
-	/*
-	Print_Tree_Screen(tree);
+
+	// Print a list of all taxa numbers
+	For(i, tree->n_otu)
+	{
+		fprintf(partsfile, "Taxa #%d = %s\n", i, tree->noeud[i]->name);
+	}
+
+	fprintf(partsfile, "\nPartitions:\n");
+	fprintf(partsfile, "\t* = in partition\n\t- = excluded from partition\n");
+	fprintf(partsfile, "\tFreq. = the number of samples in which this partition appears.\n");
+	fprintf(partsfile, "\tPP = the posterior probability of this partition.\n");
+	fprintf(partsfile, "\n");
 	For(i,count_parts)
 	{
-		PhyML_Printf(" partition %d: size = %d, freq = %d, pp = %f\n", i, size_of_parts[i], freq_of_parts[i], pp_of_parts[i]);
-		For(j,size_of_parts[i])
-		{	PhyML_Printf("%s ", parts[i][j]->name );
+		fprintf(partsfile, "[p%d]\t", i);
+		int *part = (int *)mCalloc(tree->n_otu,sizeof(int));
+		For(j,tree->n_otu)
+		{	part[j] = 0;
 		}
-		PhyML_Printf("\n");
+		For(j,size_of_parts[i])
+		{	part[ parts[i][j]->num ] = 1;
+		}
+		For(j,tree->n_otu)
+		{
+			if (part[j] == 0)
+			{	fprintf(partsfile, "*");
+			}
+			else if (part[j] == 1 )
+			{	fprintf(partsfile, "-");
+			}
+		}
+		fprintf(partsfile, "\t[Freq. = %d]\t [PP = %f]\n", freq_of_parts[i], pp_of_parts[i]);
+		Free(part);
 	}
-	*/
-	// end debugging code
+	fprintf(partsfile, "\n");
+	fclose(partsfile);
+
+	Free(size_of_parts);
+	Free(freq_of_parts);
+	Free(pp_of_parts);
+
+	Free(s_tree);
+	s_tree = Write_Tree(tree);
+
+	Free_Spr_List(tree);
+	Free_One_Spr(tree->best_spr);
+	Free_Triplet(tree->triplet_struct);
+	Free_Tree_Pars(tree);
+	Free_Tree_Lk(tree);
+	Free_Tree(tree);
+
+	return s_tree;
 }
+
 

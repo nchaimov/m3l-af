@@ -4,7 +4,7 @@
 #include "utilities.h"
 
 void Empirical_Bayes(arbre* tree);
-void Calculate_PP(arbre* tree);
+char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io);
 
 #endif
 

@@ -810,17 +810,6 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 		else
 			sprintf(s_tree+(int)strlen(s_tree),"%d",fils->num+1);
 
-		/*
-		PhyML_Printf(" fils->num =");
-		PhyML_Printf("%d\n", fils->num);
-		PhyML_Printf(" fils->b =");
-		PhyML_Printf("%d\n", fils->b);
-		PhyML_Printf(" fils->b[0] =");
-		PhyML_Printf("%d\n", fils->b[0]);
-		PhyML_Printf(" fils->b[0]->l[0] =");
-		PhyML_Printf("%f\n", fils->b[0]->l[0]);
-		*/
-
 		if((fils->b) && (fils->b[0]) && (fils->b[0]->l[0] != -1))
 		{
 			if(tree->print_labels)
@@ -832,19 +821,13 @@ void R_wtree(node *pere, node *fils, char *s_tree, arbre *tree)
 			}
 
 			strcat(s_tree,":");
-			//debug:
-			//PhyML_Printf("%s\n", s_tree);
 
 			if(pere != tree->n_root){
 				if(tree->mod->n_l == 1){
 					sprintf(s_tree+(int)strlen(s_tree),"%.10f",fils->b[0]->l[0]);
-					//debug:
-					//PhyML_Printf("%s\n", s_tree);
 				}else{
 					sprintf(s_tree+(int)strlen(s_tree),"[");
 					For(j,tree->mod->n_l){
-						//debug:
-						//PhyML_Printf("%s\n", s_tree);
 						if(j+1 == tree->mod->n_l){
 							sprintf(s_tree+(int)strlen(s_tree),"%.10f]",fils->b[0]->l[j]);
 						}else{
@@ -5145,6 +5128,7 @@ void Bootstrap(arbre *tree)
 
 	tree->print_boot_val = 1;
 	tree->print_alrt_val = 0;
+	tree->print_pp_val	 = 0;
 	boot_tree            = NULL;
 
 	site_num = (int *)mCalloc(tree->data->init_len,sizeof(int));
@@ -5703,6 +5687,7 @@ option *Make_Input()
 	io->out_trace_file       = (char *)mCalloc(T_MAX_FILE,sizeof(char));
 	io->nt_or_cd             = (char *)mCalloc(T_MAX_FILE,sizeof(char));
 	io->run_id_string        = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
+	io->in_eb_file			 = (char *)mCalloc(T_MAX_FILE,sizeof(char));
 
 	return io;
 }
@@ -5719,6 +5704,7 @@ void Set_Defaults_Input(option* io)
 	io->fp_out_boot_tree           = NULL;
 	io->fp_out_boot_stats          = NULL;
 	io->fp_out_stats               = NULL;
+	io->fp_in_eb				   = NULL;
 	io->fixed_props                = 0;
 	io->user_props				   = 0;
 	io->user_topo				   = 0;
@@ -7594,7 +7580,7 @@ int Compare_List_Of_Reachable_Tips_version2(node **list1, int size_list1, node *
 			 * Instead, 0 = the strings are identical.  For more information, see this reference:
 			 * http://www.cplusplus.com/reference/clibrary/cstring/strcmp/
 			 */
-			if( 0 == strcmp(list1[i]->name,list2[j]->name) )
+			if(list1[i]->num == list2[j]->num)
 			{
 				n_matches++;
 			}

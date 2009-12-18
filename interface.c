@@ -76,6 +76,14 @@ void Launch_Interface(option *io)
 		io->fp_in_tree = Openfile(io->in_tree_file,0);
 	}
 
+	if (io->post_probs == 2)
+	{
+		PhyML_Printf("\n. Enter the name of an existing *.eb MCMC sample file > ");
+		Getstring_Stdin(io->in_eb_file);
+		io->fp_in_eb = Openfile(io->in_eb_file,0);
+
+	}
+
 
 	if((io->mod->s_opt->n_rand_starts)           &&
 			(io->mod->s_opt->topo_search == NNI_MOVE) &&
@@ -1561,7 +1569,7 @@ void Launch_Interface_Topo_Search(option *io)
 	PhyML_Printf("\n");
 
 	PhyML_Printf("                [O] "
-			"........................... Optimise tree topology "
+			"........................... Optimize tree topology "
 			" %-15s \n",
 			(io->mod->s_opt->opt_topo)?("yes"):("no"));
 
@@ -1837,6 +1845,7 @@ void Launch_Interface_Topo_Search(option *io)
 			io->user_topo 						= 1;
 			io->mod->s_opt->random_input_tree   = 0;
 			io->mod->s_opt->greedy              = 0;
+			io->post_probs 						= 1;
 			io->mod->bootstrap 					= 0; //disable bootstrap
 			io->ratio_test 						= 0; //disable aLRT
 		}
@@ -2402,13 +2411,21 @@ void Launch_Interface_Branch_Support(option *io)
 			"................ Approximate likelihood ratio test "
 			" %-15s \n",s);
 
-	if(io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+	if(io->post_probs == 1)
 	{
-		strcpy(s,"yes");
-		PhyML_Printf("                    "
-			"............. Posterior probabilities from EB MCMC "
-			" %-15s \n", s);
+		strcpy(s,"yes / use output from EB MCMC");
 	}
+	else if(io->post_probs == 2)
+	{
+		strcpy(s, "yes / use an existing *.eb file");
+	}
+	else
+	{
+		strcpy(s, "no");
+	}
+		PhyML_Printf("                [P] "
+			".......................... Posterior probabilities "
+			" %-15s \n", s);
 
 	PhyML_Printf("\n. Are these settings correct ? "
 			"(type '+', '-', 'Y' or other letter for one to change)  ");
@@ -2445,6 +2462,7 @@ void Launch_Interface_Branch_Support(option *io)
 			int n_trial;
 
 			io->ratio_test = 0;
+			io->post_probs = 0;
 
 			if(io->n_data_sets > 1)
 			{
@@ -2511,6 +2529,7 @@ void Launch_Interface_Branch_Support(option *io)
 		}
 
 		io->mod->bootstrap = 0;
+		io->post_probs = 0;
 
 		switch(io->ratio_test)
 		{
@@ -2540,6 +2559,39 @@ void Launch_Interface_Branch_Support(option *io)
 			io->ratio_test = 0;
 			break;
 		}
+		}
+		break;
+	}
+	case 'P' :
+	{
+		if(io->post_probs == 0)
+		{
+			if (io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+			{
+				io->post_probs = 1;
+			}
+			else
+			{
+				io->post_probs = 2;
+			}
+			io->ratio_test = 0;
+			io->mod->bootstrap = 0;
+			break;
+		}
+		else if (io->post_probs == 1)
+		{
+			if (io->mod->s_opt->topo_search == EMPIRICAL_BAYES)
+			{
+				io->post_probs = 0;
+				break;
+			}
+			io->post_probs = 2;
+			break;
+		}
+		else if (io->post_probs == 2)
+		{
+			io->post_probs = 0;
+			break;
 		}
 		break;
 	}
