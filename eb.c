@@ -12,7 +12,7 @@
 
 void Empirical_Bayes(arbre* tree)
 {
-    int CHAIN_THINNING = 100;
+    int CHAIN_THINNING = 1;
     int i;
 
     char outfilestr[1000];
@@ -69,7 +69,7 @@ void Empirical_Bayes(arbre* tree)
 
 
     /* MCMC routine */
-    for(i=0; i<tree->io->eb_n_gens-1; i++)
+    for(i=0; i<tree->io->eb_n_gens; i++)
     {
             /* modify current tree */
             Random_Spr(1, tree);
@@ -169,8 +169,6 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 	tree->both_sides = 1;
 	Lk(tree);
 
-	PhyML_Printf("\n. Calculating posterior probabilities of clades.\n");
-
 	tree->print_alrt_val = 0;
 	tree->print_boot_val = 0;
 	tree->print_pp_val	 = 1;
@@ -181,15 +179,19 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 	{
 		sprintf(ebfilestr, "%s.eb", tree->io->out_tree_file);
 		ebfile = fopen(ebfilestr, "r");
+		PhyML_Printf("\n. Calculating posterior probabilities of clades, using the MCMC samples in %s\n", ebfilestr);
 	}
 	else if (tree->io->post_probs == 2) // ... or are we using an existing *.eb file from a previous MCMC run?
 	{
 		ebfile = tree->io->fp_in_eb;
+		PhyML_Printf("\n. Calculating posterior probabilities of clades, using the MCMC samples in %s\n", tree->io->in_eb_file);
 	}
 	else
 	{
 		exit(1);
 	}
+
+
 
 	char partsfilestr[1000];
 	sprintf(partsfilestr, "%s.parts", tree->io->out_tree_file);
@@ -277,10 +279,23 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 							size_of_parts[i],
 							tiplist,
 							proposed_part_size);
-					//PhyML_Printf("score = %d\n", score);
+					//PhyML_Printf("score = %d, size_of_parts[%d] = %d\n", score, i, size_of_parts[i]);
 					// do partition i and subtree k contain the exact same set of descendant taxa?
 					if(score == size_of_parts[i])
-					{	// ... then partition i is present within the sampled_tree.
+					{
+						// begin debugging code:
+						/*
+						PhyML_Printf("sample %d, found existing partition:\n", count_lines);
+						For(l, proposed_part_size)
+						{
+							PhyML_Printf("%s|%d ", tiplist[l]->name, tiplist[l]->num);
+						}
+						PhyML_Printf("\n");
+						*/
+						// end debugging code
+
+
+						// ... then partition i is present within the sampled_tree.
 						// Increment the observed frequency for partition i:
 						found_parti = 1;
 						freq_of_parts[i]++;
@@ -291,15 +306,37 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 					// in partition i.  In other words, we found the partition in sampled_tree.
 					if (score == 0 && proposed_part_size == sampled_tree->n_otu * 0.5)
 					{
+						// begin debugging code:
+						/*
+						PhyML_Printf("sample %d, found existing partition:\n", count_lines);
+						For(l, proposed_part_size)
+						{
+							PhyML_Printf("%s|%d ", tiplist[l]->name, tiplist[l]->num);
+						}
+						PhyML_Printf("\n");
+						*/
+						// end debugging code
+
 						found_parti = 1;
 						freq_of_parts[i]++;
 						break;
 					}
 				}
-				if(found_parti == 1) break;
 			}
 			if (found_parti == 0) // if the partition of node j has not been observed in previous samples...
-			{	// ... then add the partition to our collection of observed partitions.
+			{
+				// begin debugging code:
+				/*
+				PhyML_Printf("sample %d, found new partition:\n", count_lines);
+				For(l, proposed_part_size)
+				{
+					PhyML_Printf("%s|%d ", tiplist[l]->name, tiplist[l]->num);
+				}
+				PhyML_Printf("\n");
+				*/
+				// end debugging code
+
+				// ... then add the partition to our collection of observed partitions.
 				For(i, proposed_part_size)
 				{
 					parts[count_parts][i] = (node *)Make_Node_Light( tiplist[i]->num, 1);
@@ -378,6 +415,8 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 
 	/*
 	 * 4. Write a partition table
+	 *
+	 * The relationship between taxa names and numbers will accord with the order of tree->noeud[i]
 	 */
 
 	// Print a list of all taxa numbers
@@ -393,13 +432,27 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 	fprintf(partsfile, "\n");
 	For(i,count_parts)
 	{
+		//PhyML_Printf(" . debug, partition %d\n", i);
+
 		fprintf(partsfile, "[p%d]\t", i);
 		int *part = (int *)mCalloc(tree->n_otu,sizeof(int));
 		For(j,tree->n_otu)
 		{	part[j] = 0;
 		}
 		For(j,size_of_parts[i])
-		{	part[ parts[i][j]->num ] = 1;
+		{	//PhyML_Printf("%s|%d ",   parts[i][j]->name, parts[i][j]->num);
+
+			// which 'num' is this node?
+			int num = -1;
+			For(k, tree->n_otu)
+			{
+				if (0 == strcmp(parts[i][j]->name, tree->noeud[k]->name) )
+				{
+					num = k;
+					break;
+				}
+			}
+			part[ num ] = 1; // mark node #num as being in this partition
 		}
 		For(j,tree->n_otu)
 		{
