@@ -7580,6 +7580,7 @@ int Compare_List_Of_Reachable_Tips_version2(node **list1, int size_list1, node *
 			 * Instead, 0 = the strings are identical.  For more information, see this reference:
 			 * http://www.cplusplus.com/reference/clibrary/cstring/strcmp/
 			 */
+
 			if (0 == strcmp(list1[i]->name, list2[j]->name) )
 			{
 				n_matches++;

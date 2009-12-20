@@ -241,7 +241,8 @@ int main(int argc, char **argv)
 				  Free_Tree(tree);
 			  }
 
-			  if(mod->bootstrap) /* Launch bootstrap analysis */
+			  /* Launch bootstrap analysis */
+			  if(mod->bootstrap)
 			  {
 				  if(!io->quiet) PhyML_Printf("\n. Launch bootstrap analysis on the most likely tree...\n");
 
@@ -250,11 +251,16 @@ int main(int argc, char **argv)
 					  if(!io->quiet)  PhyML_Printf("\n. The bootstrap analysis will use %d CPUs.",Global_numTask);
 				  #endif
 
+					  #ifdef MPI
+						  MPI_Bcast (most_likely_tree, strlen(most_likely_tree)+1, MPI_CHAR, 0, MPI_COMM_WORLD);
+						  if(!io->quiet)  PhyML_Printf("\n. The bootstrap analysis will use %d CPUs.",Global_numTask);
+					  #endif
+
 					  most_likely_tree = Bootstrap_From_String(most_likely_tree,alldata,mod,io);
 			  }
-			  else if(io->ratio_test) /* Launch aLRT */
+			  else if(io->ratio_test)
 			  {
-
+			  /* Launch aLRT */
 				  if(!io->quiet) PhyML_Printf("\n. Compute aLRT branch supports on the most likely tree...\n");
 				  most_likely_tree = aLRT_From_String(most_likely_tree,alldata,mod,io);
 			  }
@@ -262,6 +268,7 @@ int main(int argc, char **argv)
 			  {
 				  most_likely_tree = PostProb_From_String(most_likely_tree,alldata,mod,io);
 			  }
+
 
 			  /* Print the most likely tree in the output file */
 			  if(!io->quiet) PhyML_Printf("\n. Printing the most likely tree in file '%s'...\n", Basename(io->out_tree_file));

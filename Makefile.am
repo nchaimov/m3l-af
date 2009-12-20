@@ -6,7 +6,7 @@ AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math
 # the GNU Scientific Library (GSL) is necessary for sampling from probability distributions (Poisson, Dirichlet, Binomial, etc.).
 AM_LDFLAGS=-lm -lgsl
 
-INCLUDES = -I./libs
+#INCLUDES = -I./libs
 
 # Uncomment (i.e. remove the `#' character at the begining of) 
 # the two lines below if you want to use MPI.
