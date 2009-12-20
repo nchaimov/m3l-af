@@ -131,12 +131,7 @@ void Empirical_Bayes(arbre* tree)
     gsl_rng_free(rng);
     PhyML_Printf("\n. Done with empirical Bayes MCMC.\n");
 
-<<<<<<< .mine
-	// We now call Calculate_PP from main.c
-	//Calculate_PP(tree);
 
-=======
->>>>>>> .r188
 	Free_Tree(best_tree);
 	Free_Tree(last_tree);
 }
@@ -147,25 +142,7 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 {
 	arbre *tree;
 
-<<<<<<< .mine
-	char outfilestr[1000];
-	FILE* ebfile = NULL;
-	if (tree->io->post_probs == 1)
-	{
-		sprintf(outfilestr, "%s.eb", tree->io->out_tree_file);
-		ebfile = fopen(outfilestr, "r");
-	}
-	else if (tree->io->post_probs == 2) // using an existing *.eb file.
-	{
-		ebfile = tree->io->fp_in_eb;
-	}
-	else
-	{
-		exit(1);
-	}
-=======
 	tree = Read_Tree(s_tree);
->>>>>>> .r188
 
 	if(!tree)
 	{
@@ -451,22 +428,12 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 		}
 	}
 
-<<<<<<< .mine
-	PhyML_Printf(" . starting Calculate_PP part 4....\n");
 
-=======
-
->>>>>>> .r188
 	/*
-<<<<<<< .mine
-	 * 4. Write a partition table
-=======
 	 * 4. Write a partition table
 	 *
 	 * The relationship between taxa names and numbers will accord with the order of tree->noeud[i]
->>>>>>> .r188
 	 */
-<<<<<<< .mine
 	char outfilestr2[1000];
 	sprintf(outfilestr2, "%s.parts", tree->io->out_tree_file);
 	FILE* outfile = fopen(outfilestr2, "w");
@@ -481,29 +448,9 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 	fprintf(outfile, "\tFreq. = the number of samples in which this partition appears.\n");
 	fprintf(outfile, "\tPP = the posterior probability of this partition.\n");
 	fprintf(outfile, "\n");
-=======
 
-	// Print a list of all taxa numbers
-	For(i, tree->n_otu)
-	{
-		fprintf(partsfile, "Taxa #%d = %s\n", i, tree->noeud[i]->name);
-	}
-
-	fprintf(partsfile, "\nPartitions:\n");
-	fprintf(partsfile, "\t* = in partition\n\t- = excluded from partition\n");
-	fprintf(partsfile, "\tFreq. = the number of samples in which this partition appears.\n");
-	fprintf(partsfile, "\tPP = the posterior probability of this partition.\n");
-	fprintf(partsfile, "\n");
->>>>>>> .r188
 	For(i,count_parts)
 	{
-<<<<<<< .mine
-		fprintf(outfile, "[p%d]\t", i);
-		int *part = (int *)mCalloc(tree->n_otu,sizeof(int));
-		For(j,tree->n_otu)
-		{	part[j] = 0;
-		}
-=======
 		//PhyML_Printf(" . debug, partition %d\n", i);
 
 		fprintf(partsfile, "[p%d]\t", i);
@@ -511,11 +458,7 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 		For(j,tree->n_otu)
 		{	part[j] = 0;
 		}
->>>>>>> .r188
 		For(j,size_of_parts[i])
-<<<<<<< .mine
-		{	part[ parts[i][j]->num ] = 1;
-=======
 		{	//PhyML_Printf("%s|%d ",   parts[i][j]->name, parts[i][j]->num);
 
 			// which 'num' is this node?
@@ -529,21 +472,8 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 				}
 			}
 			part[ num ] = 1; // mark node #num as being in this partition
->>>>>>> .r188
 		}
-<<<<<<< .mine
-		For(j,tree->n_otu)
-		{
-			if (part[j] == 0)
-			{	fprintf(outfile, "-");
-			}
-			else if (part[j] == 1 )
-			{	fprintf(outfile, "*");
-			}
-		}
-		fprintf(outfile, "\t[Freq. = %d]\t [PP = %f]\n", freq_of_parts[i], pp_of_parts[i]);
-		Free(part);
-=======
+
 		For(j,tree->n_otu)
 		{
 			if (part[j] == 0)
@@ -555,17 +485,9 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 		}
 		fprintf(partsfile, "\t[Freq. = %d]\t [PP = %f]\n", freq_of_parts[i], pp_of_parts[i]);
 		Free(part);
->>>>>>> .r188
+
 	}
-<<<<<<< .mine
-	fprintf(outfile, "\n");
-	fclose(outfile);
 
-	Free(size_of_parts);
-	Free(freq_of_parts);
-	Free(pp_of_parts);
-
-=======
 	fprintf(partsfile, "\n");
 	fclose(partsfile);
 	For(i, MAX_PARTS)
@@ -592,7 +514,6 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 	Free_Tree(tree);
 
 	return s_tree;
->>>>>>> .r188
 }
 
 

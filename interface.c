@@ -2421,20 +2421,6 @@ void Launch_Interface_Branch_Support(option *io)
 
 	if(io->post_probs == 1)
 	{
-<<<<<<< .mine
-		strcpy(s,"yes / use output from EB MCMC");
-	}
-	else if(io->post_probs == 2)
-	{
-		strcpy(s, "yes / use existing *.eb file");
-	}
-	else
-	{
-		strcpy(s, "no");
-	}
-		PhyML_Printf("                [P] "
-			".......................... Posterior probabilities "
-=======
 		strcpy(s,"yes / use output from EB MCMC");
 	}
 	else if(io->post_probs == 2)
@@ -2447,7 +2433,6 @@ void Launch_Interface_Branch_Support(option *io)
 	}
 		PhyML_Printf("                [P] "
 			".......................... Posterior probabilities "
->>>>>>> .r188
 			" %-15s \n", s);
 
 	PhyML_Printf("\n. Are these settings correct ? "
