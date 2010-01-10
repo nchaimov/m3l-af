@@ -1,0 +1,20 @@
+\contentsline {section}{\numberline {1}Hello Friends}{4}
+\contentsline {section}{\numberline {2}What is PhyML+M3L?}{5}
+\contentsline {subsection}{\numberline {2.1}A mixed branch length model of heterotachy}{5}
+\contentsline {subsection}{\numberline {2.2}An empirical Bayes MCMC sampler to estimate posterior probabilities of clades}{5}
+\contentsline {subsection}{\numberline {2.3}Multicore parallelization}{6}
+\contentsline {subsection}{\numberline {2.4}Optimization by simulated thermal annealing}{6}
+\contentsline {section}{\numberline {3}Installation}{8}
+\contentsline {subsection}{\numberline {3.1}Precompiled binaries}{8}
+\contentsline {subsection}{\numberline {3.2}Source code}{8}
+\contentsline {subsection}{\numberline {3.3}Enabling OpenMP multiprocessor parallelization}{9}
+\contentsline {section}{\numberline {4}A note about model-fitting}{11}
+\contentsline {section}{\numberline {5}Examples}{12}
+\contentsline {subsection}{\numberline {5.1}Using the mixed branch-length model}{12}
+\contentsline {subsection}{\numberline {5.2}Using empirical Bayes MCMC to estimate clade support}{27}
+\contentsline {subsection}{\numberline {5.3}Using simulated thermal annealing}{38}
+\contentsline {section}{\numberline {6}Frequently Asked Questions}{42}
+\contentsline {subsection}{\numberline {6.1}Why is this software named PhyML+M3L?}{42}
+\contentsline {subsection}{\numberline {6.2}How do I visualize a phylogeny with mixed branch lengths?}{42}
+\contentsline {subsection}{\numberline {6.3}What about Windows?}{42}
+\contentsline {subsection}{\numberline {6.4}I cannot compile the source code! I get an error relating to the `gsl', `libgsl', or the GNU Scientific Library.}{42}

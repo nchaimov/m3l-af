@@ -1,0 +1,89 @@
+\begin{thebibliography}{}
+
+\bibitem[Akaike, 1973]{akaike1973}
+Akaike, H. (1973).
+\newblock Information theory and an extension of the maximum likelihood
+  principle.
+\newblock In {\em Proceedings of the 2nd International Symposium on Information
+  Theory}, pages 267--281.
+
+\bibitem[Brent, 1972]{brent1972}
+Brent, R.~P. (1972).
+\newblock {\em Algorithms for Minimisation without derivatives (automatic
+  computation)}.
+\newblock Prentice Hall.
+
+\bibitem[Felsenstein, 1981]{felsenstein1981}
+Felsenstein, J. (1981).
+\newblock Evolutionary trees from {DNA} sequences: A maximum likelihood
+  approach.
+\newblock {\em Journal of Molecular Evolution}, 17(6):368--376.
+
+\bibitem[Guindon and Gascuel, 2003]{phyml}
+Guindon, S. and Gascuel, O. (2003).
+\newblock A simple, fast, and accurate algorithm to estimate large phylogenies
+  by maximum likelihood.
+\newblock {\em Systematic Biology}, 52(5):696--704.
+
+\bibitem[Huelsenbeck and Crandall, 1997]{huelsenbeck1997}
+Huelsenbeck, J.~P. and Crandall, K.~A. (1997).
+\newblock Phylogeny estimation and hypothesis testing using maximum likelihood.
+\newblock {\em Annual Review of Ecological Systems}, 28:437--466.
+
+\bibitem[Huelsenbeck and Rannala, 1997]{Huelsenbeck:1997hp}
+Huelsenbeck, J.~P. and Rannala, B. (1997).
+\newblock Phylogenetic methods come of age: testing hypotheses in an
+  evolutionary context.
+\newblock {\em Science}, 276(5310):227--32.
+
+\bibitem[Huelsenbeck and Ronquist, 2001]{mrbayes}
+Huelsenbeck, J.~P. and Ronquist, F. (2001).
+\newblock Mrbayes: Bayesian inference of phylogenetic trees.
+\newblock {\em Bioinformatics}, 17(8):754--755.
+
+\bibitem[Kirkpatrick, 1984]{kirkpatrick1984}
+Kirkpatrick, S. (1984).
+\newblock Optimization by simulated annealing: Quantitative studies.
+\newblock {\em Journal of Statistical Physics}, 34(5):975--986.
+
+\bibitem[Kirkpatrick et~al., 1983]{Kirkpatrick1983}
+Kirkpatrick, S., Jr., C.~G., and Vecchi, M.~P. (1983).
+\newblock Optimization by simulated annealing.
+\newblock {\em Science}, 220(4598):671--680.
+
+\bibitem[Kolaczkowski and Thornton, 2007]{kolaczkowski2007}
+Kolaczkowski, B. and Thornton, J.~W. (2007).
+\newblock Effects of branch length uncertainty on bayesian posterior
+  probabilities for phylogenetic hypotheses.
+\newblock {\em Molecular Biology and Evolution}, 24(9):2108--2118.
+
+\bibitem[Kolaczkowski and Thornton, 2008]{kolaczkowski2008}
+Kolaczkowski, B. and Thornton, J.~W. (2008).
+\newblock A mixed branch length model of heterotachy improves phylogenetic
+  accuracy.
+\newblock {\em Molecular Biology and Evolution}, 25(6):1054--1066.
+
+\bibitem[Kolaczkowski and Thornton, 2009]{kolaczkowski2009}
+Kolaczkowski, B. and Thornton, J.~W. (2009).
+\newblock Long-branch attraction bias and inconsistency in bayesian
+  phylogenetics.
+\newblock {\em PLoS ONE}, 4(12):e7891.
+
+\bibitem[Penny et~al., 2001]{Penny:2001zv}
+Penny, D., McComish, B.~J., Charleston, M.~A., and Hendy, M.~D. (2001).
+\newblock Mathematical elegance with biochemical realism: the covarion model of
+  molecular evolution.
+\newblock {\em J Mol Evol}, 53(6):711--23.
+
+\bibitem[Ronquist and Huelsenbeck, 2003]{huelsenbeck2003mrb}
+Ronquist, F. and Huelsenbeck, J.~P. (2003).
+\newblock Mr{B}ayes 3: {B}ayesian phylogenetic inference under mixed models.
+\newblock {\em Bioinformatics}, 19(12):1572--1574.
+
+\bibitem[Yang, 1994]{Yang:1994vf}
+Yang, Z. (1994).
+\newblock Maximum likelihood phylogenetic estimation from dna sequences with
+  variable rates over sites: approximate methods.
+\newblock {\em J Mol Evol}, 39(3):306--14.
+
+\end{thebibliography}

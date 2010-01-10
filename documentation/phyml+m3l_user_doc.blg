@@ -1,0 +1,45 @@
+This is BibTeX, Version 0.99c (Web2C 7.5.6)
+The top-level auxiliary file: phyml+m3l_user_doc.aux
+The style file: apalike.bst
+Database file #1: /Users/victor/BIB_LIBRARY/MyBibTex/MyBibTex.bib
+You've used 15 entries,
+            1935 wiz_defined-function locations,
+            575 strings with 6025 characters,
+and the built_in function-call counts, 5952 in all, are:
+= -- 603
+> -- 180
+< -- 14
++ -- 60
+- -- 56
+* -- 515
+:= -- 1008
+add.period$ -- 45
+call.type$ -- 15
+change.case$ -- 102
+chr.to.int$ -- 15
+cite$ -- 15
+duplicate$ -- 223
+empty$ -- 456
+format.name$ -- 87
+if$ -- 1177
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 16
+newline$ -- 78
+num.names$ -- 45
+pop$ -- 71
+preamble$ -- 1
+purify$ -- 103
+quote$ -- 0
+skip$ -- 174
+stack$ -- 0
+substring$ -- 528
+swap$ -- 24
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 88
+warning$ -- 0
+while$ -- 55
+width$ -- 0
+write$ -- 196

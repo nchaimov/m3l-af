@@ -1,0 +1,85 @@
+\relax 
+\citation{phyml}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Hello Friends}{4}}
+\citation{phyml}
+\citation{kolaczkowski2008}
+\citation{Yang:1994vf}
+\citation{Penny:2001zv}
+\citation{kolaczkowski2007}
+\citation{kolaczkowski2009}
+\citation{mrbayes}
+\citation{huelsenbeck2003mrb}
+\@writefile{toc}{\contentsline {section}{\numberline {2}What is PhyML+M3L?}{5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}A mixed branch length model of heterotachy}{5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}An empirical Bayes MCMC sampler to estimate posterior probabilities of clades}{5}}
+\citation{felsenstein1981}
+\citation{brent1972}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Multicore parallelization}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Optimization by simulated thermal annealing}{6}}
+\citation{Kirkpatrick1983}
+\citation{kirkpatrick1984}
+\citation{kolaczkowski2008}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Installation}{8}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Precompiled binaries}{8}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Source code}{8}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Enabling OpenMP multiprocessor parallelization}{9}}
+\citation{felsenstein1981}
+\citation{huelsenbeck1997}
+\citation{Huelsenbeck:1997hp}
+\citation{akaike1973}
+\@writefile{toc}{\contentsline {section}{\numberline {4}A note about model-fitting}{11}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Examples}{12}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Using the mixed branch-length model}{12}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces After PhyML+M3L loads, enter the filepath of the \textit  {cox2cds.phy} alignment.}}{12}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces The Cox-2 data is DNA (nucleotide) data, so no changes need to be made on this menu page. Enter `+' to advance to the next menu page.}}{13}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces The mixed branch length model is disabled by default. Enter `n' to enable the model and specify multiple branch lengths per edge.}}{14}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Enter `4' for the number of branch length sets.}}{15}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces After you specify the number of branch length sets, you will automatically return to the menu. Notice that some additional options now appear. Next we'll specify the proportion of sites in each branch length category. Enter `p'.}}{16}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Enter `0.25' for each branch length proportion. }}{17}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces After specifying branch length proportions, you will automatically return to the menu. Notice that your proportion specifications are now shown in the menu. Enter `+' to advance to the next menu.}}{18}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces This menu allows you specify the substitution model. By default, PhyML uses the HKY85 model for nucleotide data. Instead, let's use the simpler JC69 model. Enter `m' to cycle through the available model options. Stop cycling when you see the model named `JC69'.}}{19}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces By default, PhyML uses four gamma-distributed evolutionary rates. For this example, let's use a simpler model with only one evolutionary rate. Enter `r' to disable the gamma-distributed model.}}{20}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces After disabling the gamma-distributed model, the menu should look like this. Enter `+' to advance to the next menu.}}{21}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces When using multiple branch lengths, PhyML+M3L enables simulated thermal annealing by default. For this example, let's instead use hill-climbing with subtree pruning and regrafting. Enter `s' to cycle through the search options. Stop cycling when you see the option named `SPR moves (slow, accurate)'.}}{22}}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces After selecting SPR, the menu should like this. Although there exist other menu options we could consider, let's start the analysis. Enter `y' to begin.}}{23}}
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces After entering `y', you should see output looking similar to this. The actual numbers will likely be different. Each row of this output displays (1) the total time used, (2) the log likelihood of the current phylogeny, and (3) the parameter that was modified to find this tree. This output will be grow until the hill-climbing algorithm converges on a likelihood maxima. Be patient, the analysis can take a while.}}{24}}
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Eventually the analysis will finish, and you should see output that looks similar to this. In this example, the best-found phylogeny has a log-likelihood of -16167.080144. On a dual-core Intel MacBook, the analysis required 17 minutes and 43 seconds. On your computer, perhaps it will take less time.}}{25}}
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces The resulting phylogeny is printed as a Newick-formatted string in a text file. You can view that text file using your favorite text editor, or using unix commands such as \textit  {tail}, \textit  {less}, or \textit  {cat}. Notice that each branch has four length values wrapped in brackets `[' and `]'.}}{26}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Using empirical Bayes MCMC to estimate clade support}{27}}
+\@writefile{lof}{\contentsline {figure}{\numberline {16}{\ignorespaces After PhyML+M3L loads, enter the filepath of the \textit  {cox2cds.phy} alignment.}}{27}}
+\@writefile{lof}{\contentsline {figure}{\numberline {17}{\ignorespaces The Cox-2 data is DNA (nucleotide) data, so no changes need to be made on this menu page. Enter `+' to advance to the next menu page.}}{28}}
+\@writefile{lof}{\contentsline {figure}{\numberline {18}{\ignorespaces For this example, we'll use only one branch length set. Leave this menu alone and enter `+' to advance to the next menu.}}{29}}
+\@writefile{lof}{\contentsline {figure}{\numberline {19}{\ignorespaces This menu allows you specify the substitution model. By default, PhyML uses the HKY85 model for nucleotide data. Instead, let's use the simpler JC69 model. Enter `m' to cycle through the available model options. Stop cycling when you see the model named `JC69'. Also, enter `r' to disable the gamma-distributed rates model.}}{30}}
+\@writefile{lof}{\contentsline {figure}{\numberline {20}{\ignorespaces At this point, the menu should look like this. Enter `+' to advance to the next menu.}}{31}}
+\@writefile{lof}{\contentsline {figure}{\numberline {21}{\ignorespaces By default, PhyML uses a tree searching strategy based on nearest neighbor interchange (NNI) or subtree pruning and regrafting (SPR). To enable empirical Bayes MCMC, enter `s' to cycle through the options. Stop cycling when you see `Empirical Bayes MCMC'}}{32}}
+\@writefile{lof}{\contentsline {figure}{\numberline {22}{\ignorespaces Notice that new options appear when you select empirical Bayes. The option named `MCMC generations' specifies how many generations to run the MCMC analysis. More generations will lead to a more accurate estimate of posterior probability values. However, more generations will take more time. By default, PhyML+M3L uses 100,000 generations. For most practical analysis, we consider 100,000 to be a minimum number of generations to yield an accurate sample. Enter `y' to start the analysis.}}{33}}
+\@writefile{lof}{\contentsline {figure}{\numberline {23}{\ignorespaces Once the analysis begins, you will see output that looks like this. MCMC analysis can be very time consuming, so be patient. If the estimated time remaining is large, we strongly suggest you run the analysis on a computer that remains powered-on with few computational distractions. If you are use PhyML+M3L on a remote cluster, we encourage you to learn about the unix command named \textit  {screen} (it allows you to continue running the job after you logout).}}{34}}
+\@writefile{lof}{\contentsline {figure}{\numberline {24}{\ignorespaces As the analysis continues, the estimate time remaining will decrease.}}{35}}
+\@writefile{lof}{\contentsline {figure}{\numberline {25}{\ignorespaces Eventually the analysis will finish and posterior probabilities of clades will be calculated. The posterior probability of a clade equals the proportion of the MCMC samples in which that clade appears.}}{36}}
+\@writefile{lof}{\contentsline {figure}{\numberline {26}{\ignorespaces The clade posterior probabilities are printed with Newick-formatted phylogeny in the text file. You can view that text file using your favorite text editor, or using unix commands such as \textit  {tail}, \textit  {less}, or \textit  {cat}.}}{37}}
+\citation{Kirkpatrick1983}
+\citation{kirkpatrick1984}
+\citation{kolaczkowski2008}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Using simulated thermal annealing}{38}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Frequently Asked Questions}{42}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Why is this software named PhyML+M3L?}{42}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}How do I visualize a phylogeny with mixed branch lengths?}{42}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}What about Windows?}{42}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}I cannot compile the source code! I get an error relating to the `gsl', `libgsl', or the GNU Scientific Library.}{42}}
+\bibdata{/Users/victor/BIB_LIBRARY/MyBibTex/MyBibTex}
+\bibcite{akaike1973}{{1}{1973}{{Akaike}}{{}}}
+\bibcite{brent1972}{{2}{1972}{{Brent}}{{}}}
+\bibcite{felsenstein1981}{{3}{1981}{{Felsenstein}}{{}}}
+\bibcite{phyml}{{4}{2003}{{Guindon and Gascuel}}{{}}}
+\bibcite{huelsenbeck1997}{{5}{1997}{{Huelsenbeck and Crandall}}{{}}}
+\bibcite{Huelsenbeck:1997hp}{{6}{1997}{{Huelsenbeck and Rannala}}{{}}}
+\bibcite{mrbayes}{{7}{2001}{{Huelsenbeck and Ronquist}}{{}}}
+\bibcite{kirkpatrick1984}{{8}{1984}{{Kirkpatrick}}{{}}}
+\bibcite{Kirkpatrick1983}{{9}{1983}{{Kirkpatrick et~al.}}{{}}}
+\bibcite{kolaczkowski2007}{{10}{2007}{{Kolaczkowski and Thornton}}{{}}}
+\bibcite{kolaczkowski2008}{{11}{2008}{{Kolaczkowski and Thornton}}{{}}}
+\bibcite{kolaczkowski2009}{{12}{2009}{{Kolaczkowski and Thornton}}{{}}}
+\bibcite{Penny:2001zv}{{13}{2001}{{Penny et~al.}}{{}}}
+\bibcite{huelsenbeck2003mrb}{{14}{2003}{{Ronquist and Huelsenbeck}}{{}}}
+\bibcite{Yang:1994vf}{{15}{1994}{{Yang}}{{}}}
+\bibstyle{apalike}
