@@ -10242,6 +10242,12 @@ char *aLRT_From_String(char *s_tree, allseq *alldata, model *mod, option *io)
 	Make_Best_Spr(tree);
 
 	tree->both_sides = 1;
+
+#ifdef COMPRESS_SUBALIGNMENTS
+	Prepare_Tree_For_Lk(tree);
+	Init_All_Edges_Red(tree);
+#endif COMPRESS_SUBALIGNMENTS
+
 	Lk(tree);
 
 	aLRT(tree);
@@ -10346,7 +10352,7 @@ void Prepare_Tree_For_Lk(arbre *tree)
 	/*********************************************************/
 
 #ifdef COMPRESS_SUBALIGNMENTS
-	Make_All_Nodes_Red(tree);
+	Make_All_Edges_Red(tree);
 #endif
 
 }

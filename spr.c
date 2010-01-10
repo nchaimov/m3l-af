@@ -2054,6 +2054,11 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 	/*
 	 ** Try the best candidate SPRs and estimate the change in likelihood.
 	 */
+#ifdef COMPRESS_SUBALIGNMENTS
+	//Make_All_Edges_Red(tree);
+	//Init_All_Edges_Red(tree);
+#endif
+
 	best_d_lk = -1.0*BIG;
 	best_cand = 0;
 	for (cand = 0; cand < tree->mod->s_opt->wim_n_best; cand++)
@@ -2250,6 +2255,9 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 		 ** Set the edge lengths and update the relevant transition prob's and
 		 ** partial likelihoods in the temporary regraft structure.
 		 */
+#ifdef COMPRESS_SUBALIGNMENTS
+		//Init_All_Edges_Red(tree);
+#endif
 		for (i = 0; i < 3; i++)
 		{ //JSJ: temp fixes to l
 			For(k,tree->mod->n_l){
@@ -2308,22 +2316,8 @@ int Best_Lk_Change (edge *e_prune, node *v_prune, arbre *tree)
 					break;
 				}
 			}
-#ifdef COMPRESS_SUBALIGNMENTS
-	//PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
-	Init_All_Nodes_Red(tree);
-	Compute_Red_Arrays(tree->noeud[0], tree->noeud[0]->v[0], tree);
 
-	int site;
-	int n_patterns = tree->n_pattern;
-	for(site = 0; site < n_patterns; site++)
-	{
-		Update_P_Lk_Red (tree, e_tmp, rgrft_cand[cand]->path[i],site);
-	}
-#endif
-
-#ifndef COMPRESS_SUBALIGNMENTS
-	Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
-#endif
+			Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
 		}
 	}
 
@@ -3458,9 +3452,7 @@ int Test_All_Spr_Targets(edge *b_pulled, node *n_link, arbre *tree)
 		Update_PMat_At_Given_Edge(b_pulled,tree);
 
 #ifdef COMPRESS_SUBALIGNMENTS
-	//PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
-	Init_All_Nodes_Red(tree);
-	Compute_Red_Arrays(tree->noeud[0], tree->noeud[0]->v[0], tree);
+		//Init_All_Edges_Red(tree);
 #endif
 
 		if(tree->mod->s_opt->spr_lnL)
@@ -3530,7 +3522,6 @@ void Test_One_Spr_Target_Recur(node *a, node *d, edge *pulled, node *link, edge 
 }
 
 /*********************************************************/
-
 m3ldbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_residual, arbre *tree)
 {
 	m3ldbl init_target_len[MAX_BL_SET], init_arrow_len[MAX_BL_SET], init_residual_len[MAX_BL_SET];
@@ -3556,12 +3547,12 @@ m3ldbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_
 		init_residual_len[k] = b_residual->l[k];
 	}
 
+#ifdef COMPRESS_SUBALIGNMENTS
+	Init_All_Edges_Red(tree);
+#endif
+
 	if(tree->mod->s_opt->spr_lnL)
 	{
-#ifdef COMPRESS_SUBALIGNMENTS
-		Init_All_Nodes_Red(tree);
-		Compute_Red_Arrays(tree->noeud[0], tree->noeud[0]->v[0], tree);
-#endif
 		/*       move_lnL = Triple_Dist(n_link,tree,1); */
 		Update_PMat_At_Given_Edge(b_target,tree);
 		Update_PMat_At_Given_Edge(b_arrow,tree);
@@ -3599,7 +3590,6 @@ m3ldbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_
 			l2[k] = n_link->b[dir_v2]->l[k];
 		}
 	}
-
 
 	For(i,tree->depth_curr_path+1) tree->spr_list[tree->size_spr_list]->path[i] = tree->curr_path[i];
 	tree->spr_list[tree->size_spr_list]->depth_path    = tree->depth_curr_path;
@@ -3639,7 +3629,6 @@ m3ldbl Test_One_Spr_Target(edge *b_target, edge *b_arrow, node *n_link, edge *b_
 }
 
 /*********************************************************/
-
 void Speed_Spr_Loop(arbre *tree)
 {
 	m3ldbl lk_old;
@@ -3652,7 +3641,6 @@ void Speed_Spr_Loop(arbre *tree)
 	tree->mod->s_opt->quickdirty     = 0;
 
 	if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n. Maximizing likelihood (using SPR moves)...\n");
-
 
 	Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 	tree->best_lnL = tree->c_lnL;
@@ -3736,10 +3724,7 @@ void Speed_Spr(arbre *tree, int max_cycles)
 	tree->both_sides = 1;
 	Pars(tree);
 	Lk(tree);
-	//PhyML_Printf(" . debug: spr.c line 3725: calling Record_Br_Len\n");
 	Record_Br_Len(NULL,tree);
-
-	//PhyML_Printf(" . debug: spr.c line 3728:\n");
 
 	tree->mod->s_opt->deepest_path  = 0;
 	tree->best_pars                 = tree->c_pars;
@@ -3758,9 +3743,7 @@ void Speed_Spr(arbre *tree, int max_cycles)
 
 		tree->n_improvements         = 0;
 		tree->perform_spr_right_away = 1;
-		//PhyML_Printf(" . debug: spr.c line 3745: calling Spr\n");
 		Spr(UNLIKELY,tree);
-		//PhyML_Printf(" . debug: spr.c line 3747: returned from Spr\n");
 
 		if(!tree->mod->s_opt->spr_pars)
 		{

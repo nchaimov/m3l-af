@@ -212,10 +212,6 @@ typedef struct __Node {
   char                        ***bip_name; /* three lists of tip node names. One list for each direction */
   char                              *name; /* taxon name (if exists) */
 
-#ifdef COMPRESS_SUBALIGNMENTS
-  int								*red; /* VHS: a list of redundant sites.  For examples if red[i] = j, then site j contains the same sub-alignment pattern as site i for this node.*/
- #endif
-
   m3ldbl                           *score; /* score used in BioNJ to determine the best pair of nodes to agglomerate */
   m3ldbl                               *l; /* lengths of the (three or one) branch length sets connected this node */
   m3ldbl                     dist_to_root; /* distance to the root node */
@@ -296,6 +292,21 @@ typedef struct __Edge {
 
   int							      n_l; /* the number of branch length sets on this edge */
   int                    has_zero_br_len[MAX_BL_SET]; /* JSJ: branch length in given set is zero? */
+
+#ifdef COMPRESS_SUBALIGNMENTS
+  /*
+   * Notes for red_left and red_right:
+   * red_left and red_right will have one entry for each sequence site.
+   * if red_left[i] == j, then the state pattern for site j and site i are the same down the left side
+   * of this branch.
+   * Similarly, if red_right[i] == j, then the state patterns for site j and i are the same down the
+   * right side of this branch.
+   * if red_right[i] == -1, then this site is unique, or is the primary pattern from which other sites
+   * are identical.
+   */
+  int								*red_left; /* VHS: a list of redundant sites.  For examples if red[i] = j, then site j contains the same sub-alignment pattern as site i for this node.*/
+  int							    *red_right;
+ #endif
 
   m3ldbl                       ratio_test; /* approximate likelihood ratio test */
   m3ldbl                   alrt_statistic; /* aLRT statistic */

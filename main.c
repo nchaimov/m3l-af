@@ -266,6 +266,7 @@ int main(int argc, char **argv)
 			  }
 			  else if(io->post_probs > 0) /* Launch posterior probability measurement, using MCMC sample */
 			  {
+				  if(!io->quiet) PhyML_Printf("\n. Compute posterior probabilities of clades on the most likely tree...\n");
 				  most_likely_tree = PostProb_From_String(most_likely_tree,alldata,mod,io);
 			  }
 

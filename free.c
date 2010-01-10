@@ -133,6 +133,11 @@ void Free_Edge_Labels(edge *b)
 
 void Free_Edge(edge *b)
 {
+#ifdef COMPRESS_SUBALIGNMENTS
+  Free(b->red_left);
+  Free(b->red_right);
+#endif
+
   Free_Edge_Labels(b);
   Free(b);
 }
@@ -147,9 +152,6 @@ void Free_Node(node *n)
   Free(n->v);
   Free(n->score);
   Free(n->name);
-#ifdef COMPRESS_SUBALIGNMENTS
-  Free(n->red);
-#endif
 
   if(n->list_of_reachable_tips)
     {

@@ -350,6 +350,9 @@ void Lk(arbre *tree)
 #endif
 
 
+#ifdef COMPRESS_SUBALIGNMENTS
+	Init_All_Edges_Red(tree);
+#endif
 	for(br=0; br < 2*tree->n_otu-3; br++)
 	{
 		if(!tree->t_edges[br]->rght->tax)
@@ -361,26 +364,6 @@ void Lk(arbre *tree)
 		Update_PMat_At_Given_Edge(tree->t_edges[br],tree);
 	}
 
-#ifdef COMPRESS_SUBALIGNMENTS
-	//PhyML_Printf("\n. Compressing sub-alignments based on new phylogeny...\n");
-	Init_All_Nodes_Red(tree);
-	Compute_Red_Arrays(tree->noeud[0], tree->noeud[0]->v[0], tree);
-	tree->red_arrays_invalid = 0; // now the red arrays are valid again.
-
-	for(site = 0; site < n_patterns; site++)
-	{
-		Post_Order_Lk_Red(tree->noeud[0],tree->noeud[0]->v[0],tree,site);
-	}
-	if(tree->both_sides)
-	{
-		for(site = 0; site < n_patterns; site++)
-		{
-			Pre_Order_Lk_Red(tree->noeud[0],tree->noeud[0]->v[0],tree,site);
-		}
-	}
-#endif
-
-#ifndef COMPRESS_SUBALIGNMENTS
 	// VHS: the post- and pre-order traversals begin at a random node (the 0th node, to be specific).
 	// This random strategy is okay, because the Felsenstein pruning algorithm operates on unrooted trees.
 	Post_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
@@ -388,7 +371,6 @@ void Lk(arbre *tree)
 	{
 		Pre_Order_Lk(tree->noeud[0],tree->noeud[0]->v[0],tree);
 	}
-#endif
 
 
 	tree->c_lnL     = .0;
@@ -414,7 +396,7 @@ void Lk(arbre *tree)
 
 	For(site,n_patterns)
 	{
-		//PhyML_Printf(" . debug: in lk.c 258: c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
+		//PhyML_Printf(" . debug: in lk.c 399: tree->site_lk[%d] = %f\n", site, tree->site_lk[site]);
 		//if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
 		if(tree->site_lk[site] < .0)
 		{
@@ -445,7 +427,13 @@ void Site_Lk(arbre *tree, int site)
 	}
 
 	if(tree->data->wght[site] > MDBL_MIN)
-	{	Lk_Core(eroot,tree,site);
+	{
+
+//#ifdef COMPRESS_SUBALIGNMENTS
+//		Init_All_Edges_Red(tree);
+//#endif COMPRESS_SUBALIGNMENTS
+
+		Lk_Core(eroot,tree,site);
 	}
 	else
 	{	tree->c_lnL_sorted[site] = 1.; /* WARNING : change cautiously */
@@ -519,7 +507,7 @@ m3ldbl Lk_At_Given_Edge(edge *b_fcus, arbre *tree)
 }
 
 /*********************************************************/
-// VHS: This method calculates the likelihood for the entire tree (we presume) rooted at edge *b,
+// VHS: This method calculates the likelihood for the entire tree rooted at edge *b,
 // for the site indicated by site
 m3ldbl Lk_Core(edge *b, arbre *tree, int site)
 {
@@ -1148,8 +1136,53 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 				ambiguity_check_v2,p1_lk1,p2_lk2)\
 				schedule(static,chunk)
 #endif
+
+#ifdef COMPRESS_SUBALIGNMENTS
+	int *b_red; // b_red will point to the red array on the 'd' side of 'b'.
+	if (b->left->num == d->num)
+	{
+		b_red = b->red_left;
+	}
+	else
+	{
+		b_red = b->red_right;
+	}
+#endif
+
+
 	for(site = 0; site < n_patterns; site++)
 	{
+
+#ifdef COMPRESS_SUBALIGNMENTS
+		// here we check b->red_left or b->red_right (whichever happens to be on the 'd' side of 'b'.
+		// If the red array indicates this site to be redundant with respect to a previous site,
+		// then we'll copy the values of p_lk[previous site] and sum_scale[previous site[
+		// from the red site into this site.
+
+		int s = b_red[site];
+		//PhyML_Printf("site %d, s %d\n", site, s);
+		if (s != site && s > -1)
+		{
+			sum_scale[site] = sum_scale[s];
+
+			For(catg,tree->mod->n_catg)
+			{
+				for(k = 0; k < tree->mod->n_l; k++)
+				{
+					For(i,tree->mod->ns)
+					{
+						p_lk[site*dimc + catg*dimb + k*dima + i] = p_lk[s*dimc + catg*dimb + k*dima + i];
+						//p_lk_v1[site*dimc + catg*dimb + k*dima + i] = p_lk_v1[s*dimc + catg*dimb + k*dima + i];
+						//p_lk_v2[site*dimc + catg*dimb + k*dima + i] = p_lk_v2[s*dimc + catg*dimb + k*dima + i];
+
+					}
+				}
+			}
+
+			continue;
+		}
+#endif
+
 		/**
 		* JSJ: If sum_scale_v1 was assigned a non-null value in the above if/else cascade,
 		* the scale_v1 value is assigned as the site specific sum_scale_v1 from above.
@@ -1158,7 +1191,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 		scale_v2 = (sum_scale_v2)?(sum_scale_v2[site]):(0.0);
 
 		// VHS: As of October 2009, I don't think sum_scale[i] is ever set to a value
-		// other than 0.0.  I'm not sure why sum_scale is included in this code at all.
+		// other than 0.0.  Frankly, I'm not sure why sum_scale is included in this code at all.
 		sum_scale[site] = scale_v1 + scale_v2;
 
 		max_p_lk = -MDBL_MAX;
@@ -1273,9 +1306,7 @@ void Update_P_Lk(arbre *tree, edge *b, node *d)
 			sum_scale[site] += (plkflt)log(max_p_lk);
 			//PhyML_Printf(" . debug: sum_scale[%d] = %f\n", site, sum_scale[site]);
 		}
-
-		//PhyML_Printf(" . debug lk.c 1180: edge->num=%d, sum_scale[%d]=%f\n", b->num, site, sum_scale[site]);
-
+		//PhyML_Printf(" . debug lk.c 1288: edge->num=%d, sum_scale[%d]=%f, p_lk\n", b->num, site, sum_scale[site]);
 	} // end For(site,patterns)
 }
 

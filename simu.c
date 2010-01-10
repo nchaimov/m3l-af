@@ -103,10 +103,7 @@ int Simu(arbre *tree, int n_step_max)
 
 		old_loglk = tree->c_lnL;
 		tree->both_sides = 1;
-		//PhyML_Printf(" . debug: Simu 109: calling Lk:\n");
 		Lk(tree);
-		//PhyML_Printf(" . debug: Simu 109: returned from Lk\n");
-
 
 		if(tree->c_lnL < old_loglk)
 		{
@@ -122,9 +119,7 @@ int Simu(arbre *tree, int n_step_max)
 				For(i,2*tree->n_otu-3) tree->t_edges[i]->l_old[j] = tree->t_edges[i]->l[j];
 			}
 			tree->both_sides = 1;
-			//PhyML_Printf(" . debug: Simu 131: calling Lk:\n");
 			Lk(tree);
-			//PhyML_Printf(" . debug: Simu 131: returned from Lk\n");
 		}
 
 		if(step > n_step_max)
@@ -145,27 +140,20 @@ int Simu(arbre *tree, int n_step_max)
 				(fabs(old_loglk-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_global)) ||
 				(n_without_swap > it_lim_without_swap)) break;
 
-
-		//PhyML_Printf(" . debug: simu.c 145: %d\n", tree->t_dir[116][112]);
-
 		Fill_Dir_Table(tree);
-
-		//PhyML_Printf(" . debug: simu.c 147: %d\n", tree->t_dir[116][112]);
 
 		Fix_All(tree);
 		n_neg = 0;
 		//PhyML_Printf(" . debug: simu.c 148: calling NNI for every branch.\n");
-#ifdef COMPRESS_SUBALIGNMENTS
-	debug_Lk_nocompress(tree);
-#endif
+//#ifdef COMPRESS_SUBALIGNMENTS
+//	debug_Lk_nocompress(tree);
+//#endif
 
 		For(i,2*tree->n_otu-3)
 		{
 			if((!tree->t_edges[i]->left->tax) && (!tree->t_edges[i]->rght->tax))
 			{
-				//PhyML_Printf(" . debug: simu.c 140: calling NNI for edge %d\n", tree->t_edges[i]->num);
 				NNI(tree,tree->t_edges[i],0);
-				//PhyML_Printf(" . debug: simu.c 142: returned from NNI for edge %d\n", tree->t_edges[i]->num);
 			}
 		}
 

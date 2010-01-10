@@ -366,8 +366,6 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 	PhyML_Printf("\n");
 	fclose(ebfile);
 
-	PhyML_Printf(" . starting Calculate_PP part 2....\n");
-
 	/*
 	 * 2. Scale the raw frequency counts to posterior probabilities.
 	 */
@@ -378,14 +376,11 @@ char *PostProb_From_String(char *s_tree, allseq *alldata, model *mod, option *io
 	{	pp_of_parts[i] = (double)freq_of_parts[i] / (double)count_lines;
 	}
 
-	PhyML_Printf(" . starting Calculate_PP part 3....\n");
-
 	/*
 	 * 3. Write posterior probabilities onto the branches of the given tree
 	 */
 	For(j,2*tree->n_otu-3) // for every e dge in the tree...
 	{
-		PhyML_Printf(" . debug: edge %d\n", j);
 		/*
 		 * Does edge j connect to a terminal taxa?
 		 * If so, then this partition will *always* have posterior probability = 1.0.
