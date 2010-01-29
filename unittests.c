@@ -137,7 +137,7 @@ int Test_main(int argc, char **argv, int testid)
 
 	  n_otu = 0;
 	  best_lnL = UNLIKELY;
-	  data = Get_Seq(io,0);
+	  data = Get_Seq(io);
 
 	  //
 	  Test_alignment_read(io, data, testid);

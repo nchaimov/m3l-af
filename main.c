@@ -32,7 +32,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "mpi_boot.h"
 #endif
 
-#ifdef PHYML
+
 int main(int argc, char **argv)
 {
 #ifdef RUN_TESTS
@@ -79,8 +79,7 @@ int main(int argc, char **argv)
   io = (option *)Get_Input(argc,argv);
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
   srand(r_seed); rand();
-  Make_Model_Complete(io->mod);
-  mod = io->mod;
+
   if(io->in_tree == 2) Test_Multiple_Data_Set_Format(io);
   else io->n_trees = 1;
 
@@ -97,7 +96,10 @@ int main(int argc, char **argv)
   {
 	  n_otu = 0;
 	  best_lnL = UNLIKELY;
-	  data = Get_Seq(io,0);
+	  data = Get_Seq(io);
+	  Make_Model_Complete(io->mod);
+	  mod = io->mod;
+	  Print_Settings(io);
 
 	  if(data)
 	  {
@@ -128,8 +130,6 @@ int main(int argc, char **argv)
 				  }
 
 				  if(!tree) continue;
-
-				  Print_Settings(io);
 
 				  time(&t_beg);
 				  time(&(tree->t_beg));
@@ -310,4 +310,3 @@ int main(int argc, char **argv)
   return 0;
 }
 
-#endif

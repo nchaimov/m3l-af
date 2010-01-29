@@ -992,7 +992,7 @@ void Make_Edge_Lk(edge *b, arbre *tree);
 
 node *Make_Node_Light(int num, int n_l);
 void Make_Node_Lk(node *n);
-seq **Get_Seq(option *input,int rw);
+seq **Get_Seq(option *input);
 seq **Read_Seq_Sequential(FILE *in,int *n_otu);
 seq **Read_Seq_Interleaved(FILE *in,int *n_otu);
 int Read_One_Line_Seq(seq ***data,int num_otu,FILE *in);

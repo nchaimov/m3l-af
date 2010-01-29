@@ -397,12 +397,13 @@ void Lk(arbre *tree)
 	For(site,n_patterns)
 	{
 		//PhyML_Printf(" . debug: in lk.c 399: tree->site_lk[%d] = %f\n", site, tree->site_lk[site]);
+		//PhyML_Printf(" . debug: in lk.c 399: tree->c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
 		//if(tree->c_lnL_sorted[site] < .0) /* WARNING : change cautiously */
 		if(tree->site_lk[site] < .0)
 		{
 			//PhyML_Printf(" . debug: lk.c line 372: tree->c_lnL_sorted[%d] = %f\n", site, tree->c_lnL_sorted[site]);
-			//tree->c_lnL += tree->c_lnL_sorted[site];
-			tree->c_lnL += tree->site_lk[site];
+			tree->c_lnL += tree->c_lnL_sorted[site];
+			//tree->c_lnL += tree->site_lk[site];
 		}
 	}
 

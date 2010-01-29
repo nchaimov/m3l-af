@@ -1344,7 +1344,7 @@ void Make_Node_Lk(node *n)
 
 /*********************************************************/
 
-seq **Get_Seq(option *io,  int rw)
+seq **Get_Seq(option *io)
 {
 	seq **data;
 	int i,j;

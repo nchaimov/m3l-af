@@ -15,7 +15,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "utilities.h"
 #include "options.h"
 #include "models.h"
-#include "free.h"
+#include "free.h"c
 #include "interface.h"
 #ifdef MG
 #include "mg.h"
