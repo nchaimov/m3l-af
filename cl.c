@@ -1021,7 +1021,7 @@ void Read_Command_Line(option *io, int argc, char **argv)
 		case 'z': case 50: //fixed BL proportions "--fixblprops"
 		{
 			io->fixed_props = 1; // yes, fix the proportions
-			io->mod->s_opt->opt_props = io->fixed_props;
+			io->mod->s_opt->opt_props = 0; // do not optimize the BL proportions
 			break;
 		}
 		case 'l': case 51: //number of BL categories "--blclasses"

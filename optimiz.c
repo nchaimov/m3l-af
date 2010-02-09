@@ -1598,7 +1598,14 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 
 		failed = 0;
 		tree->mod->update_eigen = 1;
-		BFGS(tree,tree->mod->pi,4,1.e-5,1.e-7,&Return_Abs_Lk,&Num_Derivative_Several_Param,&Lnsrch_Nucleotide_Frequencies,&failed);
+		BFGS(tree,tree->mod->pi,
+				4,
+				1.e-5,
+				1.e-7,
+				&Return_Abs_Lk,
+				&Num_Derivative_Several_Param,
+				&Lnsrch_Nucleotide_Frequencies,
+				&failed);
 
 		if(failed)
 		{
@@ -1609,22 +1616,36 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 					tree->mod->s_opt->brent_it_max,
 					tree->mod->s_opt->quickdirty);
 		}
+
 		if(verbose) Print_Lk(tree,"[Nucleotide freqs.  ]");
+		PhyML_Printf("[ ",tree->mod->pi);
+		For(i, 4)
+		{
+			PhyML_Printf("%.3f ", tree->mod->pi[i]);
+		}
+		PhyML_Printf("]");
 		tree->mod->update_eigen = 0;
 	}
 
-	//VHS: here we optimize branch-length set proportions
-	/*
-	if (tree->mod->s_opt->opt_props)
+	if ( (tree->mod->s_opt->opt_props) && (tree->mod->n_l > 1) )
 	{
+		//PhyML_Printf(". debug: optimizing BL proportions...");
+
 		int failed, i;
 		failed = 0;
 
+
 		BFGS(tree,tree->mod->bl_props,
-				5,1.e-5,1.e-7,
+				tree->mod->n_l,
+				1.e-5,
+				1.e-7,
 				&Return_Abs_Lk,
 				&Num_Derivative_Several_Param,
-				&Lnsrch_RR_Cov_Param,&failed);
+				&Lnsrch_BLP_Param,
+				&failed);
+
+
+		//PhyML_Printf(". debug: optimiz.c 1636...");
 
 		if(failed)
 		{
@@ -1635,19 +1656,20 @@ void Optimiz_All_Free_Param(arbre *tree, int verbose)
 						tree->mod->s_opt->min_diff_lk_global,
 						tree->mod->s_opt->brent_it_max,
 						tree->mod->s_opt->quickdirty);
-				Normalize_Props(tree->mod);
 			}
 		}
+
+		Normalize_Props(tree->mod);
+		Lk(tree);
+
 		if(verbose) Print_Lk(tree,"[BL proportions     ]");
-		PhyML_Printf("[ ",tree->mod->alpha);
+		PhyML_Printf("[ ");
 		For(i, tree->mod->n_l)
 		{
 			PhyML_Printf("%.3f ", tree->mod->bl_props[i]);
 		}
 		PhyML_Printf("]");
 	}
-*/
-	Normalize_Props(tree->mod);
 
 	if (tree->mod->s_opt->opt_bl)
 	{
@@ -2034,6 +2056,124 @@ void Lnsrch_RR_Param(arbre *tree, int n, m3ldbl *xold, m3ldbl fold,
 #undef TOLX
 #undef NRANSI
 
+
+/********************************************************/
+
+#define ALF 1.0e-4
+#define TOLX 1.0e-7
+
+void Lnsrch_BLP_Param(arbre *tree, int n, m3ldbl *xold, m3ldbl fold, m3ldbl *g, m3ldbl *p, m3ldbl *x,
+		m3ldbl *f, m3ldbl stpmax, int *check)
+{
+	int i;
+	m3ldbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
+	m3ldbl *local_xold;
+
+	alam = alam2 = f2 = fold2 = tmplam = .0;
+
+	local_xold = (m3ldbl *)mCalloc(n,sizeof(m3ldbl));
+	For(i,n) local_xold[i] = xold[i];
+
+
+	*check=0;
+	for(sum=0.0,i=0;i<n;i++) sum += p[i]*p[i];
+	sum=sqrt(sum);
+	if(sum > stpmax)
+		for(i=0;i<n;i++) p[i] *= stpmax/sum;
+	for(slope=0.0,i=0;i<n;i++)
+		slope += g[i]*p[i];
+	test=0.0;
+	for(i=0;i<n;i++)
+	{
+		temp=fabs(p[i])/MAX(fabs(local_xold[i]),1.0);
+		if (temp > test) test=temp;
+	}
+	alamin=TOLX/test;
+	alam=1.0;
+	for (;;)
+	{
+		for(i=0;i<n;i++) x[i]=fabs(local_xold[i]+alam*p[i]);
+		/**/
+		for(i=0;i<n;i++)
+		{
+			tree->mod->bl_props[i]=fabs(local_xold[i]+alam*p[i]);
+			/* 	  if( */
+			/* 	     (tree->mod->pi[i] < 0.001) || */
+			/* 	     (tree->mod->pi[i] > 0.999) */
+			/* 	     ) */
+			/* 	    break; */
+		}
+		/**/
+		if(i==n)
+		{
+			/*
+			PhyML_Printf("[ ");
+			For(i, tree->mod->n_l)
+			{
+				PhyML_Printf("%.3f ", tree->mod->bl_props[i]);
+			}
+			PhyML_Printf("]");
+			*/
+
+
+			Normalize_Props(tree->mod);
+			*f=Return_Abs_Lk(tree);
+		}
+		else     *f=1.+fold+ALF*alam*slope;
+		if (alam < alamin)
+		{
+			for (i=0;i<n;i++) x[i]=local_xold[i];
+			for (i=0;i<n;i++) tree->mod->bl_props[i]=local_xold[i];
+			*check=1;
+			For(i,n) xold[i] = local_xold[i];
+			Free(local_xold);
+			return;
+		}
+		else if (*f <= fold+ALF*alam*slope)
+		{
+			For(i,n) xold[i] = local_xold[i];
+			Free(local_xold);
+			return;
+		}
+		else
+		{
+			if (alam == 1.0)
+				tmplam = -slope/(2.0*(*f-fold-slope));
+			else
+			{
+				rhs1 = *f-fold-alam*slope;
+				rhs2=f2-fold2-alam2*slope;
+				a=(rhs1/(alam*alam)-rhs2/(alam2*alam2))/(alam-alam2);
+				b=(-alam2*rhs1/(alam*alam)+alam*rhs2/(alam2*alam2))/(alam-alam2);
+				if (a == 0.0) tmplam = -slope/(2.0*b);
+				else
+				{
+					disc=b*b-3.0*a*slope;
+					if (disc<0.0)
+					{
+						disc=b*b-3.0*a*slope;
+						if (disc<0.0) tmplam = 0.5*alam;
+						else if(b <= 0.0) tmplam=(-b+sqrt(disc))/(3.0*a);
+						else tmplam = -slope/(b+sqrt(disc));
+					}
+					else tmplam=(-b+sqrt(disc))/(3.0*a);
+				}
+				if (tmplam>0.5*alam) tmplam=0.5*alam;
+			}
+		}
+		alam2=alam;
+		f2 = *f;
+		fold2=fold;
+		alam=MAX(tmplam,0.1*alam);
+	}
+	Free(local_xold);
+}
+
+#undef ALF
+#undef TOLX
+#undef NRANSI
+
+
 /*********************************************************/
 
 #define ALF 1.0e-4
@@ -2403,7 +2543,7 @@ m3ldbl Dist_F_Brent(m3ldbl *ax, m3ldbl *bx, m3ldbl *cx, m3ldbl tol, int n_iter_m
 		}
 
 		// for debugging purposes:
-		PhyML_Printf(" optimiz.c 1512: tree->mod->n_l = %i\n", tree->mod->n_l);
+		//PhyML_Printf(" optimiz.c 1512: tree->mod->n_l = %i\n", tree->mod->n_l);
 
 		For(i,tree->mod->n_l){
 			if(fabs(e[i]) > tol1[i])

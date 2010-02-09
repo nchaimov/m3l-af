@@ -1,6 +1,6 @@
 /*
  *
- * Hello World!!!-John St John
+ * Hello World
 
 PhyML:  a program that  computes maximum likelihood phylogenies from
 DNA or AA homologous sequences.
