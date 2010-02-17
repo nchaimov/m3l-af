@@ -26,7 +26,7 @@ void assignModel(arbre* tree,int model){
       tree->mod->invar = 0;
       tree->mod->n_l = 1;
       tree->mod->s_opt->opt_state_freq = 0;
-      tree->mod->modelname = "JC69";
+      //tree->mod->modelname = "JC69";
       break;
     case F81:
       tree->mod->datatype = NT;
@@ -37,11 +37,12 @@ void assignModel(arbre* tree,int model){
       tree->mod->invar = 0;
       tree->mod->n_l = 1;
       tree->mod->s_opt->opt_state_freq = 0;
-      tree->mod->modelname = "F81";
+      //tree->mod->modelname = "F81";
       break;
     default:
       return;
   }
+  tree->mod->whichmodel = model;
   Init_Model(tree->data, tree->mod);
 }
 void AIC(arbre* tree)
