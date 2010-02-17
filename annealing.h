@@ -1,3 +1,6 @@
+#ifndef __ANNEALING_H
+#define __ANNEALING_H
+
 void Get_TA_Neighbor_Proposition(arbre *tree,m3ldbl temp);
 void Get_QA_Neighbor_Proposition(arbre *tree);
 void Get_Neighbor_Proposition(arbre *tree,m3ldbl temp);
@@ -62,3 +65,5 @@ typedef struct __ANNEALING{
 	int     random_seed;
     gsl_rng *rng;
 }annealing;
+
+#endif

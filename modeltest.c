@@ -1,4 +1,5 @@
-include "modeltest.h";
+#include "modeltest.h"
+
 //
 // You'll create a for-loop or a switch structure, to iterate
 // through different models.
@@ -23,40 +24,50 @@ void AIC(arbre* tree)
 				//__Model HIVW;
 				//__Model HIVB;
 				
-				JayCeeSixNine->datatype = NT;
-				JayCeeSixNine->n_catg = 1;
-				JayCeeSixNine->s_opt->opt_kappa = 0;
-				JayCeeSixNine->s_opt->opt_lambda = 0;
+				JayCeeSixNine.datatype = NT;
+				JayCeeSixNine.n_catg = 1;
+				JayCeeSixNine.s_opt->opt_kappa = 0;
+				JayCeeSixNine.s_opt->opt_lambda = 0;
 				//JayCeeSixNine->alpha;
-				JayCeeSixNine->s_opt->opt_alpha = 0;
-				JayCeeSixNine->invar = 0;
+				JayCeeSixNine.s_opt->opt_alpha = 0;
+				JayCeeSixNine.invar = 0;
 				//JayCeeSixNine->pinvar;
 				//JayCeeSixNine->s_opt->opt_pinvar;
-				JayCeeSixNine->n_l = 1;
-				JayCeeSixNine->s_opt->opt_state_freq = 0;
-				JayCeeSixNine->modelname = "JC69";
+				JayCeeSixNine.n_l = 1;
+				JayCeeSixNine.s_opt->opt_state_freq = 0;
+				JayCeeSixNine.modelname = "JC69";
 				//
 				// --MODEL F81 --
 				//
-				EffEightyOne->datatype = NT;
-				EffEightyOne->n_catg = 1;
-				EffEightyOne->s_opt->opt_kappa = 0;
-				EffEightyOne->s_opt->opt_lambda = 0;
+				EffEightyOne.datatype = NT;
+				EffEightyOne.n_catg = 1;
+				EffEightyOne.s_opt->opt_kappa = 0;
+				EffEightyOne.s_opt->opt_lambda = 0;
 				//EffEightyOne->alpha;
-				EffEightyOne->s_opt->opt_alpha = 0;
-				EffEightyOne->invar = 0;
+				EffEightyOne.s_opt->opt_alpha = 0;
+				EffEightyOne.invar = 0;
 				//EffEightyOne->pinvar;
 				//EffEightyOne->s_opt->opt_pinvar;
-				EffEightyOne->n_l = 1;
-				EffEightyOne->s_opt->opt_state_freq = 0;
-				EffEightyOne->modelname = "F81";
+				EffEightyOne.n_l = 1;
+				EffEightyOne.s_opt->opt_state_freq = 0;
+				EffEightyOne.modelname = "F81";
 
-				float Pjc69 = likelihood(tree, JayCeeSixNine*);
-				float Pf81 = likelihood(tree, EffEightyOne*);
+				float Pjc69 = likelihood(tree, &JayCeeSixNine);
+				float Pf81 = likelihood(tree, &EffEightyOne);
 				
 				if (Pjc69>Pf81) {
-								Init_Model(tree->data, JayCeeSixNine);
-								tree->mod = JayCeeSixNine;
+								Init_Model(tree->data, &JayCeeSixNine);
+								tree->mod->datatype = JayCeeSixNine.datatype;
+								tree->mod->n_catg = JayCeeSixNine.n_catg;
+								tree->mod->s_opt->opt_kappa = JayCeeSixNine.s_opt->opt_kappa;
+								tree->mod->s_opt->opt_lambda = JayCeeSixNine.s_opt->opt_lambda;
+								tree->mod->s_opt->opt_alpha = JayCeeSixNine.s_opt->opt_alpha;
+								tree->mod->invar = JayCeeSixNine.invar;
+								tree->mod->pinvar = JayCeeSixNine.pinvar;
+							 tree->mod->s_opt->opt_pinvar = JayCeeSixNine.s_opt->opt_pinvar;
+								tree->mod->n_l = JayCeeSixNine.n_l;
+								tree->mod->s_opt->opt_state_freq = JayCeeSixNine.s_opt->opt_state_freq;
+								tree->mod->modelname = JayCeeSixNine.modelname;
 				}
 				char outfilename[1000];
 				sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
@@ -71,7 +82,7 @@ float likelihood(arbre* tree, model* mod)
 				// 2. Call this method to initialize several important values in the 'mod' struct.
 
 				tree->mod->datatype = mod->datatype;
-				tree->mod->ncat_g = mod->ncat_g;
+				tree->mod->n_catg = mod->n_catg;
 				tree->mod->s_opt->opt_kappa = mod->s_opt->opt_kappa;
 				tree->mod->s_opt->opt_lambda = mod->s_opt->opt_lambda;
 				tree->mod->s_opt->opt_alpha = mod->s_opt->opt_alpha;
@@ -90,7 +101,7 @@ float likelihood(arbre* tree, model* mod)
 				//
 				
 				Prepare_Tree_For_Lk(tree);
-				if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);
+				//if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);
 				
 				//
 				// 4. Optimize all the free parameters, using maximum likelihood
@@ -109,10 +120,10 @@ float likelihood(arbre* tree, model* mod)
 																Best_Of_NNI_And_SPR(tree);
 																break;
 												case SIMULATED_THERMAL_ANNEALING:
-																Thermal_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0));
+																Thermal_Anneal_All_Free_Params(tree, 1); //(io->quiet)?(1):(0)
 																break;
 												case SIMULATED_QUANTUM_ANNEALING:
-																Quantum_Anneal_All_Free_Params(tree, (io->quiet)?(1):(0));
+																Quantum_Anneal_All_Free_Params(tree, 1); //(io->quiet)?(1):(0)
 																break;
 												case EMPIRICAL_BAYES:
 																Empirical_Bayes(tree);

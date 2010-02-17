@@ -27,6 +27,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "annealing.h"
 #include "unittests.h"
 #include "eb.h"
+#include "modeltest.h"
 
 #ifdef MPI
 #include "mpi_boot.h"
@@ -139,6 +140,8 @@ int main(int argc, char **argv)
 				  tree->data        = alldata;
 				  tree->both_sides  = 1;
 				  tree->n_pattern   = tree->data->crunch_len/tree->mod->stepsize;
+
+				AIC(tree);
 
 				  Prepare_Tree_For_Lk(tree);
 
