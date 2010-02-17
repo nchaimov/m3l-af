@@ -14,7 +14,7 @@ include "modeltest.h";
 //
 // i.e., make changes to tree->mod
 //
-AIC(arbre* tree)
+void AIC(arbre* tree)
 {
 				model JayCeeSixNine;
 				model EffEightyOne;
@@ -66,7 +66,7 @@ AIC(arbre* tree)
 }
 
 //likelihood method
-likelihood(arbre* tree, model* mod)
+float likelihood(arbre* tree, model* mod)
 {
 				// 2. Call this method to initialize several important values in the 'mod' struct.
 
@@ -146,7 +146,3 @@ likelihood(arbre* tree, model* mod)
 				
 				return tree->c_lnL;
 }
-
-
-
-
