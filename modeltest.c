@@ -1,3 +1,4 @@
+include modeltest.h
 //
 // You'll create a for-loop or a switch structure, to iterate
 // through different models.
@@ -60,14 +61,12 @@ AIC(arbre* tree)
 				char outfilename[1000];
 				sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
 				FILE* outfile = fopen(outfilename,"w");
-				fprintf(outfile, "Probability of JC69:  %f. /n
-												Probability of F81:  %f /n
-												therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
+				fprintf(outfile, "Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
 				fclose(outfile);
 }
 
 //likelihood method
-likelihood(arbre* tree, __Model* mod)
+likelihood(arbre* tree, model* mod)
 {
 				// 2. Call this method to initialize several important values in the 'mod' struct.
 
