@@ -25,7 +25,8 @@
 #include "unittests.h"
 #include "eb.h"
 
+void assignModel(arbre* tree, int model);
 void AIC(arbre* tree);
-float likelihood(arbre* tree, model* mod);
+float likelihood(arbre* tree, int mod);
 
 #endif //modeltest_h

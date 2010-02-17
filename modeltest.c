@@ -15,86 +15,58 @@
 //
 // i.e., make changes to tree->mod
 //
+void assignModel(arbre* tree,int model){
+  switch (model){
+    case JC69:
+      tree->mod->datatype = NT;
+      tree->mod->n_catg = 1;
+      tree->mod->s_opt->opt_kappa = 0;
+      tree->mod->s_opt->opt_lambda = 0;
+      tree->mod->s_opt->opt_alpha = 0;
+      tree->mod->invar = 0;
+      tree->mod->n_l = 1;
+      tree->mod->s_opt->opt_state_freq = 0;
+      tree->mod->modelname = "JC69";
+      break;
+    case F81:
+      tree->mod->datatype = NT;
+      tree->mod->n_catg = 1;
+      tree->mod->s_opt->opt_kappa = 0;
+      tree->mod->s_opt->opt_lambda = 0;
+      tree->mod->s_opt->opt_alpha = 0;
+      tree->mod->invar = 0;
+      tree->mod->n_l = 1;
+      tree->mod->s_opt->opt_state_freq = 0;
+      tree->mod->modelname = "F81";
+      break;
+    default:
+      return;
+  }
+  Init_Model(tree->data, tree->mod);
+}
 void AIC(arbre* tree)
 {
-				model JayCeeSixNine;
-				model EffEightyOne;
-				//__Model DAYHOFF;
-				//__Model JTT;
-				//__Model HIVW;
-				//__Model HIVB;
-				
-				JayCeeSixNine.datatype = NT;
-				JayCeeSixNine.n_catg = 1;
-				JayCeeSixNine.s_opt->opt_kappa = 0;
-				JayCeeSixNine.s_opt->opt_lambda = 0;
-				//JayCeeSixNine->alpha;
-				JayCeeSixNine.s_opt->opt_alpha = 0;
-				JayCeeSixNine.invar = 0;
-				//JayCeeSixNine->pinvar;
-				//JayCeeSixNine->s_opt->opt_pinvar;
-				JayCeeSixNine.n_l = 1;
-				JayCeeSixNine.s_opt->opt_state_freq = 0;
-				JayCeeSixNine.modelname = "JC69";
-				//
-				// --MODEL F81 --
-				//
-				EffEightyOne.datatype = NT;
-				EffEightyOne.n_catg = 1;
-				EffEightyOne.s_opt->opt_kappa = 0;
-				EffEightyOne.s_opt->opt_lambda = 0;
-				//EffEightyOne->alpha;
-				EffEightyOne.s_opt->opt_alpha = 0;
-				EffEightyOne.invar = 0;
-				//EffEightyOne->pinvar;
-				//EffEightyOne->s_opt->opt_pinvar;
-				EffEightyOne.n_l = 1;
-				EffEightyOne.s_opt->opt_state_freq = 0;
-				EffEightyOne.modelname = "F81";
-
-				float Pjc69 = likelihood(tree, &JayCeeSixNine);
-				float Pf81 = likelihood(tree, &EffEightyOne);
+  printf("\n\n\nChecking tree. WOOOOOOOOOOOOOOO\n\n\n");
+				float Pjc69 = likelihood(tree, JC69);
+				float Pf81 = likelihood(tree, F81);
 				
 				if (Pjc69>Pf81) {
-								Init_Model(tree->data, &JayCeeSixNine);
-								tree->mod->datatype = JayCeeSixNine.datatype;
-								tree->mod->n_catg = JayCeeSixNine.n_catg;
-								tree->mod->s_opt->opt_kappa = JayCeeSixNine.s_opt->opt_kappa;
-								tree->mod->s_opt->opt_lambda = JayCeeSixNine.s_opt->opt_lambda;
-								tree->mod->s_opt->opt_alpha = JayCeeSixNine.s_opt->opt_alpha;
-								tree->mod->invar = JayCeeSixNine.invar;
-								tree->mod->pinvar = JayCeeSixNine.pinvar;
-							 tree->mod->s_opt->opt_pinvar = JayCeeSixNine.s_opt->opt_pinvar;
-								tree->mod->n_l = JayCeeSixNine.n_l;
-								tree->mod->s_opt->opt_state_freq = JayCeeSixNine.s_opt->opt_state_freq;
-								tree->mod->modelname = JayCeeSixNine.modelname;
+          assignModel(tree,JC69);
 				}
 				char outfilename[1000];
 				sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
 				FILE* outfile = fopen(outfilename,"w");
-				fprintf(outfile, "Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
+				//fprintf(outfile, "Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
+				printf("Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
 				fclose(outfile);
 }
 
 //likelihood method
-float likelihood(arbre* tree, model* mod)
+float likelihood(arbre* tree, int mod)
 {
 				// 2. Call this method to initialize several important values in the 'mod' struct.
 
-				tree->mod->datatype = mod->datatype;
-				tree->mod->n_catg = mod->n_catg;
-				tree->mod->s_opt->opt_kappa = mod->s_opt->opt_kappa;
-				tree->mod->s_opt->opt_lambda = mod->s_opt->opt_lambda;
-				tree->mod->s_opt->opt_alpha = mod->s_opt->opt_alpha;
-				tree->mod->invar = mod->invar;
-				tree->mod->pinvar = mod->pinvar;
-			 tree->mod->s_opt->opt_pinvar = mod->s_opt->opt_pinvar;
-				tree->mod->n_l = mod->n_l;
-				tree->mod->s_opt->opt_state_freq = mod->s_opt->opt_state_freq;
-				tree->mod->modelname = mod->modelname;
-				
-				
-				Init_Model(tree->data, mod);
+        assignModel(tree,mod);
 				
 				//
 				// 3. Prepare for the likelihood calculation 

@@ -6,7 +6,8 @@ AM_CFLAGS=-O3 -g -funroll-loops -Wall -ftree-vectorize -ffast-math
 # the GNU Scientific Library (GSL) is necessary for sampling from probability distributions (Poisson, Dirichlet, Binomial, etc.).
 AM_LDFLAGS=-lm -lgsl
 
-#INCLUDES = -I./libs
+INCLUDES = -I/local/include
+LIBS = -L/local/lib
 
 # Uncomment (i.e. remove the `#' character at the begining of) 
 # the two lines below if you want to use MPI.
@@ -27,9 +28,9 @@ PROG = PHYML
 
 
 phyml_SOURCES = main.c utilities.c optimiz.c annealing.c emig.c lk.c bionj.c models.c free.c\
-options.c simu.c eigen.c pars.c alrt.c interface.c cl.c spr.c  draw.c mpi_boot.c numeric.c compress.c unittests.c eb.c
+options.c simu.c eigen.c pars.c alrt.c interface.c cl.c spr.c  draw.c mpi_boot.c numeric.c compress.c unittests.c eb.c modeltest.c
 phyml_LDADD = main.o utilities.o optimiz.o annealing.o lk.o emig.o bionj.o models.o free.o\
-options.o simu.o eigen.o pars.o alrt.o interface.o cl.o spr.o draw.o mpi_boot.o numeric.o compress.o unittests.o eb.o
+options.o simu.o eigen.o pars.o alrt.o interface.o cl.o spr.o draw.o mpi_boot.o numeric.o compress.o unittests.o eb.o modeltest.o
 
 
 SCOMPILE = $(CC) $(SDEFS) $(DEFS) $(INCLUDES) $(AM_CFLAGS) $(SCFLAGS)

@@ -39,7 +39,7 @@ the GNU public licence. See http://www.opensource.org for details.
 //#define COMPRESS_SUBALIGNMENTS 1 // this pragma enables compression of sub-alignments according to the phylogeny.
 								 // although this optimization can increase runtime, it costs more in memory.
 
-#define VERSION ""
+#define VERSION "v3.0 (179M)"
 
 #define For(i,n)                     for(i=0; i<n; i++)
 #define Fors(i,n,s)                  for(i=0; i<n; i+=s)
