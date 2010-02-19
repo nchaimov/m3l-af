@@ -12,7 +12,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-
+MAKE=make
 
 
 pkgdatadir = $(datadir)/phyml
@@ -96,13 +96,13 @@ AMTAR = tar
 AUTOCONF = autoconf
 AUTOHEADER = autoheader
 AUTOMAKE = automake-1.10
-AWK = awk
+AWK = gawk
 CC = gcc
-CCDEPMODE = depmode=gcc3
+CCDEPMODE = depmode=none
 CFLAGS = -g -O2
 CPPFLAGS = 
 CXX = g++
-CXXDEPMODE = depmode=gcc3
+CXXDEPMODE = depmode=none
 CXXFLAGS = -g -O2
 CYGPATH_W = echo
 
@@ -118,11 +118,11 @@ CYGPATH_W = echo
 # Uncomment the line below if you don't want to use MPI.
 DEFS = -DUNIX -D$(PROG) -DDEBUG
 DEPDIR = .deps
-ECHO_C = \c
-ECHO_N = 
+ECHO_C = 
+ECHO_N = -n
 ECHO_T = 
 EXEEXT = 
-INSTALL = /usr/bin/install -c
+INSTALL = ./install-sh -c
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
@@ -141,8 +141,8 @@ PACKAGE_STRING = phyml v3.0 (179M)
 PACKAGE_TARNAME = phyml
 PACKAGE_VERSION = v3.0 (179M)
 PATH_SEPARATOR = :
-SET_MAKE = 
-SHELL = /bin/sh
+SET_MAKE = MAKE=make
+SHELL = /bin/bash
 STRIP = 
 VERSION = v3.0 (179M)
 abs_builddir = /home/users/ehamovit/Projects/CIS455/m3l-af
@@ -151,7 +151,7 @@ abs_top_builddir = /home/users/ehamovit/Projects/CIS455/m3l-af
 abs_top_srcdir = /home/users/ehamovit/Projects/CIS455/m3l-af
 ac_ct_CC = gcc
 ac_ct_CXX = g++
-am__include = include
+am__include = #
 am__leading_dot = .
 am__quote = 
 am__tar = ${AMTAR} chof - "$$tardir"
@@ -282,47 +282,47 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/alrt.Po
-include ./$(DEPDIR)/annealing.Po
-include ./$(DEPDIR)/bionj.Po
-include ./$(DEPDIR)/cl.Po
-include ./$(DEPDIR)/compress.Po
-include ./$(DEPDIR)/draw.Po
-include ./$(DEPDIR)/eb.Po
-include ./$(DEPDIR)/eigen.Po
-include ./$(DEPDIR)/emig.Po
-include ./$(DEPDIR)/free.Po
-include ./$(DEPDIR)/interface.Po
-include ./$(DEPDIR)/lk.Po
-include ./$(DEPDIR)/m4.Po
-include ./$(DEPDIR)/main.Po
-include ./$(DEPDIR)/mc.Po
-include ./$(DEPDIR)/mg.Po
-include ./$(DEPDIR)/models.Po
-include ./$(DEPDIR)/modeltest.Po
-include ./$(DEPDIR)/mpi_boot.Po
-include ./$(DEPDIR)/numeric.Po
-include ./$(DEPDIR)/optimiz.Po
-include ./$(DEPDIR)/options.Po
-include ./$(DEPDIR)/pars.Po
-include ./$(DEPDIR)/simu.Po
-include ./$(DEPDIR)/spr.Po
-include ./$(DEPDIR)/unittests.Po
-include ./$(DEPDIR)/utilities.Po
+# ./$(DEPDIR)/alrt.Po
+# ./$(DEPDIR)/annealing.Po
+# ./$(DEPDIR)/bionj.Po
+# ./$(DEPDIR)/cl.Po
+# ./$(DEPDIR)/compress.Po
+# ./$(DEPDIR)/draw.Po
+# ./$(DEPDIR)/eb.Po
+# ./$(DEPDIR)/eigen.Po
+# ./$(DEPDIR)/emig.Po
+# ./$(DEPDIR)/free.Po
+# ./$(DEPDIR)/interface.Po
+# ./$(DEPDIR)/lk.Po
+# ./$(DEPDIR)/m4.Po
+# ./$(DEPDIR)/main.Po
+# ./$(DEPDIR)/mc.Po
+# ./$(DEPDIR)/mg.Po
+# ./$(DEPDIR)/models.Po
+# ./$(DEPDIR)/modeltest.Po
+# ./$(DEPDIR)/mpi_boot.Po
+# ./$(DEPDIR)/numeric.Po
+# ./$(DEPDIR)/optimiz.Po
+# ./$(DEPDIR)/options.Po
+# ./$(DEPDIR)/pars.Po
+# ./$(DEPDIR)/simu.Po
+# ./$(DEPDIR)/spr.Po
+# ./$(DEPDIR)/unittests.Po
+# ./$(DEPDIR)/utilities.Po
 
 .c.o:
-	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-#	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(COMPILE) -c $<
+#	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+#	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	source='$<' object='$@' libtool=no \
+	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+	$(COMPILE) -c $<
 
 .c.obj:
-	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-#	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+#	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+#	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	source='$<' object='$@' libtool=no \
+	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \

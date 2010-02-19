@@ -1,20 +1,56 @@
 #include "modeltest.h"
 
-//
-// You'll create a for-loop or a switch structure, to iterate
-// through different models.
-//
+struct Node{
+  int i;
+  int j;
+  struct Node * left;
+  struct Node * right;
+};
 
-//
-// Here is how you find the likelihood, given one model
-//
+void AIC(arbre* tree)
+{
+  struct Node * root = constructTree();
+  float Pjc69 = likelihood(tree, JC69);
+  float Pf81 = likelihood(tree, F81);
 
-//
-// 1. Set model-specific values in the 'mod' struct.
-// See the specifications in the spreadsheet I emailed to you.
-//
-// i.e., make changes to tree->mod
-//
+  if (Pjc69>Pf81) {
+    assignModel(tree,JC69);
+  }
+  char outfilename[1000];
+  sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
+  FILE* outfile = fopen(outfilename,"w");
+  //fprintf(outfile, "Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
+  printf("Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
+  fclose(outfile);
+  destructTree(root);
+}
+
+void destructTree(struct Node* n){
+  if(n->left != NULL)
+    destructTree(n->left);
+  
+  if(n->right != NULL)
+    destructTree(n->right);
+
+  free(n);
+}
+
+struct Node * constructTree(){
+  struct Node * root = (struct Node *)malloc(sizeof(struct Node));
+  root->i = JC69;
+  root->j = F81;
+  root->left = (struct Node *)malloc(sizeof(struct Node));
+  root->right = (struct Node *)malloc(sizeof(struct Node));
+
+  root->left->i = JC69;
+  root->left->j = K80;
+
+  root->right->i = F81;
+  root->right->j = HKY85;
+
+  return root;
+}
+
 void assignModel(arbre* tree,int model){
   switch (model){
     case JC69:
@@ -26,7 +62,6 @@ void assignModel(arbre* tree,int model){
       tree->mod->invar = 0;
       tree->mod->n_l = 1;
       tree->mod->s_opt->opt_state_freq = 0;
-      //tree->mod->modelname = "JC69";
       break;
     case F81:
       tree->mod->datatype = NT;
@@ -37,29 +72,12 @@ void assignModel(arbre* tree,int model){
       tree->mod->invar = 0;
       tree->mod->n_l = 1;
       tree->mod->s_opt->opt_state_freq = 0;
-      //tree->mod->modelname = "F81";
       break;
     default:
       return;
   }
   tree->mod->whichmodel = model;
   Init_Model(tree->data, tree->mod);
-}
-void AIC(arbre* tree)
-{
-  printf("\n\n\nChecking tree. WOOOOOOOOOOOOOOO\n\n\n");
-				float Pjc69 = likelihood(tree, JC69);
-				float Pf81 = likelihood(tree, F81);
-				
-				if (Pjc69>Pf81) {
-          assignModel(tree,JC69);
-				}
-				char outfilename[1000];
-				sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
-				FILE* outfile = fopen(outfilename,"w");
-				//fprintf(outfile, "Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
-				printf("Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
-				fclose(outfile);
 }
 
 //likelihood method
