@@ -47,7 +47,7 @@ struct Node * constructTree(){
 
   root->right->i = F81;
   root->right->j = HKY85;
-
+  
   return root;
 }
 
@@ -73,6 +73,26 @@ void assignModel(arbre* tree,int model){
       tree->mod->n_l = 1;
       tree->mod->s_opt->opt_state_freq = 0;
       break;
+   case K80:
+   	tree->mod->datatype = NT;
+	tree->mod->n_catg = 1;
+	tree->mod->s_opt->opt_kappa = 0;
+	tree->mod->s_opt->opt_lambda = 0;
+	tree->mod->s_opt->opt_alpha = 0;
+	tree->mod->invar = 0;
+	tree->mod->n_1 = 1;
+	tree->mod->s_opt->opt_state_freq = 0;
+	break;
+  case HKY85:
+	tree->mod->datatype = NT;
+	tree->mod->n_catg = 1;
+	tree->mod->s_opt->opt_kappa = 1;
+	tree->mod->s_opt->opt_lambda = 1;
+	tree->mod->s_opt->opt_alpha = 0;
+	tree->mod->invar = 0;
+	tree->mod->n_1 = 1;
+	tree->mod->s_opt->opt_state_freq = 0;
+	break;
     default:
       return;
   }
@@ -99,18 +119,23 @@ float likelihood(arbre* tree, int mod)
 				//
 				if(tree->mod->s_opt->opt_topo)
 				{
-								switch(tree->mod->s_opt->topo_search)
-								{
-												case NNI_MOVE:
-																Simu_Loop(tree);
-																break;
-												case SPR_MOVE:
-																Speed_Spr_Loop(tree);
-																break;
-												case BEST_OF_NNI_AND_SPR:
-																Best_Of_NNI_And_SPR(tree);
-																break;
-												case SIMULATED_THERMAL_ANNEALING:
+							switch(tree->mod->s_opt->topo_search)
+							{
+							case NNI_MOVE:
+								Simu_Loop(tree);
+									break;
+							case SPR_MOVE:
+								Speed_Spr_Loop(tree);
+									break;
+							case BEST_OF_NNI_AND_SPR:
+								Best_Of_NNI_And_SPR(tree);
+
+
+ubreakk
+											Case SIMULATED_THERMAL_ANNEALING:
+qe 
+g;lkqerl'kjg 'lsfd jkg:
+`
 																Thermal_Anneal_All_Free_Params(tree, 1); //(io->quiet)?(1):(0)
 																break;
 												case SIMULATED_QUANTUM_ANNEALING:
