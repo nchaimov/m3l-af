@@ -1,11 +1,23 @@
 #include "modeltest.h"
 #include <gsl/gsl_cdf.h>
+#include <gsl/gsl_sf_log.h>
+#include <float.h>
 
 void AIC(arbre* tree){
 	int models[] = {LG, JTT, WAG, DAYHOFF, BLOSUM62, MTREV, RTREV, CPREV, DCMUT, VT, MTMAM, MTART, HIVW, HIVB};
-	double likelihoods[14];
-	
-	
+	double bestScore = DBL_MAX;
+	int bestModel = -1;
+	int i;
+	for(i = 0; i < 14; ++i) {
+		double logLikelihood = likelihood(tree, models[i]);
+		int params = getParams(models[i]);
+		double aic = 2.0*params - 2.0*gsl_sf_log(logLikelihood);
+		if(aic < bestScore) {
+			bestScore = aic;
+			bestModel = models[i];
+		}
+	}
+	assignModel(tree, bestModel);
 }
 
 void HLRT(arbre* tree)
