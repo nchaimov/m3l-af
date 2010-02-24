@@ -188,9 +188,7 @@ float likelihood(arbre* tree, int mod)
 
 int getParams(int mod){
   switch(mod){
-    case JC69:
-      return 1;
-    default
+    default:
       return 1;
   }
 }
