@@ -38,5 +38,6 @@ void destructTree(Node* n);
 Node * constructTree();
 void assignModel(arbre* tree, int model);
 float likelihood(arbre* tree, int mod);
+int getParams(int mod);
 
 #endif //modeltest_h
