@@ -2,8 +2,12 @@
 #include <gsl/gsl_cdf.h>
 
 void AIC(arbre* tree){
-
+	int models[] = {LG, JTT, WAG, DAYHOFF, BLOSUM62, MTREV, RTREV, CPREV, DCMUT, VT, MTMAM, MTART, HIVW, HIVB};
+	double likelihoods[14];
+	
+	
 }
+
 void HLRT(arbre* tree)
 {
   Node * root = constructTree();
