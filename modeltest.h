@@ -25,13 +25,17 @@
 #include "unittests.h"
 #include "eb.h"
 
-struct Node;
+typedef struct _Node{
+  int mod;
+  struct _Node * left;
+  struct _Node * right;
+} Node;
 
 void AIC(arbre* tree);
 void HLRT(arbre* tree);
-int runTests(arbre* tree,struct Node* n);
-void destructTree(struct Node* n);
-struct Node * constructTree();
+int runTests(arbre* tree,Node* n, double previousLikelihood, int previousMod);
+void destructTree(Node* n);
+Node * constructTree();
 void assignModel(arbre* tree, int model);
 float likelihood(arbre* tree, int mod);
 

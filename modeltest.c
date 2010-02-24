@@ -1,75 +1,68 @@
 #include "modeltest.h"
 #include <gsl/gsl_cdf.h>
 
-struct Node{
-  int i;
-  int j;
-  struct Node * left;
-  struct Node * right;
-};
-
 void AIC(arbre* tree){
 
 }
 void HLRT(arbre* tree)
 {
-  struct Node * root = constructTree();
+  Node * root = constructTree();
   //wikipedia.org/wiki/Likelihood-ratio_test
-  int mod = runTests(tree,root);
+  int mod = runTests(tree,root,likelihood(tree,F81),F81);
   assignModel(tree,mod);
   destructTree(root);
 
+  /*
   char outfilename[1000];
   sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
   FILE* outfile = fopen(outfilename,"w");
   printf("Probability :%f\nTherefore tree->whichmodel = %i\n", likelihood(tree,tree->mod->whichmodel), tree->mod->whichmodel);
-  fclose(outfile);
+  fclose(outfile);*/
 }
 
-void destructTree(struct Node* n){
-  if(n->left != NULL)
+void destructTree(Node* n){
+  if(n->left)
     destructTree(n->left);
   
-  if(n->right != NULL)
+  if(n->right)
     destructTree(n->right);
 
   free(n);
 }
 
-int runTests(arbre* tree,struct Node* n){
-  float i = likelihood(tree,n->i); 
-  float j = likelihood(tree,n->j); 
+int runTests(arbre* tree,Node* n, double previousLikelihood,int previousMod){
+  float thisLikelihood = likelihood(tree,n->mod); 
+  //float j = likelihood(tree,n->j); 
 
-  double D = (-2)*(i/j);
+  double D = (-2)*(thisLikelihood/previousLikelihood);
   double x = 0.05; //significant P-value
   double df = 1; //degress of freedom. TODO: make a method to derive this
   double c = gsl_cdf_chisq_Qinv(x,df);
 
-  printf("c=%f, d=%f\n",c,D);
-
   if(c>D){
-    return (n->left==NULL) ? n->i : runTests(tree,n->left);
+    return (!n->left) ? n->mod : runTests(tree,n->left,thisLikelihood,n->mod);
   } else {
-    return (n->right==NULL) ? n->j : runTests(tree,n->right);
+    return (!n->right) ? previousMod : runTests(tree,n->right,previousLikelihood,previousMod);
   }
 }
 
-struct Node * constructTree(){
-  struct Node * root = (struct Node *)malloc(sizeof(struct Node));
-  root->i = JC69;
-  root->j = F81;
-  root->left = (struct Node *)malloc(sizeof(struct Node));
-  root->right = (struct Node *)malloc(sizeof(struct Node));
+Node * constructTree(){
+  Node * root = (Node *)malloc(sizeof(Node));
+  root->mod = JC69;
+  root->left = (Node *)malloc(sizeof(Node));
+  root->right = (Node *)malloc(sizeof(Node));
 
-  root->left->i = JC69;
-  root->left->j = K80;
+  root->left->mod = K80;
   root->left->left = NULL;
   root->left->right = NULL;
 
-  root->right->i = F81;
-  root->right->j = HKY85;
+  root->right->mod = HKY85;
   root->right->left = NULL;
-  root->right->right = NULL;
+  root->right->right = (Node *)malloc(sizeof(Node));
+
+  root->right->right->mod = GTR;
+  root->right->right->left = NULL;
+  root->right->right->right = NULL;
   
   return root;
 }
@@ -191,4 +184,13 @@ float likelihood(arbre* tree, int mod)
 				// (this step is for you to create)
 				
 				return tree->c_lnL;
+}
+
+int getParams(int mod){
+  switch(mod){
+    case JC69:
+      return 1;
+    default
+      return 1;
+  }
 }
