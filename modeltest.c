@@ -1,4 +1,5 @@
 #include "modeltest.h"
+#include <gsl/gsl_cdf.h>
 
 struct Node{
   int i;
@@ -7,22 +8,22 @@ struct Node{
   struct Node * right;
 };
 
-void AIC(arbre* tree)
+void AIC(arbre* tree){
+
+}
+void HLRT(arbre* tree)
 {
   struct Node * root = constructTree();
-  float Pjc69 = likelihood(tree, JC69);
-  float Pf81 = likelihood(tree, F81);
+  //wikipedia.org/wiki/Likelihood-ratio_test
+  int mod = runTests(tree,root);
+  assignModel(tree,mod);
+  destructTree(root);
 
-  if (Pjc69>Pf81) {
-    assignModel(tree,JC69);
-  }
   char outfilename[1000];
   sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
   FILE* outfile = fopen(outfilename,"w");
-  //fprintf(outfile, "Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
-  printf("Probability of JC69:  %f. /n Probability of F81:  %f /n Therefore tree->mod->modelname = %s", Pjc69, Pf81, tree->mod->modelname);
+  printf("Probability :%f\nTherefore tree->whichmodel = %i\n", likelihood(tree,tree->mod->whichmodel), tree->mod->whichmodel);
   fclose(outfile);
-  destructTree(root);
 }
 
 void destructTree(struct Node* n){
@@ -35,6 +36,24 @@ void destructTree(struct Node* n){
   free(n);
 }
 
+int runTests(arbre* tree,struct Node* n){
+  float i = likelihood(tree,n->i); 
+  float j = likelihood(tree,n->j); 
+
+  double D = (-2)*(i/j);
+  double x = 0.05; //significant P-value
+  double df = 1; //degress of freedom. TODO: make a method to derive this
+  double c = gsl_cdf_chisq_Qinv(x,df);
+
+  printf("c=%f, d=%f\n",c,D);
+
+  if(c>D){
+    return (n->left==NULL) ? n->i : runTests(tree,n->left);
+  } else {
+    return (n->right==NULL) ? n->j : runTests(tree,n->right);
+  }
+}
+
 struct Node * constructTree(){
   struct Node * root = (struct Node *)malloc(sizeof(struct Node));
   root->i = JC69;
@@ -44,9 +63,13 @@ struct Node * constructTree(){
 
   root->left->i = JC69;
   root->left->j = K80;
+  root->left->left = NULL;
+  root->left->right = NULL;
 
   root->right->i = F81;
   root->right->j = HKY85;
+  root->right->left = NULL;
+  root->right->right = NULL;
   
   return root;
 }
@@ -73,28 +96,28 @@ void assignModel(arbre* tree,int model){
       tree->mod->n_l = 1;
       tree->mod->s_opt->opt_state_freq = 0;
       break;
-   case K80:
-   	tree->mod->datatype = NT;
-	tree->mod->n_catg = 1;
-	tree->mod->s_opt->opt_kappa = 0;
-	tree->mod->s_opt->opt_lambda = 0;
-	tree->mod->s_opt->opt_alpha = 0;
-	tree->mod->invar = 0;
-	tree->mod->n_l = 1;
-	tree->mod->s_opt->opt_state_freq = 0;
-	break;
-  case HKY85:
-	tree->mod->datatype = NT;
-	tree->mod->n_catg = 1;
-	tree->mod->s_opt->opt_kappa = 1;
-	tree->mod->s_opt->opt_lambda = 1;
-	tree->mod->s_opt->opt_alpha = 0;
-	tree->mod->invar = 0;
-	tree->mod->n_l = 1;
-	tree->mod->s_opt->opt_state_freq = 0;
-	break;
-    default:
-      return;
+    case K80:
+      tree->mod->datatype = NT;
+      tree->mod->n_catg = 1;
+      tree->mod->s_opt->opt_kappa = 0;
+      tree->mod->s_opt->opt_lambda = 0;
+      tree->mod->s_opt->opt_alpha = 0;
+      tree->mod->invar = 0;
+      tree->mod->n_l = 1;
+      tree->mod->s_opt->opt_state_freq = 0;
+      break;
+    case HKY85:
+      tree->mod->datatype = NT;
+      tree->mod->n_catg = 1;
+      tree->mod->s_opt->opt_kappa = 1;
+      tree->mod->s_opt->opt_lambda = 1;
+      tree->mod->s_opt->opt_alpha = 0;
+      tree->mod->invar = 0;
+      tree->mod->n_l = 1;
+      tree->mod->s_opt->opt_state_freq = 0;
+      break;
+      default:
+        return;
   }
   tree->mod->whichmodel = model;
   Init_Model(tree->data, tree->mod);

@@ -141,7 +141,11 @@ int main(int argc, char **argv)
 				  tree->both_sides  = 1;
 				  tree->n_pattern   = tree->data->crunch_len/tree->mod->stepsize;
 
-				AIC(tree);
+          if(tree->io->mod->datatype == AA){
+            AIC(tree);
+          } else {
+            HLRT(tree);
+          }
 
 				  Prepare_Tree_For_Lk(tree);
 
