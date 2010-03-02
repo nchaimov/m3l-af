@@ -10,7 +10,7 @@ void AIC(arbre* tree){
 	int i;
 	for(i = 0; i < 14; ++i) {
 		double logLikelihood = likelihood(tree, models[i]);
-		int params = getParams(models[i]);
+		int params = getParams(models[i], tree);
 		double aic = 2.0*params - 2.0*gsl_sf_log(logLikelihood);
 		if(aic < bestScore) {
 			bestScore = aic;
@@ -52,7 +52,10 @@ int runTests(arbre* tree,Node* n, double previousLikelihood,int previousMod){
 
   double D = (-2)*(thisLikelihood/previousLikelihood);
   double x = 0.05; //significant P-value
-  double df = 1; //degress of freedom. TODO: make a method to derive this
+  double df = getParams(previousMod,tree) - getParams(n->mod,tree); //degress of freedom. TODO: make a method to derive this
+  if(df<0){
+    df *= -1;
+  } // absolute value
   double c = gsl_cdf_chisq_Qinv(x,df);
 
   if(c>D){
@@ -202,9 +205,31 @@ float likelihood(arbre* tree, int mod)
 				return tree->c_lnL;
 }
 
-int getParams(int mod){
+int getParams(int mod, arbre* tree){
   switch(mod){
+	case JC69:
+	  return 1 + 2*tree->n_otu-3;
+	  break;
+	case K80:
+	  return 2 + 2*tree->n_otu-3;
+	  break;
+	case F81:
+	  return 5 + 2*tree->n_otu-3;
+	  break;
+	case F84:
+	  return 6 + 2*tree->n_otu-3;
+	  break;
+	case HKY:
+	  return 6 + 2*tree->n_otu-3;
+	  break;
+	case TN93:
+	  return 6 + 2*tree->n_otu-3;
+	  break;
+	case GTR:
+	  return 10 + 2*tree->n_otu-3;
+	  break;
     default:
-      return 1;
+      return 2*tree->n_otu-3;
+	  break;
   }
 }
