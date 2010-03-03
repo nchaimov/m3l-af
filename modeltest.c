@@ -18,6 +18,96 @@ void AIC(arbre* tree){
 		}
 	}
 	assignModel(tree, bestModel);
+ testOpts(tree,bestScore,bestModel);
+}
+
+void testOpts(arbre* tree, double bestscore, int bestModel)
+{
+				double fscore;
+				tree->mod->s_opt->opt_state_freq = 1;
+				fscore = likelihood(tree,bestModel);
+				if(fscore > bestscore)
+				{
+								bestscore = fscore;
+								double gscore;
+								tree->mod->s_opt->opt_alpha = 1;
+								tree->mod->n_catg = 1;
+								gscore = likelihood(tree,bestModel);
+								if(gscore > bestscore)
+								{
+												bestscore = gscore;
+												tree->mod->n_catg = 2;
+												gscore = likelihood(tree,bestModel);
+												if(gscore > bestscore)
+												{
+																bestscore = gscore;
+																tree->mod->n_catg = 4;
+																gscore = likelihood(tree,bestModel);
+																if(gscore > bestscore)
+																{
+																				bestscore = gscore;
+																				tree->mod->n_catg = 8;
+																				gscore = likelihood(tree,bestModel);
+																}
+												}
+												double iscore;
+												tree->mod->invar = 1;
+												tree->mod->s_opt->opt_pinvar = 1;
+												tree->mod->s_opt->opt_num_param = 1;
+												iscore = likelihood(tree,bestModel);
+												if(iscore > bestscore)
+												{
+																bestscore = iscore;
+																return; //+F+G+I is the best
+												}
+												tree->mod->invar = 0;
+												tree->mod->s_opt->opt_pinvar = 0;
+												tree->mod->s_opt->opt_num_param = 0;
+												return; //+F+G is the best
+								}
+								tree->mod->s_opt->opt_alpha = 0;
+								tree->mod->n_catg = 0;
+				}
+				tree->mod->s_opt->opt_state_freq = 1;
+				double gscore;
+				tree->mod->s_opt->opt_alpha = 1;
+				tree->mod->n_catg = 1;
+				gscore = likelihood(tree,bestModel);
+				if(gscore > bestscore)
+				{
+								bestscore = gscore;
+								tree->mod->n_catg = 2;
+								gscore = likelihood(tree,bestModel);
+								if(gscore > bestscore)
+								{
+												bestscore = gscore;
+												tree->mod->n_catg = 4;
+												gscore = likelihood(tree,bestModel);
+												if(gscore > bestscore)
+												{
+																bestscore = gscore;
+																tree->mod->n_catg = 8;
+																gscore = likelihood(tree,bestModel);
+												}
+								}
+								double iscore;
+								tree->mod->invar = 1;
+								tree->mod->s_opt->opt_pinvar = 1;
+								tree->mod->s_opt->opt_num_param = 1;
+								iscore = likelihood(tree,bestModel);
+								if(iscore > bestscore)
+								{
+												bestscore = iscore;
+												return; //+G+I is the best
+								}
+								tree->mod->invar = 0;
+								tree->mod->s_opt->opt_pinvar = 0;
+								tree->mod->s_opt->opt_num_param = 0;
+								return; //+G is the best
+				}
+				tree->mod->s_opt->opt_alpha = 0;
+				tree->mod->n_catg = 0;
+				//The original was the best
 }
 
 void HLRT(arbre* tree)
@@ -25,6 +115,7 @@ void HLRT(arbre* tree)
   Node * root = constructTree();
   //wikipedia.org/wiki/Likelihood-ratio_test
   int mod = runTests(tree,root,likelihood(tree,F81),F81);
+  //+F+G+I GOES HERE 
   assignModel(tree,mod);
   destructTree(root);
 
@@ -64,6 +155,8 @@ int runTests(arbre* tree,Node* n, double previousLikelihood,int previousMod){
     return (!n->right) ? previousMod : runTests(tree,n->right,previousLikelihood,previousMod);
   }
 }
+
+
 
 Node * constructTree(){
   Node * root = (Node *)malloc(sizeof(Node));
@@ -219,7 +312,7 @@ int getParams(int mod, arbre* tree){
 	case F84:
 	  return 6 + 2*tree->n_otu-3;
 	  break;
-	case HKY:
+	case HKY85:
 	  return 6 + 2*tree->n_otu-3;
 	  break;
 	case TN93:
