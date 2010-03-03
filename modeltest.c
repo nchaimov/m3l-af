@@ -4,6 +4,7 @@
 #include <float.h>
 
 void AIC(arbre* tree){
+  printf("\n\n ----------- entering AIC ------------ \n\n");
 	int models[] = {LG, JTT, WAG, DAYHOFF, BLOSUM62, MTREV, RTREV, CPREV, DCMUT, VT, MTMAM, MTART, HIVW, HIVB};
 	double bestScore = DBL_MAX;
 	int bestModel = -1;
@@ -18,7 +19,28 @@ void AIC(arbre* tree){
 		}
 	}
 	assignModel(tree, bestModel);
- testOpts(tree,bestScore,bestModel);
+  testOps(tree,bestScore,bestModel);
+  printName(tree->mod->whichmodel);
+}
+
+
+void HLRT(arbre* tree)
+{
+  printf("\n\n ----------- entering HLRT ------------ \n\n");
+  Node * root = constructTree();
+  //wikipedia.org/wiki/Likelihood-ratio_test
+  int mod = runTests(tree,root,likelihood(tree,F81),F81);
+  assignModel(tree,mod);
+  destructTree(root);
+
+  printName(tree->mod->whichmodel);
+
+  /*
+  char outfilename[1000];
+  sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
+  FILE* outfile = fopen(outfilename,"w");
+  printf("Probability :%f\nTherefore tree->whichmodel = %i\n", likelihood(tree,tree->mod->whichmodel), tree->mod->whichmodel);
+  fclose(outfile);*/
 }
 
 void testOpts(arbre* tree, double bestscore, int bestModel)
@@ -110,21 +132,33 @@ void testOpts(arbre* tree, double bestscore, int bestModel)
 				//The original was the best
 }
 
-void HLRT(arbre* tree)
-{
-  Node * root = constructTree();
-  //wikipedia.org/wiki/Likelihood-ratio_test
-  int mod = runTests(tree,root,likelihood(tree,F81),F81);
-  //+F+G+I GOES HERE 
-  assignModel(tree,mod);
-  destructTree(root);
-
-  /*
-  char outfilename[1000];
-  sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
-  FILE* outfile = fopen(outfilename,"w");
-  printf("Probability :%f\nTherefore tree->whichmodel = %i\n", likelihood(tree,tree->mod->whichmodel), tree->mod->whichmodel);
-  fclose(outfile);*/
+void printName(int mod){
+  switch(mod){
+    case JTT:
+      printf("\n\n----------------- JTT - Jay Tee Tee - ----------------\n\n");
+      break;
+    case BLOSUM62:
+      printf("\n\n----------------- Blosum62----------------\n\n");
+      break;
+    case MTREV:
+      printf("\n\n----------------- mtrev ----------------\n\n");
+      break;
+    case F81:
+      printf("\n\n----------------- f81 ----------------\n\n");
+      break;
+    case WAG:
+      printf("\n\n----------------- wag ----------------\n\n");
+      break;
+    case F84:
+      printf("\n\n----------------- f84 ----------------\n\n");
+      break;
+    case GTR:
+      printf("\n\n----------------- gtr ----------------\n\n");
+      break;
+    default:
+      printf("\n\n----------------- default: %i ---------------\n\n",mod);
+      break;
+  }
 }
 
 void destructTree(Node* n){
@@ -149,14 +183,12 @@ int runTests(arbre* tree,Node* n, double previousLikelihood,int previousMod){
   } // absolute value
   double c = gsl_cdf_chisq_Qinv(x,df);
 
-  if(c>D){
+  if(c<D){
     return (!n->left) ? n->mod : runTests(tree,n->left,thisLikelihood,n->mod);
   } else {
     return (!n->right) ? previousMod : runTests(tree,n->right,previousLikelihood,previousMod);
   }
 }
-
-
 
 Node * constructTree(){
   Node * root = (Node *)malloc(sizeof(Node));
@@ -201,6 +233,16 @@ void assignModel(arbre* tree,int model){
       tree->mod->n_l = 1;
       tree->mod->s_opt->opt_state_freq = 0;
       break;
+    case F84:
+      tree->mod->datatype = NT;
+      tree->mod->n_catg = 1;
+      tree->mod->s_opt->opt_kappa = 1;
+      tree->mod->s_opt->opt_lambda = 1;
+      tree->mod->s_opt->opt_alpha = 0;
+      tree->mod->invar = 0;
+      tree->mod->n_l = 1;
+      tree->mod->s_opt->opt_state_freq = 0;
+      break;
     case K80:
       tree->mod->datatype = NT;
       tree->mod->n_catg = 1;
@@ -221,8 +263,48 @@ void assignModel(arbre* tree,int model){
       tree->mod->n_l = 1;
       tree->mod->s_opt->opt_state_freq = 0;
       break;
-      default:
-        return;
+    case TN93:
+      tree->mod->datatype = NT;
+      tree->mod->n_catg = 1;
+      tree->mod->s_opt->opt_kappa = 1;
+      tree->mod->s_opt->opt_lambda = 1;
+      tree->mod->s_opt->opt_alpha = 1;
+      tree->mod->invar = 0;
+      tree->mod->n_l = 1;
+      tree->mod->s_opt->opt_state_freq = 0;
+      break;
+    case GTR:
+      tree->mod->datatype = NT;
+      tree->mod->n_catg = 1;
+      tree->mod->s_opt->opt_kappa = 1;
+      tree->mod->s_opt->opt_lambda = 1;
+      tree->mod->s_opt->opt_alpha = 0;
+      tree->mod->invar = 0;
+      tree->mod->n_l = 1;
+      tree->mod->s_opt->opt_state_freq = 0;
+      break;
+    case DAYHOFF:
+    case JTT:
+    case MTREV:
+    case LG:
+    case WAG:
+    case DCMUT:
+    case CPREV:
+    case VT:
+    case BLOSUM62:
+    case MTMAM:
+    case MTART:
+    case HIVW:
+    case HIVB:
+      tree->mod->datatype = AA;
+      tree->mod->n_catg = 1;
+      tree->mod->s_opt->opt_alpha = 0;
+      tree->mod->invar = 0;
+      tree->mod->n_l = 1;
+      tree->mod->s_opt->opt_state_freq = 0;
+      break;
+    default:
+      return;
   }
   tree->mod->whichmodel = model;
   Init_Model(tree->data, tree->mod);
@@ -321,8 +403,8 @@ int getParams(int mod, arbre* tree){
 	case GTR:
 	  return 10 + 2*tree->n_otu-3;
 	  break;
-    default:
-      return 2*tree->n_otu-3;
+  default:
+    return 2*tree->n_otu-3;
 	  break;
   }
 }

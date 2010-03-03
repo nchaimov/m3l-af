@@ -34,6 +34,7 @@ typedef struct _Node{
 void AIC(arbre* tree);
 void testOpts(arbre* tree, double bestscore, int bestModel);
 void HLRT(arbre* tree);
+void printName(int mod);
 int runTests(arbre* tree,Node* n, double previousLikelihood, int previousMod);
 void destructTree(Node* n);
 Node * constructTree();
