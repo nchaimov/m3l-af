@@ -12,14 +12,16 @@ void AIC(arbre* tree){
 	for(i = 0; i < 14; ++i) {
 		double logLikelihood = likelihood(tree, models[i]);
 		int params = getParams(models[i], tree);
-		double aic = 2.0*params - 2.0*gsl_sf_log(logLikelihood);
+    //printf(" --------- params: %i -----------",params);
+		//double aic = 2.0*params - 2.0*gsl_sf_log(logLikelihood);
+		double aic = 2.0*params - 2.0*logLikelihood;
 		if(aic < bestScore) {
 			bestScore = aic;
 			bestModel = models[i];
 		}
 	}
 	assignModel(tree, bestModel);
-  testOps(tree,bestScore,bestModel);
+  testOpts(tree,bestScore,bestModel);
   printName(tree->mod->whichmodel);
 }
 
