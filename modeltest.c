@@ -31,18 +31,18 @@ void HLRT(arbre* tree)
   printf("\n\n ----------- entering HLRT ------------ \n\n");
   Node * root = constructTree();
   //wikipedia.org/wiki/Likelihood-ratio_test
-  int mod = runTests(tree,root,likelihood(tree,F81),F81);
+  int mod = runTests(tree,root,likelihood(tree,JC69),JC69);
   assignModel(tree,mod);
   destructTree(root);
 
   printName(tree->mod->whichmodel);
 
-  /*
+  
   char outfilename[1000];
   sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
   FILE* outfile = fopen(outfilename,"w");
-  printf("Probability :%f\nTherefore tree->whichmodel = %i\n", likelihood(tree,tree->mod->whichmodel), tree->mod->whichmodel);
-  fclose(outfile);*/
+  fprintf(outfile,"Probability :%f\nTherefore tree->whichmodel = %i\n", likelihood(tree,tree->mod->whichmodel), tree->mod->whichmodel);
+  fclose(outfile);
 }
 
 void testOpts(arbre* tree, double bestscore, int bestModel)
@@ -177,24 +177,28 @@ int runTests(arbre* tree,Node* n, double previousLikelihood,int previousMod){
   float thisLikelihood = likelihood(tree,n->mod); 
   //float j = likelihood(tree,n->j); 
 
-  double D = (-2)*(thisLikelihood/previousLikelihood);
+  double D = (2.0)*(thisLikelihood-previousLikelihood);
   double x = 0.05; //significant P-value
   double df = getParams(previousMod,tree) - getParams(n->mod,tree); //degress of freedom. TODO: make a method to derive this
+  printf("\n\n ------------ thisL=%f,D=%f,x=%f,df=%f",thisLikelihood,D,x,df);
   if(df<0){
-    df *= -1;
+    df = -1.0*df;
   } // absolute value
   double c = gsl_cdf_chisq_Qinv(x,df);
+  printf(",and new df=%f, so therefore c=%f\n\n",df,c);
 
-  if(c<D){
-    return (!n->left) ? n->mod : runTests(tree,n->left,thisLikelihood,n->mod);
+  if(c>D){
+    printf("\n\n----------------- TAKING A LEFT; %f>%f --------------\n\n",c,D);
+    return (!n->left) ? previousMod : runTests(tree,n->left,previousLikelihood,previousMod);
   } else {
-    return (!n->right) ? previousMod : runTests(tree,n->right,previousLikelihood,previousMod);
+    printf("\n\n----------------- TAKING A RIGHT; %f<%f --------------\n\n",c,D);
+    return (!n->right) ? n->mod : runTests(tree,n->right,thisLikelihood,n->mod);
   }
 }
 
 Node * constructTree(){
   Node * root = (Node *)malloc(sizeof(Node));
-  root->mod = JC69;
+  root->mod = F81;
   root->left = (Node *)malloc(sizeof(Node));
   root->right = (Node *)malloc(sizeof(Node));
 
@@ -383,6 +387,11 @@ float likelihood(arbre* tree, int mod)
 }
 
 int getParams(int mod, arbre* tree){
+  /*
+    +g = +(n_catg-1)
+    +f = +3 for DNA, +19 for AA
+    +i = +1
+  */
   switch(mod){
 	case JC69:
 	  return 1 + 2*tree->n_otu-3;
