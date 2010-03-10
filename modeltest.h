@@ -31,10 +31,11 @@ typedef struct _Node{
   struct _Node * right;
 } Node;
 
+void modeltest(arbre* tree);
 void AIC(arbre* tree);
 void HLRT(arbre* tree);
 void testOpts(arbre* tree, double bestscore, int bestModel);
-void printName(int mod);
+void getName(char* ret,int mod);
 int runTests(arbre* tree,Node* n, double previousLikelihood, int previousMod);
 void destructTree(Node* n);
 Node * constructTree();

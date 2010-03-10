@@ -3,16 +3,42 @@
 #include <gsl/gsl_sf_log.h>
 #include <float.h>
 
+FILE* outfile;
+
+void modeltest(arbre* tree){
+  char outfilename[1000];
+  sprintf(outfilename, "%s.modeltest", tree->io->out_tree_file);
+  outfile = fopen(outfilename,"w");
+
+  if(tree->io->mod->datatype == AA){
+    fprintf(outfile,"Entering AIC:\n");
+    AIC(tree);
+  } else {
+    fprintf(outfile,"Entering HLRT:\n");
+    HLRT(tree);
+  }
+
+  double finalLikelihood = likelihood(tree,tree->mod->whichmodel);
+
+  char modelname[10];
+  getName(modelname,tree->mod->whichmodel);
+  fprintf(outfile,"\n  Best model: %s with likelihood %f\n",modelname,finalLikelihood);
+
+  fclose(outfile);
+}
+
 void AIC(arbre* tree){
-  printf("\n\n ----------- entering AIC ------------ \n\n");
 	int models[] = {LG, JTT, WAG, DAYHOFF, BLOSUM62, MTREV, RTREV, CPREV, DCMUT, VT, MTMAM, MTART, HIVW, HIVB};
 	double bestScore = DBL_MAX;
 	int bestModel = -1;
 	int i;
 	for(i = 0; i < 14; ++i) {
 		double logLikelihood = likelihood(tree, models[i]);
+    char modelname[10];
+    getName(modelname,models[i]);
+    fprintf(outfile,"  Likelihood of %s: %f\n",modelname,logLikelihood);
 		int params = getParams(models[i], tree);
-    //printf(" --------- params: %i -----------",params);
+    //fprintf(outfile," --------- params: %i -----------",params);
 		//double aic = 2.0*params - 2.0*gsl_sf_log(logLikelihood);
 		double aic = 2.0*params - 2.0*logLikelihood;
 		if(aic < bestScore) {
@@ -22,31 +48,30 @@ void AIC(arbre* tree){
 	}
 	assignModel(tree, bestModel);
   testOpts(tree,bestScore,bestModel);
-  printName(tree->mod->whichmodel);
 }
 
 
 void HLRT(arbre* tree)
 {
-  printf("\n\n ----------- entering HLRT ------------ \n\n");
   Node * root = constructTree();
-  //wikipedia.org/wiki/Likelihood-ratio_test
   int mod = runTests(tree,root,likelihood(tree,JC69),JC69);
-  assignModel(tree,mod);
   destructTree(root);
 
-  printName(tree->mod->whichmodel);
+  assignModel(tree,mod);
+  testOpts(tree,likelihood(tree,tree->mod->whichmodel),tree->mod->whichmodel);
 
   
-  char outfilename[1000];
-  sprintf(outfilename, "%s.modeltest",	tree->io->out_tree_file);
-  FILE* outfile = fopen(outfilename,"w");
-  fprintf(outfile,"Probability :%f\nTherefore tree->whichmodel = %i\n", likelihood(tree,tree->mod->whichmodel), tree->mod->whichmodel);
-  fclose(outfile);
+  //char outfilename[10];
+  //sfprintf(outfile,outfilename, "%s.modeltest",	tree->io->out_tree_file);
+  //FILE* outfile = fopen(outfilename,"w");
+  //ffprintf(outfile,outfile,"Probability :%f\nTherefore tree->whichmodel = %i\n", likelihood(tree,tree->mod->whichmodel), tree->mod->whichmodel);
+  //fclose(outfile);
 }
 
 void testOpts(arbre* tree, double bestscore, int bestModel)
 {
+  fprintf(outfile,"\n  Model testing completed, now testing the Gamma things\n");
+
 	double fscore;
 	tree->mod->s_opt->opt_state_freq = 1;
 	fscore = likelihood(tree,bestModel);
@@ -106,7 +131,7 @@ void testOpts(arbre* tree, double bestscore, int bestModel)
 		}
 	}
 	tree->mod->s_opt->opt_alpha = 0;
-	tree->mod->n_catg = 0;
+	tree->mod->n_catg = 1;
 	tree->mod->s_opt->opt_state_freq = 1;
 	double gscore;
 	tree->mod->s_opt->opt_alpha = 1;
@@ -155,35 +180,93 @@ void testOpts(arbre* tree, double bestscore, int bestModel)
 		return; //+G is the best
 	}
 	tree->mod->s_opt->opt_alpha = 0;
-	tree->mod->n_catg = 0;
+	tree->mod->n_catg = 1;
 	//The original was the best
+
+  fprintf(outfile,"  Gamma tests complete. Results:\n");
+  if(tree->mod->s_opt->opt_state_freq == 1)
+    fprintf(outfile,"    +F is enabled\n");
+  if(tree->mod->s_opt->opt_alpha == 1){
+    fprintf(outfile,"    +G is enabled; n_catg=%i\n",tree->mod->n_catg);
+    if(tree->mod->invar == 1)
+      fprintf(outfile,"    +I is enabled\n");
+  }
+
+  if(tree->mod->s_opt->opt_state_freq!=1 && tree->mod->s_opt->opt_alpha!=1)
+    fprintf(outfile,"    nothing enabled\n");
+
 }
 
-void printName(int mod){
+void getName(char* ret, int mod){
+  if(ret==NULL){
+    fprintf(outfile,"WTF!!!!");
+  }
   switch(mod){
-    case JTT:
-      printf("\n\n----------------- JTT - Jay Tee Tee - ----------------\n\n");
+    case JC69:
+      sprintf(ret,"jc69");
       break;
-    case BLOSUM62:
-      printf("\n\n----------------- Blosum62----------------\n\n");
-      break;
-    case MTREV:
-      printf("\n\n----------------- mtrev ----------------\n\n");
+    case K80:
+      sprintf(ret,"k80");
       break;
     case F81:
-      printf("\n\n----------------- f81 ----------------\n\n");
+      sprintf(ret,"f81");
       break;
-    case WAG:
-      printf("\n\n----------------- wag ----------------\n\n");
+    case HKY85:
+      sprintf(ret,"hky85");
       break;
     case F84:
-      printf("\n\n----------------- f84 ----------------\n\n");
+      sprintf(ret,"f84");
+      break;
+    case TN93:
+      sprintf(ret,"tn93");
       break;
     case GTR:
-      printf("\n\n----------------- gtr ----------------\n\n");
+      sprintf(ret,"gtr");
+      break;
+    case LG:
+      sprintf(ret,"lg");
+      break;
+    case JTT:
+      sprintf(ret,"jtt");
+      break;
+    case WAG:
+      sprintf(ret,"wag");
+      break;
+    case DAYHOFF:
+      sprintf(ret,"dayhoff");
+      break;
+    case BLOSUM62:
+      sprintf(ret,"blosum62");
+      break;
+    case MTREV:
+      sprintf(ret,"mtrev");
+      break;
+    case RTREV:
+      sprintf(ret,"rtrev");
+      break;
+    case CPREV:
+      sprintf(ret,"cprev");
+      break;
+    case DCMUT:
+      sprintf(ret,"dcmut");
+      break;
+    case VT:
+      sprintf(ret,"vt");
+      break;
+    case MTMAM:
+      sprintf(ret,"mtmam");
+      break;
+    case MTART:
+      sprintf(ret,"mtart");
+      break;
+    case HIVW:
+      sprintf(ret,"hivw");
+      break;
+    case HIVB:
+      sprintf(ret,"hivb");
       break;
     default:
-      printf("\n\n----------------- default: %i ---------------\n\n",mod);
+      sprintf(ret,"UNKNOWN(%i)",mod);
       break;
   }
 }
@@ -200,23 +283,31 @@ void destructTree(Node* n){
 
 int runTests(arbre* tree,Node* n, double previousLikelihood,int previousMod){
   float thisLikelihood = likelihood(tree,n->mod); 
-  //float j = likelihood(tree,n->j); 
+
+  char x1[10];
+  getName(x1,n->mod);
+  char x2[10];
+  getName(x2,previousMod);
+
+  fprintf(outfile,"  checking %s against %s ...\n",x1,x2);
 
   double D = (2.0)*(thisLikelihood-previousLikelihood);
   double x = 0.05; //significant P-value
   double df = getParams(previousMod,tree) - getParams(n->mod,tree); //degress of freedom. TODO: make a method to derive this
-  printf("\n\n ------------ thisL=%f,D=%f,x=%f,df=%f",thisLikelihood,D,x,df);
   if(df<0){
     df = -1.0*df;
   } // absolute value
   double c = gsl_cdf_chisq_Qinv(x,df);
-  printf(",and new df=%f, so therefore c=%f\n\n",df,c);
+
+  fprintf(outfile,"    likelihood of %s: %f\n",x1,thisLikelihood);
+  fprintf(outfile,"    likelihood of %s: %f\n",x2,previousLikelihood);
+  fprintf(outfile,"    D=%f, x=%f, df=%f, so therefore c=%f\n",D,x,df,c);
 
   if(c>D){
-    printf("\n\n----------------- TAKING A LEFT; %f>%f --------------\n\n",c,D);
+    fprintf(outfile,"    taking a left; %f>%f\n",c,D);
     return (!n->left) ? previousMod : runTests(tree,n->left,previousLikelihood,previousMod);
   } else {
-    printf("\n\n----------------- TAKING A RIGHT; %f<%f --------------\n\n",c,D);
+    fprintf(outfile,"    taking a right; %f>%f\n",c,D);
     return (!n->right) ? n->mod : runTests(tree,n->right,thisLikelihood,n->mod);
   }
 }
