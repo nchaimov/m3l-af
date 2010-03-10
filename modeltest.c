@@ -47,91 +47,116 @@ void HLRT(arbre* tree)
 
 void testOpts(arbre* tree, double bestscore, int bestModel)
 {
-				double fscore;
-				tree->mod->s_opt->opt_state_freq = 1;
-				fscore = likelihood(tree,bestModel);
-				if(fscore > bestscore)
-				{
-								bestscore = fscore;
-								double gscore;
-								tree->mod->s_opt->opt_alpha = 1;
-								tree->mod->n_catg = 1;
-								gscore = likelihood(tree,bestModel);
-								if(gscore > bestscore)
-								{
-												bestscore = gscore;
-												tree->mod->n_catg = 2;
-												gscore = likelihood(tree,bestModel);
-												if(gscore > bestscore)
-												{
-																bestscore = gscore;
-																tree->mod->n_catg = 4;
-																gscore = likelihood(tree,bestModel);
-																if(gscore > bestscore)
-																{
-																				bestscore = gscore;
-																				tree->mod->n_catg = 8;
-																				gscore = likelihood(tree,bestModel);
-																}
-												}
-												double iscore;
-												tree->mod->invar = 1;
-												tree->mod->s_opt->opt_pinvar = 1;
-												tree->mod->s_opt->opt_num_param = 1;
-												iscore = likelihood(tree,bestModel);
-												if(iscore > bestscore)
-												{
-																bestscore = iscore;
-																return; //+F+G+I is the best
-												}
-												tree->mod->invar = 0;
-												tree->mod->s_opt->opt_pinvar = 0;
-												tree->mod->s_opt->opt_num_param = 0;
-												return; //+F+G is the best
-								}
-								tree->mod->s_opt->opt_alpha = 0;
-								tree->mod->n_catg = 0;
-				}
-				tree->mod->s_opt->opt_state_freq = 1;
-				double gscore;
-				tree->mod->s_opt->opt_alpha = 1;
-				tree->mod->n_catg = 1;
+	double fscore;
+	tree->mod->s_opt->opt_state_freq = 1;
+	fscore = likelihood(tree,bestModel);
+	double D = 2.0 * (fscore - bestscore);
+	double df = (tree->io->mod->datatype == AA)? 19 : 3;
+	double c =tree->mod->s_opt->opt_pinvar = 0;
+			tree->mod->s_opt->opt_num_param = 0;
+			 gsl_cdf_chisq_Qinv(0.5,df);
+	if(D >= c)
+	{
+		bestscore = fscore;
+		double gscore;
+		tree->mod->s_opt->opt_alpha = 1;
+		tree->mod->n_catg = 2;
+		gscore = likelihood(tree,bestModel);
+		D = 2.0 * (gscore - bestscore);
+		df = 1;
+		c = gsl_cdf_chisq_Qinv(0.5,df);
+		if(D >= c)
+		{
+			bestscore = gscore;
+			tree->mod->n_catg = 4;
+			gscore = likelihood(tree,bestModel);
+			D = 2.0 * (gscore - bestscore);
+			df = 2;
+			c = gsl_cdf_chisq_Qinv(0.5,df);
+			if(D >= c)
+			{
+				bestscore = gscore;
+				tree->mod->n_catg = 8;
 				gscore = likelihood(tree,bestModel);
-				if(gscore > bestscore)
+				D = 2.0 * (gscore - bestscore);
+				df = 4;
+				c = gsl_cdf_chisq_Qinv(0.5,df);
+				if(D >= c)
 				{
-								bestscore = gscore;
-								tree->mod->n_catg = 2;
-								gscore = likelihood(tree,bestModel);
-								if(gscore > bestscore)
-								{
-												bestscore = gscore;
-												tree->mod->n_catg = 4;
-												gscore = likelihood(tree,bestModel);
-												if(gscore > bestscore)
-												{
-																bestscore = gscore;
-																tree->mod->n_catg = 8;
-																gscore = likelihood(tree,bestModel);
-												}
-								}
-								double iscore;
-								tree->mod->invar = 1;
-								tree->mod->s_opt->opt_pinvar = 1;
-								tree->mod->s_opt->opt_num_param = 1;
-								iscore = likelihood(tree,bestModel);
-								if(iscore > bestscore)
-								{
-												bestscore = iscore;
-												return; //+G+I is the best
-								}
-								tree->mod->invar = 0;
-								tree->mod->s_opt->opt_pinvar = 0;
-								tree->mod->s_opt->opt_num_param = 0;
-								return; //+G is the best
+					bestscore = gscore;
 				}
-				tree->mod->s_opt->opt_alpha = 0;
-				tree->mod->n_catg = 0;
-				//The original was the best
+			}
+			double iscore;
+			tree->mod->invar = 1;
+			tree->mod->s_opt->opt_pinvar = 1;
+			tree->mod->s_opt->opt_num_param = 1;
+			iscore = likelihood(tree,bestModel);
+			D = 2.0 * (gscore - bestscore);
+			df = 1;
+			c = gsl_cdf_chisq_Qinv(0.5,df);
+			if(D >= c)
+			{
+							bestscore = iscore;
+							return; //+F+G+I is the best
+			}
+			tree->mod->invar = 0;
+			tree->mod->s_opt->opt_pinvar = 0;
+			tree->mod->s_opt->opt_num_param = 0;
+			return; //+F+G is the best
+		}
+	}
+	tree->mod->s_opt->opt_alpha = 0;
+	tree->mod->n_catg = 0;
+	tree->mod->s_opt->opt_state_freq = 1;
+	double gscore;
+	tree->mod->s_opt->opt_alpha = 1;
+	tree->mod->n_catg = 2;
+	gscore = likelihood(tree,bestModel);
+	D = 2.0 * (gscore - bestscore);
+	df = 1;
+	c = gsl_cdf_chisq_Qinv(0.5,df);
+	if(D >= c)
+	{
+		bestscore = gscore;
+		tree->mod->n_catg = 4;
+		gscore = likelihood(tree,bestModel);
+		D = 2.0 * (gscore - bestscore);
+		df = 2;
+		c = gsl_cdf_chisq_Qinv(0.5,df);
+		if(D >= c)
+		{
+			bestscore = gscore;
+			tree->mod->n_catg = 8;
+			gscore = likelihood(tree,bestModel);
+			D = 2.0 * (gscore - bestscore);
+			df = 4;
+			c = gsl_cdf_chisq_Qinv(0.5,df);
+			if(D >= c)
+			{
+				bestscore = gscore;
+			}
+		}
+		double iscore;
+		tree->mod->invar = 1;
+		tree->mod->s_opt->opt_pinvar = 1;
+		tree->mod->s_opt->opt_num_param = 1;
+		iscore = likelihood(tree,bestModel);
+		D = 2.0 * (gscore - bestscore);
+		df = 1;
+		c = gsl_cdf_chisq_Qinv(0.5,df);
+		if(D >= c)
+		{
+			bestscore = iscore;
+			return; //+G+I is the best
+		}
+		tree->mod->invar = 0;
+		tree->mod->s_opt->opt_pinvar = 0;
+		tree->mod->s_opt->opt_num_param = 0;
+		return; //+G is the best
+	}
+	tree->mod->s_opt->opt_alpha = 0;
+	tree->mod->n_catg = 0;
+	//The original was the best
 }
 
 void printName(int mod){
