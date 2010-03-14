@@ -1,3 +1,7 @@
+/*
+modeltest that perform hLRT and AIC analyses based on likelihood values
+*/
+
 #include "modeltest.h"
 #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_sf_log.h>
@@ -27,6 +31,12 @@ void modeltest(arbre* tree){
   fclose(outfile);
 }
 
+/*
+Akakike information criterion
+Defined as 2 p - 2 * ln L, where L is the maximum likelihood value of the optimal tree obtained of each model in p parameter.
+Here we try to compare all AIC score with current best score we have, if it beats the best score, replace that AIC score to best score.
+After comparing all models score, do assignModel and testOpts.
+*/
 void AIC(arbre* tree){
 	int models[] = {LG, JTT, WAG, DAYHOFF, BLOSUM62, MTREV, RTREV, CPREV, DCMUT, VT, MTMAM, MTART, HIVW, HIVB};
 	double bestScore = DBL_MAX;
@@ -34,11 +44,11 @@ void AIC(arbre* tree){
 	int i;
 	for(i = 0; i < 14; ++i) {
 		double logLikelihood = likelihood(tree, models[i]);
-    char modelname[10];
-    getName(modelname,models[i]);
-    fprintf(outfile,"  Likelihood of %s: %f\n",modelname,logLikelihood);
+    	char modelname[10];
+    	getName(modelname,models[i]);
+    	fprintf(outfile,"  Likelihood of %s: %f\n",modelname,logLikelihood);
 		int params = getParams(models[i], tree);
-    //fprintf(outfile," --------- params: %i -----------",params);
+    	//fprintf(outfile," --------- params: %i -----------",params);
 		//double aic = 2.0*params - 2.0*gsl_sf_log(logLikelihood);
 		double aic = 2.0*params - 2.0*logLikelihood;
 		if(aic < bestScore) {
@@ -50,7 +60,12 @@ void AIC(arbre* tree){
   testOpts(tree,bestScore,bestModel);
 }
 
-
+/*
+Hierarchical likelihood ratio tests for determining the appropriate evolutionary model to use.
+Which perform whether one model is contained in the other. 
+One model is nested within another if the latter model is more flexible than the former.
+Where runTests do the job.
+*/
 void HLRT(arbre* tree)
 {
   Node * root = constructTree();
@@ -68,6 +83,17 @@ void HLRT(arbre* tree)
   //fclose(outfile);
 }
 
+/*
+testOpts tests gamma(+F, +G, +I)
+We set scores of +F, +G, +I: fscore, gscore, and iscore. We compare those scores to replace the best score
+and if it applies to those gamma we change their properity as follow.
++G	tree->mod->n_catg = 1,2,4,8
+	tree->mod->s_opt-> opt.alpha = 1
++I	tree->mod->invar = 1
+	tree->mod->s_opt->opt_pinvar = 1
+	tree->mod->s_opt->opt_num_pin_var = 1
++F	tree->mod->s_opt->opt_state_freq = 1
+*/
 void testOpts(arbre* tree, double bestscore, int bestModel)
 {
   fprintf(outfile,"\n  Model testing completed, now testing the Gamma things\n");
@@ -281,6 +307,12 @@ void destructTree(Node* n){
   free(n);
 }
 
+/*
+runTests for hLRT analysis which check for equal base frequencies, check for equal transition and transversion rates,
+check for evidence of rate variation at different sites, and check for evidence of invariant class.
+We set D value of difference between current likelihood and previous likelihood and set c value of chi-square with df degree of freedom.
+We compare two value c and D to whether we go to right, left branch or choose right model.
+*/
 int runTests(arbre* tree,Node* n, double previousLikelihood,int previousMod){
   float thisLikelihood = likelihood(tree,n->mod); 
 
