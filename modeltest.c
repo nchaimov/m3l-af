@@ -28,6 +28,18 @@ void modeltest(arbre* tree){
   getName(modelname,tree->mod->whichmodel);
   fprintf(outfile,"\n  Best model: %s with likelihood %f\n",modelname,finalLikelihood);
 
+  fprintf(outfile,"  Gamma tests complete. Results:\n");
+  if(tree->mod->s_opt->opt_state_freq == 1)
+    fprintf(outfile,"    +F is enabled\n");
+  if(tree->mod->s_opt->opt_alpha == 1){
+    fprintf(outfile,"    +G is enabled; n_catg=%i\n",tree->mod->n_catg);
+    if(tree->mod->invar == 1)
+      fprintf(outfile,"    +I is enabled\n");
+  }
+
+  if(tree->mod->s_opt->opt_state_freq!=1 && tree->mod->s_opt->opt_alpha!=1)
+    fprintf(outfile,"    nothing enabled\n");
+
   fclose(outfile);
 }
 
@@ -208,19 +220,6 @@ void testOpts(arbre* tree, double bestscore, int bestModel)
 	tree->mod->s_opt->opt_alpha = 0;
 	tree->mod->n_catg = 1;
 	//The original was the best
-
-  fprintf(outfile,"  Gamma tests complete. Results:\n");
-  if(tree->mod->s_opt->opt_state_freq == 1)
-    fprintf(outfile,"    +F is enabled\n");
-  if(tree->mod->s_opt->opt_alpha == 1){
-    fprintf(outfile,"    +G is enabled; n_catg=%i\n",tree->mod->n_catg);
-    if(tree->mod->invar == 1)
-      fprintf(outfile,"    +I is enabled\n");
-  }
-
-  if(tree->mod->s_opt->opt_state_freq!=1 && tree->mod->s_opt->opt_alpha!=1)
-    fprintf(outfile,"    nothing enabled\n");
-
 }
 
 void getName(char* ret, int mod){
